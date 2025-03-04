@@ -22,15 +22,15 @@ const NotFound = () => {
           <div className="inline-block p-6 mb-6 rounded-full bg-primary/10">
             <p className="text-8xl font-bold text-primary">404</p>
           </div>
-          <h1 className="text-3xl font-bold mb-4">Page Not Found</h1>
+          <h1 className="text-3xl font-bold mb-4">Էջը չի գտնվել</h1>
           <p className="text-muted-foreground mb-8">
-            The page you're looking for doesn't exist or has been moved to another location.
+            Էջը, որը փնտրում եք, գոյություն չունի կամ տեղափոխվել է այլ վայր։
           </p>
           <Link 
             to="/" 
             className="inline-flex px-8 py-3 bg-primary text-primary-foreground font-medium rounded-lg transition-all hover:shadow-lg hover:shadow-primary/20"
           >
-            Return to Home
+            Վերադառնալ Գլխավոր էջ
           </Link>
         </div>
       </div>

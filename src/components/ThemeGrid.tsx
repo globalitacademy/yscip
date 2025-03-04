@@ -5,14 +5,14 @@ import { projectThemes, getMoreProjects, ProjectTheme } from '@/data/projectThem
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Filter, ChevronDown, ChevronUp } from 'lucide-react';
-import { StaggeredContainer, SlideUp } from './Transitions';
+import { StaggeredContainer, SlideUp } from './LocalTransitions';
 
-const allCategories = ['All', ...new Set(projectThemes.map(project => project.category))];
-const complexityLevels = ['All', 'Beginner', 'Intermediate', 'Advanced'];
+const allCategories = ['Բոլորը', ...new Set(projectThemes.map(project => project.category))];
+const complexityLevels = ['Բոլորը', 'Սկսնակ', 'Միջին', 'Առաջադեմ'];
 
 const ThemeGrid: React.FC = () => {
-  const [activeCategory, setActiveCategory] = useState('All');
-  const [activeComplexity, setActiveComplexity] = useState('All');
+  const [activeCategory, setActiveCategory] = useState('Բոլորը');
+  const [activeComplexity, setActiveComplexity] = useState('Բոլորը');
   const [showFilters, setShowFilters] = useState(false);
   const [visibleProjects, setVisibleProjects] = useState(12);
   
@@ -20,8 +20,8 @@ const ThemeGrid: React.FC = () => {
   
   // Filter projects based on active filters
   const filteredProjects = allProjects.filter(project => {
-    const matchesCategory = activeCategory === 'All' || project.category === activeCategory;
-    const matchesComplexity = activeComplexity === 'All' || project.complexity === activeComplexity;
+    const matchesCategory = activeCategory === 'Բոլորը' || project.category === activeCategory;
+    const matchesComplexity = activeComplexity === 'Բոլորը' || project.complexity === activeComplexity;
     return matchesCategory && matchesComplexity;
   });
   
@@ -37,7 +37,7 @@ const ThemeGrid: React.FC = () => {
         <SlideUp>
           <div className="flex flex-col md:flex-row md:items-center justify-between mb-12 gap-4">
             <h2 className="text-2xl md:text-3xl font-bold">
-              Browse Project Themes <span className="text-primary">({filteredProjects.length})</span>
+              Դիտել պրոեկտի թեմաները <span className="text-primary">({filteredProjects.length})</span>
             </h2>
             
             <Button 
@@ -46,7 +46,7 @@ const ThemeGrid: React.FC = () => {
               onClick={() => setShowFilters(!showFilters)}
             >
               <Filter size={16} />
-              Filters
+              Ֆիլտրեր
               {showFilters ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
             </Button>
           </div>
@@ -57,7 +57,7 @@ const ThemeGrid: React.FC = () => {
           <div className="overflow-hidden">
             <div className="grid md:grid-cols-2 gap-8 pb-4">
               <div>
-                <h3 className="text-sm font-medium mb-3">Filter by Category</h3>
+                <h3 className="text-sm font-medium mb-3">Ֆիլտրել ըստ կատեգորիայի</h3>
                 <div className="flex flex-wrap gap-2">
                   {allCategories.map((category) => (
                     <Badge
@@ -73,7 +73,7 @@ const ThemeGrid: React.FC = () => {
               </div>
               
               <div>
-                <h3 className="text-sm font-medium mb-3">Filter by Complexity</h3>
+                <h3 className="text-sm font-medium mb-3">Ֆիլտրել ըստ բարդության</h3>
                 <div className="flex flex-wrap gap-2">
                   {complexityLevels.map((level) => (
                     <Badge
@@ -109,7 +109,7 @@ const ThemeGrid: React.FC = () => {
               onClick={loadMore}
               className="px-8 border-primary/30 hover:bg-primary/5"
             >
-              Load More Projects
+              Բեռնել ավելի շատ պրոեկտներ
             </Button>
           </div>
         )}

@@ -11,10 +11,10 @@ const Footer: React.FC = () => {
           <div className="md:col-span-2">
             <Link to="/" className="text-xl font-medium flex items-center space-x-2 mb-4">
               <span className="bg-primary text-primary-foreground rounded-md p-1 transform -rotate-6">PΘ</span>
-              <span>Project Themes</span>
+              <span>Պրոեկտների Թեմաներ</span>
             </Link>
             <p className="text-muted-foreground max-w-md">
-              A curated collection of 100 modern project themes to inspire developers and help them choose their next development challenge.
+              Ընտրված 100 ժամանակակից պրոեկտի թեմաներ՝ ոգեշնչելու ծրագրավորողներին և օգնելու նրանց ընտրել իրենց հաջորդ ծրագրավորման մարտահրավերը։
             </p>
             <div className="flex space-x-4 mt-6">
               <a href="#" className="text-muted-foreground hover:text-primary transition-colors" aria-label="GitHub">
@@ -33,52 +33,52 @@ const Footer: React.FC = () => {
           </div>
           
           <div>
-            <h3 className="font-medium mb-4">Navigation</h3>
+            <h3 className="font-medium mb-4">Նավիգացիա</h3>
             <ul className="space-y-3">
               <li>
                 <Link to="/" className="text-muted-foreground hover:text-primary transition-colors">
-                  Home
+                  Գլխավոր
                 </Link>
               </li>
               <li>
                 <Link to="/categories" className="text-muted-foreground hover:text-primary transition-colors">
-                  Categories
+                  Կատեգորիաներ
                 </Link>
               </li>
               <li>
                 <Link to="/about" className="text-muted-foreground hover:text-primary transition-colors">
-                  About
+                  Մեր մասին
                 </Link>
               </li>
               <li>
                 <Link to="/contact" className="text-muted-foreground hover:text-primary transition-colors">
-                  Contact
+                  Կապ
                 </Link>
               </li>
             </ul>
           </div>
           
           <div>
-            <h3 className="font-medium mb-4">Resources</h3>
+            <h3 className="font-medium mb-4">Ռեսուրսներ</h3>
             <ul className="space-y-3">
               <li>
                 <a href="#" className="text-muted-foreground hover:text-primary transition-colors">
-                  Development Resources
+                  Ծրագրավորման ռեսուրսներ
                 </a>
               </li>
               <li>
                 <a href="#" className="text-muted-foreground hover:text-primary transition-colors">
-                  Design Inspiration
+                  Դիզայնի ոգեշնչում
                 </a>
               </li>
               <li>
                 <a href="#" className="text-muted-foreground hover:text-primary transition-colors">
-                  Learning Paths
+                  Ուսումնական ուղիներ
                 </a>
               </li>
               <li>
                 <a href="#" className="text-muted-foreground hover:text-primary transition-colors">
-                  Newsletter
+                  Նորություններ
                 </a>
               </li>
             </ul>
@@ -87,14 +87,14 @@ const Footer: React.FC = () => {
         
         <div className="mt-12 pt-6 border-t border-border flex flex-col md:flex-row justify-between items-center">
           <p className="text-sm text-muted-foreground mb-4 md:mb-0">
-            © {new Date().getFullYear()} Project Themes. All rights reserved.
+            © {new Date().getFullYear()} Պրոեկտների Թեմաներ: Բոլոր իրավունքները պաշտպանված են։
           </p>
           <div className="flex space-x-6">
             <Link to="/privacy" className="text-sm text-muted-foreground hover:text-primary transition-colors">
-              Privacy Policy
+              Գաղտնիության քաղաքականություն
             </Link>
             <Link to="/terms" className="text-sm text-muted-foreground hover:text-primary transition-colors">
-              Terms of Service
+              Ծառայության պայմաններ
             </Link>
           </div>
         </div>

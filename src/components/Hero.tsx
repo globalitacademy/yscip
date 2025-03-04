@@ -1,7 +1,7 @@
 
 import React from 'react';
 import { ChevronDown } from 'lucide-react';
-import { FadeIn, SlideUp, SlideDown } from './Transitions';
+import { FadeIn, SlideUp, SlideDown } from './LocalTransitions';
 
 const Hero: React.FC = () => {
   const scrollToThemes = () => {
@@ -23,16 +23,16 @@ const Hero: React.FC = () => {
       <div className="container px-4 mx-auto text-center z-10">
         <SlideDown delay="delay-100">
           <p className="inline-block px-4 py-1 mb-6 rounded-full text-sm font-medium bg-accent text-accent-foreground">
-            100 Modern Project Themes
+            100 Ժամանակակից պրոեկտի թեմաներ
           </p>
         </SlideDown>
         
         <SlideDown delay="delay-200">
           <h1 className="text-4xl md:text-5xl lg:text-6xl xl:text-7xl font-bold mb-6 leading-tight tracking-tight">
-            Discover Your Next
+            Բացահայտեք Ձեր հաջորդ
             <br />
             <span className="relative inline-block">
-              <span className="relative z-10">Development Project</span>
+              <span className="relative z-10">Ծրագրավորման պրոեկտը</span>
               <span className="absolute bottom-2 left-0 w-full h-3 bg-primary/20 rounded -z-10"></span>
             </span>
           </h1>
@@ -40,7 +40,7 @@ const Hero: React.FC = () => {
         
         <SlideDown delay="delay-300">
           <p className="max-w-xl mx-auto text-lg md:text-xl text-muted-foreground mb-10">
-            Browse through our curated collection of 100 modern project themes, complete with complexity ratings and implementation steps.
+            Դիտեք մեր ընտրված 100 ժամանակակից պրոեկտի թեմաները՝ բարդության գնահատականներով և իրականացման քայլերով։
           </p>
         </SlideDown>
         
@@ -50,10 +50,10 @@ const Hero: React.FC = () => {
               className="px-8 py-3 bg-primary text-primary-foreground font-medium rounded-lg shadow-lg shadow-primary/20 hover:shadow-xl hover:shadow-primary/30 transform hover:-translate-y-1 transition-all duration-300"
               onClick={scrollToThemes}
             >
-              Explore Themes
+              Ուսումնասիրել թեմաները
             </button>
             <button className="px-8 py-3 bg-secondary text-secondary-foreground font-medium rounded-lg hover:bg-secondary/80 transition-all duration-300">
-              Filter by Category
+              Ֆիլտրել ըստ կատեգորիայի
             </button>
           </div>
         </FadeIn>
@@ -63,7 +63,7 @@ const Hero: React.FC = () => {
             onClick={scrollToThemes}
             className="inline-flex flex-col items-center text-muted-foreground hover:text-foreground transition-colors"
           >
-            <span className="text-sm mb-2">Scroll to Browse</span>
+            <span className="text-sm mb-2">Ոլորել դեպի ներքև</span>
             <ChevronDown size={20} className="animate-bounce" />
           </button>
         </SlideUp>

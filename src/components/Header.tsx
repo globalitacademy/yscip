@@ -29,25 +29,25 @@ const Header: React.FC = () => {
       <div className="container px-4 mx-auto flex items-center justify-between">
         <Link to="/" className="text-xl font-medium flex items-center space-x-2 transition-transform hover:scale-[1.02]">
           <span className="bg-primary text-primary-foreground rounded-md p-1 transform -rotate-6">PΘ</span>
-          <span>Project Themes</span>
+          <span>Պրոեկտների Թեմաներ</span>
         </Link>
 
         {/* Desktop Navigation */}
         <nav className="hidden md:flex items-center space-x-8">
           <Link to="/" className="text-sm font-medium hover:text-primary transition-colors">
-            Home
+            Գլխավոր
           </Link>
           <Link to="/categories" className="text-sm font-medium hover:text-primary transition-colors">
-            Categories
+            Կատեգորիաներ
           </Link>
           <Link to="/about" className="text-sm font-medium hover:text-primary transition-colors">
-            About
+            Մեր մասին
           </Link>
           <div className="relative">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
             <input
               type="search"
-              placeholder="Search themes..."
+              placeholder="Որոնել թեմաներ..."
               className="w-40 lg:w-60 h-9 px-10 rounded-full bg-secondary text-sm focus:outline-none focus:ring-1 focus:ring-primary transition-all"
             />
           </div>
@@ -75,27 +75,27 @@ const Header: React.FC = () => {
             className="text-base font-medium hover:text-primary transition-colors"
             onClick={() => setIsMenuOpen(false)}
           >
-            Home
+            Գլխավոր
           </Link>
           <Link 
             to="/categories" 
             className="text-base font-medium hover:text-primary transition-colors"
             onClick={() => setIsMenuOpen(false)}
           >
-            Categories
+            Կատեգորիաներ
           </Link>
           <Link 
             to="/about" 
             className="text-base font-medium hover:text-primary transition-colors"
             onClick={() => setIsMenuOpen(false)}
           >
-            About
+            Մեր մասին
           </Link>
           <div className="relative">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
             <input
               type="search"
-              placeholder="Search themes..."
+              placeholder="Որոնել թեմաներ..."
               className="w-full h-10 px-10 rounded-full bg-secondary text-sm focus:outline-none focus:ring-1 focus:ring-primary transition-all"
             />
           </div>
