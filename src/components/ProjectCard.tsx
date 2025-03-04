@@ -1,9 +1,9 @@
-
 import React from 'react';
 import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
 import { ProjectTheme } from '@/data/projectThemes';
 import { ArrowRight, Code, Layers, FileCheck } from 'lucide-react';
+import { Link } from 'react-router-dom';
 
 interface ProjectCardProps {
   project: ProjectTheme;
@@ -11,7 +11,6 @@ interface ProjectCardProps {
 }
 
 const ProjectCard: React.FC<ProjectCardProps> = ({ project, className }) => {
-  // Define complexity colors
   const complexityColor = {
     Սկսնակ: 'bg-green-500/10 text-green-600 border-green-200',
     Միջին: 'bg-amber-500/10 text-amber-600 border-amber-200',
@@ -19,13 +18,13 @@ const ProjectCard: React.FC<ProjectCardProps> = ({ project, className }) => {
   }[project.complexity];
 
   return (
-    <div 
+    <Link 
+      to={`/project/${project.id}`}
       className={cn(
         "group relative bg-card rounded-xl p-6 border border-border shadow-sm hover:shadow-md transition-all duration-500 card-hover overflow-hidden",
         className
       )}
     >
-      {/* Top gradient accent */}
       <div className="absolute top-0 inset-x-0 h-1 bg-primary rounded-t-xl" />
 
       <div className="mb-4 flex justify-between items-start">
@@ -84,9 +83,8 @@ const ProjectCard: React.FC<ProjectCardProps> = ({ project, className }) => {
         </button>
       </div>
       
-      {/* Glass reflection effect */}
       <div className="absolute inset-0 bg-gradient-to-r from-white/0 via-white/20 to-white/0 opacity-0 group-hover:opacity-100 translate-x-[-100%] group-hover:translate-x-[100%] transition-all duration-1000 pointer-events-none" />
-    </div>
+    </Link>
   );
 };
 

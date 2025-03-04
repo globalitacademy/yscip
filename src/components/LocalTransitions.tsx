@@ -10,11 +10,11 @@ interface AnimationProps {
 }
 
 export const FadeIn: React.FC<AnimationProps> = ({ children, className, delay = 'delay-0' }) => {
-  const [ref, isInView] = useInView();
+  const [elementRef, isInView] = useInView<HTMLDivElement>();
   
   return (
     <div 
-      ref={ref} 
+      ref={elementRef} 
       className={cn(
         'transition-opacity duration-700 ease-in-out',
         isInView ? 'opacity-100' : 'opacity-0',
@@ -28,11 +28,11 @@ export const FadeIn: React.FC<AnimationProps> = ({ children, className, delay = 
 };
 
 export const SlideUp: React.FC<AnimationProps> = ({ children, className, delay = 'delay-0' }) => {
-  const [ref, isInView] = useInView();
+  const [elementRef, isInView] = useInView<HTMLDivElement>();
   
   return (
     <div 
-      ref={ref} 
+      ref={elementRef} 
       className={cn(
         'transition-all duration-700 ease-out',
         isInView ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10',
@@ -46,11 +46,11 @@ export const SlideUp: React.FC<AnimationProps> = ({ children, className, delay =
 };
 
 export const SlideDown: React.FC<AnimationProps> = ({ children, className, delay = 'delay-0' }) => {
-  const [ref, isInView] = useInView();
+  const [elementRef, isInView] = useInView<HTMLDivElement>();
   
   return (
     <div 
-      ref={ref} 
+      ref={elementRef} 
       className={cn(
         'transition-all duration-700 ease-out',
         isInView ? 'opacity-100 translate-y-0' : 'opacity-0 -translate-y-10',
