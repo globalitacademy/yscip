@@ -1,12 +1,16 @@
-
 export interface ProjectTheme {
   id: number;
   title: string;
   description: string;
+  detailedDescription?: string;
   complexity: 'Սկսնակ' | 'Միջին' | 'Առաջադեմ';
   techStack: string[];
   steps: string[];
   category: string;
+  image?: string;
+  duration?: string;
+  prerequisites?: string[];
+  learningOutcomes?: string[];
 }
 
 export const projectThemes: ProjectTheme[] = [
@@ -14,6 +18,7 @@ export const projectThemes: ProjectTheme[] = [
     id: 1,
     title: "Մինիմալիստիկ անձնական պորտֆոլիո",
     description: "Մաքուր, ժամանակակից պորտֆոլիո կայք, որը ցուցադրում է ձեր աշխատանքները և հմտությունները՝ նուրբ անիմացիաներով և ադապտիվ դիզայնով։",
+    detailedDescription: "Այս նախագիծը նպատակաուղղված է ստեղծելու անձնական պորտֆոլիո կայք՝ մինիմալիստական դիզայնով, որը ունի հարմարեցված UI/UX։ Դուք կստեղծեք հաճելի օգտագործողի փորձառություն՝ օգտագործելով սահուն անիմացիաներ և անցումներ։ Այստեղ կներառեք Ձեր աշխատանքները, հմտությունները և մասնագիտական ճանապարհը՝ ինտերակտիվ և գրավիչ եղանակով։ Պորտֆոլիոն կլինի լիովին ադապտիվ՝ հարմարվելով տարբեր սարքերին և էկրանի չափերին։",
     complexity: "Սկսնակ",
     techStack: ["React", "Tailwind CSS", "Framer Motion"],
     steps: [
@@ -23,12 +28,22 @@ export const projectThemes: ProjectTheme[] = [
       "Նուրբ անիմացիաների ավելացում Framer Motion-ի միջոցով",
       "Արագագործության և հասանելիության օպտիմիզացում"
     ],
-    category: "Պորտֆոլիո"
+    category: "Պորտֆոլիո",
+    image: "https://images.unsplash.com/photo-1517180102446-f3ece451e9d8?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1470&q=80",
+    duration: "2-3 շաբաթ",
+    prerequisites: ["HTML/CSS հիմունքներ", "JavaScript հիմունքներ", "React հիմունքներ"],
+    learningOutcomes: [
+      "React կոմպոնենտների ստեղծում և կառավարում",
+      "Tailwind CSS-ի կիրառում ադապտիվ դիզայնի համար",
+      "Անիմացիաների ներդրում Framer Motion-ով",
+      "Պորտֆոլիո նախագծի կազմակերպում և կառուցվածքավորում"
+    ]
   },
   {
     id: 2,
     title: "Էլեկտրոնային առևտրի կառավարման վահանակ",
     description: "Ադմինիստրատիվ վահանակ ապրանքների, պատվերների, հաճախորդների և վերլուծությունների կառավարման համար։",
+    detailedDescription: "Ստեղծեք ամբողջական կառավարման վահանակ էլեկտրոնային առևտրի հարթակի համար։ Այս վահանակը կհանդիսանա ադմինիստրատորի գործիք՝ բիզնեսի վերահսկման և կառավարման համար։ Ներառում է ապրանքների կատալոգի կառավարում, պատվերների հետևում, հաճախորդների տվյալների բազա և վերլուծական գործիքներ։ Դուք կօգտագործեք ժամանակակից տեխնոլոգիաներ՝ կառուցելու արագ և արդյունավետ կառավարման վահանակ՝ թվային տվյալների վիզուալիզացիայով և ռեալ-ժամանակյա թարմացումներով։",
     complexity: "Միջին",
     techStack: ["Next.js", "TypeScript", "Tailwind CSS", "Chart.js"],
     steps: [
@@ -39,12 +54,22 @@ export const projectThemes: ProjectTheme[] = [
       "Վերլուծական վահանակի ստեղծում Chart.js-ով",
       "Օգտագործողների նույնականացման և դերերի վրա հիմնված հասանելիության ներդրում"
     ],
-    category: "Կառավարման վահանակ"
+    category: "Կառավարման վահանակ",
+    image: "https://images.unsplash.com/photo-1551288049-bebda4e38f71?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1470&q=80",
+    duration: "4-6 շաբաթ",
+    prerequisites: ["JavaScript-ի միջին իմացություն", "React փորձ", "TypeScript հիմունքներ"],
+    learningOutcomes: [
+      "Next.js-ի օգտագործում պրոֆեսիոնալ վեբ հավելվածների համար",
+      "TypeScript-ի կիրառում բարդ առաջադրանքներում",
+      "Տվյալների վիզուալիզացիա Chart.js-ով",
+      "Օգտագործողների նույնականացման և թույլտվությունների ներդրում"
+    ]
   },
   {
     id: 3,
     title: "ԻԻ-ով աշխատող բովանդակության գեներատոր",
     description: "Վեբ հավելված, որն օգտագործում է ԻԻ՝ բլոգային գրառումներ, սոցիալական մեդիայի բովանդակություն և մարքեթինգային տեքստեր ստեղծելու համար։",
+    detailedDescription: "Այս հետաքրքիր նախագծում դուք կզարգացնեք վեբ հավելված, որը կիրառում է արհեստական բանականությունը՝ տարբեր տեսակի բովանդակություն գեներացնելու համար։ Միացնելով OpenAI API-ն, հավելվածը կստեղծի բարձրորակ բլոգային հոդվածներ, սոցիալական մեդիայի գրառումներ, մարքեթինգային տեքստեր և այլ բովանդակություն՝ օգտագործողի տրամադրած պարամետրերի հիման վրա։ Հավելվածը կներառի բովանդակության խմբագրման, պահպանման և արտահանման գործիքներ՝ օգտագործողին տալով լիակատար վերահսկողություն ստեղծված նյութերի նկատմամբ։",
     complexity: "Առաջադեմ",
     techStack: ["React", "Node.js", "OpenAI API", "MongoDB"],
     steps: [
@@ -55,12 +80,22 @@ export const projectThemes: ProjectTheme[] = [
       "Բովանդակության որակի վերլուծության գործիքների ներդրում",
       "Տարբեր հարթակների համար արտահանման տարբերակների ավելացում"
     ],
-    category: "ԻԻ հավելվածներ"
+    category: "ԻԻ հավելվածներ",
+    image: "https://images.unsplash.com/photo-1677442135928-c8c94ba4c3bb?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1632&q=80",
+    duration: "6-8 շաբաթ",
+    prerequisites: ["JavaScript-ի լավ իմացություն", "React-ի փորձ", "API-ների հետ աշխատելու փորձ"],
+    learningOutcomes: [
+      "AI API-ների ինտեգրում վեբ հավելվածներում",
+      "Node.js սերվերի զարգացում և API-ների ստեղծում",
+      "React-ով բարդ ձևերի և ինտերֆեյսների կառուցում",
+      "Տվյալների պահպանում և կառավարում MongoDB-ում"
+    ]
   },
   {
     id: 4,
     title: "Առաջադրանքների կառավարման հավելված",
     description: "Կանբան-ոճի առաջադրանքների կառավարիչ՝ քաշել-գցել ֆունկցիոնալությամբ, պիտակներով, վերջնաժամկետներով և թիմային համագործակցության հնարավորություններով։",
+    detailedDescription: "Ստեղծեք Կանբան-ոճի առաջադրանքների կառավարիչ՝ քաշել-գցել ֆունկցիոնալությամբ, պիտակներով, վերջնաժամկետներով և թիմային համագործակցության հնարավորություններով։",
     complexity: "Միջին",
     techStack: ["React", "TypeScript", "Redux", "Firebase"],
     steps: [
@@ -71,12 +106,22 @@ export const projectThemes: ProjectTheme[] = [
       "Firebase-ի ներդրում իրական ժամանակում թարմացումների համար",
       "Օգտագործողների նույնականացման և թիմային ֆունկցիաների ավելացում"
     ],
-    category: "Արդյունավետություն"
+    category: "Արդյունավետություն",
+    image: "https://images.unsplash.com/photo-1488590528505-98d2b5aba04b?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1470&q=80",
+    duration: "4-6 շաբաթ",
+    prerequisites: ["JavaScript-ի միջին իմացություն", "React փորձ", "Redux հիմունքներ"],
+    learningOutcomes: [
+      "React-ի օգտագործում պրոֆեսիոնալ վեբ հավելվածների համար",
+      "TypeScript-ի կիրառում բարդ առաջադրանքներում",
+      "Redux-ի կիրառում վիճակի կառավարման համար",
+      "Firebase-ի ներդրում իրական ժամանակում թարմացումների համար"
+    ]
   },
   {
     id: 5,
     title: "Անշարժ գույքի ցուցակման հարթակ",
     description: "Անշարժ գույքի ցուցակման կայք՝ որոնման ֆիլտրերով, ինտերակտիվ քարտեզներով և վիրտուալ շրջագայության հնարավորություններով։",
+    detailedDescription: "Անշարժ գույքի ցուցակման կայք՝ որոնման ֆիլտրերով, ինտերակտիվ քարտեզներով և վիրտուալ շրջագայության հնարավորություններով։",
     complexity: "Առաջադեմ",
     techStack: ["Next.js", "TypeScript", "Prisma", "PostgreSQL", "Google Maps API"],
     steps: [
@@ -88,12 +133,22 @@ export const projectThemes: ProjectTheme[] = [
       "Օգտագործողների հաշիվների և պահված գույքերի ավելացում",
       "Վիրտուալ շրջագայության ֆունկցիայի ներդրում 360° նկարներով"
     ],
-    category: "Անշարժ գույք"
+    category: "Անշարժ գույք",
+    image: "https://images.unsplash.com/photo-1488590528505-98d2b5aba04b?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1470&q=80",
+    duration: "6-8 շաբաթ",
+    prerequisites: ["JavaScript-ի լավ իմացություն", "React-ի փորձ", "Next.js հիմունքներ"],
+    learningOutcomes: [
+      "Next.js-ի օգտագործում պրոֆեսիոնալ վեբ հավելվածների համար",
+      "TypeScript-ի կիրառում բարդ առաջադրանքներում",
+      "Prisma-ի կիրառում տվյալների բազայի հետ աշխատելու համար",
+      "Google Maps API-ի ինտեգրում"
+    ]
   },
   {
     id: 6,
     title: "Բյուջեի հաշվարկիչ",
     description: "Անձնական ֆինանսների հավելված եկամուտների, ծախսերի և խնայողությունների նպատակների հետևման համար՝ խորաթափանց վիզուալիզացիաներով։",
+    detailedDescription: "Անձնական ֆինանսների հավելված եկամուտների, ծախսերի և խնայողությունների նպատակների հետևման համար՝ խորաթափանց վիզուալիզացիաներով։",
     complexity: "Միջին",
     techStack: ["React", "D3.js", "Firebase", "Tailwind CSS"],
     steps: [
@@ -105,12 +160,21 @@ export const projectThemes: ProjectTheme[] = [
       "Կրկնվող գործարքների ֆունկցիոնալության ավելացում",
       "Firebase-ի ինտեգրում տվյալների պահպանման համար"
     ],
-    category: "Ֆինանսներ"
+    category: "Ֆինանսներ",
+    image: "https://images.unsplash.com/photo-1488590528505-98d2b5aba04b?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1470&q=80",
+    duration: "4-6 շաբաթ",
+    prerequisites: ["JavaScript-ի միջին իմացություն", "React փորձ", "D3.js հիմունքներ"],
+    learningOutcomes: [
+      "React-ի օգտագործում պրոֆեսիոնալ վեբ հավելվածների համար",
+      "D3.js-ի կիրառում տվյալների վիզուալիզացիայի համար",
+      "Firebase-ի ինտեգրում տվյալների պահպանման համար"
+    ]
   },
   {
     id: 7,
     title: "Բաղադրատոմսերի համօգտագործման համայնք",
     description: "Հարթակ՝ խոհարարասերների համար, որտեղ կարելի է կիսվել, հայտնաբերել և պահպանել բաղադրատոմսեր՝ սոցիալական ֆունկցիաներով, ինչպիսիք են մեկնաբանությունները և գնահատումները։",
+    detailedDescription: "Հարթակ՝ խոհարարասերների համար, որտեղ կարելի է կիսվել, հայտնաբերել և պահպանել բաղադրատոմսեր՝ սոցիալական ֆունկցիաներով, ինչպիսիք են մեկնաբանությունները և գնահատումները։",
     complexity: "Միջին",
     techStack: ["React", "Node.js", "Express", "MongoDB", "Cloudinary"],
     steps: [
@@ -122,12 +186,21 @@ export const projectThemes: ProjectTheme[] = [
       "Առաջարկությունների շարժիչի ստեղծում՝ հիմնված օգտագործողի նախապատվությունների վրա",
       "Սոցիալական կիսման հնարավորությունների ավելացում"
     ],
-    category: "Սնունդ և խոհարարություն"
+    category: "Սնունդ և խոհարարություն",
+    image: "https://images.unsplash.com/photo-1488590528505-98d2b5aba04b?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1470&q=80",
+    duration: "4-6 շաբաթ",
+    prerequisites: ["JavaScript-ի միջին իմացություն", "React փորձ", "Node.js հիմունքներ"],
+    learningOutcomes: [
+      "React-ի օգտագործում պրոֆեսիոնալ վեբ հավելվածների համար",
+      "Node.js-ի կիրառում սերվերի կողմում",
+      "MongoDB-ի ինտեգրում տվյալների պահպանման համար"
+    ]
   },
   {
     id: 8,
     title: "Ուսուցման կառավարման համակարգ",
     description: "Կրթական հարթակ դասընթացներ ստեղծելու և անցկացնելու համար՝ այնպիսի ֆունկցիաներով, ինչպիսիք են վիկտորինաները, առաջընթացի հետևումը և վկայականները։",
+    detailedDescription: "Կրթական հարթակ դասընթացներ ստեղծելու և անցկացնելու համար՝ այնպիսի ֆունկցիաներով, ինչպիսիք են վիկտորինաները, առաջընթացի հետևումը և վկայականները։",
     complexity: "Առաջադեմ",
     techStack: ["Next.js", "TypeScript", "Nest.js", "PostgreSQL", "Redis"],
     steps: [
@@ -140,12 +213,22 @@ export const projectThemes: ProjectTheme[] = [
       "Առաջընթացի հետևման և վկայականների ավելացում",
       "Դասընթացների գնման համար վճարումների մշակման ներդրում"
     ],
-    category: "Կրթություն"
+    category: "Կրթություն",
+    image: "https://images.unsplash.com/photo-1488590528505-98d2b5aba04b?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1470&q=80",
+    duration: "6-8 շաբաթ",
+    prerequisites: ["JavaScript-ի լավ իմացություն", "React-ի փորձ", "Next.js հիմունքներ"],
+    learningOutcomes: [
+      "Next.js-ի օգտագործում պրոֆեսիոնալ վեբ հավելվածների համար",
+      "TypeScript-ի կիրառում բարդ առաջադրանքներում",
+      "Nest.js-ի կիրառում սերվերի կողմում",
+      "PostgreSQL-ի ինտեգրում տվյալների պահպանման համար"
+    ]
   },
   {
     id: 9,
     title: "Առողջության և ֆիթնեսի հաշվիչ",
     description: "Առողջության հավելված՝ մարզումների, սնուցման, քնի և առողջական մետրիկաների հետևման համար՝ հարմարեցվող նպատակներով։",
+    detailedDescription: "Առողջության հավելված՝ մարզումների, սնուցման, քնի և առողջական մետրիկաների հետևման համար՝ հարմարեցվող նպատակներով։",
     complexity: "Միջին",
     techStack: ["React Native", "TypeScript", "Firebase", "HealthKit/Google Fit API"],
     steps: [
@@ -157,12 +240,21 @@ export const projectThemes: ProjectTheme[] = [
       "Նպատակների սահմանման և առաջընթացի վիզուալիզացիայի ներդրում",
       "Սոցիալական ֆունկցիաների և մարտահրավերների ավելացում"
     ],
-    category: "Առողջություն և ֆիթնես"
+    category: "Առողջություն և ֆիթնես",
+    image: "https://images.unsplash.com/photo-1488590528505-98d2b5aba04b?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1470&q=80",
+    duration: "4-6 շաբաթ",
+    prerequisites: ["JavaScript-ի միջին իմացություն", "React Native փորձ", "TypeScript հիմունքներ"],
+    learningOutcomes: [
+      "React Native-ի օգտագործում բջջային հավելվածների համար",
+      "TypeScript-ի կիրառում բարդ առաջադրանքներում",
+      "Firebase-ի ինտեգրում տվյալների պահպանման համար"
+    ]
   },
   {
     id: 10,
     title: "Համագործակցային փաստաթղթերի խմբագրիչ",
     description: "Իրական ժամանակում փաստաթղթերի խմբագրիչ, որը թույլ է տալիս մի քանի օգտագործողների միաժամանակ խմբագրել տեքստեր, աղյուսակներ և ներկայացումներ։",
+    detailedDescription: "Իրական ժամանակում փաստաթղթերի խմբագրիչ, որը թույլ է տալիս մի քանի օգտագործողների միաժամանակ խմբագրել տեքստեր, աղյուսակներ և ներկայացումներ։",
     complexity: "Առաջադեմ",
     techStack: ["React", "TypeScript", "WebSockets", "MongoDB", "Redis"],
     steps: [
@@ -174,12 +266,21 @@ export const projectThemes: ProjectTheme[] = [
       "Մեկնաբանությունների և առաջարկների ֆունկցիաների ավելացում",
       "Տարբեր ֆորմատների համար արտահանման տարբերակների ստեղծում"
     ],
-    category: "Արդյունավետություն"
+    category: "Արդյունավետություն",
+    image: "https://images.unsplash.com/photo-1488590528505-98d2b5aba04b?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1470&q=80",
+    duration: "6-8 շաբաթ",
+    prerequisites: ["JavaScript-ի լավ իմացություն", "React-ի փորձ", "WebSockets հիմունքներ"],
+    learningOutcomes: [
+      "React-ի օգտագործում պրոֆեսիոնալ վեբ հավելվածների համար",
+      "TypeScript-ի կիրառում բարդ առաջադրանքներում",
+      "WebSockets-ի ինտեգրում իրական ժամանակում համագործակցության համար"
+    ]
   },
   {
     id: 11,
     title: "Սոցիալական մեդիայի կառավարման վահանակ",
     description: "Միասնական վահանակ մի քանի սոցիալական մեդիայի հաշիվների կառավարման, գրառումների պլանավորման և ներգրավվածության մետրիկաների վերլուծության համար։",
+    detailedDescription: "Միասնական վահանակ մի քանի սոցիալական մեդիայի հաշիվների կառավարման, գրառումների պլանավորման և ներգրավվածության մետրիկաների վերլուծության համար։",
     complexity: "Միջին",
     techStack: ["React", "Node.js", "Express", "MongoDB", "Social Media APIs"],
     steps: [
@@ -190,41 +291,18 @@ export const projectThemes: ProjectTheme[] = [
       "Լսարանի պատկերացումների և ներգրավվածության հետևման ներդրում",
       "Բովանդակության օրացույցի և թիմային համագործակցության ավելացում"
     ],
-    category: "Սոցիալական մեդիա"
+    category: "Սոցիալական մեդիա",
+    image: "https://images.unsplash.com/photo-1488590528505-98d2b5aba04b?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1470&q=80",
+    duration: "4-6 շաբաթ",
+    prerequisites: ["JavaScript-ի միջին իմացություն", "React փորձ", "Node.js հիմունքներ"],
+    learningOutcomes: [
+      "React-ի օգտագործում պրոֆեսիոնալ վեբ հավելվածների համար",
+      "Node.js-ի կիրառում սերվերի կողմում",
+      "Սոցիալական մեդիայի API-ների ինտեգրում"
+    ]
   },
   {
     id: 12,
     title: "Եղանակի տեսության հավելված",
     description: "Եղանակի կանխատեսման հավելված՝ դիրքի վրա հիմնված կանխատեսումներով, ռադարային քարտեզներով և վատ եղանակի զգուշացումներով։",
-    complexity: "Սկսնակ",
-    techStack: ["React", "OpenWeatherMap API", "Leaflet.js", "Tailwind CSS"],
-    steps: [
-      "React նախագծի ստեղծում Tailwind-ով",
-      "Դիրքի որոնման և գեոլոկացիայի ներդրում",
-      "Եղանակային API-ի ինտեգրում կանխատեսումների տվյալների համար",
-      "Ինտերակտիվ եղանակի քարտեզի ստեղծում Leaflet.js-ով",
-      "Եղանակային զգուշացումների և ծանուցումների ավելացում",
-      "Օրական և ժամային կանխատեսումների ներդրում",
-      "Եղանակի պատմության և համեմատության ավելացում"
-    ],
-    category: "Եղանակ"
-  }
-];
-
-// Function to get more projects up to 100
-export const getMoreProjects = (): ProjectTheme[] => {
-  // In a real implementation, this would return the full list of 100 projects
-  // For now, we'll just repeat the existing ones with modified IDs
-  const extraProjects: ProjectTheme[] = [];
-  
-  for (let i = 13; i <= 100; i++) {
-    const baseProject = projectThemes[i % projectThemes.length];
-    extraProjects.push({
-      ...baseProject,
-      id: i,
-      title: `${baseProject.title} ${Math.floor(i / 12) + 1}`,
-    });
-  }
-  
-  return [...projectThemes, ...extraProjects];
-};
+    detailedDescription: "Եղանակի կ

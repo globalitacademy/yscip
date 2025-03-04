@@ -18,7 +18,7 @@ export const AnimatedElement: React.FC<AnimatedElementProps> = ({
   className = '',
   threshold = 0.1
 }) => {
-  const [ref, isInView] = useInView({ threshold });
+  const [ref, isInView] = useInView<HTMLDivElement>({ threshold });
 
   return (
     <div
