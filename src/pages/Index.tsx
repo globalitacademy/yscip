@@ -6,6 +6,7 @@ import ThemeGrid from '@/components/ThemeGrid';
 import Footer from '@/components/Footer';
 import { useAuth } from '@/contexts/AuthContext';
 import { toast } from 'sonner';
+import { projectThemes } from '@/data/projectThemes';
 
 const Index = () => {
   const { user } = useAuth();
