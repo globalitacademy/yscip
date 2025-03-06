@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { ArrowRight, BookOpen, Users, Tag, GraduationCap } from 'lucide-react';
+import { ArrowRight, BookOpen, Users, Tag, GraduationCap, Layers } from 'lucide-react';
 import { projectThemes } from '@/data/projectThemes';
 import ProjectCard from '@/components/ProjectCard';
 import { Button } from '@/components/ui/button';
@@ -9,6 +9,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { getProjectImage } from '@/lib/getProjectImage';
+import { cn } from '@/lib/utils';
 
 interface ThemeGridProps {
   limit?: number;
@@ -158,7 +159,7 @@ const ThemeGrid: React.FC<ThemeGridProps> = ({ limit, createdProjects = [] }) =>
         <h2 className="text-2xl font-semibold mb-4">Ծրագրերի թեմաներն ըստ կատեգորիաների</h2>
         <Tabs defaultValue="all">
           <div className="overflow-x-auto pb-2">
-            <TabsList className="mb-6 h-auto p-1">
+            <TabsList className="mb-6 h-auto p-1 flex gap-2 bg-muted/40 backdrop-blur-sm rounded-xl">
               {categories.map((category) => (
                 <TabsTrigger 
                   key={category}
@@ -167,9 +168,21 @@ const ThemeGrid: React.FC<ThemeGridProps> = ({ limit, createdProjects = [] }) =>
                     setActiveCategory(category);
                     setDisplayLimit(limit || 6);
                   }}
-                  className={`px-4 py-2 ${activeCategory === category ? 'bg-primary text-primary-foreground' : ''}`}
+                  className={cn(
+                    "px-4 py-2.5 rounded-lg transition-all duration-300 flex items-center gap-1.5",
+                    activeCategory === category 
+                      ? "bg-primary text-primary-foreground shadow-md" 
+                      : "hover:bg-background/60"
+                  )}
                 >
-                  {category === "all" ? "Բոլորը" : category}
+                  {category === "all" ? (
+                    <>
+                      <Layers size={16} className="opacity-80" />
+                      <span>Բոլորը</span>
+                    </>
+                  ) : (
+                    <span>{category}</span>
+                  )}
                 </TabsTrigger>
               ))}
             </TabsList>
