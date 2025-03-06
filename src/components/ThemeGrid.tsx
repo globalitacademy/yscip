@@ -1,7 +1,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { ArrowRight, BookOpen, Users, Tag } from 'lucide-react';
+import { ArrowRight, BookOpen, Users, Tag, GraduationCap } from 'lucide-react';
 import { projectThemes } from '@/data/projectThemes';
 import ProjectCard from '@/components/ProjectCard';
 import { Button } from '@/components/ui/button';
@@ -106,7 +106,7 @@ const ThemeGrid: React.FC<ThemeGridProps> = ({ limit, createdProjects = [] }) =>
     else if (user.role === 'instructor') {
       // Instructors see assigned projects and created projects
       const instructorProjects = allProjects.filter(p => 
-        p.createdBy === user.id || 
+        (p.createdBy && p.createdBy === user.id) || 
         (user.assignedProjects && user.assignedProjects.includes(p.id))
       );
       
@@ -130,7 +130,7 @@ const ThemeGrid: React.FC<ThemeGridProps> = ({ limit, createdProjects = [] }) =>
         .map((a: any) => a.projectId);
       
       return allProjects.filter(p => 
-        p.createdBy === user.id || studentProjectIds.includes(p.id)
+        (p.createdBy && p.createdBy === user.id) || studentProjectIds.includes(p.id)
       );
     }
     

@@ -32,6 +32,7 @@ export interface ProjectTheme {
   learningOutcomes?: string[];
   timeline?: TimelineEvent[];
   tasks?: Task[];
+  createdBy?: string; // Added createdBy property
 }
 
 // Import all project categories
