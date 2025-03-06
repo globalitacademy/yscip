@@ -158,9 +158,9 @@ const ThemeGrid: React.FC<ThemeGridProps> = ({ limit, createdProjects = [] }) =>
       <div className="mb-8">
         <h2 className="text-2xl font-semibold mb-4">Ծրագրերի թեմաներն ըստ կատեգորիաների</h2>
         <Tabs defaultValue="all">
-          <div className="overflow-x-auto pb-2">
-            <TabsList className="mb-6 h-auto p-1 flex gap-2 bg-muted/40 backdrop-blur-sm rounded-xl">
-              {categories.map((category) => (
+          <div className="flex justify-center md:justify-start">
+            <TabsList className="mb-6 p-2 flex flex-wrap justify-center md:flex-nowrap md:justify-start gap-1.5 bg-muted/30 backdrop-blur-sm rounded-xl max-w-full">
+              {categories.slice(0, 6).map((category) => (
                 <TabsTrigger 
                   key={category}
                   value={category} 
@@ -169,7 +169,7 @@ const ThemeGrid: React.FC<ThemeGridProps> = ({ limit, createdProjects = [] }) =>
                     setDisplayLimit(limit || 6);
                   }}
                   className={cn(
-                    "px-4 py-2.5 rounded-lg transition-all duration-300 flex items-center gap-1.5",
+                    "px-3 py-2 text-xs sm:text-sm sm:px-4 rounded-lg transition-all duration-300 flex items-center gap-1.5 whitespace-nowrap",
                     activeCategory === category 
                       ? "bg-primary text-primary-foreground shadow-md" 
                       : "hover:bg-background/60"
@@ -177,7 +177,7 @@ const ThemeGrid: React.FC<ThemeGridProps> = ({ limit, createdProjects = [] }) =>
                 >
                   {category === "all" ? (
                     <>
-                      <Layers size={16} className="opacity-80" />
+                      <Layers size={14} className="opacity-80" />
                       <span>Բոլորը</span>
                     </>
                   ) : (
