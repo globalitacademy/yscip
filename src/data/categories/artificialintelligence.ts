@@ -19,7 +19,7 @@ export const aiProjects: ProjectTheme[] = [
       "Ավելացնել սեմանտիկ որոնման ֆունկցիոնալություն"
     ],
     category: "Արհեստական բանականություն",
-    image: "https://images.unsplash.com/photo-1677442135928-c8c94ba4c3bb?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1632&q=80",
+    image: "https://images.unsplash.com/photo-1518770660439-4636190af475?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80",
     duration: "5-7 ամիս",
     prerequisites: ["Python-ի ամուր իմացություն", "TensorFlow/PyTorch փորձ", "Մեքենայական ուսուցման հասկացողություն"],
     learningOutcomes: [
@@ -47,7 +47,7 @@ export const aiProjects: ProjectTheme[] = [
       "Ավելացնել HIPAA համապատասխանության ինտեգրում"
     ],
     category: "Արհեստական բանականություն",
-    image: "https://images.unsplash.com/photo-1631563019676-dade0fb84ae3?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1470&q=80",
+    image: "https://images.unsplash.com/photo-1526374965328-7f61d4dc18c5?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80",
     duration: "6-8 ամիս",
     prerequisites: ["Python-ի ամուր իմացություն", "Պատկերների մշակման փորձ", "Խորը ուսուցման հիմունքներ"],
     learningOutcomes: [
