@@ -2,7 +2,7 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { v4 as uuidv4 } from 'uuid';
 import { ProjectTheme, Task, TimelineEvent } from '@/data/projectThemes';
-import { getCurrentUser } from '@/data/userRoles';
+import { useAuth } from '@/contexts/AuthContext';
 
 interface ProjectContextType {
   project: ProjectTheme | null;
@@ -33,6 +33,7 @@ export const ProjectProvider: React.FC<ProjectProviderProps> = ({
   initialProject,
   children 
 }) => {
+  const { user } = useAuth();
   const [project, setProject] = useState<ProjectTheme | null>(initialProject);
   const [timeline, setTimeline] = useState<TimelineEvent[]>([]);
   const [tasks, setTasks] = useState<Task[]>([]);
@@ -77,12 +78,10 @@ export const ProjectProvider: React.FC<ProjectProviderProps> = ({
 
   // Add sample tasks for demo
   useEffect(() => {
-    if (tasks.length === 0 && project) {
+    if (tasks.length === 0 && project && user) {
       const now = new Date();
       const dueDate = new Date();
       dueDate.setDate(now.getDate() + 7);
-      
-      const currentUser = getCurrentUser();
       
       const demoTasks: Task[] = [
         {
@@ -90,7 +89,7 @@ export const ProjectProvider: React.FC<ProjectProviderProps> = ({
           title: 'Պահանջների վերլուծություն',
           description: 'Հավաքել և վերլուծել նախագծի բոլոր պահանջները',
           status: 'done',
-          assignedTo: currentUser.id,
+          assignedTo: user.id,
           dueDate: now.toISOString().split('T')[0],
           createdBy: 'instructor1'
         },
@@ -99,7 +98,7 @@ export const ProjectProvider: React.FC<ProjectProviderProps> = ({
           title: 'Նախագծի կառուցվածքի մշակում',
           description: 'Ստեղծել նախագծի հիմնական կառուցվածքը և ճարտարապետությունը',
           status: 'in-progress',
-          assignedTo: currentUser.id,
+          assignedTo: user.id,
           dueDate: dueDate.toISOString().split('T')[0],
           createdBy: 'instructor1'
         }
@@ -107,7 +106,7 @@ export const ProjectProvider: React.FC<ProjectProviderProps> = ({
       
       setTasks(demoTasks);
     }
-  }, [tasks.length, project]);
+  }, [tasks.length, project, user]);
 
   const addTimelineEvent = (event: Omit<TimelineEvent, 'id'>) => {
     const newEvent = { ...event, id: uuidv4() };

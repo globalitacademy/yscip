@@ -49,7 +49,8 @@ export const rolePermissions = {
     canApproveTimelineEvents: true,
     canAddTasks: true,
     canAssignTasks: true,
-    canApproveProject: true
+    canApproveProject: true,
+    canSubmitProject: false
   },
   supervisor: {
     canAddTimeline: true,
@@ -57,7 +58,8 @@ export const rolePermissions = {
     canApproveTimelineEvents: true,
     canAddTasks: true,
     canAssignTasks: true,
-    canApproveProject: true
+    canApproveProject: true,
+    canSubmitProject: false
   },
   instructor: {
     canAddTimeline: true,
@@ -65,7 +67,8 @@ export const rolePermissions = {
     canApproveTimelineEvents: true,
     canAddTasks: true,
     canAssignTasks: true,
-    canApproveProject: true
+    canApproveProject: true,
+    canSubmitProject: false
   },
   student: {
     canAddTimeline: false,
@@ -73,6 +76,7 @@ export const rolePermissions = {
     canApproveTimelineEvents: false,
     canAddTasks: false,
     canAssignTasks: false,
+    canApproveProject: false,
     canSubmitProject: true
   }
 };
