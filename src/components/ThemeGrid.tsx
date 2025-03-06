@@ -21,9 +21,24 @@ const ThemeGrid: React.FC<ThemeGridProps> = ({ limit, createdProjects = [] }) =>
   const [allProjects, setAllProjects] = useState([...projectThemes]);
   const [activeCategory, setActiveCategory] = useState("all");
   const [reservedProjects, setReservedProjects] = useState<any[]>([]);
+  const [assignments, setAssignments] = useState<any[]>([]);
   
   // Extract unique categories from projects
   const categories = ["all", ...new Set(projectThemes.map(project => project.category))];
+  
+  // Load project assignments
+  useEffect(() => {
+    try {
+      const assignmentsData = localStorage.getItem('projectAssignments');
+      if (assignmentsData) {
+        const parsedAssignments = JSON.parse(assignmentsData);
+        setAssignments(parsedAssignments || []);
+      }
+    } catch (e) {
+      console.error('Error loading project assignments:', e);
+      setAssignments([]);
+    }
+  }, []);
   
   // Load reserved projects
   useEffect(() => {
@@ -74,50 +89,47 @@ const ThemeGrid: React.FC<ThemeGridProps> = ({ limit, createdProjects = [] }) =>
     }
   }, [createdProjects]);
   
-  // Get assigned projects data
-  const getProjectAssignments = () => {
-    try {
-      const assignmentsData = localStorage.getItem('projectAssignments');
-      if (assignmentsData) {
-        return JSON.parse(assignmentsData) || [];
-      }
-    } catch (e) {
-      console.error('Error loading project assignments:', e);
-    }
-    return [];
-  };
-  
   // Filter projects based on user role and permissions
   const getFilteredProjects = () => {
     if (!user) return allProjects;
     
-    const assignments = getProjectAssignments();
-    
     if (user.role === 'student') {
       // Students see assigned projects and their reservations
-      const reservedIds = reservedProjects.map(r => r.projectId);
+      const reservedIds = reservedProjects
+        .filter(r => r.userId === user.id)
+        .map(r => Number(r.projectId));
+        
       const assignedIds = assignments
         .filter((a: any) => a.studentId === user.id)
-        .map((a: any) => a.projectId);
+        .map((a: any) => Number(a.projectId));
       
-      const userProjectIds = [...reservedIds, ...assignedIds];
-      return allProjects.filter(p => userProjectIds.includes(p.id));
+      const userProjectIds = [...new Set([...reservedIds, ...assignedIds])];
+      
+      if (userProjectIds.length > 0) {
+        return allProjects.filter(p => userProjectIds.includes(Number(p.id)));
+      }
+      
+      // If no assignments or reservations, show all projects
+      return allProjects;
     } 
     else if (user.role === 'instructor') {
       // Instructors see assigned projects and created projects
       const instructorProjects = allProjects.filter(p => 
         (p.createdBy && p.createdBy === user.id) || 
-        (user.assignedProjects && user.assignedProjects.includes(p.id))
+        (user.assignedProjects && user.assignedProjects.includes(Number(p.id)))
       );
       
       // Also show projects assigned to students by this instructor
       const assignedByInstructor = assignments
         .filter((a: any) => a.assignedBy === user.id)
-        .map((a: any) => a.projectId);
+        .map((a: any) => Number(a.projectId));
       
-      return instructorProjects.concat(
-        allProjects.filter(p => assignedByInstructor.includes(p.id) && !instructorProjects.some(ip => ip.id === p.id))
-      );
+      const combinedProjectIds = [...new Set([
+        ...instructorProjects.map(p => Number(p.id)),
+        ...assignedByInstructor
+      ])];
+      
+      return allProjects.filter(p => combinedProjectIds.includes(Number(p.id)));
     }
     else if (user.role === 'supervisor') {
       // Supervisors see projects for their supervised students
@@ -127,11 +139,13 @@ const ThemeGrid: React.FC<ThemeGridProps> = ({ limit, createdProjects = [] }) =>
       
       const studentProjectIds = assignments
         .filter((a: any) => user.supervisedStudents?.includes(a.studentId))
-        .map((a: any) => a.projectId);
+        .map((a: any) => Number(a.projectId));
       
-      return allProjects.filter(p => 
-        (p.createdBy && p.createdBy === user.id) || studentProjectIds.includes(p.id)
+      const supervisorProjects = allProjects.filter(p => 
+        (p.createdBy && p.createdBy === user.id) || studentProjectIds.includes(Number(p.id))
       );
+      
+      return supervisorProjects.length > 0 ? supervisorProjects : allProjects;
     }
     
     // Admins see all projects
@@ -207,7 +221,7 @@ const ThemeGrid: React.FC<ThemeGridProps> = ({ limit, createdProjects = [] }) =>
             
             {user && user.role === 'student' && (
               <Badge variant="secondary">
-                {reservedProjects.length} ամրագրված նախագիծ
+                {reservedProjects.filter(r => r.userId === user.id).length} ամրագրված նախագիծ
               </Badge>
             )}
           </div>

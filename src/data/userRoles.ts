@@ -172,4 +172,3 @@ export const getStudentsByCourseAndGroup = (course?: string, group?: string): Us
     (!group || user.group === group)
   );
 };
-
