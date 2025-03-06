@@ -1,4 +1,4 @@
-
+<lov-code>
 import React, { useState, useEffect } from 'react';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
@@ -7,11 +7,10 @@ import { FadeIn } from '@/components/LocalTransitions';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import UserManagement from '@/components/UserManagement';
 import ProjectCreation from '@/components/ProjectCreation';
-import { Users, FileText, BookOpen, Trash, Pencil, Eye, Filter } from 'lucide-react';
+import { Users, FileText, BookOpen, Trash, Pencil, Eye, Filter, Database } from 'lucide-react';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
 import { 
   Select, 
   SelectContent, 
@@ -37,6 +36,7 @@ import { Textarea } from '@/components/ui/textarea';
 import ThemeGrid from '@/components/ThemeGrid';
 
 const AdminDashboard: React.FC = () => {
+  
   const { user } = useAuth();
   const [createdProjects, setCreatedProjects] = useState<any[]>([]);
   const [assignments, setAssignments] = useState<any[]>([]);
@@ -45,7 +45,7 @@ const AdminDashboard: React.FC = () => {
   const [selectedCourse, setSelectedCourse] = useState<string>("");
   const [selectedGroup, setSelectedGroup] = useState<string>("");
   const [projectToEdit, setProjectToEdit] = useState<any>(null);
-  const [activeTab, setActiveTab] = useState("users");
+  const [activeTab, setActiveTab] = useState("themes");
   
   const students = selectedCourse || selectedGroup
     ? getStudentsByCourseAndGroup(selectedCourse, selectedGroup)
@@ -267,12 +267,15 @@ const AdminDashboard: React.FC = () => {
               onValueChange={setActiveTab} 
               className="w-full"
             >
-              <TabsList className="grid w-full grid-cols-1 md:grid-cols-4 h-auto mb-8">
+              <TabsList className="grid w-full grid-cols-1 md:grid-cols-5 h-auto mb-8">
                 <TabsTrigger value="users" className="flex items-center gap-2" disabled={user.role !== 'admin'}>
                   <Users size={16} /> Օգտատերերի կառավարում
                 </TabsTrigger>
                 <TabsTrigger value="projects" className="flex items-center gap-2">
                   <FileText size={16} /> Պրոեկտների ստեղծում
+                </TabsTrigger>
+                <TabsTrigger value="themes" className="flex items-center gap-2">
+                  <Database size={16} /> Առկա պրոեկտներ
                 </TabsTrigger>
                 <TabsTrigger value="assignments" className="flex items-center gap-2">
                   <BookOpen size={16} /> Պրոեկտների նշանակում
@@ -368,6 +371,110 @@ const AdminDashboard: React.FC = () => {
                               </TableCell>
                             </TableRow>
                           )}
+                        </TableBody>
+                      </Table>
+                    </div>
+                  </CardContent>
+                </Card>
+              </TabsContent>
+              
+              {/* Նոր ավելացված tab առկա պրոեկտների ցուցադրման համար */}
+              <TabsContent value="themes">
+                <Card>
+                  <CardHeader>
+                    <CardTitle>Առկա պրոեկտներ</CardTitle>
+                    <CardDescription>
+                      Համակարգում առկա բոլոր օրինակ պրոեկտների ցանկը
+                    </CardDescription>
+                  </CardHeader>
+                  
+                  <CardContent>
+                    <div className="rounded-md border">
+                      <Table>
+                        <TableHeader>
+                          <TableRow>
+                            <TableHead className="text-left w-[40%]">Վերնագիր</TableHead>
+                            <TableHead className="text-left">Կատեգորիա</TableHead>
+                            <TableHead className="text-left">Բարդություն</TableHead>
+                            <TableHead className="text-left">Տեխնոլոգիաներ</TableHead>
+                            <TableHead className="text-right">Գործողություններ</TableHead>
+                          </TableRow>
+                        </TableHeader>
+                        <TableBody>
+                          {projectThemes.map((project) => (
+                            <TableRow key={project.id}>
+                              <TableCell className="font-medium">
+                                <div className="flex items-center gap-2">
+                                  {project.image && (
+                                    <img 
+                                      src={project.image} 
+                                      alt={project.title}
+                                      className="w-10 h-10 rounded object-cover" 
+                                    />
+                                  )}
+                                  <span className="line-clamp-2">{project.title}</span>
+                                </div>
+                              </TableCell>
+                              <TableCell>{project.category}</TableCell>
+                              <TableCell>
+                                <Badge variant={
+                                  project.complexity === 'Սկսնակ' ? 'outline' : 
+                                  project.complexity === 'Միջին' ? 'secondary' : 
+                                  'default'
+                                }>
+                                  {project.complexity}
+                                </Badge>
+                              </TableCell>
+                              <TableCell>
+                                <div className="flex flex-wrap gap-1">
+                                  {project.techStack.slice(0, 2).map((tech, index) => (
+                                    <Badge key={index} variant="secondary" className="text-xs">
+                                      {tech}
+                                    </Badge>
+                                  ))}
+                                  {project.techStack.length > 2 && (
+                                    <Badge variant="outline" className="text-xs">
+                                      +{project.techStack.length - 2}
+                                    </Badge>
+                                  )}
+                                </div>
+                              </TableCell>
+                              <TableCell className="text-right">
+                                <div className="flex justify-end gap-2">
+                                  <Button 
+                                    variant="outline" 
+                                    size="icon"
+                                    title="Դիտել"
+                                    asChild
+                                  >
+                                    <a href={`/project/${project.id}`} target="_blank" rel="noopener noreferrer">
+                                      <Eye size={14} />
+                                    </a>
+                                  </Button>
+                                  <Button 
+                                    variant="outline" 
+                                    size="icon"
+                                    title="Կլոնավորել պրոեկտը"
+                                    onClick={() => {
+                                      // Ստեղծում ենք նոր պրոեկտ՝ հիմնված ընտրված օրինակ պրոեկտի վրա
+                                      const newProject = {
+                                        ...project,
+                                        id: Date.now(), // Նոր ID
+                                        createdBy: user?.id,
+                                        createdAt: new Date().toISOString()
+                                      };
+                                      const newProjects = [...createdProjects, newProject];
+                                      setCreatedProjects(newProjects);
+                                      localStorage.setItem('createdProjects', JSON.stringify(newProjects));
+                                      toast.success(`${project.title} պրոեկտը հաջողությամբ կլոնավորվել է`);
+                                    }}
+                                  >
+                                    <FileText size={14} />
+                                  </Button>
+                                </div>
+                              </TableCell>
+                            </TableRow>
+                          ))}
                         </TableBody>
                       </Table>
                     </div>
@@ -753,29 +860,4 @@ const AdminDashboard: React.FC = () => {
               <Button variant="outline" onClick={() => setProjectToEdit(null)}>
                 Չեղարկել
               </Button>
-              <Button onClick={() => {
-                const title = (document.getElementById('edit-title') as HTMLInputElement).value;
-                const category = (document.getElementById('edit-category') as HTMLInputElement).value;
-                const complexity = (document.querySelector('#edit-complexity + [role=combobox]') as HTMLElement)?.textContent || projectToEdit.complexity;
-                const description = (document.getElementById('edit-description') as HTMLTextAreaElement).value;
-                const detailedDescription = (document.getElementById('edit-detailed-description') as HTMLTextAreaElement).value;
-                
-                handleUpdateProject({ 
-                  title, 
-                  category, 
-                  complexity, 
-                  description,
-                  detailedDescription
-                });
-              }}>
-                Պահպանել
-              </Button>
-            </DialogFooter>
-          </DialogContent>
-        </Dialog>
-      )}
-    </div>
-  );
-};
-
-export default AdminDashboard;
+              <Button onClick={() =>
