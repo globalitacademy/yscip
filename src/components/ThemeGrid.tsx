@@ -1,6 +1,7 @@
+
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { ArrowRight, BookOpen, Users, Tag, GraduationCap, Layers } from 'lucide-react';
+import { ArrowRight, BookOpen, Users, Tag, GraduationCap, Layers, ChevronDown } from 'lucide-react';
 import { projectThemes } from '@/data/projectThemes';
 import ProjectCard from '@/components/ProjectCard';
 import { Button } from '@/components/ui/button';
@@ -10,6 +11,19 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { getProjectImage } from '@/lib/getProjectImage';
 import { cn } from '@/lib/utils';
+import { 
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue
+} from "@/components/ui/select";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
 interface ThemeGridProps {
   limit?: number;
@@ -157,38 +171,32 @@ const ThemeGrid: React.FC<ThemeGridProps> = ({ limit, createdProjects = [] }) =>
     <div className="mt-12 text-left">
       <div className="mb-8">
         <h2 className="text-2xl font-semibold mb-4">Ծրագրերի թեմաներն ըստ կատեգորիաների</h2>
-        <Tabs defaultValue="all">
-          <div className="flex justify-center md:justify-start">
-            <TabsList className="mb-6 p-2 flex flex-wrap justify-center md:flex-nowrap md:justify-start gap-1.5 bg-muted/30 backdrop-blur-sm rounded-xl max-w-full">
-              {categories.slice(0, 6).map((category) => (
-                <TabsTrigger 
-                  key={category}
-                  value={category} 
-                  onClick={() => {
-                    setActiveCategory(category);
-                    setDisplayLimit(limit || 6);
-                  }}
-                  className={cn(
-                    "px-3 py-2 text-xs sm:text-sm sm:px-4 rounded-lg transition-all duration-300 flex items-center gap-1.5 whitespace-nowrap",
-                    activeCategory === category 
-                      ? "bg-primary text-primary-foreground shadow-md" 
-                      : "hover:bg-background/60"
-                  )}
-                >
-                  {category === "all" ? (
-                    <>
-                      <Layers size={14} className="opacity-80" />
-                      <span>Բոլորը</span>
-                    </>
-                  ) : (
-                    <span>{category}</span>
-                  )}
-                </TabsTrigger>
-              ))}
-            </TabsList>
-          </div>
         
-          <div className="flex flex-wrap items-center gap-2 mb-4">
+        <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4 mb-6">
+          <Select
+            defaultValue="all"
+            onValueChange={(value) => {
+              setActiveCategory(value);
+              setDisplayLimit(limit || 6);
+            }}
+          >
+            <SelectTrigger className="w-full sm:w-[220px] bg-background">
+              <SelectValue placeholder="Ընտրեք կատեգորիան" />
+            </SelectTrigger>
+            <SelectContent className="bg-popover">
+              <SelectItem value="all" className="flex items-center gap-2">
+                <Layers size={14} className="opacity-80" />
+                <span>Բոլորը</span>
+              </SelectItem>
+              {categories.filter(cat => cat !== "all").map((category) => (
+                <SelectItem key={category} value={category}>
+                  {category}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        
+          <div className="flex flex-wrap items-center gap-2">
             <Badge variant="outline" className="bg-muted flex items-center gap-1">
               <Tag size={14} />
               {categoryFilteredProjects.length} նախագիծ
@@ -223,37 +231,37 @@ const ThemeGrid: React.FC<ThemeGridProps> = ({ limit, createdProjects = [] }) =>
               </Badge>
             )}
           </div>
-        </Tabs>
-      </div>
-
-      <FadeIn className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-10">
-        {themes.map((theme) => (
-          <ProjectCard
-            key={theme.id}
-            project={theme}
-          />
-        ))}
-      </FadeIn>
-      
-      {themes.length === 0 && (
-        <div className="text-center p-10 bg-muted rounded-lg">
-          <p className="text-muted-foreground">Այս կատեգորիայում ծրագրեր չկան</p>
         </div>
-      )}
-      
-      <div className="flex justify-center space-x-4 mt-8">
-        {hasMore && (
-          <Button onClick={loadMore} variant="outline" size="lg">
-            Տեսնել ավելին
-          </Button>
+
+        <FadeIn className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-10">
+          {themes.map((theme) => (
+            <ProjectCard
+              key={theme.id}
+              project={theme}
+            />
+          ))}
+        </FadeIn>
+        
+        {themes.length === 0 && (
+          <div className="text-center p-10 bg-muted rounded-lg">
+            <p className="text-muted-foreground">Այս կատեգորիայում ծրագրեր չկան</p>
+          </div>
         )}
         
-        <Link to="/">
-          <Button variant="default" size="lg" className="group">
-            Բոլոր թեմաները
-            <ArrowRight className="ml-2 h-4 w-4 group-hover:translate-x-1 transition-transform" />
-          </Button>
-        </Link>
+        <div className="flex justify-center space-x-4 mt-8">
+          {hasMore && (
+            <Button onClick={loadMore} variant="outline" size="lg">
+              Տեսնել ավելին
+            </Button>
+          )}
+          
+          <Link to="/">
+            <Button variant="default" size="lg" className="group">
+              Բոլոր թեմաները
+              <ArrowRight className="ml-2 h-4 w-4 group-hover:translate-x-1 transition-transform" />
+            </Button>
+          </Link>
+        </div>
       </div>
     </div>
   );
