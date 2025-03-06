@@ -1,9 +1,9 @@
-
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { v4 as uuidv4 } from 'uuid';
 import { ProjectTheme, Task, TimelineEvent } from '@/data/projectThemes';
 import { useAuth } from '@/contexts/AuthContext';
 import { rolePermissions } from '@/data/userRoles';
+import { toast } from '@/components/ui/use-toast';
 
 interface ProjectContextType {
   project: ProjectTheme | null;
@@ -53,6 +53,24 @@ export const ProjectProvider: React.FC<ProjectProviderProps> = ({
   const canInstructorCreate = permissions.canCreateProjects;
   const canInstructorAssign = permissions.canAssignProjects;
   const canSupervisorApprove = permissions.canApproveProject;
+
+  // Check for existing reservations on mount
+  useEffect(() => {
+    if (projectId && user) {
+      const reservedProjects = localStorage.getItem('reservedProjects');
+      if (reservedProjects) {
+        try {
+          const reservations = JSON.parse(reservedProjects);
+          const isAlreadyReserved = reservations.some((res: any) => 
+            res.projectId === projectId && res.userId === user.id
+          );
+          setIsReserved(isAlreadyReserved);
+        } catch (e) {
+          console.error('Error parsing reserved projects:', e);
+        }
+      }
+    }
+  }, [projectId, user]);
 
   useEffect(() => {
     if (initialProject) {
@@ -179,10 +197,36 @@ export const ProjectProvider: React.FC<ProjectProviderProps> = ({
 
   const reserveProject = () => {
     // Only students can reserve projects
-    if (user?.role !== 'student') return;
+    if (!user || user.role !== 'student' || !project) return;
+    
+    // Save reservation in localStorage
+    const reservedProjects = localStorage.getItem('reservedProjects');
+    let reservations = [];
+    
+    if (reservedProjects) {
+      try {
+        reservations = JSON.parse(reservedProjects);
+      } catch (e) {
+        console.error('Error parsing reserved projects:', e);
+      }
+    }
+    
+    // Add new reservation
+    const newReservation = {
+      projectId: project.id,
+      userId: user.id,
+      projectTitle: project.title,
+      timestamp: new Date().toISOString()
+    };
+    
+    reservations.push(newReservation);
+    localStorage.setItem('reservedProjects', JSON.stringify(reservations));
     
     setIsReserved(true);
-    console.log("Project reserved:", project?.title);
+    toast({
+      title: "Պրոեկտն ամրագրված է",
+      description: `Դուք հաջողությամբ ամրագրել եք "${project.title}" պրոեկտը։`,
+    });
   };
 
   return (

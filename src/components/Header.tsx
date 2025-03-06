@@ -5,7 +5,7 @@ import { cn } from '@/lib/utils';
 import UserMenu from '@/components/UserMenu';
 import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
-import { LayoutDashboard } from 'lucide-react';
+import { LayoutDashboard, GraduationCap } from 'lucide-react';
 
 interface HeaderProps {
   className?: string;
@@ -19,7 +19,11 @@ const Header: React.FC<HeaderProps> = ({ className }) => {
     <header className={cn("border-b border-border sticky top-0 z-50 bg-background", className)}>
       <div className="container mx-auto px-4 py-3 flex justify-between items-center">
         <div className="flex items-center gap-6">
-          <Link to="/" className="text-xl font-bold text-primary">ԴիպլոմայինՀաբ</Link>
+          <Link to="/" className="flex items-center gap-2 text-xl font-bold">
+            <GraduationCap size={28} className="text-primary" />
+            <span className="text-primary">Դիպլոմային</span>
+            <span className="text-foreground">Հաբ</span>
+          </Link>
           
           {isAdminOrInstructor && (
             <Link to="/admin">

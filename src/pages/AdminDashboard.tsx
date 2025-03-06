@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import { useAuth } from '@/contexts/AuthContext';
@@ -13,8 +13,25 @@ const AdminDashboard: React.FC = () => {
   const { user } = useAuth();
   const [createdProjects, setCreatedProjects] = useState<any[]>([]);
 
+  // Load any previously created projects from localStorage
+  useEffect(() => {
+    const storedProjects = localStorage.getItem('createdProjects');
+    if (storedProjects) {
+      try {
+        const parsedProjects = JSON.parse(storedProjects);
+        setCreatedProjects(parsedProjects);
+      } catch (e) {
+        console.error('Error parsing stored projects:', e);
+      }
+    }
+  }, []);
+
   const handleProjectCreated = (project: any) => {
-    setCreatedProjects(prev => [...prev, project]);
+    const newProjects = [...createdProjects, project];
+    setCreatedProjects(newProjects);
+    
+    // Store in localStorage for demo purposes
+    localStorage.setItem('createdProjects', JSON.stringify(newProjects));
   };
 
   if (!user || (user.role !== 'admin' && user.role !== 'supervisor' && user.role !== 'instructor')) {
