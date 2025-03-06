@@ -1,4 +1,3 @@
-
 export type UserRole = 'admin' | 'supervisor' | 'instructor' | 'student';
 
 export interface User {
@@ -157,7 +156,7 @@ export const getGroups = (course?: string): string[] => {
     .filter(user => 
       user.role === 'student' && 
       user.group && 
-      (!course || user.course === course)
+      (!course || course === 'all' || user.course === course)
     )
     .map(user => user.group as string);
   
@@ -168,7 +167,41 @@ export const getGroups = (course?: string): string[] => {
 export const getStudentsByCourseAndGroup = (course?: string, group?: string): User[] => {
   return mockUsers.filter(user => 
     user.role === 'student' && 
-    (!course || user.course === course) && 
-    (!group || user.group === group)
+    (!course || course === 'all' || user.course === course) && 
+    (!group || group === 'all' || user.group === group)
   );
+};
+
+// Get project assignments for specific user
+export const getProjectAssignmentsForUser = (userId: string): number[] => {
+  try {
+    const assignments = localStorage.getItem('projectAssignments');
+    if (!assignments) return [];
+    
+    const parsedAssignments = JSON.parse(assignments);
+    return parsedAssignments
+      .filter((a: any) => a.studentId === userId)
+      .map((a: any) => Number(a.projectId));
+  } catch (e) {
+    console.error('Error loading project assignments:', e);
+    return [];
+  }
+};
+
+// Get students assigned to specific projects
+export const getStudentsForProject = (projectId: number): User[] => {
+  try {
+    const assignments = localStorage.getItem('projectAssignments');
+    if (!assignments) return [];
+    
+    const parsedAssignments = JSON.parse(assignments);
+    const studentIds = parsedAssignments
+      .filter((a: any) => Number(a.projectId) === projectId)
+      .map((a: any) => a.studentId);
+    
+    return mockUsers.filter(user => studentIds.includes(user.id));
+  } catch (e) {
+    console.error('Error finding students for project:', e);
+    return [];
+  }
 };

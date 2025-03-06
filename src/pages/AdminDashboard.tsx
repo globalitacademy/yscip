@@ -33,6 +33,8 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { Textarea } from '@/components/ui/textarea';
+import ThemeGrid from '@/components/ThemeGrid';
 
 const AdminDashboard: React.FC = () => {
   const { user } = useAuth();
@@ -43,6 +45,7 @@ const AdminDashboard: React.FC = () => {
   const [selectedCourse, setSelectedCourse] = useState<string>("");
   const [selectedGroup, setSelectedGroup] = useState<string>("");
   const [projectToEdit, setProjectToEdit] = useState<any>(null);
+  const [activeTab, setActiveTab] = useState("users");
   
   const students = selectedCourse || selectedGroup
     ? getStudentsByCourseAndGroup(selectedCourse, selectedGroup)
@@ -81,6 +84,9 @@ const AdminDashboard: React.FC = () => {
     
     // Store in localStorage for demo purposes
     localStorage.setItem('createdProjects', JSON.stringify(newProjects));
+    
+    // Switch to the projects tab to show the created project
+    setActiveTab("projects");
   };
   
   const handleAssignProject = () => {
@@ -130,6 +136,7 @@ const AdminDashboard: React.FC = () => {
         reservations = JSON.parse(reservedProjects);
       } catch (e) {
         console.error('Error parsing reserved projects:', e);
+        reservations = [];
       }
     }
     
@@ -255,7 +262,11 @@ const AdminDashboard: React.FC = () => {
               Կառավարեք համակարգի օգտատերերին, դասընթացները և պրոեկտները։
             </p>
             
-            <Tabs defaultValue="users" className="w-full">
+            <Tabs 
+              value={activeTab} 
+              onValueChange={setActiveTab} 
+              className="w-full"
+            >
               <TabsList className="grid w-full grid-cols-1 md:grid-cols-4 h-auto mb-8">
                 <TabsTrigger value="users" className="flex items-center gap-2" disabled={user.role !== 'admin'}>
                   <Users size={16} /> Օգտատերերի կառավարում
@@ -304,7 +315,16 @@ const AdminDashboard: React.FC = () => {
                             createdProjects.map((project) => (
                               <TableRow key={project.id}>
                                 <TableCell className="font-medium">
-                                  {project.title}
+                                  <div className="flex items-center gap-2">
+                                    {project.image && (
+                                      <img 
+                                        src={project.image} 
+                                        alt={project.title}
+                                        className="w-10 h-10 rounded object-cover" 
+                                      />
+                                    )}
+                                    {project.title}
+                                  </div>
                                 </TableCell>
                                 <TableCell>{project.category}</TableCell>
                                 <TableCell>
@@ -317,7 +337,7 @@ const AdminDashboard: React.FC = () => {
                                   </Badge>
                                 </TableCell>
                                 <TableCell>
-                                  {new Date(project.createdAt).toLocaleDateString('hy-AM')}
+                                  {project.createdAt ? new Date(project.createdAt).toLocaleDateString('hy-AM') : 'Անհայտ'}
                                 </TableCell>
                                 <TableCell className="text-right">
                                   <div className="flex justify-end gap-2">
@@ -375,7 +395,7 @@ const AdminDashboard: React.FC = () => {
                                 <SelectValue placeholder="Ընտրեք կուրսը" />
                               </SelectTrigger>
                               <SelectContent>
-                                <SelectItem value="">Բոլոր կուրսերը</SelectItem>
+                                <SelectItem value="all">Բոլոր կուրսերը</SelectItem>
                                 {courses.map((course) => (
                                   <SelectItem key={course} value={course}>
                                     {course}-րդ կուրս
@@ -387,13 +407,13 @@ const AdminDashboard: React.FC = () => {
                             <Select 
                               value={selectedGroup} 
                               onValueChange={setSelectedGroup}
-                              disabled={!selectedCourse}
+                              disabled={!selectedCourse || selectedCourse === "all"}
                             >
                               <SelectTrigger>
                                 <SelectValue placeholder="Ընտրեք խումբը" />
                               </SelectTrigger>
                               <SelectContent>
-                                <SelectItem value="">Բոլոր խմբերը</SelectItem>
+                                <SelectItem value="all">Բոլոր խմբերը</SelectItem>
                                 {groups.map((group) => (
                                   <SelectItem key={group} value={group}>
                                     {group}
@@ -533,7 +553,7 @@ const AdminDashboard: React.FC = () => {
                             <SelectValue placeholder="Ընտրեք կուրսը" />
                           </SelectTrigger>
                           <SelectContent>
-                            <SelectItem value="">Բոլոր կուրսերը</SelectItem>
+                            <SelectItem value="all">Բոլոր կուրսերը</SelectItem>
                             {courses.map((course) => (
                               <SelectItem key={course} value={course}>
                                 {course}-րդ կուրս
@@ -548,13 +568,13 @@ const AdminDashboard: React.FC = () => {
                         <Select 
                           value={selectedGroup} 
                           onValueChange={setSelectedGroup}
-                          disabled={!selectedCourse}
+                          disabled={!selectedCourse || selectedCourse === "all"}
                         >
                           <SelectTrigger className="mt-1">
                             <SelectValue placeholder="Ընտրեք խումբը" />
                           </SelectTrigger>
                           <SelectContent>
-                            <SelectItem value="">Բոլոր խմբերը</SelectItem>
+                            <SelectItem value="all">Բոլոր խմբերը</SelectItem>
                             {groups.map((group) => (
                               <SelectItem key={group} value={group}>
                                 {group}
@@ -580,8 +600,8 @@ const AdminDashboard: React.FC = () => {
                         <TableBody>
                           {assignments
                             .filter((a: any) => 
-                              (!selectedCourse || a.studentCourse === selectedCourse) && 
-                              (!selectedGroup || a.studentGroup === selectedGroup)
+                              (!selectedCourse || selectedCourse === "all" || a.studentCourse === selectedCourse) && 
+                              (!selectedGroup || selectedGroup === "all" || a.studentGroup === selectedGroup)
                             )
                             .map((assignment) => (
                               <TableRow key={assignment.id}>
@@ -625,8 +645,8 @@ const AdminDashboard: React.FC = () => {
                             ))
                           }
                           {assignments.filter((a: any) => 
-                            (!selectedCourse || a.studentCourse === selectedCourse) && 
-                            (!selectedGroup || a.studentGroup === selectedGroup)
+                            (!selectedCourse || selectedCourse === "all" || a.studentCourse === selectedCourse) && 
+                            (!selectedGroup || selectedGroup === "all" || a.studentGroup === selectedGroup)
                           ).length === 0 && (
                             <TableRow>
                               <TableCell colSpan={6} className="text-center py-6 text-muted-foreground">
@@ -636,6 +656,11 @@ const AdminDashboard: React.FC = () => {
                           )}
                         </TableBody>
                       </Table>
+                    </div>
+
+                    <div className="mt-8">
+                      <h3 className="text-lg font-medium mb-4">Բոլոր նախագծերը</h3>
+                      <ThemeGrid createdProjects={createdProjects} />
                     </div>
                   </CardContent>
                 </Card>
@@ -694,11 +719,34 @@ const AdminDashboard: React.FC = () => {
               
               <div className="grid gap-2">
                 <Label htmlFor="edit-description">Նկարագրություն</Label>
-                <Input
+                <Textarea
                   id="edit-description"
                   defaultValue={projectToEdit.description}
+                  rows={3}
                 />
               </div>
+
+              <div className="grid gap-2">
+                <Label htmlFor="edit-detailed-description">Մանրամասն նկարագրություն</Label>
+                <Textarea
+                  id="edit-detailed-description"
+                  defaultValue={projectToEdit.detailedDescription}
+                  rows={5}
+                />
+              </div>
+              
+              {projectToEdit.image && (
+                <div className="mt-2">
+                  <Label>Ընթացիկ նկար</Label>
+                  <div className="mt-1 border rounded-md overflow-hidden">
+                    <img 
+                      src={projectToEdit.image} 
+                      alt={projectToEdit.title} 
+                      className="w-full max-h-32 object-cover"
+                    />
+                  </div>
+                </div>
+              )}
             </div>
             
             <DialogFooter>
@@ -709,13 +757,15 @@ const AdminDashboard: React.FC = () => {
                 const title = (document.getElementById('edit-title') as HTMLInputElement).value;
                 const category = (document.getElementById('edit-category') as HTMLInputElement).value;
                 const complexity = (document.querySelector('#edit-complexity + [role=combobox]') as HTMLElement)?.textContent || projectToEdit.complexity;
-                const description = (document.getElementById('edit-description') as HTMLInputElement).value;
+                const description = (document.getElementById('edit-description') as HTMLTextAreaElement).value;
+                const detailedDescription = (document.getElementById('edit-detailed-description') as HTMLTextAreaElement).value;
                 
                 handleUpdateProject({ 
                   title, 
                   category, 
                   complexity, 
-                  description 
+                  description,
+                  detailedDescription
                 });
               }}>
                 Պահպանել

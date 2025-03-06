@@ -1,4 +1,3 @@
-
 export interface Task {
   id: string;
   title: string;
@@ -32,7 +31,8 @@ export interface ProjectTheme {
   learningOutcomes?: string[];
   timeline?: TimelineEvent[];
   tasks?: Task[];
-  createdBy?: string; // Added createdBy property
+  createdBy?: string;
+  createdAt?: string;
 }
 
 // Import all project categories
