@@ -1,7 +1,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { ArrowRight } from 'lucide-react';
+import { ArrowRight, BookOpen, Users, Tag } from 'lucide-react';
 import { projectThemes } from '@/data/projectThemes';
 import ProjectCard from '@/components/ProjectCard';
 import { Button } from '@/components/ui/button';
@@ -20,9 +20,30 @@ const ThemeGrid: React.FC<ThemeGridProps> = ({ limit, createdProjects = [] }) =>
   const { user } = useAuth();
   const [allProjects, setAllProjects] = useState([...projectThemes]);
   const [activeCategory, setActiveCategory] = useState("all");
+  const [reservedProjects, setReservedProjects] = useState<any[]>([]);
   
   // Extract unique categories from projects
   const categories = ["all", ...new Set(projectThemes.map(project => project.category))];
+  
+  // Load reserved projects
+  useEffect(() => {
+    if (user) {
+      try {
+        const reservedData = localStorage.getItem('reservedProjects');
+        if (reservedData) {
+          const reservations = JSON.parse(reservedData);
+          // Filter reservations for the current user
+          const userReservations = user.role === 'student' 
+            ? reservations.filter((res: any) => res.userId === user.id)
+            : reservations;
+          
+          setReservedProjects(userReservations);
+        }
+      } catch (e) {
+        console.error('Error loading reserved projects:', e);
+      }
+    }
+  }, [user]);
   
   // Merge projectThemes with createdProjects when component mounts or createdProjects changes
   useEffect(() => {
@@ -53,10 +74,71 @@ const ThemeGrid: React.FC<ThemeGridProps> = ({ limit, createdProjects = [] }) =>
     }
   }, [createdProjects]);
   
-  // Filter projects based on user role if needed
-  const filteredProjects = user?.role === 'instructor' && user?.assignedProjects
-    ? allProjects.filter(project => user.assignedProjects?.includes(project.id))
-    : allProjects;
+  // Get assigned projects data
+  const getProjectAssignments = () => {
+    try {
+      const assignmentsData = localStorage.getItem('projectAssignments');
+      if (assignmentsData) {
+        return JSON.parse(assignmentsData) || [];
+      }
+    } catch (e) {
+      console.error('Error loading project assignments:', e);
+    }
+    return [];
+  };
+  
+  // Filter projects based on user role and permissions
+  const getFilteredProjects = () => {
+    if (!user) return allProjects;
+    
+    const assignments = getProjectAssignments();
+    
+    if (user.role === 'student') {
+      // Students see assigned projects and their reservations
+      const reservedIds = reservedProjects.map(r => r.projectId);
+      const assignedIds = assignments
+        .filter((a: any) => a.studentId === user.id)
+        .map((a: any) => a.projectId);
+      
+      const userProjectIds = [...reservedIds, ...assignedIds];
+      return allProjects.filter(p => userProjectIds.includes(p.id));
+    } 
+    else if (user.role === 'instructor') {
+      // Instructors see assigned projects and created projects
+      const instructorProjects = allProjects.filter(p => 
+        p.createdBy === user.id || 
+        (user.assignedProjects && user.assignedProjects.includes(p.id))
+      );
+      
+      // Also show projects assigned to students by this instructor
+      const assignedByInstructor = assignments
+        .filter((a: any) => a.assignedBy === user.id)
+        .map((a: any) => a.projectId);
+      
+      return instructorProjects.concat(
+        allProjects.filter(p => assignedByInstructor.includes(p.id) && !instructorProjects.some(ip => ip.id === p.id))
+      );
+    }
+    else if (user.role === 'supervisor') {
+      // Supervisors see projects for their supervised students
+      if (!user.supervisedStudents || user.supervisedStudents.length === 0) {
+        return allProjects;
+      }
+      
+      const studentProjectIds = assignments
+        .filter((a: any) => user.supervisedStudents?.includes(a.studentId))
+        .map((a: any) => a.projectId);
+      
+      return allProjects.filter(p => 
+        p.createdBy === user.id || studentProjectIds.includes(p.id)
+      );
+    }
+    
+    // Admins see all projects
+    return allProjects;
+  };
+  
+  const filteredProjects = getFilteredProjects();
   
   // Filter projects by category
   const categoryFilteredProjects = activeCategory === "all" 
@@ -72,7 +154,7 @@ const ThemeGrid: React.FC<ThemeGridProps> = ({ limit, createdProjects = [] }) =>
   const hasMore = displayLimit < categoryFilteredProjects.length;
   
   return (
-    <div className="mt-12">
+    <div className="mt-12 text-left">
       <div className="mb-8">
         <h2 className="text-2xl font-semibold mb-4">Ծրագրերի թեմաներն ըստ կատեգորիաների</h2>
         <Tabs defaultValue="all">
@@ -94,13 +176,38 @@ const ThemeGrid: React.FC<ThemeGridProps> = ({ limit, createdProjects = [] }) =>
             </TabsList>
           </div>
         
-          <div className="flex items-center gap-2 mb-4">
-            <Badge variant="outline" className="bg-muted">
+          <div className="flex flex-wrap items-center gap-2 mb-4">
+            <Badge variant="outline" className="bg-muted flex items-center gap-1">
+              <Tag size={14} />
               {categoryFilteredProjects.length} նախագիծ
             </Badge>
+            
             {user && (
-              <Badge variant="outline" className="bg-primary/10 text-primary">
-                {user.role === 'student' ? 'Ուսանող' : user.role === 'instructor' ? 'Դասախոս' : 'Ադմինիստրատոր'}
+              <Badge variant="outline" className="bg-primary/10 text-primary flex items-center gap-1">
+                {user.role === 'student' ? (
+                  <>
+                    <GraduationCap size={14} />
+                    Ուսանող {user.course && user.group ? `(${user.course}-րդ կուրս, ${user.group})` : ''}
+                  </>
+                ) : user.role === 'instructor' ? (
+                  <>
+                    <BookOpen size={14} />
+                    Դասախոս
+                  </>
+                ) : user.role === 'supervisor' ? (
+                  <>
+                    <Users size={14} />
+                    Ղեկավար
+                  </>
+                ) : (
+                  'Ադմինիստրատոր'
+                )}
+              </Badge>
+            )}
+            
+            {user && user.role === 'student' && (
+              <Badge variant="secondary">
+                {reservedProjects.length} ամրագրված նախագիծ
               </Badge>
             )}
           </div>

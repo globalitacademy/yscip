@@ -8,6 +8,8 @@ export interface User {
   role: UserRole;
   avatar?: string;
   department?: string;
+  course?: string;
+  group?: string;
   assignedProjects?: number[];
   supervisedStudents?: string[];
 }
@@ -46,7 +48,9 @@ export const mockUsers: User[] = [
     email: 'student@example.com',
     role: 'student',
     avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=student',
-    department: 'Ինֆորմատիկայի ֆակուլտետ'
+    department: 'Ինֆորմատիկայի ֆակուլտետ',
+    course: '2',
+    group: 'ԿՄ-021'
   },
   {
     id: 'student2',
@@ -54,7 +58,9 @@ export const mockUsers: User[] = [
     email: 'student2@example.com',
     role: 'student',
     avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=student2',
-    department: 'Ինֆորմատիկայի ֆակուլտետ'
+    department: 'Ինֆորմատիկայի ֆակուլտետ',
+    course: '3',
+    group: 'ԿՄ-031'
   }
 ];
 
@@ -135,3 +141,35 @@ export const getCurrentUser = (): User => {
 export const getUsersByRole = (role: UserRole): User[] => {
   return mockUsers.filter(user => user.role === role);
 };
+
+// Get course options
+export const getCourses = (): string[] => {
+  const courses = mockUsers
+    .filter(user => user.role === 'student' && user.course)
+    .map(user => user.course as string);
+  
+  return [...new Set(courses)].sort();
+};
+
+// Get group options
+export const getGroups = (course?: string): string[] => {
+  const groups = mockUsers
+    .filter(user => 
+      user.role === 'student' && 
+      user.group && 
+      (!course || user.course === course)
+    )
+    .map(user => user.group as string);
+  
+  return [...new Set(groups)].sort();
+};
+
+// Get students by course and group
+export const getStudentsByCourseAndGroup = (course?: string, group?: string): User[] => {
+  return mockUsers.filter(user => 
+    user.role === 'student' && 
+    (!course || user.course === course) && 
+    (!group || user.group === group)
+  );
+};
+

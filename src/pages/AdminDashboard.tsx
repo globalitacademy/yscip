@@ -7,14 +7,32 @@ import { FadeIn } from '@/components/LocalTransitions';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import UserManagement from '@/components/UserManagement';
 import ProjectCreation from '@/components/ProjectCreation';
-import { Users, FileText, BookOpen } from 'lucide-react';
+import { Users, FileText, BookOpen, Trash, Pencil, Eye, Filter } from 'lucide-react';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Badge } from "@/components/ui/badge";
+import { 
+  Select, 
+  SelectContent, 
+  SelectItem, 
+  SelectTrigger, 
+  SelectValue 
+} from "@/components/ui/select";
 import { toast } from "sonner";
-import { getUsersByRole } from '@/data/userRoles';
+import { getUsersByRole, getStudentsByCourseAndGroup, getCourses, getGroups } from '@/data/userRoles';
 import { projectThemes } from '@/data/projectThemes';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 
 const AdminDashboard: React.FC = () => {
   const { user } = useAuth();
@@ -22,9 +40,17 @@ const AdminDashboard: React.FC = () => {
   const [assignments, setAssignments] = useState<any[]>([]);
   const [selectedProject, setSelectedProject] = useState<string>("");
   const [selectedStudent, setSelectedStudent] = useState<string>("");
+  const [selectedCourse, setSelectedCourse] = useState<string>("");
+  const [selectedGroup, setSelectedGroup] = useState<string>("");
+  const [projectToEdit, setProjectToEdit] = useState<any>(null);
   
-  const students = getUsersByRole('student');
+  const students = selectedCourse || selectedGroup
+    ? getStudentsByCourseAndGroup(selectedCourse, selectedGroup)
+    : getUsersByRole('student');
+    
   const allProjects = [...projectThemes, ...createdProjects];
+  const courses = getCourses();
+  const groups = getGroups(selectedCourse);
 
   // Load any previously created projects from localStorage
   useEffect(() => {
@@ -84,6 +110,8 @@ const AdminDashboard: React.FC = () => {
       projectTitle: project.title,
       studentId: student.id,
       studentName: student.name,
+      studentCourse: student.course || '',
+      studentGroup: student.group || '',
       assignedBy: user?.id,
       assignedByName: user?.name,
       date: new Date().toISOString()
@@ -130,6 +158,74 @@ const AdminDashboard: React.FC = () => {
     setSelectedStudent("");
   };
 
+  const handleEditProject = (project: any) => {
+    setProjectToEdit(project);
+  };
+
+  const handleUpdateProject = (updatedData: any) => {
+    const updatedProjects = createdProjects.map(project => 
+      project.id === projectToEdit.id ? { ...project, ...updatedData } : project
+    );
+    
+    setCreatedProjects(updatedProjects);
+    localStorage.setItem('createdProjects', JSON.stringify(updatedProjects));
+    setProjectToEdit(null);
+    
+    toast.success("Նախագիծը հաջողությամբ թարմացվել է։");
+  };
+
+  const handleDeleteProject = (projectId: number) => {
+    // Remove project
+    const updatedProjects = createdProjects.filter(project => project.id !== projectId);
+    setCreatedProjects(updatedProjects);
+    localStorage.setItem('createdProjects', JSON.stringify(updatedProjects));
+    
+    // Remove assignments related to this project
+    const updatedAssignments = assignments.filter((a: any) => a.projectId !== projectId);
+    setAssignments(updatedAssignments);
+    localStorage.setItem('projectAssignments', JSON.stringify(updatedAssignments));
+    
+    // Remove reservations related to this project
+    try {
+      const reservedProjects = localStorage.getItem('reservedProjects');
+      if (reservedProjects) {
+        const reservations = JSON.parse(reservedProjects);
+        const updatedReservations = reservations.filter((r: any) => r.projectId !== projectId);
+        localStorage.setItem('reservedProjects', JSON.stringify(updatedReservations));
+      }
+    } catch (e) {
+      console.error('Error updating reserved projects:', e);
+    }
+    
+    toast.success("Նախագիծը հաջողությամբ ջնջվել է։");
+  };
+
+  const handleDeleteAssignment = (assignmentId: string) => {
+    const assignment = assignments.find((a: any) => a.id === assignmentId);
+    if (!assignment) return;
+    
+    // Remove assignment
+    const updatedAssignments = assignments.filter((a: any) => a.id !== assignmentId);
+    setAssignments(updatedAssignments);
+    localStorage.setItem('projectAssignments', JSON.stringify(updatedAssignments));
+    
+    // Remove corresponding reservation
+    try {
+      const reservedProjects = localStorage.getItem('reservedProjects');
+      if (reservedProjects) {
+        const reservations = JSON.parse(reservedProjects);
+        const updatedReservations = reservations.filter(
+          (r: any) => !(r.projectId === assignment.projectId && r.userId === assignment.studentId)
+        );
+        localStorage.setItem('reservedProjects', JSON.stringify(updatedReservations));
+      }
+    } catch (e) {
+      console.error('Error updating reserved projects:', e);
+    }
+    
+    toast.success("Նշանակումը հաջողությամբ ջնջվել է։");
+  };
+
   if (!user || (user.role !== 'admin' && user.role !== 'supervisor' && user.role !== 'instructor')) {
     return (
       <div className="min-h-screen flex flex-col">
@@ -152,7 +248,7 @@ const AdminDashboard: React.FC = () => {
       <Header />
       
       <main className="flex-grow">
-        <div className="container mx-auto px-4 py-8 max-w-6xl">
+        <div className="container mx-auto px-4 py-8 max-w-6xl text-left">
           <FadeIn>
             <h1 className="text-3xl font-bold mb-2">Կառավարման վահանակ</h1>
             <p className="text-muted-foreground mb-8">
@@ -160,7 +256,7 @@ const AdminDashboard: React.FC = () => {
             </p>
             
             <Tabs defaultValue="users" className="w-full">
-              <TabsList className="grid w-full grid-cols-1 md:grid-cols-3 h-auto mb-8">
+              <TabsList className="grid w-full grid-cols-1 md:grid-cols-4 h-auto mb-8">
                 <TabsTrigger value="users" className="flex items-center gap-2" disabled={user.role !== 'admin'}>
                   <Users size={16} /> Օգտատերերի կառավարում
                 </TabsTrigger>
@@ -170,6 +266,9 @@ const AdminDashboard: React.FC = () => {
                 <TabsTrigger value="assignments" className="flex items-center gap-2">
                   <BookOpen size={16} /> Պրոեկտների նշանակում
                 </TabsTrigger>
+                <TabsTrigger value="management" className="flex items-center gap-2">
+                  <Filter size={16} /> Ըստ կուրսերի
+                </TabsTrigger>
               </TabsList>
               
               <TabsContent value="users">
@@ -178,6 +277,82 @@ const AdminDashboard: React.FC = () => {
               
               <TabsContent value="projects">
                 <ProjectCreation onProjectCreated={handleProjectCreated} />
+                
+                {/* Projects List */}
+                <Card className="mt-8">
+                  <CardHeader>
+                    <CardTitle>Ստեղծված նախագծեր</CardTitle>
+                    <CardDescription>
+                      Բոլոր նախագծերը, որոնք ստեղծվել են համակարգում
+                    </CardDescription>
+                  </CardHeader>
+                  
+                  <CardContent>
+                    <div className="rounded-md border">
+                      <Table>
+                        <TableHeader>
+                          <TableRow>
+                            <TableHead className="text-left">Նախագիծ</TableHead>
+                            <TableHead className="text-left">Կատեգորիա</TableHead>
+                            <TableHead className="text-left">Բարդություն</TableHead>
+                            <TableHead className="text-left">Ստեղծվել է</TableHead>
+                            <TableHead className="text-right">Գործողություններ</TableHead>
+                          </TableRow>
+                        </TableHeader>
+                        <TableBody>
+                          {createdProjects.length > 0 ? (
+                            createdProjects.map((project) => (
+                              <TableRow key={project.id}>
+                                <TableCell className="font-medium">
+                                  {project.title}
+                                </TableCell>
+                                <TableCell>{project.category}</TableCell>
+                                <TableCell>
+                                  <Badge variant={
+                                    project.complexity === 'Սկսնակ' ? 'outline' : 
+                                    project.complexity === 'Միջին' ? 'secondary' : 
+                                    'default'
+                                  }>
+                                    {project.complexity}
+                                  </Badge>
+                                </TableCell>
+                                <TableCell>
+                                  {new Date(project.createdAt).toLocaleDateString('hy-AM')}
+                                </TableCell>
+                                <TableCell className="text-right">
+                                  <div className="flex justify-end gap-2">
+                                    <Button 
+                                      variant="outline" 
+                                      size="icon"
+                                      onClick={() => handleEditProject(project)}
+                                      title="Խմբագրել"
+                                    >
+                                      <Pencil size={14} />
+                                    </Button>
+                                    <Button 
+                                      variant="destructive" 
+                                      size="icon"
+                                      onClick={() => handleDeleteProject(project.id)}
+                                      title="Ջնջել"
+                                    >
+                                      <Trash size={14} />
+                                    </Button>
+                                  </div>
+                                </TableCell>
+                              </TableRow>
+                            ))
+                          ) : (
+                            <TableRow>
+                              <TableCell colSpan={5} className="text-center py-6 text-muted-foreground">
+                                Ստեղծված նախագծեր չկան
+                              </TableCell>
+                            </TableRow>
+                          )}
+                        </TableBody>
+                      </Table>
+                    </div>
+                  </CardContent>
+                </Card>
               </TabsContent>
               
               <TabsContent value="assignments">
@@ -192,6 +367,43 @@ const AdminDashboard: React.FC = () => {
                   <CardContent>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
                       <div className="space-y-4">
+                        <div className="space-y-2">
+                          <Label className="text-sm font-medium">Ֆիլտրել ուսանողներին</Label>
+                          <div className="grid grid-cols-2 gap-2">
+                            <Select value={selectedCourse} onValueChange={setSelectedCourse}>
+                              <SelectTrigger>
+                                <SelectValue placeholder="Ընտրեք կուրսը" />
+                              </SelectTrigger>
+                              <SelectContent>
+                                <SelectItem value="">Բոլոր կուրսերը</SelectItem>
+                                {courses.map((course) => (
+                                  <SelectItem key={course} value={course}>
+                                    {course}-րդ կուրս
+                                  </SelectItem>
+                                ))}
+                              </SelectContent>
+                            </Select>
+                            
+                            <Select 
+                              value={selectedGroup} 
+                              onValueChange={setSelectedGroup}
+                              disabled={!selectedCourse}
+                            >
+                              <SelectTrigger>
+                                <SelectValue placeholder="Ընտրեք խումբը" />
+                              </SelectTrigger>
+                              <SelectContent>
+                                <SelectItem value="">Բոլոր խմբերը</SelectItem>
+                                {groups.map((group) => (
+                                  <SelectItem key={group} value={group}>
+                                    {group}
+                                  </SelectItem>
+                                ))}
+                              </SelectContent>
+                            </Select>
+                          </div>
+                        </div>
+                        
                         <div className="space-y-2">
                           <label className="text-sm font-medium">Ընտրեք նախագիծը</label>
                           <Select value={selectedProject} onValueChange={setSelectedProject}>
@@ -217,7 +429,8 @@ const AdminDashboard: React.FC = () => {
                             <SelectContent>
                               {students.map((student) => (
                                 <SelectItem key={student.id} value={student.id}>
-                                  {student.name}
+                                  {student.name} {student.course && student.group ? 
+                                    `(${student.course}-րդ կուրս, ${student.group})` : ''}
                                 </SelectItem>
                               ))}
                             </SelectContent>
@@ -242,9 +455,11 @@ const AdminDashboard: React.FC = () => {
                       <Table>
                         <TableHeader>
                           <TableRow>
-                            <TableHead>Նախագիծ</TableHead>
-                            <TableHead>Ուսանող</TableHead>
-                            <TableHead>Նշանակման ամսաթիվ</TableHead>
+                            <TableHead className="text-left">Նախագիծ</TableHead>
+                            <TableHead className="text-left">Ուսանող</TableHead>
+                            <TableHead className="text-left">Կուրս/Խումբ</TableHead>
+                            <TableHead className="text-left">Նշանակման ամսաթիվ</TableHead>
+                            <TableHead className="text-right">Գործողություններ</TableHead>
                           </TableRow>
                         </TableHeader>
                         <TableBody>
@@ -256,14 +471,166 @@ const AdminDashboard: React.FC = () => {
                                 </TableCell>
                                 <TableCell>{assignment.studentName}</TableCell>
                                 <TableCell>
+                                  {assignment.studentCourse && assignment.studentGroup ? 
+                                    `${assignment.studentCourse}-րդ կուրս, ${assignment.studentGroup}` : ''}
+                                </TableCell>
+                                <TableCell>
                                   {new Date(assignment.date).toLocaleDateString('hy-AM')}
+                                </TableCell>
+                                <TableCell className="text-right">
+                                  <div className="flex justify-end gap-2">
+                                    <Button 
+                                      variant="outline" 
+                                      size="icon"
+                                      title="Դիտել"
+                                      asChild
+                                    >
+                                      <a href={`/project/${assignment.projectId}`} target="_blank" rel="noopener noreferrer">
+                                        <Eye size={14} />
+                                      </a>
+                                    </Button>
+                                    <Button 
+                                      variant="destructive" 
+                                      size="icon"
+                                      onClick={() => handleDeleteAssignment(assignment.id)}
+                                      title="Ջնջել"
+                                    >
+                                      <Trash size={14} />
+                                    </Button>
+                                  </div>
                                 </TableCell>
                               </TableRow>
                             ))
                           ) : (
                             <TableRow>
-                              <TableCell colSpan={3} className="text-center py-6 text-muted-foreground">
+                              <TableCell colSpan={5} className="text-center py-6 text-muted-foreground">
                                 Նշանակված պրոեկտներ չկան
+                              </TableCell>
+                            </TableRow>
+                          )}
+                        </TableBody>
+                      </Table>
+                    </div>
+                  </CardContent>
+                </Card>
+              </TabsContent>
+              
+              <TabsContent value="management">
+                <Card>
+                  <CardHeader>
+                    <CardTitle>Պրոեկտները ըստ կուրսերի</CardTitle>
+                    <CardDescription>
+                      Դիտեք և կառավարեք պրոեկտները ըստ կուրսերի և խմբերի
+                    </CardDescription>
+                  </CardHeader>
+                  
+                  <CardContent>
+                    <div className="grid grid-cols-2 gap-4 mb-6">
+                      <div>
+                        <Label>Ընտրեք կուրսը</Label>
+                        <Select value={selectedCourse} onValueChange={setSelectedCourse}>
+                          <SelectTrigger className="mt-1">
+                            <SelectValue placeholder="Ընտրեք կուրսը" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="">Բոլոր կուրսերը</SelectItem>
+                            {courses.map((course) => (
+                              <SelectItem key={course} value={course}>
+                                {course}-րդ կուրս
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      </div>
+                      
+                      <div>
+                        <Label>Ընտրեք խումբը</Label>
+                        <Select 
+                          value={selectedGroup} 
+                          onValueChange={setSelectedGroup}
+                          disabled={!selectedCourse}
+                        >
+                          <SelectTrigger className="mt-1">
+                            <SelectValue placeholder="Ընտրեք խումբը" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="">Բոլոր խմբերը</SelectItem>
+                            {groups.map((group) => (
+                              <SelectItem key={group} value={group}>
+                                {group}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      </div>
+                    </div>
+                    
+                    <div className="rounded-md border">
+                      <Table>
+                        <TableHeader>
+                          <TableRow>
+                            <TableHead className="text-left">Նախագիծ</TableHead>
+                            <TableHead className="text-left">Ուսանող</TableHead>
+                            <TableHead className="text-left">Կուրս/Խումբ</TableHead>
+                            <TableHead className="text-left">Նշանակման ամսաթիվ</TableHead>
+                            <TableHead className="text-left">Կարգավիճակ</TableHead>
+                            <TableHead className="text-right">Գործողություններ</TableHead>
+                          </TableRow>
+                        </TableHeader>
+                        <TableBody>
+                          {assignments
+                            .filter((a: any) => 
+                              (!selectedCourse || a.studentCourse === selectedCourse) && 
+                              (!selectedGroup || a.studentGroup === selectedGroup)
+                            )
+                            .map((assignment) => (
+                              <TableRow key={assignment.id}>
+                                <TableCell className="font-medium">
+                                  {assignment.projectTitle}
+                                </TableCell>
+                                <TableCell>{assignment.studentName}</TableCell>
+                                <TableCell>
+                                  {assignment.studentCourse && assignment.studentGroup ? 
+                                    `${assignment.studentCourse}-րդ կուրս, ${assignment.studentGroup}` : ''}
+                                </TableCell>
+                                <TableCell>
+                                  {new Date(assignment.date).toLocaleDateString('hy-AM')}
+                                </TableCell>
+                                <TableCell>
+                                  <Badge variant="outline">Նշանակված</Badge>
+                                </TableCell>
+                                <TableCell className="text-right">
+                                  <div className="flex justify-end gap-2">
+                                    <Button 
+                                      variant="outline" 
+                                      size="icon"
+                                      title="Դիտել"
+                                      asChild
+                                    >
+                                      <a href={`/project/${assignment.projectId}`} target="_blank" rel="noopener noreferrer">
+                                        <Eye size={14} />
+                                      </a>
+                                    </Button>
+                                    <Button 
+                                      variant="destructive" 
+                                      size="icon"
+                                      onClick={() => handleDeleteAssignment(assignment.id)}
+                                      title="Ջնջել"
+                                    >
+                                      <Trash size={14} />
+                                    </Button>
+                                  </div>
+                                </TableCell>
+                              </TableRow>
+                            ))
+                          }
+                          {assignments.filter((a: any) => 
+                            (!selectedCourse || a.studentCourse === selectedCourse) && 
+                            (!selectedGroup || a.studentGroup === selectedGroup)
+                          ).length === 0 && (
+                            <TableRow>
+                              <TableCell colSpan={6} className="text-center py-6 text-muted-foreground">
+                                Ընտրված կուրսի/խմբի համար նշանակված պրոեկտներ չկան
                               </TableCell>
                             </TableRow>
                           )}
@@ -279,6 +646,84 @@ const AdminDashboard: React.FC = () => {
       </main>
       
       <Footer />
+      
+      {/* Edit Project Dialog */}
+      {projectToEdit && (
+        <Dialog 
+          open={!!projectToEdit} 
+          onOpenChange={(open) => !open && setProjectToEdit(null)}
+        >
+          <DialogContent className="max-w-xl">
+            <DialogHeader>
+              <DialogTitle>Խմբագրել նախագիծը</DialogTitle>
+              <DialogDescription>
+                Փոփոխեք նախագծի տվյալները
+              </DialogDescription>
+            </DialogHeader>
+            
+            <div className="grid gap-4 py-4">
+              <div className="grid gap-2">
+                <Label htmlFor="edit-title">Վերնագիր</Label>
+                <Input
+                  id="edit-title"
+                  defaultValue={projectToEdit.title}
+                />
+              </div>
+              
+              <div className="grid gap-2">
+                <Label htmlFor="edit-category">Կատեգորիա</Label>
+                <Input
+                  id="edit-category"
+                  defaultValue={projectToEdit.category}
+                />
+              </div>
+              
+              <div className="grid gap-2">
+                <Label htmlFor="edit-complexity">Բարդություն</Label>
+                <Select defaultValue={projectToEdit.complexity}>
+                  <SelectTrigger id="edit-complexity">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="Սկսնակ">Սկսնակ</SelectItem>
+                    <SelectItem value="Միջին">Միջին</SelectItem>
+                    <SelectItem value="Առաջադեմ">Առաջադեմ</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              
+              <div className="grid gap-2">
+                <Label htmlFor="edit-description">Նկարագրություն</Label>
+                <Input
+                  id="edit-description"
+                  defaultValue={projectToEdit.description}
+                />
+              </div>
+            </div>
+            
+            <DialogFooter>
+              <Button variant="outline" onClick={() => setProjectToEdit(null)}>
+                Չեղարկել
+              </Button>
+              <Button onClick={() => {
+                const title = (document.getElementById('edit-title') as HTMLInputElement).value;
+                const category = (document.getElementById('edit-category') as HTMLInputElement).value;
+                const complexity = (document.querySelector('#edit-complexity + [role=combobox]') as HTMLElement)?.textContent || projectToEdit.complexity;
+                const description = (document.getElementById('edit-description') as HTMLInputElement).value;
+                
+                handleUpdateProject({ 
+                  title, 
+                  category, 
+                  complexity, 
+                  description 
+                });
+              }}>
+                Պահպանել
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
+      )}
     </div>
   );
 };
