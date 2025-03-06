@@ -5,6 +5,7 @@ import Index from '@/pages/Index';
 import ProjectDetails from '@/pages/ProjectDetails';
 import NotFound from '@/pages/NotFound';
 import Login from '@/pages/Login';
+import AdminDashboard from '@/pages/AdminDashboard';
 import AuthProvider from '@/contexts/AuthContext';
 import './App.css';
 
@@ -16,6 +17,7 @@ function App() {
           <Route path="/" element={<Index />} />
           <Route path="/project/:id" element={<ProjectDetails />} />
           <Route path="/login" element={<Login />} />
+          <Route path="/admin" element={<AdminDashboard />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
         <Toaster />

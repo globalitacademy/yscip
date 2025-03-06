@@ -3,6 +3,7 @@ import React, { createContext, useContext, useState, useEffect } from 'react';
 import { v4 as uuidv4 } from 'uuid';
 import { ProjectTheme, Task, TimelineEvent } from '@/data/projectThemes';
 import { useAuth } from '@/contexts/AuthContext';
+import { rolePermissions } from '@/data/userRoles';
 
 interface ProjectContextType {
   project: ProjectTheme | null;
@@ -18,6 +19,10 @@ interface ProjectContextType {
   rejectProject: (feedback: string) => void;
   reserveProject: () => void;
   isReserved: boolean;
+  canStudentSubmit: boolean;
+  canInstructorCreate: boolean;
+  canInstructorAssign: boolean;
+  canSupervisorApprove: boolean;
 }
 
 const ProjectContext = createContext<ProjectContextType | undefined>(undefined);
@@ -39,6 +44,15 @@ export const ProjectProvider: React.FC<ProjectProviderProps> = ({
   const [tasks, setTasks] = useState<Task[]>([]);
   const [projectStatus, setProjectStatus] = useState<'not_submitted' | 'pending' | 'approved' | 'rejected'>('not_submitted');
   const [isReserved, setIsReserved] = useState(false);
+
+  // Get permissions based on user role
+  const permissions = user ? rolePermissions[user.role] : rolePermissions.student;
+  
+  // Role-based permissions
+  const canStudentSubmit = permissions.canSubmitProject && isReserved;
+  const canInstructorCreate = permissions.canCreateProjects;
+  const canInstructorAssign = permissions.canAssignProjects;
+  const canSupervisorApprove = permissions.canApproveProject;
 
   useEffect(() => {
     if (initialProject) {
@@ -109,43 +123,64 @@ export const ProjectProvider: React.FC<ProjectProviderProps> = ({
   }, [tasks.length, project, user]);
 
   const addTimelineEvent = (event: Omit<TimelineEvent, 'id'>) => {
+    if (!permissions.canAddTimeline) return;
+    
     const newEvent = { ...event, id: uuidv4() };
     setTimeline(prev => [...prev, newEvent]);
   };
 
   const completeTimelineEvent = (eventId: string) => {
+    if (!permissions.canApproveTimelineEvents) return;
+    
     setTimeline(prev => prev.map(event => 
       event.id === eventId ? { ...event, completed: true } : event
     ));
   };
 
   const addTask = (task: Omit<Task, 'id'>) => {
+    if (!permissions.canAddTasks) return;
+    
     const newTask = { ...task, id: uuidv4() };
     setTasks(prev => [...prev, newTask]);
   };
 
   const updateTaskStatus = (taskId: string, status: Task['status']) => {
+    // Student can only update their assigned tasks
+    if (user?.role === 'student') {
+      const task = tasks.find(t => t.id === taskId);
+      if (!task || task.assignedTo !== user.id) return;
+    }
+    
     setTasks(prev => prev.map(task => 
       task.id === taskId ? { ...task, status } : task
     ));
   };
 
   const submitProject = (feedback: string) => {
+    if (!permissions.canSubmitProject) return;
+    
     setProjectStatus('pending');
     console.log("Project submitted with feedback:", feedback);
   };
 
   const approveProject = (feedback: string) => {
+    if (!permissions.canApproveProject) return;
+    
     setProjectStatus('approved');
     console.log("Project approved with feedback:", feedback);
   };
 
   const rejectProject = (feedback: string) => {
+    if (!permissions.canApproveProject) return;
+    
     setProjectStatus('rejected');
     console.log("Project rejected with feedback:", feedback);
   };
 
   const reserveProject = () => {
+    // Only students can reserve projects
+    if (user?.role !== 'student') return;
+    
     setIsReserved(true);
     console.log("Project reserved:", project?.title);
   };
@@ -165,7 +200,11 @@ export const ProjectProvider: React.FC<ProjectProviderProps> = ({
         approveProject,
         rejectProject,
         reserveProject,
-        isReserved
+        isReserved,
+        canStudentSubmit,
+        canInstructorCreate,
+        canInstructorAssign,
+        canSupervisorApprove
       }}
     >
       {children}
