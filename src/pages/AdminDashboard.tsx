@@ -8,10 +8,23 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import UserManagement from '@/components/UserManagement';
 import ProjectCreation from '@/components/ProjectCreation';
 import { Users, FileText, BookOpen } from 'lucide-react';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { toast } from "sonner";
+import { getUsersByRole } from '@/data/userRoles';
+import { projectThemes } from '@/data/projectThemes';
 
 const AdminDashboard: React.FC = () => {
   const { user } = useAuth();
   const [createdProjects, setCreatedProjects] = useState<any[]>([]);
+  const [assignments, setAssignments] = useState<any[]>([]);
+  const [selectedProject, setSelectedProject] = useState<string>("");
+  const [selectedStudent, setSelectedStudent] = useState<string>("");
+  
+  const students = getUsersByRole('student');
+  const allProjects = [...projectThemes, ...createdProjects];
 
   // Load any previously created projects from localStorage
   useEffect(() => {
@@ -24,6 +37,16 @@ const AdminDashboard: React.FC = () => {
         console.error('Error parsing stored projects:', e);
       }
     }
+    
+    const storedAssignments = localStorage.getItem('projectAssignments');
+    if (storedAssignments) {
+      try {
+        const parsedAssignments = JSON.parse(storedAssignments);
+        setAssignments(parsedAssignments);
+      } catch (e) {
+        console.error('Error parsing stored assignments:', e);
+      }
+    }
   }, []);
 
   const handleProjectCreated = (project: any) => {
@@ -32,6 +55,79 @@ const AdminDashboard: React.FC = () => {
     
     // Store in localStorage for demo purposes
     localStorage.setItem('createdProjects', JSON.stringify(newProjects));
+  };
+  
+  const handleAssignProject = () => {
+    if (!selectedProject || !selectedStudent) {
+      toast.error("Խնդրում ենք ընտրել և՛ նախագիծը, և՛ ուսանողին։");
+      return;
+    }
+    
+    const projectId = parseInt(selectedProject);
+    const project = allProjects.find(p => p.id === projectId);
+    
+    if (!project) {
+      toast.error("Նախագիծը չի գտնվել։");
+      return;
+    }
+    
+    const student = students.find(s => s.id === selectedStudent);
+    
+    if (!student) {
+      toast.error("Ուսանողը չի գտնվել։");
+      return;
+    }
+    
+    const newAssignment = {
+      id: Date.now().toString(),
+      projectId,
+      projectTitle: project.title,
+      studentId: student.id,
+      studentName: student.name,
+      assignedBy: user?.id,
+      assignedByName: user?.name,
+      date: new Date().toISOString()
+    };
+    
+    const newAssignments = [...assignments, newAssignment];
+    setAssignments(newAssignments);
+    localStorage.setItem('projectAssignments', JSON.stringify(newAssignments));
+    
+    // Create a reservation for the student
+    const reservedProjects = localStorage.getItem('reservedProjects');
+    let reservations = [];
+    
+    if (reservedProjects) {
+      try {
+        reservations = JSON.parse(reservedProjects);
+      } catch (e) {
+        console.error('Error parsing reserved projects:', e);
+      }
+    }
+    
+    // Avoid duplicate reservations
+    const existingReservation = reservations.find(
+      (r: any) => r.projectId === projectId && r.userId === student.id
+    );
+    
+    if (!existingReservation) {
+      const newReservation = {
+        projectId,
+        userId: student.id,
+        projectTitle: project.title,
+        timestamp: new Date().toISOString(),
+        assignedBy: user?.id
+      };
+      
+      reservations.push(newReservation);
+      localStorage.setItem('reservedProjects', JSON.stringify(reservations));
+    }
+    
+    toast.success(`${project.title} նախագիծը հաջողությամբ նշանակվել է ${student.name}-ին։`);
+    
+    // Reset selections
+    setSelectedProject("");
+    setSelectedStudent("");
   };
 
   if (!user || (user.role !== 'admin' && user.role !== 'supervisor' && user.role !== 'instructor')) {
@@ -85,12 +181,97 @@ const AdminDashboard: React.FC = () => {
               </TabsContent>
               
               <TabsContent value="assignments">
-                <div className="bg-accent/20 rounded-lg p-8 text-center">
-                  <h3 className="text-xl font-medium mb-2">Պրոեկտների նշանակում</h3>
-                  <p className="text-muted-foreground">
-                    Այս բաժինը դեռևս մշակման փուլում է։ Խնդրում ենք փորձել ավելի ուշ։
-                  </p>
-                </div>
+                <Card>
+                  <CardHeader>
+                    <CardTitle>Պրոեկտների նշանակում</CardTitle>
+                    <CardDescription>
+                      Նշանակեք պրոեկտներ ուսանողներին՝ պրակտիկայի համար
+                    </CardDescription>
+                  </CardHeader>
+                  
+                  <CardContent>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+                      <div className="space-y-4">
+                        <div className="space-y-2">
+                          <label className="text-sm font-medium">Ընտրեք նախագիծը</label>
+                          <Select value={selectedProject} onValueChange={setSelectedProject}>
+                            <SelectTrigger>
+                              <SelectValue placeholder="Ընտրեք նախագիծ" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              {allProjects.map((project) => (
+                                <SelectItem key={project.id} value={project.id.toString()}>
+                                  {project.title}
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                        </div>
+                        
+                        <div className="space-y-2">
+                          <label className="text-sm font-medium">Ընտրեք ուսանողին</label>
+                          <Select value={selectedStudent} onValueChange={setSelectedStudent}>
+                            <SelectTrigger>
+                              <SelectValue placeholder="Ընտրեք ուսանող" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              {students.map((student) => (
+                                <SelectItem key={student.id} value={student.id}>
+                                  {student.name}
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                        </div>
+                        
+                        <Button onClick={handleAssignProject} className="w-full">
+                          Նշանակել պրոեկտը
+                        </Button>
+                      </div>
+                      
+                      <div className="bg-accent/20 rounded-lg p-6">
+                        <h3 className="text-lg font-medium mb-2">Նշանակման մասին</h3>
+                        <p className="text-sm text-muted-foreground">
+                          Նշանակելով նախագիծը ուսանողին, այն ավտոմատ կերպով կավելացվի ուսանողի ամրագրված նախագծերի ցանկում:
+                          Ուսանողը կարող է մուտք գործել համակարգ և տեսնել իրեն նշանակված պրոեկտները, ինչպես նաև կառավարել դրանց ընթացքը:
+                        </p>
+                      </div>
+                    </div>
+                    
+                    <div className="rounded-md border">
+                      <Table>
+                        <TableHeader>
+                          <TableRow>
+                            <TableHead>Նախագիծ</TableHead>
+                            <TableHead>Ուսանող</TableHead>
+                            <TableHead>Նշանակման ամսաթիվ</TableHead>
+                          </TableRow>
+                        </TableHeader>
+                        <TableBody>
+                          {assignments.length > 0 ? (
+                            assignments.map((assignment) => (
+                              <TableRow key={assignment.id}>
+                                <TableCell className="font-medium">
+                                  {assignment.projectTitle}
+                                </TableCell>
+                                <TableCell>{assignment.studentName}</TableCell>
+                                <TableCell>
+                                  {new Date(assignment.date).toLocaleDateString('hy-AM')}
+                                </TableCell>
+                              </TableRow>
+                            ))
+                          ) : (
+                            <TableRow>
+                              <TableCell colSpan={3} className="text-center py-6 text-muted-foreground">
+                                Նշանակված պրոեկտներ չկան
+                              </TableCell>
+                            </TableRow>
+                          )}
+                        </TableBody>
+                      </Table>
+                    </div>
+                  </CardContent>
+                </Card>
               </TabsContent>
             </Tabs>
           </FadeIn>

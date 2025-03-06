@@ -7,6 +7,11 @@ import Footer from '@/components/Footer';
 import { useAuth } from '@/contexts/AuthContext';
 import { toast } from 'sonner';
 import { projectThemes } from '@/data/projectThemes';
+import { Card } from '@/components/ui/card';
+import { Check, BookOpen, Clock } from 'lucide-react';
+import { Badge } from '@/components/ui/badge';
+import { Link } from 'react-router-dom';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 const Index = () => {
   const { user } = useAuth();
@@ -59,15 +64,128 @@ const Index = () => {
     }
   }, [user]);
 
+  // Filter user's reserved projects
+  const userReservedProjects = user 
+    ? reservedProjects.filter(rp => rp.userId === user.id)
+    : [];
+
+  // Find actual project details for reserved projects
+  const userReservedProjectDetails = userReservedProjects.map(rp => {
+    const project = [...projectThemes, ...createdProjects].find(p => p.id === rp.projectId);
+    return { ...rp, project };
+  }).filter(rp => rp.project); // Filter out any without matching project details
+
   return (
     <div className="min-h-screen flex flex-col">
       <Header />
       <main className="flex-grow">
         <Hero />
         <div className="container mx-auto px-4 pb-16">
-          <ThemeGrid 
-            createdProjects={createdProjects} 
-          />
+          {user && userReservedProjectDetails.length > 0 && (
+            <div className="mb-12">
+              <h2 className="text-2xl font-semibold mb-6">Իմ Ամրագրված Նախագծերը</h2>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {userReservedProjectDetails.map((rp) => (
+                  <Card key={rp.projectId} className="p-6 hover:shadow-md transition-shadow">
+                    <div className="flex justify-between items-start mb-4">
+                      <h3 className="text-lg font-medium">{rp.project?.title || rp.projectTitle}</h3>
+                      <Badge variant="outline" className="bg-green-100 text-green-700">
+                        <Check size={14} className="mr-1" /> Ամրագրված
+                      </Badge>
+                    </div>
+                    
+                    <div className="flex flex-wrap gap-2 mb-4">
+                      {rp.project?.techStack?.map((tech: string, i: number) => (
+                        <Badge key={i} variant="secondary" className="text-xs">
+                          {tech}
+                        </Badge>
+                      ))}
+                    </div>
+                    
+                    <div className="flex items-center justify-between mt-4">
+                      <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                        <Clock size={14} />
+                        <span>Ամրագրվել է {new Date(rp.timestamp).toLocaleDateString('hy-AM')}</span>
+                      </div>
+                      <Link to={`/project/${rp.projectId}`} className="text-primary text-sm font-medium">
+                        Դիտել մանրամասներ
+                      </Link>
+                    </div>
+                  </Card>
+                ))}
+              </div>
+            </div>
+          )}
+          
+          <Tabs defaultValue="all-projects" className="mb-6">
+            <TabsList className="h-auto mb-6">
+              <TabsTrigger value="all-projects">Բոլոր Նախագծերը</TabsTrigger>
+              {user?.role !== 'student' && (
+                <TabsTrigger value="created-projects">Ստեղծված Նախագծեր</TabsTrigger>
+              )}
+              {user?.role === 'supervisor' && (
+                <TabsTrigger value="assigned-projects">Հանձնարարված Նախագծեր</TabsTrigger>
+              )}
+            </TabsList>
+            
+            <TabsContent value="all-projects">
+              <ThemeGrid 
+                createdProjects={createdProjects} 
+              />
+            </TabsContent>
+            
+            {user?.role !== 'student' && (
+              <TabsContent value="created-projects">
+                {createdProjects.length > 0 ? (
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    {createdProjects.map((project) => (
+                      <Card key={project.id} className="p-6 hover:shadow-md transition-shadow">
+                        <div className="flex justify-between items-start mb-4">
+                          <h3 className="text-lg font-medium">{project.title}</h3>
+                          <Badge variant="outline" className="bg-blue-100 text-blue-700">
+                            <BookOpen size={14} className="mr-1" /> Ստեղծված
+                          </Badge>
+                        </div>
+                        
+                        <p className="text-sm text-muted-foreground mb-4 line-clamp-2">
+                          {project.description}
+                        </p>
+                        
+                        <div className="flex flex-wrap gap-2 mb-4">
+                          {project.techStack?.map((tech: string, i: number) => (
+                            <Badge key={i} variant="secondary" className="text-xs">
+                              {tech}
+                            </Badge>
+                          ))}
+                        </div>
+                        
+                        <div className="flex items-center justify-end mt-4">
+                          <Link to={`/project/${project.id}`} className="text-primary text-sm font-medium">
+                            Դիտել մանրամասներ
+                          </Link>
+                        </div>
+                      </Card>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="text-center p-10 bg-muted rounded-lg">
+                    <p className="text-muted-foreground">Դեռևս ստեղծված նախագծեր չկան</p>
+                    <Link to="/admin" className="text-primary font-medium mt-2 inline-block">
+                      Ստեղծել նոր նախագիծ
+                    </Link>
+                  </div>
+                )}
+              </TabsContent>
+            )}
+            
+            {user?.role === 'supervisor' && (
+              <TabsContent value="assigned-projects">
+                <div className="text-center p-10 bg-muted rounded-lg">
+                  <p className="text-muted-foreground">Այս բաժինը դեռևս մշակման փուլում է։</p>
+                </div>
+              </TabsContent>
+            )}
+          </Tabs>
         </div>
       </main>
       <Footer />

@@ -1,7 +1,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { ArrowRight, Filter } from 'lucide-react';
+import { ArrowRight } from 'lucide-react';
 import { projectThemes } from '@/data/projectThemes';
 import ProjectCard from '@/components/ProjectCard';
 import { Button } from '@/components/ui/button';
@@ -75,34 +75,36 @@ const ThemeGrid: React.FC<ThemeGridProps> = ({ limit, createdProjects = [] }) =>
     <div className="mt-12">
       <div className="mb-8">
         <h2 className="text-2xl font-semibold mb-4">Ծրագրերի թեմաներն ըստ կատեգորիաների</h2>
-        <div className="overflow-x-auto pb-2">
-          <TabsList className="mb-6 h-auto p-1">
-            {categories.map((category) => (
-              <TabsTrigger 
-                key={category}
-                value={category} 
-                onClick={() => {
-                  setActiveCategory(category);
-                  setDisplayLimit(limit || 6);
-                }}
-                className={`px-4 py-2 ${activeCategory === category ? 'bg-primary text-primary-foreground' : ''}`}
-              >
-                {category === "all" ? "Բոլորը" : category}
-              </TabsTrigger>
-            ))}
-          </TabsList>
-        </div>
+        <Tabs defaultValue="all">
+          <div className="overflow-x-auto pb-2">
+            <TabsList className="mb-6 h-auto p-1">
+              {categories.map((category) => (
+                <TabsTrigger 
+                  key={category}
+                  value={category} 
+                  onClick={() => {
+                    setActiveCategory(category);
+                    setDisplayLimit(limit || 6);
+                  }}
+                  className={`px-4 py-2 ${activeCategory === category ? 'bg-primary text-primary-foreground' : ''}`}
+                >
+                  {category === "all" ? "Բոլորը" : category}
+                </TabsTrigger>
+              ))}
+            </TabsList>
+          </div>
         
-        <div className="flex items-center gap-2 mb-4">
-          <Badge variant="outline" className="bg-muted">
-            {categoryFilteredProjects.length} նախագիծ
-          </Badge>
-          {user && (
-            <Badge variant="outline" className="bg-primary/10 text-primary">
-              {user.role === 'student' ? 'Ուսանող' : user.role === 'instructor' ? 'Դասախոս' : 'Ադմինիստրատոր'}
+          <div className="flex items-center gap-2 mb-4">
+            <Badge variant="outline" className="bg-muted">
+              {categoryFilteredProjects.length} նախագիծ
             </Badge>
-          )}
-        </div>
+            {user && (
+              <Badge variant="outline" className="bg-primary/10 text-primary">
+                {user.role === 'student' ? 'Ուսանող' : user.role === 'instructor' ? 'Դասախոս' : 'Ադմինիստրատոր'}
+              </Badge>
+            )}
+          </div>
+        </Tabs>
       </div>
 
       <FadeIn className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-10">
