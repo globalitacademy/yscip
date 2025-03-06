@@ -27,13 +27,7 @@ const ThemeGrid: React.FC<ThemeGridProps> = ({ limit }) => {
         {themes.map((theme) => (
           <ProjectCard
             key={theme.id}
-            id={theme.id}
-            title={theme.title}
-            description={theme.description}
-            category={theme.category}
-            complexity={theme.complexity}
-            techStack={theme.techStack}
-            image={theme.image}
+            project={theme}
           />
         ))}
       </FadeIn>
