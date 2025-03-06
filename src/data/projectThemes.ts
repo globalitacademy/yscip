@@ -1,3 +1,4 @@
+
 export interface Task {
   id: string;
   title: string;
@@ -318,4 +319,7 @@ export const projectThemes: ProjectTheme[] = [
     learningOutcomes: [
       "React-ի օգտագործում պրոֆեսիոնալ վեբ հավելվածների համար",
       "Node.js-ի կիրառում սերվերի կողմում",
-      "Սոցիալական մեդիայի API-ների ինտեգ
+      "Սոցիալական մեդիայի API-ների ինտեգրում"
+    ]
+  }
+];

@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import { projectThemes } from '@/data/projectThemes';
@@ -27,10 +26,6 @@ import TaskManager from '@/components/TaskManager';
 import ProjectApproval from '@/components/ProjectApproval';
 import { ProjectProvider, useProject } from '@/contexts/ProjectContext';
 import { v4 as uuidv4 } from 'uuid';
-
-// Add uuid dependency
-<lov-add-dependency>uuid@9.0.1</lov-add-dependency>
-<lov-add-dependency>@types/uuid@9.0.7</lov-add-dependency>
 
 const ProjectDetailsContent: React.FC = () => {
   const { project, timeline, tasks, projectStatus, addTimelineEvent, completeTimelineEvent, addTask, updateTaskStatus, submitProject, approveProject, rejectProject, reserveProject, isReserved } = useProject();
