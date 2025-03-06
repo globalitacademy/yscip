@@ -1,12 +1,14 @@
 
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { ArrowRight } from 'lucide-react';
+import { ArrowRight, Filter } from 'lucide-react';
 import { projectThemes } from '@/data/projectThemes';
 import ProjectCard from '@/components/ProjectCard';
 import { Button } from '@/components/ui/button';
 import { FadeIn } from '@/components/LocalTransitions';
 import { useAuth } from '@/contexts/AuthContext';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Badge } from "@/components/ui/badge";
 
 interface ThemeGridProps {
   limit?: number;
@@ -17,6 +19,10 @@ const ThemeGrid: React.FC<ThemeGridProps> = ({ limit, createdProjects = [] }) =>
   const [displayLimit, setDisplayLimit] = useState(limit || 6);
   const { user } = useAuth();
   const [allProjects, setAllProjects] = useState([...projectThemes]);
+  const [activeCategory, setActiveCategory] = useState("all");
+  
+  // Extract unique categories from projects
+  const categories = ["all", ...new Set(projectThemes.map(project => project.category))];
   
   // Merge projectThemes with createdProjects when component mounts or createdProjects changes
   useEffect(() => {
@@ -52,16 +58,53 @@ const ThemeGrid: React.FC<ThemeGridProps> = ({ limit, createdProjects = [] }) =>
     ? allProjects.filter(project => user.assignedProjects?.includes(project.id))
     : allProjects;
   
-  const themes = filteredProjects.slice(0, displayLimit);
+  // Filter projects by category
+  const categoryFilteredProjects = activeCategory === "all" 
+    ? filteredProjects 
+    : filteredProjects.filter(project => project.category === activeCategory);
+  
+  const themes = categoryFilteredProjects.slice(0, displayLimit);
   
   const loadMore = () => {
-    setDisplayLimit(prev => Math.min(prev + 6, filteredProjects.length));
+    setDisplayLimit(prev => Math.min(prev + 6, categoryFilteredProjects.length));
   };
   
-  const hasMore = displayLimit < filteredProjects.length;
+  const hasMore = displayLimit < categoryFilteredProjects.length;
   
   return (
     <div className="mt-12">
+      <div className="mb-8">
+        <h2 className="text-2xl font-semibold mb-4">Ծրագրերի թեմաներն ըստ կատեգորիաների</h2>
+        <div className="overflow-x-auto pb-2">
+          <TabsList className="mb-6 h-auto p-1">
+            {categories.map((category) => (
+              <TabsTrigger 
+                key={category}
+                value={category} 
+                onClick={() => {
+                  setActiveCategory(category);
+                  setDisplayLimit(limit || 6);
+                }}
+                className={`px-4 py-2 ${activeCategory === category ? 'bg-primary text-primary-foreground' : ''}`}
+              >
+                {category === "all" ? "Բոլորը" : category}
+              </TabsTrigger>
+            ))}
+          </TabsList>
+        </div>
+        
+        <div className="flex items-center gap-2 mb-4">
+          <Badge variant="outline" className="bg-muted">
+            {categoryFilteredProjects.length} նախագիծ
+          </Badge>
+          {user && (
+            <Badge variant="outline" className="bg-primary/10 text-primary">
+              {user.role === 'student' ? 'Ուսանող' : user.role === 'instructor' ? 'Դասախոս' : 'Ադմինիստրատոր'}
+            </Badge>
+          )}
+        </div>
+      </div>
+
       <FadeIn className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-10">
         {themes.map((theme) => (
           <ProjectCard
@@ -71,7 +114,13 @@ const ThemeGrid: React.FC<ThemeGridProps> = ({ limit, createdProjects = [] }) =>
         ))}
       </FadeIn>
       
-      <div className="flex justify-center space-x-4">
+      {themes.length === 0 && (
+        <div className="text-center p-10 bg-muted rounded-lg">
+          <p className="text-muted-foreground">Այս կատեգորիայում ծրագրեր չկան</p>
+        </div>
+      )}
+      
+      <div className="flex justify-center space-x-4 mt-8">
         {hasMore && (
           <Button onClick={loadMore} variant="outline" size="lg">
             Տեսնել ավելին

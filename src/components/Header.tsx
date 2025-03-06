@@ -19,10 +19,12 @@ const Header: React.FC<HeaderProps> = ({ className }) => {
     <header className={cn("border-b border-border sticky top-0 z-50 bg-background", className)}>
       <div className="container mx-auto px-4 py-3 flex justify-between items-center">
         <div className="flex items-center gap-6">
-          <Link to="/" className="flex items-center gap-2 text-xl font-bold">
+          <Link to="/" className="flex items-center gap-2">
             <GraduationCap size={28} className="text-primary" />
-            <span className="text-primary">Դիպլոմային</span>
-            <span className="text-foreground">Հաբ</span>
+            <div className="flex flex-col">
+              <span className="text-xl font-bold text-primary">Դիպլոմային</span>
+              <span className="text-sm text-muted-foreground -mt-1">Նախագծերի կառավարում</span>
+            </div>
           </Link>
           
           {isAdminOrInstructor && (
