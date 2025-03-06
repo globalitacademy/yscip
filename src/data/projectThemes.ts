@@ -1,3 +1,4 @@
+
 export interface ProjectTheme {
   id: number;
   title: string;
@@ -305,4 +306,30 @@ export const projectThemes: ProjectTheme[] = [
     id: 12,
     title: "Եղանակի տեսության հավելված",
     description: "Եղանակի կանխատեսման հավելված՝ դիրքի վրա հիմնված կանխատեսումներով, ռադարային քարտեզներով և վատ եղանակի զգուշացումներով։",
-    detailedDescription: "Եղանակի կ
+    detailedDescription: "Եղանակի կանխատեսման հավելված՝ դիրքի վրա հիմնված կանխատեսումներով, ռադարային քարտեզներով և վատ եղանակի զգուշացումներով։",
+    complexity: "Սկսնակ",
+    techStack: ["React", "OpenWeatherMap API", "Tailwind CSS", "Leaflet"],
+    steps: [
+      "React առջևի մասի ստեղծում դիրքորոշման հնարավորությամբ",
+      "OpenWeatherMap API-ի ինտեգրացիա",
+      "Եղանակի տվյալների ցուցադրում և վիզուալիզացիա",
+      "Ռադարային քարտեզների ներդրում Leaflet-ով",
+      "Վատ եղանակի զգուշացումների և ծանուցումների ավելացում"
+    ],
+    category: "Կլիմա և եղանակ",
+    image: "https://images.unsplash.com/photo-1592210454359-9043f067919b?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1470&q=80",
+    duration: "3-4 շաբաթ",
+    prerequisites: ["JavaScript-ի միջին իմացություն", "React հիմունքներ", "API-ների հետ աշխատելու հիմունքներ"],
+    learningOutcomes: [
+      "React-ի օգտագործում API տվյալների հետ",
+      "Գեոլոկացիայի ինտեգրում վեբ հավելվածներում",
+      "Եղանակային տվյալների վիզուալիզացիա",
+      "Քարտեզների ինտեգրում Leaflet-ով"
+    ]
+  }
+];
+
+// Helper function to get more projects (used in ThemeGrid)
+export function getMoreProjects(): ProjectTheme[] {
+  return projectThemes;
+}
