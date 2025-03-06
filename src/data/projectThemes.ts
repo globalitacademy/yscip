@@ -1,3 +1,4 @@
+
 export interface Task {
   id: string;
   title: string;
@@ -33,6 +34,9 @@ export interface ProjectTheme {
   tasks?: Task[];
   createdBy?: string;
   createdAt?: string;
+  assignedInstructor?: string;
+  assignedInstructorName?: string;
+  assignedGroups?: string[];
 }
 
 // Import all project categories

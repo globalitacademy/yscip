@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
@@ -7,7 +6,7 @@ import { FadeIn } from '@/components/LocalTransitions';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import UserManagement from '@/components/UserManagement';
 import ProjectCreation from '@/components/ProjectCreation';
-import { Users, FileText, BookOpen, Trash, Pencil, Eye, Filter, Database } from 'lucide-react';
+import { Users, FileText, BookOpen, Trash, Pencil, Eye, Filter, Database, UserPlus } from 'lucide-react';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -47,16 +46,19 @@ const AdminDashboard: React.FC = () => {
   const [selectedGroup, setSelectedGroup] = useState<string>("");
   const [projectToEdit, setProjectToEdit] = useState<any>(null);
   const [activeTab, setActiveTab] = useState("themes");
-  
+  const [sampleProjectToEdit, setSampleProjectToEdit] = useState<any>(null);
+  const [projectToAssign, setProjectToAssign] = useState<any>(null);
+  const [selectedInstructor, setSelectedInstructor] = useState<string>("");
+
   const students = selectedCourse || selectedGroup
     ? getStudentsByCourseAndGroup(selectedCourse, selectedGroup)
     : getUsersByRole('student');
     
+  const instructors = getUsersByRole('instructor');
   const allProjects = [...projectThemes, ...createdProjects];
   const courses = getCourses();
   const groups = getGroups(selectedCourse);
 
-  // Load any previously created projects from localStorage
   useEffect(() => {
     const storedProjects = localStorage.getItem('createdProjects');
     if (storedProjects) {
@@ -83,10 +85,8 @@ const AdminDashboard: React.FC = () => {
     const newProjects = [...createdProjects, project];
     setCreatedProjects(newProjects);
     
-    // Store in localStorage for demo purposes
     localStorage.setItem('createdProjects', JSON.stringify(newProjects));
     
-    // Switch to the projects tab to show the created project
     setActiveTab("projects");
   };
   
@@ -128,7 +128,6 @@ const AdminDashboard: React.FC = () => {
     setAssignments(newAssignments);
     localStorage.setItem('projectAssignments', JSON.stringify(newAssignments));
     
-    // Create a reservation for the student
     const reservedProjects = localStorage.getItem('reservedProjects');
     let reservations = [];
     
@@ -141,7 +140,6 @@ const AdminDashboard: React.FC = () => {
       }
     }
     
-    // Avoid duplicate reservations
     const existingReservation = reservations.find(
       (r: any) => r.projectId === projectId && r.userId === student.id
     );
@@ -161,7 +159,6 @@ const AdminDashboard: React.FC = () => {
     
     toast.success(`${project.title} նախագիծը հաջողությամբ նշանակվել է ${student.name}-ին։`);
     
-    // Reset selections
     setSelectedProject("");
     setSelectedStudent("");
   };
@@ -183,17 +180,14 @@ const AdminDashboard: React.FC = () => {
   };
 
   const handleDeleteProject = (projectId: number) => {
-    // Remove project
     const updatedProjects = createdProjects.filter(project => project.id !== projectId);
     setCreatedProjects(updatedProjects);
     localStorage.setItem('createdProjects', JSON.stringify(updatedProjects));
     
-    // Remove assignments related to this project
     const updatedAssignments = assignments.filter((a: any) => a.projectId !== projectId);
     setAssignments(updatedAssignments);
     localStorage.setItem('projectAssignments', JSON.stringify(updatedAssignments));
     
-    // Remove reservations related to this project
     try {
       const reservedProjects = localStorage.getItem('reservedProjects');
       if (reservedProjects) {
@@ -212,12 +206,10 @@ const AdminDashboard: React.FC = () => {
     const assignment = assignments.find((a: any) => a.id === assignmentId);
     if (!assignment) return;
     
-    // Remove assignment
     const updatedAssignments = assignments.filter((a: any) => a.id !== assignmentId);
     setAssignments(updatedAssignments);
     localStorage.setItem('projectAssignments', JSON.stringify(updatedAssignments));
     
-    // Remove corresponding reservation
     try {
       const reservedProjects = localStorage.getItem('reservedProjects');
       if (reservedProjects) {
@@ -232,6 +224,92 @@ const AdminDashboard: React.FC = () => {
     }
     
     toast.success("Նշանակումը հաջողությամբ ջնջվել է։");
+  };
+
+  const handleEditSampleProject = (project: any) => {
+    setSampleProjectToEdit({...project});
+  };
+
+  const handleUpdateSampleProject = (updatedData: any) => {
+    const projectExists = createdProjects.some(p => p.id === sampleProjectToEdit.id);
+    
+    if (projectExists) {
+      const updatedProjects = createdProjects.map(project => 
+        project.id === sampleProjectToEdit.id ? { ...project, ...updatedData } : project
+      );
+      setCreatedProjects(updatedProjects);
+      localStorage.setItem('createdProjects', JSON.stringify(updatedProjects));
+    } else {
+      const newProject = {
+        ...sampleProjectToEdit,
+        ...updatedData,
+        id: Date.now(),
+        createdBy: user?.id,
+        createdAt: new Date().toISOString()
+      };
+      
+      const newProjects = [...createdProjects, newProject];
+      setCreatedProjects(newProjects);
+      localStorage.setItem('createdProjects', JSON.stringify(newProjects));
+    }
+    
+    setSampleProjectToEdit(null);
+    toast.success("Նախագիծը հաջողությամբ թարմացվել է։");
+  };
+
+  const handleOpenAssignDialog = (project: any) => {
+    setProjectToAssign(project);
+    setSelectedInstructor("");
+  };
+
+  const handleAssignInstructor = () => {
+    if (!selectedInstructor || !projectToAssign) {
+      toast.error("Խնդրում ենք ընտրել դասախոսին։");
+      return;
+    }
+
+    const instructor = instructors.find(i => i.id === selectedInstructor);
+    if (!instructor) {
+      toast.error("Դասախոսը չի գտնվել։");
+      return;
+    }
+
+    const projectExists = createdProjects.some(p => p.id === projectToAssign.id);
+    
+    if (projectExists) {
+      const updatedProjects = createdProjects.map(project => 
+        project.id === projectToAssign.id 
+          ? { ...project, assignedInstructor: instructor.id, assignedInstructorName: instructor.name } 
+          : project
+      );
+      setCreatedProjects(updatedProjects);
+      localStorage.setItem('createdProjects', JSON.stringify(updatedProjects));
+    } else {
+      const newProject = {
+        ...projectToAssign,
+        id: Date.now(),
+        assignedInstructor: instructor.id,
+        assignedInstructorName: instructor.name,
+        createdBy: user?.id,
+        createdAt: new Date().toISOString()
+      };
+      
+      const newProjects = [...createdProjects, newProject];
+      setCreatedProjects(newProjects);
+      localStorage.setItem('createdProjects', JSON.stringify(newProjects));
+    }
+
+    setProjectToAssign(null);
+    toast.success(`${projectToAssign.title} նախագիծը հաջողությամբ նշանակվել է ${instructor.name}-ին։`);
+  };
+
+  const canEditProject = (project: any) => {
+    return user && (
+      user.role === 'admin' || 
+      user.role === 'supervisor' ||
+      (user.role === 'instructor' && project.assignedInstructor === user.id) ||
+      (user.role === 'instructor' && project.createdBy === user.id)
+    );
   };
 
   if (!user || (user.role !== 'admin' && user.role !== 'supervisor' && user.role !== 'instructor')) {
@@ -293,7 +371,6 @@ const AdminDashboard: React.FC = () => {
               <TabsContent value="projects">
                 <ProjectCreation onProjectCreated={handleProjectCreated} />
                 
-                {/* Projects List */}
                 <Card className="mt-8">
                   <CardHeader>
                     <CardTitle>Ստեղծված նախագծեր</CardTitle>
@@ -379,13 +456,12 @@ const AdminDashboard: React.FC = () => {
                 </Card>
               </TabsContent>
               
-              {/* Նոր ավելացված tab առկա պրոեկտների ցուցադրման համար */}
               <TabsContent value="themes">
                 <Card>
                   <CardHeader>
                     <CardTitle>Առկա պրոեկտներ</CardTitle>
                     <CardDescription>
-                      Համակարգում առկա բոլոր օրինակ պրոեկտների ցանկը
+                      Համակարգում առկա բոլոր օրինակ պրոեկտների ցանկը կամ ձեր խմբագրած պրոեկտները
                     </CardDescription>
                   </CardHeader>
                   
@@ -394,10 +470,10 @@ const AdminDashboard: React.FC = () => {
                       <Table>
                         <TableHeader>
                           <TableRow>
-                            <TableHead className="text-left w-[40%]">Վերնագիր</TableHead>
+                            <TableHead className="text-left w-[35%]">Վերնագիր</TableHead>
                             <TableHead className="text-left">Կատեգորիա</TableHead>
                             <TableHead className="text-left">Բարդություն</TableHead>
-                            <TableHead className="text-left">Տեխնոլոգիաներ</TableHead>
+                            <TableHead className="text-left">Դասախոս</TableHead>
                             <TableHead className="text-right">Գործողություններ</TableHead>
                           </TableRow>
                         </TableHeader>
@@ -427,18 +503,13 @@ const AdminDashboard: React.FC = () => {
                                 </Badge>
                               </TableCell>
                               <TableCell>
-                                <div className="flex flex-wrap gap-1">
-                                  {project.techStack.slice(0, 2).map((tech, index) => (
-                                    <Badge key={index} variant="secondary" className="text-xs">
-                                      {tech}
-                                    </Badge>
-                                  ))}
-                                  {project.techStack.length > 2 && (
-                                    <Badge variant="outline" className="text-xs">
-                                      +{project.techStack.length - 2}
-                                    </Badge>
-                                  )}
-                                </div>
+                                {project.assignedInstructorName ? (
+                                  <Badge variant="secondary" className="text-xs">
+                                    {project.assignedInstructorName}
+                                  </Badge>
+                                ) : (
+                                  <span className="text-muted-foreground text-xs">Չնշանակված</span>
+                                )}
                               </TableCell>
                               <TableCell className="text-right">
                                 <div className="flex justify-end gap-2">
@@ -452,30 +523,151 @@ const AdminDashboard: React.FC = () => {
                                       <Eye size={14} />
                                     </a>
                                   </Button>
-                                  <Button 
-                                    variant="outline" 
-                                    size="icon"
-                                    title="Կլոնավորել պրոեկտը"
-                                    onClick={() => {
-                                      // Ստեղծում ենք նոր պրոեկտ՝ հիմնված ընտրված օրինակ պրոեկտի վրա
-                                      const newProject = {
-                                        ...project,
-                                        id: Date.now(), // Նոր ID
-                                        createdBy: user?.id,
-                                        createdAt: new Date().toISOString()
-                                      };
-                                      const newProjects = [...createdProjects, newProject];
-                                      setCreatedProjects(newProjects);
-                                      localStorage.setItem('createdProjects', JSON.stringify(newProjects));
-                                      toast.success(`${project.title} պրոեկտը հաջողությամբ կլոնավորվել է`);
-                                    }}
-                                  >
-                                    <FileText size={14} />
-                                  </Button>
+                                  {canEditProject(project) && (
+                                    <>
+                                      <Button 
+                                        variant="outline" 
+                                        size="icon"
+                                        title="Խմբագրել պրոեկտը"
+                                        onClick={() => handleEditSampleProject(project)}
+                                      >
+                                        <Pencil size={14} />
+                                      </Button>
+                                      <Button 
+                                        variant="outline" 
+                                        size="icon"
+                                        title="Նշանակել դասախոսին"
+                                        onClick={() => handleOpenAssignDialog(project)}
+                                      >
+                                        <UserPlus size={14} />
+                                      </Button>
+                                      <Button 
+                                        variant="outline" 
+                                        size="icon"
+                                        title="Կլոնավորել պրոեկտը"
+                                        onClick={() => {
+                                          const newProject = {
+                                            ...project,
+                                            id: Date.now(),
+                                            createdBy: user?.id,
+                                            createdAt: new Date().toISOString()
+                                          };
+                                          const newProjects = [...createdProjects, newProject];
+                                          setCreatedProjects(newProjects);
+                                          localStorage.setItem('createdProjects', JSON.stringify(newProjects));
+                                          toast.success(`${project.title} պրոեկտը հաջողությամբ կլոնավորվել է`);
+                                        }}
+                                      >
+                                        <FileText size={14} />
+                                      </Button>
+                                    </>
+                                  )}
                                 </div>
                               </TableCell>
                             </TableRow>
                           ))}
+                        </TableBody>
+                      </Table>
+                    </div>
+                    
+                    <h3 className="text-lg font-medium mt-8 mb-4">Ձեր խմբագրած պրոեկտները</h3>
+                    <div className="rounded-md border">
+                      <Table>
+                        <TableHeader>
+                          <TableRow>
+                            <TableHead className="text-left w-[35%]">Վերնագիր</TableHead>
+                            <TableHead className="text-left">Կատեգորիա</TableHead>
+                            <TableHead className="text-left">Բարդություն</TableHead>
+                            <TableHead className="text-left">Դասախոս</TableHead>
+                            <TableHead className="text-right">Գործողություններ</TableHead>
+                          </TableRow>
+                        </TableHeader>
+                        <TableBody>
+                          {createdProjects.length > 0 ? (
+                            createdProjects.map((project) => (
+                              <TableRow key={project.id}>
+                                <TableCell className="font-medium">
+                                  <div className="flex items-center gap-2">
+                                    {project.image && (
+                                      <img 
+                                        src={project.image} 
+                                        alt={project.title}
+                                        className="w-10 h-10 rounded object-cover" 
+                                      />
+                                    )}
+                                    <span className="line-clamp-2">{project.title}</span>
+                                  </div>
+                                </TableCell>
+                                <TableCell>{project.category}</TableCell>
+                                <TableCell>
+                                  <Badge variant={
+                                    project.complexity === 'Սկսնակ' ? 'outline' : 
+                                    project.complexity === 'Միջին' ? 'secondary' : 
+                                    'default'
+                                  }>
+                                    {project.complexity}
+                                  </Badge>
+                                </TableCell>
+                                <TableCell>
+                                  {project.assignedInstructorName ? (
+                                    <Badge variant="secondary" className="text-xs">
+                                      {project.assignedInstructorName}
+                                    </Badge>
+                                  ) : (
+                                    <span className="text-muted-foreground text-xs">Չնշանակված</span>
+                                  )}
+                                </TableCell>
+                                <TableCell className="text-right">
+                                  <div className="flex justify-end gap-2">
+                                    <Button 
+                                      variant="outline" 
+                                      size="icon"
+                                      title="Դիտել"
+                                      asChild
+                                    >
+                                      <a href={`/project/${project.id}`} target="_blank" rel="noopener noreferrer">
+                                        <Eye size={14} />
+                                      </a>
+                                    </Button>
+                                    {canEditProject(project) && (
+                                      <>
+                                        <Button 
+                                          variant="outline" 
+                                          size="icon"
+                                          title="Խմբագրել պրոեկտը"
+                                          onClick={() => handleEditSampleProject(project)}
+                                        >
+                                          <Pencil size={14} />
+                                        </Button>
+                                        <Button 
+                                          variant="outline" 
+                                          size="icon"
+                                          title="Նշանակել դասախոսին"
+                                          onClick={() => handleOpenAssignDialog(project)}
+                                        >
+                                          <UserPlus size={14} />
+                                        </Button>
+                                        <Button 
+                                          variant="destructive" 
+                                          size="icon"
+                                          onClick={() => handleDeleteProject(project.id)}
+                                          title="Ջնջել"
+                                        >
+                                          <Trash size={14} />
+                                        </Button>
+                                      </>
+                                    )}
+                                  </div>
+                                </TableCell>
+                              </TableRow>
+                            ))
+                          ) : (
+                            <TableRow>
+                              <TableCell colSpan={5} className="text-center py-6 text-muted-foreground">
+                                Ձեր խմբագրած պրոեկտներ չկան
+                              </TableCell>
+                            </TableRow>
+                          )}
                         </TableBody>
                       </Table>
                     </div>
@@ -780,7 +972,6 @@ const AdminDashboard: React.FC = () => {
       
       <Footer />
       
-      {/* Edit Project Dialog */}
       {projectToEdit && (
         <Dialog 
           open={!!projectToEdit} 
@@ -879,6 +1070,167 @@ const AdminDashboard: React.FC = () => {
                 handleUpdateProject(updatedData);
               }}>
                 Պահպանել
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
+      )}
+
+      {sampleProjectToEdit && (
+        <Dialog 
+          open={!!sampleProjectToEdit} 
+          onOpenChange={(open) => !open && setSampleProjectToEdit(null)}
+        >
+          <DialogContent className="max-w-xl">
+            <DialogHeader>
+              <DialogTitle>Խմբագրել նախագիծը</DialogTitle>
+              <DialogDescription>
+                Փոփոխեք նախագծի տվյալները։ Փոփոխությունները կպահպանվեն որպես ձեր կլոնավորված նախագիծ։
+              </DialogDescription>
+            </DialogHeader>
+            
+            <div className="grid gap-4 py-4">
+              <div className="grid gap-2">
+                <Label htmlFor="sample-edit-title">Վերնագիր</Label>
+                <Input
+                  id="sample-edit-title"
+                  defaultValue={sampleProjectToEdit.title}
+                />
+              </div>
+              
+              <div className="grid gap-2">
+                <Label htmlFor="sample-edit-category">Կատեգորիա</Label>
+                <Input
+                  id="sample-edit-category"
+                  defaultValue={sampleProjectToEdit.category}
+                />
+              </div>
+              
+              <div className="grid gap-2">
+                <Label htmlFor="sample-edit-complexity">Բարդություն</Label>
+                <Select defaultValue={sampleProjectToEdit.complexity}>
+                  <SelectTrigger id="sample-edit-complexity">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="Սկսնակ">Սկսնակ</SelectItem>
+                    <SelectItem value="Միջին">Միջին</SelectItem>
+                    <SelectItem value="Առաջադեմ">Առաջադեմ</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              
+              <div className="grid gap-2">
+                <Label htmlFor="sample-edit-description">Նկարագրություն</Label>
+                <Textarea
+                  id="sample-edit-description"
+                  defaultValue={sampleProjectToEdit.description}
+                  rows={3}
+                />
+              </div>
+
+              <div className="grid gap-2">
+                <Label htmlFor="sample-edit-detailed-description">Մանրամասն նկարագրություն</Label>
+                <Textarea
+                  id="sample-edit-detailed-description"
+                  defaultValue={sampleProjectToEdit.detailedDescription}
+                  rows={5}
+                />
+              </div>
+              
+              {sampleProjectToEdit.image && (
+                <div className="mt-2">
+                  <Label>Ընթացիկ նկար</Label>
+                  <div className="mt-1 border rounded-md overflow-hidden">
+                    <img 
+                      src={sampleProjectToEdit.image} 
+                      alt={sampleProjectToEdit.title} 
+                      className="w-full max-h-32 object-cover"
+                    />
+                  </div>
+                </div>
+              )}
+            </div>
+            
+            <DialogFooter>
+              <Button variant="outline" onClick={() => setSampleProjectToEdit(null)}>
+                Չեղարկել
+              </Button>
+              <Button onClick={() => {
+                const titleInput = document.getElementById('sample-edit-title') as HTMLInputElement;
+                const categoryInput = document.getElementById('sample-edit-category') as HTMLInputElement;
+                const complexitySelect = document.getElementById('sample-edit-complexity') as HTMLSelectElement;
+                const descriptionInput = document.getElementById('sample-edit-description') as HTMLTextAreaElement;
+                const detailedDescInput = document.getElementById('sample-edit-detailed-description') as HTMLTextAreaElement;
+                
+                const updatedData = {
+                  title: titleInput.value,
+                  category: categoryInput.value,
+                  complexity: complexitySelect.value,
+                  description: descriptionInput.value,
+                  detailedDescription: detailedDescInput.value,
+                };
+                
+                handleUpdateSampleProject(updatedData);
+              }}>
+                Պահպանել
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
+      )}
+
+      {projectToAssign && (
+        <Dialog 
+          open={!!projectToAssign} 
+          onOpenChange={(open) => !open && setProjectToAssign(null)}
+        >
+          <DialogContent className="max-w-md">
+            <DialogHeader>
+              <DialogTitle>Նշանակել դասախոսին</DialogTitle>
+              <DialogDescription>
+                Ընտրեք դասախոսին, ով պատասխանատու կլինի այս նախագծի համար
+              </DialogDescription>
+            </DialogHeader>
+            
+            <div className="py-4">
+              <div className="mb-4">
+                <h3 className="text-sm font-medium mb-2">Նախագիծ՝</h3>
+                <div className="flex items-center gap-2 p-2 bg-muted rounded-md">
+                  {projectToAssign.image && (
+                    <img 
+                      src={projectToAssign.image} 
+                      alt={projectToAssign.title} 
+                      className="w-8 h-8 rounded object-cover"
+                    />
+                  )}
+                  <span className="font-medium">{projectToAssign.title}</span>
+                </div>
+              </div>
+              
+              <div className="space-y-2">
+                <Label>Ընտրեք դասախոսին</Label>
+                <Select value={selectedInstructor} onValueChange={setSelectedInstructor}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Ընտրեք դասախոսին" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {instructors.map((instructor) => (
+                      <SelectItem key={instructor.id} value={instructor.id}>
+                        {instructor.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+            
+            <DialogFooter>
+              <Button variant="outline" onClick={() => setProjectToAssign(null)}>
+                Չեղարկել
+              </Button>
+              <Button onClick={handleAssignInstructor}>
+                Նշանակել
               </Button>
             </DialogFooter>
           </DialogContent>
