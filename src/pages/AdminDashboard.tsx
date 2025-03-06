@@ -1,4 +1,4 @@
-<lov-code>
+
 import React, { useState, useEffect } from 'react';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
@@ -34,6 +34,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import ThemeGrid from '@/components/ThemeGrid';
+import { Badge } from '@/components/ui/badge';
 
 const AdminDashboard: React.FC = () => {
   
@@ -860,4 +861,31 @@ const AdminDashboard: React.FC = () => {
               <Button variant="outline" onClick={() => setProjectToEdit(null)}>
                 Չեղարկել
               </Button>
-              <Button onClick={() =>
+              <Button onClick={() => {
+                const titleInput = document.getElementById('edit-title') as HTMLInputElement;
+                const categoryInput = document.getElementById('edit-category') as HTMLInputElement;
+                const complexitySelect = document.getElementById('edit-complexity') as HTMLSelectElement;
+                const descriptionInput = document.getElementById('edit-description') as HTMLTextAreaElement;
+                const detailedDescInput = document.getElementById('edit-detailed-description') as HTMLTextAreaElement;
+                
+                const updatedData = {
+                  title: titleInput.value,
+                  category: categoryInput.value,
+                  complexity: complexitySelect.value,
+                  description: descriptionInput.value,
+                  detailedDescription: detailedDescInput.value,
+                };
+                
+                handleUpdateProject(updatedData);
+              }}>
+                Պահպանել
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
+      )}
+    </div>
+  );
+};
+
+export default AdminDashboard;
