@@ -34,6 +34,7 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import ThemeGrid from '@/components/ThemeGrid';
 import { Badge } from '@/components/ui/badge';
+import { getProjectImage } from '@/lib/getProjectImage';
 
 const AdminDashboard: React.FC = () => {
   
@@ -397,13 +398,11 @@ const AdminDashboard: React.FC = () => {
                               <TableRow key={project.id}>
                                 <TableCell className="font-medium">
                                   <div className="flex items-center gap-2">
-                                    {project.image && (
-                                      <img 
-                                        src={project.image} 
-                                        alt={project.title}
-                                        className="w-10 h-10 rounded object-cover" 
-                                      />
-                                    )}
+                                    <img 
+                                      src={getProjectImage(project)} 
+                                      alt={project.title}
+                                      className="w-10 h-10 rounded object-cover" 
+                                    />
                                     {project.title}
                                   </div>
                                 </TableCell>
@@ -482,13 +481,11 @@ const AdminDashboard: React.FC = () => {
                             <TableRow key={project.id}>
                               <TableCell className="font-medium">
                                 <div className="flex items-center gap-2">
-                                  {project.image && (
-                                    <img 
-                                      src={project.image} 
-                                      alt={project.title}
-                                      className="w-10 h-10 rounded object-cover" 
-                                    />
-                                  )}
+                                  <img 
+                                    src={getProjectImage(project)} 
+                                    alt={project.title}
+                                    className="w-10 h-10 rounded object-cover" 
+                                  />
                                   <span className="line-clamp-2">{project.title}</span>
                                 </div>
                               </TableCell>
@@ -588,13 +585,11 @@ const AdminDashboard: React.FC = () => {
                               <TableRow key={project.id}>
                                 <TableCell className="font-medium">
                                   <div className="flex items-center gap-2">
-                                    {project.image && (
-                                      <img 
-                                        src={project.image} 
-                                        alt={project.title}
-                                        className="w-10 h-10 rounded object-cover" 
-                                      />
-                                    )}
+                                    <img 
+                                      src={getProjectImage(project)} 
+                                      alt={project.title}
+                                      className="w-10 h-10 rounded object-cover" 
+                                    />
                                     <span className="line-clamp-2">{project.title}</span>
                                   </div>
                                 </TableCell>
@@ -1039,7 +1034,7 @@ const AdminDashboard: React.FC = () => {
                   <Label>Ընթացիկ նկար</Label>
                   <div className="mt-1 border rounded-md overflow-hidden">
                     <img 
-                      src={projectToEdit.image} 
+                      src={getProjectImage(projectToEdit)} 
                       alt={projectToEdit.title} 
                       className="w-full max-h-32 object-cover"
                     />
@@ -1143,7 +1138,7 @@ const AdminDashboard: React.FC = () => {
                   <Label>Ընթացիկ նկար</Label>
                   <div className="mt-1 border rounded-md overflow-hidden">
                     <img 
-                      src={sampleProjectToEdit.image} 
+                      src={getProjectImage(sampleProjectToEdit)} 
                       alt={sampleProjectToEdit.title} 
                       className="w-full max-h-32 object-cover"
                     />
@@ -1199,7 +1194,7 @@ const AdminDashboard: React.FC = () => {
                 <div className="flex items-center gap-2 p-2 bg-muted rounded-md">
                   {projectToAssign.image && (
                     <img 
-                      src={projectToAssign.image} 
+                      src={getProjectImage(projectToAssign)} 
                       alt={projectToAssign.title} 
                       className="w-8 h-8 rounded object-cover"
                     />
