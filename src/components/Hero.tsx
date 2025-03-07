@@ -54,7 +54,7 @@ const Hero: React.FC = () => {
         
         <SlideDown delay="delay-200">
           <h1 className="text-4xl md:text-5xl lg:text-6xl xl:text-7xl font-bold mb-8 leading-tight tracking-tight bg-clip-text text-transparent bg-gradient-to-b from-foreground to-foreground/70">
-            Բացահայտեք Ձեր հաջորդ
+            Սկսիր քո մասնագիտական ուղին
             <br />
             <span className="relative inline-block">
               <span className="relative z-10">Ծրագրավորման պրոեկտը</span>
