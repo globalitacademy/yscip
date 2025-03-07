@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import { projectThemes } from '@/data/projectThemes';
@@ -22,7 +23,7 @@ import { FadeIn, SlideUp } from '@/components/LocalTransitions';
 import { toast } from '@/components/ui/use-toast';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import Timeline from '@/components/Timeline';
-import TaskManager from '@/components/TaskManager';
+import TaskManager from '@/components/tasks/TaskManager';
 import ProjectApproval from '@/components/ProjectApproval';
 import { ProjectProvider, useProject } from '@/contexts/ProjectContext';
 import { v4 as uuidv4 } from 'uuid';

@@ -1,6 +1,7 @@
+
 import React from 'react';
 import AdminLayout from '@/components/AdminLayout';
-import TaskManager from '@/components/TaskManager';
+import TaskManager from '@/components/tasks/TaskManager';
 import { v4 as uuidv4 } from 'uuid';
 
 const TasksPage: React.FC = () => {
