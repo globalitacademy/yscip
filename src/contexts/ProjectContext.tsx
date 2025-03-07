@@ -1,3 +1,4 @@
+
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { v4 as uuidv4 } from 'uuid';
 import { ProjectTheme, Task, TimelineEvent } from '@/data/projectThemes';
@@ -51,7 +52,8 @@ export const ProjectProvider: React.FC<ProjectProviderProps> = ({
   // Role-based permissions
   const canStudentSubmit = permissions.canSubmitProject && isReserved;
   const canInstructorCreate = permissions.canCreateProjects;
-  const canInstructorAssign = permissions.canAssignProjects || false;
+  // Fix the canInstructorAssign property by providing a fallback
+  const canInstructorAssign = 'canAssignProjects' in permissions ? permissions.canAssignProjects : false;
   const canSupervisorApprove = permissions.canApproveProject;
 
   // Check for existing reservations on mount

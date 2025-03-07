@@ -1,5 +1,4 @@
-
-export type UserRole = 'admin' | 'lecturer' | 'project_manager' | 'employer' | 'student';
+export type UserRole = 'admin' | 'lecturer' | 'project_manager' | 'employer' | 'student' | 'instructor' | 'supervisor';
 
 export interface User {
   id: string;
@@ -17,7 +16,6 @@ export interface User {
   registrationApproved?: boolean;
 }
 
-// Mock users for demo purposes
 export const mockUsers: User[] = [
   {
     id: 'admin1',
@@ -101,20 +99,16 @@ export const mockUsers: User[] = [
   }
 ];
 
-// Role permissions
 export const rolePermissions = {
   admin: {
-    // User Management
     canCreateRoles: true,
     canEditRoles: true,
     canApproveRegistrations: true,
     
-    // Administration
-    canManageSpecializations: true, // CRUD for specializations/courses/groups
-    canRegisterOrganizations: true, // Register partner companies
-    canViewReports: true, // Statistics, usage metrics
+    canManageSpecializations: true,
+    canRegisterOrganizations: true,
+    canViewReports: true,
     
-    // General permissions
     canAddTimeline: true,
     canEditTimeline: true,
     canApproveTimelineEvents: true,
@@ -132,16 +126,13 @@ export const rolePermissions = {
   },
   
   lecturer: {
-    // Task Management
-    canCreateModularTasks: true, // Create modular tasks by course/group
-    canSetDeadlines: true, // Set deadlines, evaluation criteria
+    canCreateModularTasks: true,
+    canSetDeadlines: true,
     
-    // Assessment
-    canAutoCheck: true, // Automated checking (quiz/test) and manual grading
-    canFilterByStudent: true, // Filter by student/group/course
-    canViewStudentProgress: true, // Student progress dashboard
+    canAutoCheck: true,
+    canFilterByStudent: true,
+    canViewStudentProgress: true,
     
-    // General permissions
     canAddTimeline: true,
     canEditTimeline: true,
     canApproveTimelineEvents: true,
@@ -157,17 +148,62 @@ export const rolePermissions = {
     canManageUsers: false
   },
   
+  instructor: {
+    canCreateModularTasks: true,
+    canSetDeadlines: true,
+    
+    canAutoCheck: true,
+    canFilterByStudent: true,
+    canViewStudentProgress: true,
+    
+    canAddTimeline: true,
+    canEditTimeline: true,
+    canApproveTimelineEvents: true,
+    canAddTasks: true,
+    canAssignTasks: true,
+    canApproveProject: true,
+    canSubmitProject: false,
+    canCreateUsers: false,
+    canAssignInstructors: false,
+    canAssignSupervisors: false,
+    canCreateProjects: true,
+    canAssignProjects: false,
+    canViewAllProjects: false,
+    canManageUsers: false
+  },
+  
+  supervisor: {
+    canCreateSteppedProjects: true,
+    canModifyProjectSteps: true,
+    canApproveEmployerProjects: true,
+    
+    canViewGanttChart: true,
+    canUpdateTaskStatus: true,
+    
+    canAddTimeline: true,
+    canEditTimeline: true,
+    canApproveTimelineEvents: true,
+    canAddTasks: true,
+    canAssignTasks: true,
+    canApproveProject: true,
+    canSubmitProject: false,
+    canCreateUsers: false,
+    canAssignInstructors: false,
+    canAssignSupervisors: true,
+    canCreateProjects: true,
+    canAssignProjects: true,
+    canViewAllProjects: true,
+    canManageUsers: false
+  },
+  
   project_manager: {
-    // Project Management
-    canCreateSteppedProjects: true, // Create step-by-step projects (Waterfall/Agile phases)
-    canModifyProjectSteps: true, // Change step sequence/deadlines
-    canApproveEmployerProjects: true, // Approve employer projects
+    canCreateSteppedProjects: true,
+    canModifyProjectSteps: true,
+    canApproveEmployerProjects: true,
     
-    // Tracking
-    canViewGanttChart: true, // Gantt chart for implementation
-    canUpdateTaskStatus: true, // Update task status (To-Do/In Progress/Done)
+    canViewGanttChart: true,
+    canUpdateTaskStatus: true,
     
-    // General permissions
     canAddTimeline: true,
     canEditTimeline: true,
     canApproveTimelineEvents: true,
@@ -185,12 +221,10 @@ export const rolePermissions = {
   },
   
   employer: {
-    // Project Announcement
-    canAnnounceProjects: true, // Project description form (technologies, requirements, deadline)
-    canLinkProjectToCourse: true, // Link between project and course (e.g., "Python + Django" for a course)
-    canCollaborateWithManager: true, // Collaboration with project manager
+    canAnnounceProjects: true,
+    canLinkProjectToCourse: true,
+    canCollaborateWithManager: true,
     
-    // General permissions
     canAddTimeline: false,
     canEditTimeline: false,
     canApproveTimelineEvents: false,
@@ -208,20 +242,16 @@ export const rolePermissions = {
   },
   
   student: {
-    // Project Selection
-    canFilterProjects: true, // Filter by technology/course/difficulty
-    canApplyToProject: true, // Apply to project (CV/motivation letter upload)
+    canFilterProjects: true,
+    canApplyToProject: true,
     
-    // Execution
-    canViewTaskTimeline: true, // Task list in timeline view
-    canUploadFiles: true, // File upload/submission (GitHub integration)
-    canViewProgressMap: true, // Mapping student progress (progress heatmap)
+    canViewTaskTimeline: true,
+    canUploadFiles: true,
+    canViewProgressMap: true,
     
-    // CV Generator
-    canGenerateCV: true, // Automatic form based on completed projects/skills
-    canDownloadCVFormats: true, // Download in PDF/Word format
+    canGenerateCV: true,
+    canDownloadCVFormats: true,
     
-    // General permissions
     canAddTimeline: false,
     canEditTimeline: false,
     canApproveTimelineEvents: false,
@@ -240,8 +270,6 @@ export const rolePermissions = {
 };
 
 export const getCurrentUser = (): User => {
-  // This would typically come from authentication
-  // For demo purposes, we'll default to the student
   return mockUsers.find(user => user.role === 'student') || mockUsers[4];
 };
 
@@ -249,7 +277,6 @@ export const getUsersByRole = (role: UserRole): User[] => {
   return mockUsers.filter(user => user.role === role);
 };
 
-// Get course options
 export const getCourses = (): string[] => {
   const courses = mockUsers
     .filter(user => user.role === 'student' && user.course)
@@ -258,7 +285,6 @@ export const getCourses = (): string[] => {
   return [...new Set(courses)].sort();
 };
 
-// Get group options
 export const getGroups = (course?: string): string[] => {
   const groups = mockUsers
     .filter(user => 
@@ -271,7 +297,6 @@ export const getGroups = (course?: string): string[] => {
   return [...new Set(groups)].sort();
 };
 
-// Get students by course and group
 export const getStudentsByCourseAndGroup = (course?: string, group?: string): User[] => {
   return mockUsers.filter(user => 
     user.role === 'student' && 
@@ -280,7 +305,6 @@ export const getStudentsByCourseAndGroup = (course?: string, group?: string): Us
   );
 };
 
-// Get project assignments for specific user
 export const getProjectAssignmentsForUser = (userId: string): number[] => {
   try {
     const assignments = localStorage.getItem('projectAssignments');
@@ -296,7 +320,6 @@ export const getProjectAssignmentsForUser = (userId: string): number[] => {
   }
 };
 
-// Get students assigned to specific projects
 export const getStudentsForProject = (projectId: number): User[] => {
   try {
     const assignments = localStorage.getItem('projectAssignments');
