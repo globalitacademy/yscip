@@ -13,6 +13,7 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { LogOut, User, UserCog, GraduationCap, ChevronDown, Building, School } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { UserRole } from '@/data/userRoles';
 
 const UserMenu: React.FC = () => {
   const { user, isAuthenticated, logout, switchRole } = useAuth();
@@ -58,10 +59,10 @@ const UserMenu: React.FC = () => {
 
   // Only show these four roles in the dropdown
   const availableRoles = [
-    { id: 'role1', role: 'admin' },
-    { id: 'role2', role: 'lecturer' },
-    { id: 'role3', role: 'student' },
-    { id: 'role4', role: 'supervisor' }
+    { id: 'role1', role: 'admin' as UserRole },
+    { id: 'role2', role: 'lecturer' as UserRole },
+    { id: 'role3', role: 'student' as UserRole },
+    { id: 'role4', role: 'supervisor' as UserRole }
   ];
 
   return (
