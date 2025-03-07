@@ -6,7 +6,6 @@ import Index from '@/pages/Index';
 import ProjectDetails from '@/pages/ProjectDetails';
 import NotFound from '@/pages/NotFound';
 import Login from '@/pages/Login';
-import VerifyEmail from '@/pages/VerifyEmail';
 import AdminDashboard from '@/pages/AdminDashboard';
 import UserManagementPage from '@/pages/UserManagementPage';
 import OrganizationsPage from '@/pages/OrganizationsPage';
@@ -21,7 +20,6 @@ import ProjectManagementPage from '@/pages/ProjectManagementPage';
 import StudentProjectsPage from '@/pages/StudentProjectsPage';
 import PortfolioPage from '@/pages/PortfolioPage';
 import ProjectSubmissionPage from '@/pages/ProjectSubmissionPage';
-import PendingApprovals from '@/pages/PendingApprovals';
 import AuthProvider, { useAuth } from '@/contexts/AuthContext';
 import './App.css';
 
@@ -46,7 +44,6 @@ function AppRoutes() {
       <Route path="/" element={<Index />} />
       <Route path="/project/:id" element={<ProjectDetails />} />
       <Route path="/login" element={<Login />} />
-      <Route path="/verify-email" element={<VerifyEmail />} />
       
       {/* Admin routes */}
       <Route path="/admin" element={
@@ -57,11 +54,6 @@ function AppRoutes() {
       <Route path="/users" element={
         <ProtectedRoute allowedRoles={['admin']}>
           <UserManagementPage />
-        </ProtectedRoute>
-      } />
-      <Route path="/pending-approvals" element={
-        <ProtectedRoute allowedRoles={['admin']}>
-          <PendingApprovals />
         </ProtectedRoute>
       } />
       <Route path="/organizations" element={
