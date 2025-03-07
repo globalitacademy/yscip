@@ -12,7 +12,10 @@ interface TeachingProjectsTabProps {
 }
 
 const TeachingProjectsTab: React.FC<TeachingProjectsTabProps> = ({ assignedProjects = [], allProjects }) => {
-  if (assignedProjects.length === 0) {
+  // Ensure assignedProjects is always an array, even if it's undefined
+  const projectsToDisplay = assignedProjects || [];
+  
+  if (projectsToDisplay.length === 0) {
     return (
       <div className="text-center p-10 bg-muted rounded-lg">
         <p className="text-muted-foreground">Դեռևս դասավանդվող նախագծեր չկան</p>
@@ -22,7 +25,7 @@ const TeachingProjectsTab: React.FC<TeachingProjectsTabProps> = ({ assignedProje
 
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-      {assignedProjects.map(projectId => {
+      {projectsToDisplay.map(projectId => {
         const project = allProjects.find(p => Number(p.id) === projectId);
         
         return project ? (

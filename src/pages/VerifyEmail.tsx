@@ -1,6 +1,7 @@
 
 import React, { useEffect, useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
+import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { CheckCircle, XCircle, AlertCircle, Loader2 } from 'lucide-react';
@@ -8,6 +9,7 @@ import { CheckCircle, XCircle, AlertCircle, Loader2 } from 'lucide-react';
 const VerifyEmail: React.FC = () => {
   const navigate = useNavigate();
   const location = useLocation();
+  const { verifyEmail } = useAuth();
   const [verificationStatus, setVerificationStatus] = useState<'loading' | 'success' | 'error'>('loading');
   const [errorMessage, setErrorMessage] = useState('');
 
@@ -22,16 +24,21 @@ const VerifyEmail: React.FC = () => {
       return;
     }
 
-    // In a real application, this would be an API call to verify the token
-    // For demo purposes, we'll simulate the verification process
+    // Call the verifyEmail function from AuthContext
     const verifyToken = async () => {
       try {
-        // Simulate API call with 2 second delay
-        await new Promise(resolve => setTimeout(resolve, 2000));
+        // Simulate network delay
+        await new Promise(resolve => setTimeout(resolve, 1000));
         
-        // For demo, we'll consider the verification successful
-        // In a real application, this would check the token with the backend
-        setVerificationStatus('success');
+        // Verify the token
+        const success = await verifyEmail(token);
+        
+        if (success) {
+          setVerificationStatus('success');
+        } else {
+          setVerificationStatus('error');
+          setErrorMessage('Հաստատման գործընթացի սխալ: Հղումն անվավեր է կամ արդեն օգտագործվել է։');
+        }
       } catch (error) {
         setVerificationStatus('error');
         setErrorMessage('Հաստատման գործընթացի սխալ: Խնդրում ենք փորձել կրկին։');
@@ -39,7 +46,7 @@ const VerifyEmail: React.FC = () => {
     };
 
     verifyToken();
-  }, [location.search]);
+  }, [location.search, verifyEmail]);
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-background p-4">

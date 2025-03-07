@@ -5,7 +5,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { toast } from '@/components/ui/use-toast';
+import { toast } from 'sonner';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { UserRole, mockUsers } from '@/data/userRoles';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -22,7 +22,7 @@ import { AlertCircle } from 'lucide-react';
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 
 const Login: React.FC = () => {
-  const { login, switchRole, registerUser } = useAuth();
+  const { login, switchRole, registerUser, sendVerificationEmail } = useAuth();
   const navigate = useNavigate();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -33,6 +33,7 @@ const Login: React.FC = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [acceptTerms, setAcceptTerms] = useState(false);
   const [verificationSent, setVerificationSent] = useState(false);
+  const [resendEmail, setResendEmail] = useState('');
 
   // Validation states
   const [emailError, setEmailError] = useState('');
@@ -68,23 +69,18 @@ const Login: React.FC = () => {
     try {
       const success = await login(email, password);
       if (success) {
-        toast({
-          title: 'Մուտքն հաջողվել է',
+        toast.success('Մուտքն հաջողվել է', {
           description: 'Դուք հաջողությամբ մուտք եք գործել համակարգ',
         });
         navigate('/');
       } else {
-        toast({
-          title: 'Մուտքը չի հաջողվել',
+        toast.error('Մուտքը չի հաջողվել', {
           description: 'Էլ․ հասցեն կամ գաղտնաբառը սխալ է կամ Ձեր հաշիվը դեռ ակտիվացված չէ',
-          variant: 'destructive',
         });
       }
     } catch (error) {
-      toast({
-        title: 'Սխալ',
+      toast.error('Սխալ', {
         description: 'Տեղի ունեցավ անսպասելի սխալ',
-        variant: 'destructive',
       });
     } finally {
       setIsLoading(false);
@@ -103,18 +99,14 @@ const Login: React.FC = () => {
       
       if (!name || !isEmailValid || !isPasswordValid || !isConfirmPasswordValid || !acceptTerms) {
         if (!name) {
-          toast({
-            title: 'Սխալ',
+          toast.error('Սխալ', {
             description: 'Անուն Ազգանունը պարտադիր է',
-            variant: 'destructive',
           });
         }
         
         if (!acceptTerms) {
-          toast({
-            title: 'Սխալ',
+          toast.error('Սխալ', {
             description: 'Պետք է համաձայնեք գաղտնիության քաղաքականությանը',
-            variant: 'destructive',
           });
         }
         
@@ -124,10 +116,8 @@ const Login: React.FC = () => {
 
       // Check if employer has organization
       if (role === 'employer' && !organization) {
-        toast({
-          title: 'Սխալ',
+        toast.error('Սխալ', {
           description: 'Կազմակերպության անունը պարտադիր է գործատուի համար',
-          variant: 'destructive',
         });
         setIsLoading(false);
         return;
@@ -137,6 +127,7 @@ const Login: React.FC = () => {
         name,
         email,
         role,
+        password, // Pass password to the registerUser function
         registrationApproved: role === 'student', // Students are auto-approved
         ...(role === 'employer' && { organization })
       };
@@ -145,6 +136,7 @@ const Login: React.FC = () => {
       
       if (success) {
         setVerificationSent(true);
+        setResendEmail(email);
         
         // Clear the form
         setName('');
@@ -156,13 +148,26 @@ const Login: React.FC = () => {
         setAcceptTerms(false);
       }
     } catch (error) {
-      toast({
-        title: 'Սխալ',
+      toast.error('Սխալ', {
         description: 'Տեղի ունեցավ անսպասելի սխալ',
-        variant: 'destructive',
       });
     } finally {
       setIsLoading(false);
+    }
+  };
+
+  const handleResendVerification = async () => {
+    if (!resendEmail) return;
+    
+    const success = await sendVerificationEmail(resendEmail);
+    if (success) {
+      toast.success('Հաստատման հղումը կրկին ուղարկված է', {
+        description: 'Խնդրում ենք ստուգել Ձեր էլ․ փոստը'
+      });
+    } else {
+      toast.error('Սխալ', {
+        description: 'Չհաջողվեց վերաուղարկել հաստատման հղումը'
+      });
     }
   };
 
@@ -259,6 +264,11 @@ const Login: React.FC = () => {
                           Նշում: {role === 'employer' ? 'Գործատուի' : role === 'lecturer' ? 'Դասախոսի' : 'Ղեկավարի'} հաշիվը պետք է նաև հաստատվի ադմինիստրատորի կողմից ակտիվացումից հետո:
                         </p>
                       )}
+                      <div className="mt-4">
+                        <Button onClick={handleResendVerification} size="sm" variant="outline">
+                          Վերաուղարկել հաստատման հղումը
+                        </Button>
+                      </div>
                     </AlertDescription>
                   </Alert>
                 ) : (
@@ -418,7 +428,7 @@ const Login: React.FC = () => {
           </CardContent>
           <CardFooter className="flex justify-center">
             <p className="text-sm text-muted-foreground">
-              Դեմո տարբերակ. Իրական մուտքի տվյալներ չեն պահանջվում
+              {/* Removed "Demo version" text since we now have real accounts */}
             </p>
           </CardFooter>
         </Card>
