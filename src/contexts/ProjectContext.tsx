@@ -38,6 +38,7 @@ interface ProjectContextType {
   projectReservations: ProjectReservation[];
   approveReservation: (reservationId: number) => void;
   rejectReservation: (reservationId: number, feedback: string) => void;
+  projectProgress: number;
 }
 
 const ProjectContext = createContext<ProjectContextType | undefined>(undefined);
@@ -60,6 +61,16 @@ export const ProjectProvider: React.FC<ProjectProviderProps> = ({
   const [projectStatus, setProjectStatus] = useState<'not_submitted' | 'pending' | 'approved' | 'rejected'>('not_submitted');
   const [isReserved, setIsReserved] = useState(false);
   const [projectReservations, setProjectReservations] = useState<ProjectReservation[]>([]);
+
+  // Calculate project progress
+  const completedTasks = tasks.filter(task => task.status === 'done').length;
+  const totalTasks = tasks.length;
+  const completedEvents = timeline.filter(event => event.completed).length;
+  const totalEvents = timeline.length;
+  
+  const projectProgress = totalTasks + totalEvents > 0 
+    ? Math.round(((completedTasks + completedEvents) / (totalTasks + totalEvents)) * 100) 
+    : 0;
 
   // Get permissions based on user role
   const permissions = user ? rolePermissions[user.role] : rolePermissions.student;
@@ -339,7 +350,8 @@ export const ProjectProvider: React.FC<ProjectProviderProps> = ({
         canSupervisorApprove,
         projectReservations,
         approveReservation,
-        rejectReservation
+        rejectReservation,
+        projectProgress
       }}
     >
       {children}

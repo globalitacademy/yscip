@@ -16,7 +16,14 @@ import {
   ArrowRight, 
   KanbanSquare,
   ListChecks,
-  CalendarRange
+  CalendarRange,
+  MessageSquare,
+  FileText,
+  Star,
+  Building,
+  User,
+  AlertCircle,
+  PieChart
 } from 'lucide-react';
 import { Separator } from '@/components/ui/separator';
 import { FadeIn, SlideUp } from '@/components/LocalTransitions';
@@ -28,9 +35,30 @@ import ProjectApproval from '@/components/ProjectApproval';
 import { ProjectProvider, useProject } from '@/contexts/ProjectContext';
 import { v4 as uuidv4 } from 'uuid';
 import { getProjectImage } from '@/lib/getProjectImage';
+import ProjectDiscussions from '@/components/projects/ProjectDiscussions';
+import ProjectFiles from '@/components/projects/ProjectFiles';
+import ProjectEvaluation from '@/components/projects/ProjectEvaluation';
+import ProjectMembers from '@/components/projects/ProjectMembers';
+import { Progress } from '@/components/ui/progress';
+import { Card } from '@/components/ui/card';
+import { format } from 'date-fns';
 
 const ProjectDetailsContent: React.FC = () => {
-  const { project, timeline, tasks, projectStatus, addTimelineEvent, completeTimelineEvent, addTask, updateTaskStatus, submitProject, approveProject, rejectProject, reserveProject, isReserved } = useProject();
+  const { 
+    project, 
+    timeline, 
+    tasks, 
+    projectStatus, 
+    addTimelineEvent, 
+    completeTimelineEvent, 
+    addTask, 
+    updateTaskStatus, 
+    submitProject, 
+    approveProject, 
+    rejectProject, 
+    reserveProject, 
+    isReserved 
+  } = useProject();
   const navigate = useNavigate();
   
   const similarProjects = projectThemes
@@ -64,6 +92,36 @@ const ProjectDetailsContent: React.FC = () => {
   
   const imageUrl = getProjectImage(project);
 
+  // Calculate project progress based on completed tasks and timeline events
+  const completedTasks = tasks.filter(task => task.status === 'done').length;
+  const totalTasks = tasks.length;
+  const completedEvents = timeline.filter(event => event.completed).length;
+  const totalEvents = timeline.length;
+  
+  const progressPercentage = totalTasks + totalEvents > 0 
+    ? Math.round(((completedTasks + completedEvents) / (totalTasks + totalEvents)) * 100) 
+    : 0;
+
+  // Mock data for the project members
+  const projectMembers = [
+    { id: 'supervisor1', name: 'Արամ Հակոբյան', role: 'ղեկավար', avatar: '/placeholder.svg' },
+    { id: 'student1', name: 'Գագիկ Պետրոսյան', role: 'ուսանող', avatar: '/placeholder.svg' }
+  ];
+
+  // Mock data for organization
+  const organization = {
+    id: 'org1',
+    name: 'Պլեքսկոդ',
+    website: 'https://plexcode.am',
+    logo: '/placeholder.svg'
+  };
+
+  // Project deadline
+  const deadline = project.duration ? new Date() : null;
+  if (deadline) {
+    deadline.setDate(deadline.getDate() + 30); // Mock deadline 30 days from now
+  }
+
   return (
     <div className="min-h-screen flex flex-col">
       <Header />
@@ -91,20 +149,38 @@ const ProjectDetailsContent: React.FC = () => {
                   ))}
                 </div>
                 
-                <div className="flex flex-wrap gap-4 mb-6">
-                  {project.duration && (
-                    <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                      <Clock size={16} />
-                      <span>{project.duration}</span>
+                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 mb-6">
+                  {deadline && (
+                    <div className="flex items-center gap-2 text-sm">
+                      <Clock size={16} className="text-muted-foreground" />
+                      <span>Վերջնաժամկետ: {format(deadline, 'dd/MM/yyyy')}</span>
                     </div>
                   )}
-                  <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                    <Users size={16} />
+                  <div className="flex items-center gap-2 text-sm">
+                    <Users size={16} className="text-muted-foreground" />
                     <span>Անհատական նախագիծ</span>
                   </div>
-                  <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                    <BookOpen size={16} />
+                  <div className="flex items-center gap-2 text-sm">
+                    <BookOpen size={16} className="text-muted-foreground" />
                     <span>{project.category}</span>
+                  </div>
+                  <div className="flex items-center gap-2 text-sm">
+                    <User size={16} className="text-muted-foreground" />
+                    <span>Ղեկավար: {projectMembers[0].name}</span>
+                  </div>
+                  {organization && (
+                    <div className="flex items-center gap-2 text-sm">
+                      <Building size={16} className="text-muted-foreground" />
+                      <span>Կազմակերպություն: {organization.name}</span>
+                    </div>
+                  )}
+                  <div className="flex items-center gap-2 text-sm">
+                    <AlertCircle size={16} className="text-muted-foreground" />
+                    <span>Կարգավիճակ: {
+                      projectStatus === 'not_submitted' ? 'Չներկայացված' :
+                      projectStatus === 'pending' ? 'Ներկայացված' :
+                      projectStatus === 'approved' ? 'Հաստատված' : 'Մերժված'
+                    }</span>
                   </div>
                 </div>
                 
@@ -113,9 +189,19 @@ const ProjectDetailsContent: React.FC = () => {
                     Ամրագրել այս պրոեկտը
                   </Button>
                 ) : (
-                  <Badge variant="outline" className="bg-green-100 text-green-700 border-green-200 px-3 py-1">
-                    <CheckCircle size={14} className="mr-1" /> Այս պրոեկտն ամրագրված է
-                  </Badge>
+                  <div className="space-y-3">
+                    <Badge variant="outline" className="bg-green-100 text-green-700 border-green-200 px-3 py-1">
+                      <CheckCircle size={14} className="mr-1" /> Այս պրոեկտն ամրագրված է
+                    </Badge>
+                    
+                    <div className="flex flex-col">
+                      <div className="flex justify-between items-center mb-1">
+                        <span className="text-sm font-medium">Պրոեկտի առաջադիմություն</span>
+                        <span className="text-sm font-medium">{progressPercentage}%</span>
+                      </div>
+                      <Progress value={progressPercentage} className="h-2 w-full" />
+                    </div>
+                  </div>
                 )}
               </div>
               
@@ -130,15 +216,24 @@ const ProjectDetailsContent: React.FC = () => {
           </FadeIn>
           
           <Tabs defaultValue="overview" className="w-full mb-16">
-            <TabsList className="grid w-full grid-cols-1 md:grid-cols-3 h-auto">
+            <TabsList className="grid w-full grid-cols-3 md:grid-cols-6 h-auto">
               <TabsTrigger value="overview" className="flex items-center gap-2">
-                <BookOpen size={16} /> Նախագծի նկարագիր
+                <BookOpen size={16} /> Նկարագիր
               </TabsTrigger>
               <TabsTrigger value="timeline" className="flex items-center gap-2" disabled={!isReserved}>
                 <CalendarRange size={16} /> Ժամանակացույց
               </TabsTrigger>
               <TabsTrigger value="tasks" className="flex items-center gap-2" disabled={!isReserved}>
-                <ListChecks size={16} /> Առաջադրանքներ
+                <ListChecks size={16} /> Քայլեր
+              </TabsTrigger>
+              <TabsTrigger value="discussions" className="flex items-center gap-2" disabled={!isReserved}>
+                <MessageSquare size={16} /> Քննարկումներ
+              </TabsTrigger>
+              <TabsTrigger value="files" className="flex items-center gap-2" disabled={!isReserved}>
+                <FileText size={16} /> Ֆայլեր
+              </TabsTrigger>
+              <TabsTrigger value="evaluation" className="flex items-center gap-2" disabled={!isReserved}>
+                <Star size={16} /> Գնահատական
               </TabsTrigger>
             </TabsList>
             
@@ -188,6 +283,8 @@ const ProjectDetailsContent: React.FC = () => {
                 
                 <div>
                   <SlideUp className="space-y-8">
+                    <ProjectMembers members={projectMembers} organization={organization} />
+                    
                     {project.prerequisites && (
                       <div className="border border-border rounded-lg p-6">
                         <h3 className="text-lg font-medium mb-3 flex items-center">
@@ -278,6 +375,24 @@ const ProjectDetailsContent: React.FC = () => {
                   onAddTask={addTask}
                   onUpdateTaskStatus={updateTaskStatus}
                 />
+              </SlideUp>
+            </TabsContent>
+            
+            <TabsContent value="discussions" className="mt-6">
+              <SlideUp>
+                <ProjectDiscussions projectId={project.id} />
+              </SlideUp>
+            </TabsContent>
+            
+            <TabsContent value="files" className="mt-6">
+              <SlideUp>
+                <ProjectFiles projectId={project.id} />
+              </SlideUp>
+            </TabsContent>
+            
+            <TabsContent value="evaluation" className="mt-6">
+              <SlideUp>
+                <ProjectEvaluation projectId={project.id} />
               </SlideUp>
             </TabsContent>
           </Tabs>
