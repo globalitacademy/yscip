@@ -67,9 +67,17 @@ const AdminSidebar: React.FC<AdminSidebarProps> = ({
         )}
         
         {/* Role-specific menu items */}
-        <SidebarMenuGroup menuItems={adminMenuItems} onCloseMenu={onCloseMenu} />
-        <SidebarMenuGroup menuItems={lecturerMenuItems} onCloseMenu={onCloseMenu} />
-        <SidebarMenuGroup menuItems={supervisorMenuItems} onCloseMenu={onCloseMenu} />
+        {user.role === 'admin' && 
+          <SidebarMenuGroup menuItems={adminMenuItems} onCloseMenu={onCloseMenu} />
+        }
+        
+        {(user.role === 'lecturer' || user.role === 'instructor' || user.role === 'supervisor' || user.role === 'project_manager') && 
+          <SidebarMenuGroup menuItems={lecturerMenuItems} onCloseMenu={onCloseMenu} />
+        }
+        
+        {(user.role === 'supervisor' || user.role === 'project_manager') && 
+          <SidebarMenuGroup menuItems={supervisorMenuItems} onCloseMenu={onCloseMenu} />
+        }
       </nav>
     </aside>
   );

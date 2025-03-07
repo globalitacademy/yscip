@@ -1,161 +1,123 @@
 
 import React from 'react';
-import { 
-  LayoutDashboard, 
-  Users, 
-  BookOpen, 
-  UsersRound, 
-  GraduationCap, 
-  Building, 
-  Settings, 
-  FileBarChart,
-  UserCog,
-  Briefcase,
-  ClipboardList,
+import {
+  LayoutDashboard,
+  Users,
+  Graduation,
+  ListChecks,
+  FileText,
+  Book,
+  Settings,
   Bell,
-  UserCheck
+  Briefcase,
+  Building,
+  ChartBar,
+  Layers,
+  List,
+  UserPlus,
+  ClipboardList,
+  GraduationCap
 } from 'lucide-react';
+import { SidebarMenuItemProps } from './SidebarMenuItem';
 
-// Define menu item type
-export interface SidebarMenuItemType {
-  label: string;
-  path: string;
-  icon: React.ReactNode;
-  roles: string[];
-}
-
-// Base menu items
-export const baseMenuItems: SidebarMenuItemType[] = [
-  { 
-    label: 'Դաշբորդ', 
-    path: '/admin',
-    icon: <LayoutDashboard className="w-5 h-5" />,
-    roles: ['admin', 'lecturer', 'instructor', 'project_manager', 'supervisor']
+export const baseMenuItems: SidebarMenuItemProps[] = [
+  {
+    title: 'Դաշտակ',
+    icon: <LayoutDashboard className="h-4 w-4" />,
+    href: '/admin',
+    role: ['admin', 'lecturer', 'instructor', 'supervisor', 'project_manager', 'employer']
+  },
+  {
+    title: 'Ծանուցումներ',
+    icon: <Bell className="h-4 w-4" />,
+    href: '/notifications',
+    role: ['admin', 'lecturer', 'instructor', 'supervisor', 'project_manager', 'employer', 'student']
   }
 ];
 
-// Admin-specific menu items
-export const adminMenuItems: SidebarMenuItemType[] = [
-  { 
-    label: 'Օգտատերեր', 
-    path: '/users',
-    icon: <Users className="w-5 h-5" />,
-    roles: ['admin']
+export const adminMenuItems: SidebarMenuItemProps[] = [
+  {
+    title: 'Օգտագործողներ',
+    icon: <Users className="h-4 w-4" />,
+    href: '/users',
+    role: ['admin']
   },
-  { 
-    label: 'Օգտատերերի հաստատում', 
-    path: '/pending-approvals',
-    icon: <UserCheck className="w-5 h-5" />,
-    roles: ['admin']
+  {
+    title: 'Սպասող հաստատումներ',
+    icon: <UserPlus className="h-4 w-4" />,
+    href: '/pending-approvals',
+    role: ['admin']
   },
-  { 
-    label: 'Կուրսեր', 
-    path: '/courses/manage',
-    icon: <BookOpen className="w-5 h-5" />,
-    roles: ['admin']
+  {
+    title: 'Մասնագիտացումներ',
+    icon: <Book className="h-4 w-4" />,
+    href: '/specializations',
+    role: ['admin']
   },
-  { 
-    label: 'Խմբեր', 
-    path: '/groups',
-    icon: <UsersRound className="w-5 h-5" />,
-    roles: ['admin']
+  {
+    title: 'Կուրսեր',
+    icon: <Book className="h-4 w-4" />,
+    href: '/courses',
+    role: ['admin']
   },
-  { 
-    label: 'Դասախոսներ', 
-    path: '/lecturers',
-    icon: <UserCog className="w-5 h-5" />,
-    roles: ['admin']
+  {
+    title: 'Խմբեր',
+    icon: <Users className="h-4 w-4" />,
+    href: '/groups',
+    role: ['admin']
   },
-  { 
-    label: 'Ղեկավարներ', 
-    path: '/supervisors',
-    icon: <UserCog className="w-5 h-5" />,
-    roles: ['admin']
+  {
+    title: 'Կազմակերպություններ',
+    icon: <Building className="h-4 w-4" />,
+    href: '/organizations',
+    role: ['admin']
   },
-  { 
-    label: 'Կազմակերպություններ', 
-    path: '/organizations',
-    icon: <Building className="w-5 h-5" />,
-    roles: ['admin']
+  {
+    title: 'Հաշվետվություններ',
+    icon: <ChartBar className="h-4 w-4" />,
+    href: '/reports',
+    role: ['admin']
   },
-  { 
-    label: 'Մասնագիտություններ', 
-    path: '/specializations',
-    icon: <GraduationCap className="w-5 h-5" />,
-    roles: ['admin']
-  },
-  { 
-    label: 'Նախագծեր', 
-    path: '/projects/manage',
-    icon: <Briefcase className="w-5 h-5" />,
-    roles: ['admin']
-  },
-  { 
-    label: 'Թասքեր', 
-    path: '/tasks',
-    icon: <ClipboardList className="w-5 h-5" />,
-    roles: ['admin']
-  },
-  { 
-    label: 'Հաշվետվություններ', 
-    path: '/reports',
-    icon: <FileBarChart className="w-5 h-5" />,
-    roles: ['admin']
-  },
-  { 
-    label: 'Ծանուցումներ', 
-    path: '/notifications',
-    icon: <Bell className="w-5 h-5" />,
-    roles: ['admin']
-  },
-  { 
-    label: 'Կարգավորումներ', 
-    path: '/settings',
-    icon: <Settings className="w-5 h-5" />,
-    roles: ['admin']
+  {
+    title: 'Կարգավորումներ',
+    icon: <Settings className="h-4 w-4" />,
+    href: '/settings',
+    role: ['admin']
   }
 ];
 
-// Lecturer-specific menu items
-export const lecturerMenuItems: SidebarMenuItemType[] = [
-  { 
-    label: 'Կուրսեր', 
-    path: '/courses',
-    icon: <BookOpen className="w-5 h-5" />,
-    roles: ['lecturer', 'instructor']
+export const lecturerMenuItems: SidebarMenuItemProps[] = [
+  {
+    title: 'Նախագծեր',
+    icon: <Briefcase className="h-4 w-4" />,
+    href: '/projects',
+    role: ['lecturer', 'instructor', 'supervisor', 'project_manager']
   },
-  { 
-    label: 'Խմբեր', 
-    path: '/groups',
-    icon: <UsersRound className="w-5 h-5" />,
-    roles: ['lecturer', 'instructor']
+  {
+    title: 'Ուսանողներ',
+    icon: <Graduation className="h-4 w-4" />,
+    href: '/students',
+    role: ['lecturer', 'instructor']
   },
-  { 
-    label: 'Թասքեր', 
-    path: '/tasks',
-    icon: <ClipboardList className="w-5 h-5" />,
-    roles: ['lecturer', 'instructor']
+  {
+    title: 'Առաջադրանքներ',
+    icon: <ListChecks className="h-4 w-4" />,
+    href: '/tasks',
+    role: ['lecturer', 'instructor', 'supervisor', 'project_manager']
   }
 ];
 
-// Supervisor-specific menu items
-export const supervisorMenuItems: SidebarMenuItemType[] = [
-  { 
-    label: 'Նախագծեր', 
-    path: '/projects/manage',
-    icon: <Briefcase className="w-5 h-5" />,
-    roles: ['project_manager', 'supervisor']
+export const supervisorMenuItems: SidebarMenuItemProps[] = [
+  {
+    title: 'Ուսանողների ղեկավարում',
+    icon: <GraduationCap className="h-4 w-4" />,
+    href: '/supervised-students',
+    role: ['supervisor', 'project_manager']
   },
-  { 
-    label: 'Ուսանողներ', 
-    path: '/supervised-students',
-    icon: <UsersRound className="w-5 h-5" />,
-    roles: ['project_manager', 'supervisor']
-  },
-  { 
-    label: 'Թասքեր', 
-    path: '/tasks',
-    icon: <ClipboardList className="w-5 h-5" />,
-    roles: ['project_manager', 'supervisor']
+  {
+    title: 'Պորտֆոլիոներ',
+    icon: <Layers className="h-4 w-4" />,
+    href: '/portfolios',
+    role: ['supervisor', 'project_manager']
   }
 ];

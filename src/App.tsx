@@ -1,4 +1,3 @@
-
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { Toaster } from '@/components/ui/toaster';
 import { Toaster as SonnerToaster } from "sonner";
@@ -22,6 +21,7 @@ import StudentProjectsPage from '@/pages/StudentProjectsPage';
 import PortfolioPage from '@/pages/PortfolioPage';
 import ProjectSubmissionPage from '@/pages/ProjectSubmissionPage';
 import PendingApprovals from '@/pages/PendingApprovals';
+import SupervisedStudentsPage from "@/pages/SupervisedStudentsPage";
 import AuthProvider, { useAuth } from '@/contexts/AuthContext';
 import './App.css';
 
@@ -147,6 +147,9 @@ function AppRoutes() {
           <PortfolioPage />
         </ProtectedRoute>
       } />
+      
+      {/* Supervised Students routes */}
+      <Route path="/supervised-students" element={<SupervisedStudentsPage />} />
       
       <Route path="*" element={<NotFound />} />
     </Routes>
