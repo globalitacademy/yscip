@@ -1,5 +1,5 @@
 
-import { User, mockUsers } from '@/data/userRoles';
+import { User, UserRole, mockUsers } from '@/data/userRoles';
 
 // Add superadmin to mockUsers
 export const superAdminUser: User = {
@@ -14,10 +14,13 @@ export const superAdminUser: User = {
 
 // Initialize mockUsers with superadmin if not already present
 export const initializeMockUsers = () => {
-  // Check if superadmin already exists
-  if (!mockUsers.some(user => user.email === superAdminUser.email)) {
-    mockUsers.push(superAdminUser);
+  // Clear mockUsers array if it's not empty
+  if (mockUsers.length > 0) {
+    mockUsers.length = 0;
   }
+  
+  // Add superadmin
+  mockUsers.push(superAdminUser);
 };
 
 // Generate a verification token

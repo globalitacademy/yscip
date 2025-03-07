@@ -1,7 +1,7 @@
 
 import React from 'react';
 import { Button } from '@/components/ui/button';
-import { Info, Copy, RefreshCw } from 'lucide-react';
+import { Info, Copy, RefreshCw, AlertTriangle } from 'lucide-react';
 import { toast } from 'sonner';
 import { useAuth } from '@/contexts/AuthContext';
 
@@ -16,8 +16,9 @@ const DeveloperInfo: React.FC<DeveloperInfoProps> = ({
   onToggleDeveloperInfo, 
   pendingUsers 
 }) => {
-  const { syncRolesWithDatabase } = useAuth();
+  const { syncRolesWithDatabase, resetRolesAndSettings } = useAuth();
   const [isSyncing, setIsSyncing] = React.useState(false);
+  const [isResetting, setIsResetting] = React.useState(false);
   const [lastSynced, setLastSynced] = React.useState<string | null>(null);
 
   const handleManualSync = async () => {
@@ -34,6 +35,32 @@ const DeveloperInfo: React.FC<DeveloperInfoProps> = ({
       });
     } finally {
       setIsSyncing(false);
+    }
+  };
+
+  const handleReset = async () => {
+    if (!window.confirm('Դուք վստա՞հ եք, որ ցանկանում եք զրոյացնել բոլոր ռոլերը և կարգավորումները: Դա կջնջի բոլոր օգտատերերին բացի սուպեր ադմինից:')) {
+      return;
+    }
+    
+    setIsResetting(true);
+    try {
+      const success = await resetRolesAndSettings();
+      if (success) {
+        toast.success('Համակարգը հաջողությամբ զրոյացվել է', {
+          description: 'Բոլոր ռոլերը և կարգավորումները հեռացվել են',
+        });
+      } else {
+        toast.error('Զրոյացման սխալ', {
+          description: 'Չհաջողվեց զրոյացնել համակարգը',
+        });
+      }
+    } catch (error) {
+      toast.error('Զրոյացման սխալ', {
+        description: 'Չհաջողվեց զրոյացնել համակարգը',
+      });
+    } finally {
+      setIsResetting(false);
     }
   };
 
@@ -75,6 +102,20 @@ const DeveloperInfo: React.FC<DeveloperInfoProps> = ({
                 {isSyncing ? 'Սինխրոնիզացիա...' : 'Սինխրոնիզացնել'}
               </Button>
             </div>
+          </div>
+          
+          <div className="flex justify-between items-center mb-3">
+            <p className="text-sm text-muted-foreground">Համակարգի զրոյացում:</p>
+            <Button 
+              variant="destructive" 
+              size="sm" 
+              className="h-7 px-2 py-1 text-xs"
+              onClick={handleReset}
+              disabled={isResetting}
+            >
+              <AlertTriangle size={12} className="mr-1" />
+              {isResetting ? 'Զրոյացնում...' : 'Զրոյացնել համակարգը'}
+            </Button>
           </div>
           
           <p className="text-sm text-muted-foreground mb-2">Սուպերադմինի հաշիվ՝</p>

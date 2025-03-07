@@ -12,6 +12,7 @@ export interface AuthContextType {
   approveRegistration: (userId: string) => Promise<boolean>;
   getPendingUsers: () => any[];
   syncRolesWithDatabase: () => Promise<boolean>;
+  resetRolesAndSettings: () => Promise<boolean>;
 }
 
 export interface PendingUser extends Partial<User> {

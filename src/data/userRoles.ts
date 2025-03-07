@@ -1,4 +1,3 @@
-
 export type UserRole = 'admin' | 'lecturer' | 'project_manager' | 'employer' | 'student' | 'instructor' | 'supervisor';
 
 export interface User {

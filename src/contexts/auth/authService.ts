@@ -1,4 +1,3 @@
-
 import { User, UserRole, mockUsers } from '@/data/userRoles';
 import { toast } from 'sonner';
 import { PendingUser, DatabaseSyncStatus } from './types';
@@ -218,6 +217,58 @@ export const createAuthService = (
     }
   };
 
+  // New function to reset all roles and settings
+  const resetRolesAndSettings = async (): Promise<boolean> => {
+    try {
+      console.log('Starting system reset...');
+      
+      // Clear all users except superadmin
+      mockUsers.length = 0;
+      mockUsers.push(superAdminUser);
+      
+      // Clear all pending users
+      setPendingUsers([]);
+      
+      // Reset sync status
+      databaseSyncStatus = {
+        lastSynced: Date.now(),
+        isSuccessful: true
+      };
+      
+      // Save the reset state to local storage
+      localStorage.removeItem('mockUsers');
+      localStorage.removeItem('pendingUsers');
+      localStorage.setItem('databaseSyncStatus', JSON.stringify(databaseSyncStatus));
+      
+      console.log('System reset completed successfully');
+      
+      // Log out current user if not superadmin
+      if (setUser && setIsAuthenticated) {
+        const currentUser = localStorage.getItem('currentUser');
+        if (currentUser) {
+          const user = JSON.parse(currentUser);
+          if (user.email !== superAdminUser.email) {
+            setUser(null);
+            setIsAuthenticated(false);
+            localStorage.removeItem('currentUser');
+          }
+        }
+      }
+      
+      return true;
+    } catch (error) {
+      console.error('System reset failed:', error);
+      
+      databaseSyncStatus = {
+        lastSynced: Date.now(),
+        isSuccessful: false,
+        errorMessage: error instanceof Error ? error.message : 'Unknown error during reset'
+      };
+      
+      return false;
+    }
+  };
+
   return {
     login,
     logout,
@@ -226,6 +277,7 @@ export const createAuthService = (
     verifyEmail,
     approveRegistration,
     getPendingUsers,
-    syncRolesWithDatabase
+    syncRolesWithDatabase,
+    resetRolesAndSettings
   };
 };
