@@ -23,6 +23,22 @@ interface PendingUser {
   avatar?: string;
 }
 
+// Define the Supabase admin user type
+interface SupabaseAdminUser {
+  id: string;
+  email?: string | null;
+  email_confirmed_at?: string | null;
+  created_at: string;
+  user_metadata?: {
+    name?: string;
+    role?: string;
+    registration_approved?: boolean;
+    organization?: string;
+    department?: string;
+    avatar?: string;
+  };
+}
+
 const PendingApprovals: React.FC = () => {
   const { user, approveRegistration } = useAuth();
   const [pendingUsers, setPendingUsers] = useState<PendingUser[]>([]);
@@ -54,9 +70,12 @@ const PendingApprovals: React.FC = () => {
           return;
         }
         
+        // Explicitly type the users array
+        const users = data.users as SupabaseAdminUser[];
+        
         // Ֆիլտրել հաստատման սպասող օգտատերերին
         // (ով էլ․ հասցեն հաստատված է, բայց գրանցումը՝ ոչ)
-        const pending = data.users
+        const pending = users
           .filter(u => 
             u.email_confirmed_at !== null && 
             u.user_metadata?.role && 
