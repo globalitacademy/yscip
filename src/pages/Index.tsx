@@ -1,108 +1,38 @@
 
-import React, { useState, useEffect } from 'react';
-import Header from '@/components/Header';
+import React from 'react';
 import Hero from '@/components/Hero';
-import Footer from '@/components/Footer';
-import { useAuth } from '@/contexts/AuthContext';
+import LocalTransitions from '@/components/LocalTransitions';
+import ThemeGrid from '@/components/ThemeGrid';
+import { Button } from '@/components/ui/button';
+import { createAdminUser } from '@/hooks/createAdmin';
 import { toast } from 'sonner';
-import { projectThemes } from '@/data/projectThemes';
-import UserReservedProjects from '@/components/user/UserReservedProjects';
-import ProjectTabs from '@/components/projects/ProjectTabs';
 
-const Index = () => {
-  const { user } = useAuth();
-  const [createdProjects, setCreatedProjects] = useState<any[]>([]);
-  const [reservedProjects, setReservedProjects] = useState<any[]>([]);
-  const [assignments, setAssignments] = useState<any[]>([]);
-  
-  // Load projects and assignments from localStorage
-  useEffect(() => {
-    // Get created projects
-    const storedProjects = localStorage.getItem('createdProjects');
-    if (storedProjects) {
-      try {
-        const parsedProjects = JSON.parse(storedProjects);
-        setCreatedProjects(parsedProjects);
-        console.log('Loaded created projects:', parsedProjects);
-      } catch (e) {
-        console.error('Error parsing stored projects:', e);
-      }
+const Index: React.FC = () => {
+  const handleCreateAdmin = async () => {
+    try {
+      await createAdminUser();
+    } catch (error) {
+      toast.error('Սխալ ադմին օգտատեր ստեղծելիս');
     }
-    
-    // Get reserved projects
-    const storedReservations = localStorage.getItem('reservedProjects');
-    if (storedReservations) {
-      try {
-        const parsedReservations = JSON.parse(storedReservations);
-        setReservedProjects(parsedReservations);
-        console.log('Loaded reserved projects:', parsedReservations);
-      } catch (e) {
-        console.error('Error parsing reserved projects:', e);
-      }
-    }
-    
-    // Get assignments
-    const storedAssignments = localStorage.getItem('projectAssignments');
-    if (storedAssignments) {
-      try {
-        const parsedAssignments = JSON.parse(storedAssignments);
-        setAssignments(parsedAssignments);
-        console.log('Loaded assignments:', parsedAssignments);
-      } catch (e) {
-        console.error('Error parsing assignments:', e);
-      }
-    }
-  }, []);
-
-  // Display user role toast when logged in
-  useEffect(() => {
-    if (user) {
-      const roleMap: Record<string, string> = {
-        'student': 'Ուսանող',
-        'instructor': 'Դասախոս',
-        'admin': 'Ադմինիստրատոր',
-        'supervisor': 'Ղեկավար'
-      };
-      
-      const roleName = roleMap[user.role] || user.role;
-      
-      toast.success(`Մուտք եք գործել որպես ${roleName}`, {
-        duration: 3000,
-        position: 'top-right'
-      });
-    }
-  }, [user]);
-
-  // Filter user's reserved projects
-  const userReservedProjects = user 
-    ? reservedProjects.filter(rp => rp.userId === user.id)
-    : [];
-
-  // Find actual project details for reserved projects
-  const userReservedProjectDetails = userReservedProjects.map(rp => {
-    const project = [...projectThemes, ...createdProjects].find(p => Number(p.id) === Number(rp.projectId));
-    return { ...rp, project };
-  }).filter(rp => rp.project); // Filter out any without matching project details
+  };
 
   return (
-    <div className="min-h-screen flex flex-col">
-      <Header />
-      <main className="flex-grow">
+    <div className="min-h-screen">
+      <div className="container mx-auto px-4 py-12">
         <Hero />
-        <div id="themes-section" className="container mx-auto px-4 pb-16">
-          {user && (
-            <UserReservedProjects reservedProjects={userReservedProjectDetails} />
-          )}
-          
-          <ProjectTabs 
-            user={user} 
-            createdProjects={createdProjects} 
-            assignments={assignments}
-            projectThemes={projectThemes}
-          />
+        <LocalTransitions />
+        <ThemeGrid />
+        
+        <div className="mt-8 flex justify-center">
+          <Button 
+            variant="outline" 
+            onClick={handleCreateAdmin}
+            className="mb-8"
+          >
+            Ստեղծել ադմին օգտատեր
+          </Button>
         </div>
-      </main>
-      <Footer />
+      </div>
     </div>
   );
 };
