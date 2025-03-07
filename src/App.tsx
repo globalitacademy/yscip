@@ -1,3 +1,4 @@
+
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { Toaster } from '@/components/ui/toaster';
 import { Toaster as SonnerToaster } from "sonner";
@@ -22,6 +23,8 @@ import PortfolioPage from '@/pages/PortfolioPage';
 import ProjectSubmissionPage from '@/pages/ProjectSubmissionPage';
 import PendingApprovals from '@/pages/PendingApprovals';
 import SupervisedStudentsPage from "@/pages/SupervisedStudentsPage";
+import ProjectProposalsPage from '@/pages/ProjectProposalsPage';
+import MyProjectsPage from '@/pages/MyProjectsPage';
 import AuthProvider, { useAuth } from '@/contexts/AuthContext';
 import './App.css';
 
@@ -133,6 +136,16 @@ function AppRoutes() {
       <Route path="/projects/my" element={
         <ProtectedRoute allowedRoles={['employer']}>
           <div>My Projects (Coming Soon)</div>
+        </ProtectedRoute>
+      } />
+      <Route path="/project-proposals" element={
+        <ProtectedRoute allowedRoles={['employer']}>
+          <ProjectProposalsPage />
+        </ProtectedRoute>
+      } />
+      <Route path="/my-projects" element={
+        <ProtectedRoute allowedRoles={['employer']}>
+          <MyProjectsPage />
         </ProtectedRoute>
       } />
       

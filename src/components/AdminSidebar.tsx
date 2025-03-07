@@ -4,7 +4,13 @@ import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
 import { X, Bell } from 'lucide-react';
 import SidebarMenuGroup from './sidebar/SidebarMenuGroup';
-import { baseMenuItems, adminMenuItems, lecturerMenuItems, supervisorMenuItems } from './sidebar/sidebarMenuConfig';
+import { 
+  baseMenuItems, 
+  adminMenuItems, 
+  lecturerMenuItems, 
+  supervisorMenuItems,
+  employerMenuItems 
+} from './sidebar/sidebarMenuConfig';
 import { loadProjectReservations } from '@/utils/projectUtils';
 import { Badge } from '@/components/ui/badge';
 
@@ -36,7 +42,7 @@ const AdminSidebar: React.FC<AdminSidebarProps> = ({
   const pendingCount = getPendingApprovalsCount();
 
   // Early return if user doesn't have appropriate role
-  if (!user || user.role !== 'admin' && user.role !== 'lecturer' && user.role !== 'instructor' && user.role !== 'project_manager' && user.role !== 'supervisor') {
+  if (!user || user.role !== 'admin' && user.role !== 'lecturer' && user.role !== 'instructor' && user.role !== 'project_manager' && user.role !== 'supervisor' && user.role !== 'employer') {
     return null;
   }
   
@@ -77,6 +83,10 @@ const AdminSidebar: React.FC<AdminSidebarProps> = ({
         
         {(user.role === 'supervisor' || user.role === 'project_manager') && 
           <SidebarMenuGroup menuItems={supervisorMenuItems} onCloseMenu={onCloseMenu} />
+        }
+
+        {user.role === 'employer' && 
+          <SidebarMenuGroup menuItems={employerMenuItems} onCloseMenu={onCloseMenu} />
         }
       </nav>
     </aside>

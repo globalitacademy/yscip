@@ -127,3 +127,18 @@ export const supervisorMenuItems: SidebarMenuItemType[] = [
     roles: ['supervisor', 'project_manager']
   }
 ];
+
+export const employerMenuItems: SidebarMenuItemType[] = [
+  {
+    label: 'Նախագծերի առաջարկներ',
+    path: '/project-proposals',
+    icon: <FileText className="h-4 w-4" />,
+    roles: ['employer']
+  },
+  {
+    label: 'Իմ նախագծերը',
+    path: '/my-projects',
+    icon: <Briefcase className="h-4 w-4" />,
+    roles: ['employer']
+  }
+];

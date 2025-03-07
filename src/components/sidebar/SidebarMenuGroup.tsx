@@ -1,7 +1,7 @@
 
 import React from 'react';
-import { useAuth } from '@/contexts/AuthContext';
 import SidebarMenuItem from './SidebarMenuItem';
+import { useAuth } from '@/contexts/AuthContext';
 import { SidebarMenuItemType } from './sidebarMenuConfig';
 
 interface SidebarMenuGroupProps {
@@ -14,7 +14,7 @@ const SidebarMenuGroup: React.FC<SidebarMenuGroupProps> = ({ menuItems, onCloseM
   
   if (!user) return null;
   
-  // Filter menu items based on user role
+  // Filter menu items by user role
   const filteredItems = menuItems.filter(item => 
     item.roles.includes(user.role)
   );
@@ -22,7 +22,7 @@ const SidebarMenuGroup: React.FC<SidebarMenuGroupProps> = ({ menuItems, onCloseM
   if (filteredItems.length === 0) return null;
   
   return (
-    <div className="space-y-1">
+    <div className="space-y-1 px-3">
       {filteredItems.map((item, index) => (
         <SidebarMenuItem
           key={index}
