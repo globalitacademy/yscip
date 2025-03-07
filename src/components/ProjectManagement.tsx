@@ -55,36 +55,40 @@ const ProjectManagement: React.FC = () => {
 
   return (
     <div className="space-y-4">
-      <div className="flex flex-col md:flex-row justify-between items-center gap-4 mb-6">
-        <h1 className="text-3xl font-bold">Նախագծերի կառավարում</h1>
-        <div className="flex gap-2 w-full md:w-auto">
-          <div className="relative w-full md:w-auto">
+      <div className="flex flex-col sm:flex-row justify-between items-center gap-4 mb-6">
+        <div className="w-full sm:w-auto flex flex-row sm:flex-col items-center sm:items-start">
+          <h1 className="text-2xl md:text-3xl font-bold">Նախագծերի կառավարում</h1>
+        </div>
+        <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
+          <div className="relative w-full sm:w-auto">
             <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-gray-500" />
             <Input
               type="search"
               placeholder="Որոնել նախագծեր..."
-              className="pl-8 w-full md:w-[300px]"
+              className="pl-8 w-full sm:w-[200px] md:w-[300px]"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
             />
           </div>
-          <Button variant="outline" size="icon">
-            <Filter className="h-4 w-4" />
-          </Button>
-          <Button variant="outline" size="icon">
-            <ArrowUpDown className="h-4 w-4" />
-          </Button>
-          <Button>
-            <PlusCircle className="mr-2 h-4 w-4" />
-            Նոր նախագիծ
-          </Button>
+          <div className="flex gap-2">
+            <Button variant="outline" size="icon" title="Ֆիլտրել">
+              <Filter className="h-4 w-4" />
+            </Button>
+            <Button variant="outline" size="icon" title="Դասավորել">
+              <ArrowUpDown className="h-4 w-4" />
+            </Button>
+            <Button className="whitespace-nowrap">
+              <PlusCircle className="mr-2 h-4 w-4" />
+              Նոր նախագիծ
+            </Button>
+          </div>
         </div>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
         {filteredProjects.map((project) => (
           <Card key={project.id} className="overflow-hidden hover:shadow-md transition-shadow">
-            <div className="h-48 bg-gray-100 relative">
+            <div className="h-40 sm:h-48 bg-gray-100 relative">
               <img 
                 src={project.image || 'https://via.placeholder.com/640x360?text=Նախագծի+նկար'} 
                 alt={project.title} 
@@ -117,11 +121,11 @@ const ProjectManagement: React.FC = () => {
               </div>
             </div>
             <CardHeader className="p-4 pb-0">
-              <CardTitle className="line-clamp-1">{project.title}</CardTitle>
+              <CardTitle className="line-clamp-1 text-base sm:text-lg">{project.title}</CardTitle>
               <CardDescription>{project.category}</CardDescription>
             </CardHeader>
             <CardContent className="p-4">
-              <p className="text-sm text-gray-500 line-clamp-3 mb-4">{project.description}</p>
+              <p className="text-xs sm:text-sm text-gray-500 line-clamp-3 mb-4">{project.description}</p>
               <div className="flex flex-wrap gap-1">
                 {project.techStack.slice(0, 3).map((tech, index) => (
                   <Badge key={index} variant="secondary" className="text-xs">
@@ -165,9 +169,9 @@ const ProjectManagement: React.FC = () => {
               Այս գործողությունը չի կարող հետ շրջվել։
             </DialogDescription>
           </DialogHeader>
-          <DialogFooter className="sm:justify-end">
-            <Button variant="outline" onClick={() => setIsDeleteDialogOpen(false)}>Չեղարկել</Button>
-            <Button variant="destructive" onClick={handleDelete}>Հեռացնել</Button>
+          <DialogFooter className="flex-col sm:flex-row gap-2">
+            <Button variant="outline" onClick={() => setIsDeleteDialogOpen(false)} className="w-full sm:w-auto">Չեղարկել</Button>
+            <Button variant="destructive" onClick={handleDelete} className="w-full sm:w-auto">Հեռացնել</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
@@ -208,9 +212,9 @@ const ProjectManagement: React.FC = () => {
               </div>
             )}
           </div>
-          <DialogFooter className="sm:justify-end">
-            <Button variant="outline" onClick={() => setIsImageDialogOpen(false)}>Չեղարկել</Button>
-            <Button onClick={handleChangeImage}>Պահպանել</Button>
+          <DialogFooter className="flex-col sm:flex-row gap-2">
+            <Button variant="outline" onClick={() => setIsImageDialogOpen(false)} className="w-full sm:w-auto">Չեղարկել</Button>
+            <Button onClick={handleChangeImage} className="w-full sm:w-auto">Պահպանել</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
