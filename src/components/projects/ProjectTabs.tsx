@@ -24,16 +24,16 @@ const ProjectTabs: React.FC<ProjectTabsProps> = ({
 
   return (
     <Tabs defaultValue="all-projects" className="mb-6">
-      <TabsList className="h-auto mb-6">
-        <TabsTrigger value="all-projects">Բոլոր Նախագծերը</TabsTrigger>
+      <TabsList className="h-auto mb-6 w-full flex flex-wrap gap-2 justify-start sm:justify-center">
+        <TabsTrigger value="all-projects" className="flex-grow sm:flex-grow-0">Բոլոր Նախագծերը</TabsTrigger>
         {user?.role !== 'student' && (
-          <TabsTrigger value="created-projects">Ստեղծված Նախագծեր</TabsTrigger>
+          <TabsTrigger value="created-projects" className="flex-grow sm:flex-grow-0">Ստեղծված Նախագծեր</TabsTrigger>
         )}
         {user?.role === 'supervisor' && (
-          <TabsTrigger value="assigned-projects">Հանձնարարված Նախագծեր</TabsTrigger>
+          <TabsTrigger value="assigned-projects" className="flex-grow sm:flex-grow-0">Հանձնարարված Նախագծեր</TabsTrigger>
         )}
         {user?.role === 'instructor' && (
-          <TabsTrigger value="teaching-projects">Դասավանդվող Նախագծեր</TabsTrigger>
+          <TabsTrigger value="teaching-projects" className="flex-grow sm:flex-grow-0">Դասավանդվող Նախագծեր</TabsTrigger>
         )}
       </TabsList>
       
