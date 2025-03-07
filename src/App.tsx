@@ -9,6 +9,14 @@ import Login from '@/pages/Login';
 import AdminDashboard from '@/pages/AdminDashboard';
 import UserManagementPage from '@/pages/UserManagementPage';
 import OrganizationsPage from '@/pages/OrganizationsPage';
+import CoursesPage from '@/pages/CoursesPage';
+import SpecializationsPage from '@/pages/SpecializationsPage';
+import GroupsPage from '@/pages/GroupsPage';
+import TasksPage from '@/pages/TasksPage';
+import ProjectManagementPage from '@/pages/ProjectManagementPage';
+import StudentProjectsPage from '@/pages/StudentProjectsPage';
+import PortfolioPage from '@/pages/PortfolioPage';
+import ProjectSubmissionPage from '@/pages/ProjectSubmissionPage';
 import AuthProvider, { useAuth } from '@/contexts/AuthContext';
 import './App.css';
 
@@ -50,23 +58,38 @@ function AppRoutes() {
           <OrganizationsPage />
         </ProtectedRoute>
       } />
+      <Route path="/specializations" element={
+        <ProtectedRoute allowedRoles={['admin']}>
+          <SpecializationsPage />
+        </ProtectedRoute>
+      } />
+      <Route path="/courses/manage" element={
+        <ProtectedRoute allowedRoles={['admin', 'lecturer', 'instructor']}>
+          <CoursesPage />
+        </ProtectedRoute>
+      } />
+      <Route path="/groups" element={
+        <ProtectedRoute allowedRoles={['admin', 'lecturer', 'instructor']}>
+          <GroupsPage />
+        </ProtectedRoute>
+      } />
       
       {/* Lecturer routes */}
       <Route path="/tasks" element={
         <ProtectedRoute allowedRoles={['lecturer', 'instructor']}>
-          <div>Tasks Management (Coming Soon)</div>
+          <TasksPage />
         </ProtectedRoute>
       } />
       <Route path="/courses" element={
         <ProtectedRoute allowedRoles={['lecturer', 'instructor']}>
-          <div>Courses Management (Coming Soon)</div>
+          <CoursesPage />
         </ProtectedRoute>
       } />
       
       {/* Project Manager routes */}
       <Route path="/projects/manage" element={
         <ProtectedRoute allowedRoles={['project_manager', 'supervisor']}>
-          <div>Projects Management (Coming Soon)</div>
+          <ProjectManagementPage />
         </ProtectedRoute>
       } />
       <Route path="/gantt" element={
@@ -78,7 +101,7 @@ function AppRoutes() {
       {/* Employer routes */}
       <Route path="/projects/submit" element={
         <ProtectedRoute allowedRoles={['employer']}>
-          <div>Submit Project Proposal (Coming Soon)</div>
+          <ProjectSubmissionPage />
         </ProtectedRoute>
       } />
       <Route path="/projects/my" element={
@@ -90,12 +113,12 @@ function AppRoutes() {
       {/* Student routes */}
       <Route path="/projects" element={
         <ProtectedRoute allowedRoles={['student']}>
-          <div>Browse Projects (Coming Soon)</div>
+          <StudentProjectsPage />
         </ProtectedRoute>
       } />
       <Route path="/portfolio" element={
         <ProtectedRoute allowedRoles={['student']}>
-          <div>My Portfolio (Coming Soon)</div>
+          <PortfolioPage />
         </ProtectedRoute>
       } />
       
