@@ -1,3 +1,4 @@
+
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { User, UserRole } from '@/data/userRoles';
 import { toast } from 'sonner';
@@ -199,12 +200,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       }
 
       // Ստուգել արդյոք օգտատերը արդեն գրանցված է
-      const { data: existingUser } = await supabase.auth.signInWithPassword({
-        email,
-        password
-      });
-
-      if (existingUser?.user) {
+      const { data: { users } } = await supabase.auth.admin.listUsers();
+      const existingUser = users.find(u => u.email === email);
+      
+      if (existingUser) {
         return { 
           success: false, 
           message: 'Այս էլ․ հասցեն արդեն գրանցված է։' 
@@ -336,13 +335,23 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         return [];
       }
 
-      // Այստեղ պետք է լինի հարցում, որը կվերադարձնի բոլոր հաստատման սպասող օգտատերերին
-      // Քանի որ Supabase-ը չի տրամադրում API բոլոր օգտատերերին ստանալու համար, 
-      // այս ֆունկցիոնալությունը պետք է իրականացվի օգտագործելով այլ աղյուսակ,
-      // որտեղ կպահվեն օգտատերերի տվյալները
+      // Ստանալ բոլոր օգտատերերին
+      const { data, error } = await supabase.auth.admin.listUsers();
       
-      // Ժամանակավոր լուծում՝ վերադարձնել դատարկ զանգված
-      return [];
+      if (error) {
+        console.error('List users error:', error);
+        return [];
+      }
+      
+      // Ֆիլտրել հաստատման սպասող օգտատերերին
+      const pendingUsers = data.users.filter(u => 
+        u.email_confirmed_at && // Էլ. հասցեն հաստատված է
+        u.user_metadata?.role && // Ունի դեր
+        ['lecturer', 'employer', 'project_manager', 'supervisor'].includes(u.user_metadata.role) && // Դերը պահանջում է հաստատում
+        !u.user_metadata?.registration_approved // Դեռ չի հաստատվել
+      );
+      
+      return pendingUsers;
     } catch (error) {
       console.error('Get pending users error:', error);
       return [];

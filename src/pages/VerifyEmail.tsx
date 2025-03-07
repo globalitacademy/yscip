@@ -1,6 +1,6 @@
 
 import React, { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { CheckCircle, XCircle, AlertCircle, Loader2 } from 'lucide-react';
@@ -8,6 +8,7 @@ import { supabase } from '@/integrations/supabase/client';
 
 const VerifyEmail: React.FC = () => {
   const navigate = useNavigate();
+  const location = useLocation();
   const [verificationStatus, setVerificationStatus] = useState<'loading' | 'success' | 'error'>('loading');
   const [errorMessage, setErrorMessage] = useState('');
   const [isRoleWithApproval, setIsRoleWithApproval] = useState(false);
@@ -15,7 +16,19 @@ const VerifyEmail: React.FC = () => {
   useEffect(() => {
     const checkEmailVerification = async () => {
       try {
-        // Կայքից ստանալ հաշիվը, եթե օգտատերը մուտք է գործել
+        // Get token and type from the URL if present
+        const params = new URLSearchParams(location.search);
+        const token = params.get('token');
+        const type = params.get('type');
+        
+        // If we have token and type, the user is being redirected from the email
+        if (token && type) {
+          // Let Supabase handle the verification automatically
+          // by just letting user access the page with the token in URL
+          console.log('Email verification token detected in URL');
+        }
+
+        // Check if user has a valid session
         const { data, error } = await supabase.auth.getSession();
         
         if (error) {
@@ -26,13 +39,13 @@ const VerifyEmail: React.FC = () => {
         }
         
         if (data?.session?.user) {
-          // Ստուգել օգտատիրոջ կարգավիճակը
+          // Check user status
           const user = data.session.user;
           
           if (user.email_confirmed_at) {
             setVerificationStatus('success');
             
-            // Ստուգել արդյոք օգտատերը հաստատման կարիք ունի
+            // Check if user needs approval
             const role = user.user_metadata?.role;
             if (role && ['lecturer', 'employer', 'project_manager', 'supervisor'].includes(role)) {
               setIsRoleWithApproval(true);
@@ -42,10 +55,15 @@ const VerifyEmail: React.FC = () => {
             setErrorMessage('Էլ․ հասցեն դեռ չի հաստատվել։ Խնդրում ենք ստուգել Ձեր էլ․ փոստը։');
           }
         } else {
-          // Եթե օգտատերը մուտք չի գործել, ապա հնարավոր է, որ նա հաստատվել է
-          // բայց դեռ չի վերադարձվել համակարգ
-          setVerificationStatus('success');
-          setErrorMessage('');
+          // If there's a token in the URL but no session, it might mean the verification
+          // worked but the user isn't automatically logged in yet
+          if (token && type) {
+            setVerificationStatus('success');
+            setErrorMessage('');
+          } else {
+            setVerificationStatus('error');
+            setErrorMessage('Հաստատման հղումը սխալ է կամ ժամկետանց։');
+          }
         }
       } catch (error: any) {
         console.error('Verification error:', error);
@@ -55,7 +73,7 @@ const VerifyEmail: React.FC = () => {
     };
 
     checkEmailVerification();
-  }, []);
+  }, [location.search]);
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-background p-4">
