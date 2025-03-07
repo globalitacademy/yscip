@@ -1,7 +1,5 @@
-
 import React from 'react';
-import Header from '@/components/Header';
-import Footer from '@/components/Footer';
+import AdminLayout from '@/components/AdminLayout';
 import TaskManager from '@/components/TaskManager';
 import { v4 as uuidv4 } from 'uuid';
 
@@ -58,17 +56,13 @@ const TasksPage: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen flex flex-col">
-      <Header />
-      <main className="flex-grow container mx-auto px-4 py-8">
-        <TaskManager 
-          tasks={sampleTasks} 
-          onAddTask={handleAddTask}
-          onUpdateTaskStatus={handleUpdateTaskStatus}
-        />
-      </main>
-      <Footer />
-    </div>
+    <AdminLayout pageTitle="Առաջադրանքների կառավարում">
+      <TaskManager 
+        tasks={sampleTasks} 
+        onAddTask={handleAddTask}
+        onUpdateTaskStatus={handleUpdateTaskStatus}
+      />
+    </AdminLayout>
   );
 };
 

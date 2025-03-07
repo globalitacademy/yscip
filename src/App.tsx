@@ -14,6 +14,9 @@ import CoursesPage from '@/pages/CoursesPage';
 import SpecializationsPage from '@/pages/SpecializationsPage';
 import GroupsPage from '@/pages/GroupsPage';
 import TasksPage from '@/pages/TasksPage';
+import ReportsPage from '@/pages/ReportsPage';
+import NotificationsPage from '@/pages/NotificationsPage';
+import SettingsPage from '@/pages/SettingsPage';
 import ProjectManagementPage from '@/pages/ProjectManagementPage';
 import StudentProjectsPage from '@/pages/StudentProjectsPage';
 import PortfolioPage from '@/pages/PortfolioPage';
@@ -81,10 +84,25 @@ function AppRoutes() {
           <GroupsPage />
         </ProtectedRoute>
       } />
+      <Route path="/reports" element={
+        <ProtectedRoute allowedRoles={['admin']}>
+          <ReportsPage />
+        </ProtectedRoute>
+      } />
+      <Route path="/notifications" element={
+        <ProtectedRoute allowedRoles={['admin']}>
+          <NotificationsPage />
+        </ProtectedRoute>
+      } />
+      <Route path="/settings" element={
+        <ProtectedRoute allowedRoles={['admin']}>
+          <SettingsPage />
+        </ProtectedRoute>
+      } />
       
       {/* Lecturer routes */}
       <Route path="/tasks" element={
-        <ProtectedRoute allowedRoles={['lecturer', 'instructor']}>
+        <ProtectedRoute allowedRoles={['admin', 'lecturer', 'instructor', 'project_manager', 'supervisor']}>
           <TasksPage />
         </ProtectedRoute>
       } />
@@ -96,7 +114,7 @@ function AppRoutes() {
       
       {/* Project Manager routes */}
       <Route path="/projects/manage" element={
-        <ProtectedRoute allowedRoles={['project_manager', 'supervisor']}>
+        <ProtectedRoute allowedRoles={['admin', 'project_manager', 'supervisor']}>
           <ProjectManagementPage />
         </ProtectedRoute>
       } />
