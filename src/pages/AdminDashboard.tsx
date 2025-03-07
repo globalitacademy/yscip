@@ -54,8 +54,8 @@ const AdminDashboard: React.FC = () => {
   const students = selectedCourse || selectedGroup
     ? getStudentsByCourseAndGroup(selectedCourse, selectedGroup)
     : getUsersByRole('student');
-    
-  const instructors = getUsersByRole('instructor');
+  
+  const instructors = [...getUsersByRole('instructor'), ...getUsersByRole('lecturer')];
   const allProjects = [...projectThemes, ...createdProjects];
   const courses = getCourses();
   const groups = getGroups(selectedCourse);
@@ -307,13 +307,14 @@ const AdminDashboard: React.FC = () => {
   const canEditProject = (project: any) => {
     return user && (
       user.role === 'admin' || 
-      user.role === 'supervisor' ||
-      (user.role === 'instructor' && project.assignedInstructor === user.id) ||
-      (user.role === 'instructor' && project.createdBy === user.id)
+      user.role === 'supervisor' || 
+      user.role === 'project_manager' ||
+      ((user.role === 'instructor' || user.role === 'lecturer') && project.assignedInstructor === user.id) ||
+      ((user.role === 'instructor' || user.role === 'lecturer') && project.createdBy === user.id)
     );
   };
 
-  if (!user || (user.role !== 'admin' && user.role !== 'supervisor' && user.role !== 'instructor')) {
+  if (!user || (user.role !== 'admin' && user.role !== 'supervisor' && user.role !== 'project_manager' && user.role !== 'lecturer' && user.role !== 'instructor')) {
     return (
       <div className="min-h-screen flex flex-col">
         <Header />
@@ -637,7 +638,7 @@ const AdminDashboard: React.FC = () => {
                                         <Button 
                                           variant="outline" 
                                           size="icon"
-                                          title="Նշանակել դասախոսին"
+                                          title="Նշանակել դասախո��ին"
                                           onClick={() => handleOpenAssignDialog(project)}
                                         >
                                           <UserPlus size={14} />

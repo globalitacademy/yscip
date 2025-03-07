@@ -51,7 +51,7 @@ export const ProjectProvider: React.FC<ProjectProviderProps> = ({
   // Role-based permissions
   const canStudentSubmit = permissions.canSubmitProject && isReserved;
   const canInstructorCreate = permissions.canCreateProjects;
-  const canInstructorAssign = permissions.canAssignProjects;
+  const canInstructorAssign = permissions.canAssignProjects || false;
   const canSupervisorApprove = permissions.canApproveProject;
 
   // Check for existing reservations on mount
@@ -224,7 +224,7 @@ export const ProjectProvider: React.FC<ProjectProviderProps> = ({
     
     setIsReserved(true);
     toast({
-      title: "Պրոեկտն ամրագրված է",
+      title: "Պրոեկ��ն ամրագրված է",
       description: `Դուք հաջողությամբ ամրագրել եք "${project.title}" պրոեկտը։`,
     });
   };

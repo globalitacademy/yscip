@@ -32,8 +32,10 @@ const UserMenu: React.FC = () => {
       case 'admin':
         return <UserCog className="h-4 w-4 mr-2" />;
       case 'project_manager':
+      case 'supervisor':
         return <UserCog className="h-4 w-4 mr-2" />;
       case 'lecturer':
+      case 'instructor':
         return <School className="h-4 w-4 mr-2" />;
       case 'employer':
         return <Building className="h-4 w-4 mr-2" />;
@@ -50,7 +52,11 @@ const UserMenu: React.FC = () => {
         return 'Ադմինիստրատոր';
       case 'project_manager':
         return 'Նախագծի ղեկավար';
+      case 'supervisor':
+        return 'Ղեկավար';
       case 'lecturer':
+        return 'Դասախոս';
+      case 'instructor':
         return 'Դասախոս';
       case 'employer':
         return 'Գործատու';

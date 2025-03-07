@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { User, UserRole, mockUsers, getCourses, getGroups } from '@/data/userRoles';
 import { Button } from '@/components/ui/button';
@@ -127,7 +126,7 @@ const UserManagement: React.FC<UserManagementProps> = () => {
 
   const handleAssignSupervisor = (studentId: string, supervisorId: string) => {
     setUsers(prev => prev.map(user => {
-      if (user.id === supervisorId) {
+      if (user.id === supervisorId && (user.role === 'supervisor' || user.role === 'project_manager')) {
         return {
           ...user,
           supervisedStudents: [...(user.supervisedStudents || []), studentId]
@@ -145,7 +144,9 @@ const UserManagement: React.FC<UserManagementProps> = () => {
     toast.success("Օգտատերը հաջողությամբ ջնջվել է համակարգից։");
   };
 
-  const supervisors = users.filter(user => user.role === 'supervisor');
+  const supervisors = users.filter(user => 
+    user.role === 'supervisor' || user.role === 'project_manager'
+  );
   const students = users.filter(user => user.role === 'student');
   
   const showStudentFields = newUser.role === 'student';
@@ -290,8 +291,9 @@ const UserManagement: React.FC<UserManagementProps> = () => {
                   <TableCell>{user.email}</TableCell>
                   <TableCell>
                     {user.role === 'admin' && 'Ադմինիստրատոր'}
-                    {user.role === 'supervisor' && 'Ծրագրի ղեկավար'}
-                    {user.role === 'instructor' && 'Դասախոս'}
+                    {(user.role === 'supervisor' || user.role === 'project_manager') && 'Ծրագրի ղեկավար'}
+                    {(user.role === 'instructor' || user.role === 'lecturer') && 'Դասախոս'}
+                    {user.role === 'employer' && 'Գործատու'}
                     {user.role === 'student' && 'Ուսանող'}
                   </TableCell>
                   <TableCell>{user.department}</TableCell>

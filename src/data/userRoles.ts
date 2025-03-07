@@ -39,6 +39,16 @@ export const mockUsers: User[] = [
     registrationApproved: true
   },
   {
+    id: 'supervisor1',
+    name: 'Ղեկավար',
+    email: 'supervisor@example.com',
+    role: 'supervisor',
+    avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=supervisor2',
+    department: 'Ինֆորմատիկայի ֆակուլտետ',
+    supervisedStudents: ['student1'],
+    registrationApproved: true
+  },
+  {
     id: 'lecturer1',
     name: 'Դասախոս',
     email: 'lecturer@example.com',
@@ -46,6 +56,16 @@ export const mockUsers: User[] = [
     avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=instructor',
     department: 'Ինֆորմատիկայի ֆակուլտետ',
     assignedProjects: [1, 2, 3],
+    registrationApproved: true
+  },
+  {
+    id: 'instructor1',
+    name: 'Դասախոս 2',
+    email: 'instructor@example.com',
+    role: 'instructor',
+    avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=instructor2',
+    department: 'Ինֆորմատիկայի ֆակուլտետ',
+    assignedProjects: [4, 5],
     registrationApproved: true
   },
   {
