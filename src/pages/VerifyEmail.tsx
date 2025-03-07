@@ -1,61 +1,61 @@
 
 import React, { useEffect, useState } from 'react';
-import { useNavigate, useLocation } from 'react-router-dom';
-import { useAuth } from '@/contexts/AuthContext';
+import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { CheckCircle, XCircle, AlertCircle, Loader2 } from 'lucide-react';
+import { supabase } from '@/integrations/supabase/client';
 
 const VerifyEmail: React.FC = () => {
   const navigate = useNavigate();
-  const location = useLocation();
-  const { verifyEmail } = useAuth();
   const [verificationStatus, setVerificationStatus] = useState<'loading' | 'success' | 'error'>('loading');
   const [errorMessage, setErrorMessage] = useState('');
   const [isRoleWithApproval, setIsRoleWithApproval] = useState(false);
 
   useEffect(() => {
-    // Get token from URL query params
-    const params = new URLSearchParams(location.search);
-    const token = params.get('token');
-
-    if (!token) {
-      setVerificationStatus('error');
-      setErrorMessage('Հաստատման գործընթացի սխալ: Նշանը (token) բացակայում է։');
-      return;
-    }
-
-    // Call the verifyEmail function from AuthContext
-    const verifyToken = async () => {
+    const checkEmailVerification = async () => {
       try {
-        // Simulate network delay
-        await new Promise(resolve => setTimeout(resolve, 1000));
+        // Կայքից ստանալ հաշիվը, եթե օգտատերը մուտք է գործել
+        const { data, error } = await supabase.auth.getSession();
         
-        // Verify the token
-        const success = await verifyEmail(token);
+        if (error) {
+          console.error('Session error:', error);
+          setVerificationStatus('error');
+          setErrorMessage('Հաստատման գործընթացի սխալ: Սեսիայի տվյալները հասանելի չեն։');
+          return;
+        }
         
-        if (success) {
-          setVerificationStatus('success');
+        if (data?.session?.user) {
+          // Ստուգել օգտատիրոջ կարգավիճակը
+          const user = data.session.user;
           
-          // Check in localStorage if this is a role that needs approval
-          const pendingUsers = JSON.parse(localStorage.getItem('pendingUsers') || '[]');
-          const user = pendingUsers.find((u: any) => u.verificationToken === token);
-          
-          if (user && ['lecturer', 'employer', 'project_manager', 'supervisor'].includes(user.role)) {
-            setIsRoleWithApproval(true);
+          if (user.email_confirmed_at) {
+            setVerificationStatus('success');
+            
+            // Ստուգել արդյոք օգտատերը հաստատման կարիք ունի
+            const role = user.user_metadata?.role;
+            if (role && ['lecturer', 'employer', 'project_manager', 'supervisor'].includes(role)) {
+              setIsRoleWithApproval(true);
+            }
+          } else {
+            setVerificationStatus('error');
+            setErrorMessage('Էլ․ հասցեն դեռ չի հաստատվել։ Խնդրում ենք ստուգել Ձեր էլ․ փոստը։');
           }
         } else {
-          setVerificationStatus('error');
-          setErrorMessage('Հաստատման գործընթացի սխալ: Հղումն անվավեր է կամ արդեն օգտագործվել է։');
+          // Եթե օգտատերը մուտք չի գործել, ապա հնարավոր է, որ նա հաստատվել է
+          // բայց դեռ չի վերադարձվել համակարգ
+          setVerificationStatus('success');
+          setErrorMessage('');
         }
-      } catch (error) {
+      } catch (error: any) {
+        console.error('Verification error:', error);
         setVerificationStatus('error');
-        setErrorMessage('Հաստատման գործընթացի սխալ: Խնդրում ենք փորձել կրկին։');
+        setErrorMessage(error.message || 'Հաստատման գործընթացի սխալ: Խնդրում ենք փորձել կրկին։');
       }
     };
 
-    verifyToken();
-  }, [location.search, verifyEmail]);
+    checkEmailVerification();
+  }, []);
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-background p-4">
