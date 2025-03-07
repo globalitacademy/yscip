@@ -1,5 +1,5 @@
 
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useRef, useState, useEffect } from 'react';
 import CustomCursor from './CustomCursor';
 import BackgroundEffects from './BackgroundEffects';
 import HeroContent from './HeroContent';
@@ -27,37 +27,12 @@ const Hero: React.FC = () => {
     fetchCategories();
   }, []);
 
-  // Enhanced mouse animation effects
+  // Custom cursor tracking
   useEffect(() => {
     const handleMouseMove = (e: MouseEvent) => {
-      if (!heroRef.current) return;
-      
       // Update mouse position for custom cursor
       setMousePosition({ x: e.clientX, y: e.clientY });
       setCursorVisible(true);
-      
-      // Parallax effect calculation
-      const rect = heroRef.current.getBoundingClientRect();
-      const mouseX = (e.clientX - rect.left) / rect.width - 0.5;
-      const mouseY = (e.clientY - rect.top) / rect.height - 0.5;
-      
-      // Apply to blobs with variable speeds
-      const blobs = heroRef.current.querySelectorAll('.blob');
-      blobs.forEach((blob, index) => {
-        const speed = (index + 1) * 15;
-        const xFactor = mouseX * speed;
-        const yFactor = mouseY * speed;
-        (blob as HTMLElement).style.transform = `translate(${xFactor}px, ${yFactor}px)`;
-      });
-      
-      // Apply to code particles
-      const particles = heroRef.current.querySelectorAll('.code-particle');
-      particles.forEach((particle, index) => {
-        const particleSpeed = (index % 3 + 1) * 8;
-        const xParticleFactor = mouseX * particleSpeed;
-        const yParticleFactor = mouseY * particleSpeed;
-        (particle as HTMLElement).style.transform = `translate(${-xParticleFactor}px, ${-yParticleFactor}px)`;
-      });
     };
     
     // Hide cursor when mouse leaves

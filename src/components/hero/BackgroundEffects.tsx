@@ -4,7 +4,6 @@ import React, { useEffect, useRef, useState } from 'react';
 const BackgroundEffects: React.FC = () => {
   // Generate code symbols for the background
   const codeSymbols = ['{', '}', '()', '=>', '</>', '[];', 'if', '==', '!=', '&&', '||', '++', '--', '*', '/', '%', '+='];
-  const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
   const networkCanvasRef = useRef<HTMLCanvasElement>(null);
   
   // Network animation effect
@@ -65,27 +64,6 @@ const BackgroundEffects: React.FC = () => {
         ctx.fillStyle = 'rgba(var(--foreground), 0.1)';
         ctx.fill();
         
-        // Mouse interaction - nodes within 150px of mouse move toward/away
-        const dx = mousePosition.x - node.x;
-        const dy = mousePosition.y - node.y;
-        const distance = Math.sqrt(dx * dx + dy * dy);
-        
-        if (distance < 150) {
-          // Push nodes away from mouse
-          const angle = Math.atan2(dy, dx);
-          const force = (150 - distance) / 1500;
-          node.vx -= Math.cos(angle) * force;
-          node.vy -= Math.sin(angle) * force;
-          
-          // Draw connection to mouse
-          ctx.beginPath();
-          ctx.moveTo(node.x, node.y);
-          ctx.lineTo(mousePosition.x, mousePosition.y);
-          ctx.strokeStyle = `rgba(var(--primary), ${0.2 - distance / 750})`;
-          ctx.lineWidth = 0.5;
-          ctx.stroke();
-        }
-        
         // Connect nearby nodes
         for (let j = i + 1; j < nodes.length; j++) {
           const node2 = nodes[j];
@@ -112,19 +90,6 @@ const BackgroundEffects: React.FC = () => {
     
     return () => {
       window.removeEventListener('resize', updateCanvasSize);
-    };
-  }, [mousePosition]);
-  
-  // Track mouse position
-  useEffect(() => {
-    const handleMouseMove = (e: MouseEvent) => {
-      setMousePosition({ x: e.clientX, y: e.clientY });
-    };
-    
-    window.addEventListener('mousemove', handleMouseMove);
-    
-    return () => {
-      window.removeEventListener('mousemove', handleMouseMove);
     };
   }, []);
 
