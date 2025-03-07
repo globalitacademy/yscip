@@ -1,8 +1,6 @@
-
 import React, { useEffect, useRef } from 'react';
 import { ChevronDown } from 'lucide-react';
 import { FadeIn, SlideUp, SlideDown } from './LocalTransitions';
-
 const Hero: React.FC = () => {
   const heroRef = useRef<HTMLDivElement>(null);
 
@@ -10,33 +8,28 @@ const Hero: React.FC = () => {
   useEffect(() => {
     const handleMouseMove = (e: MouseEvent) => {
       if (!heroRef.current) return;
-      
       const mouseX = e.clientX / window.innerWidth;
       const mouseY = e.clientY / window.innerHeight;
-      
       const moveX = mouseX * 20 - 10;
       const moveY = mouseY * 20 - 10;
-      
       const blobs = heroRef.current.querySelectorAll('.blob');
       blobs.forEach((blob, index) => {
         const factor = (index + 1) * 0.2;
         (blob as HTMLElement).style.transform = `translate(${moveX * factor}px, ${moveY * factor}px)`;
       });
     };
-
     window.addEventListener('mousemove', handleMouseMove);
     return () => window.removeEventListener('mousemove', handleMouseMove);
   }, []);
-
   const scrollToThemes = () => {
     const themesSection = document.getElementById('themes-section');
     if (themesSection) {
-      themesSection.scrollIntoView({ behavior: 'smooth' });
+      themesSection.scrollIntoView({
+        behavior: 'smooth'
+      });
     }
   };
-
-  return (
-    <section ref={heroRef} className="relative min-h-[90vh] flex items-center justify-center overflow-hidden pt-16 bg-gradient-to-b from-background/20 to-background">
+  return <section ref={heroRef} className="relative min-h-[90vh] flex items-center justify-center overflow-hidden pt-16 bg-gradient-to-b from-background/20 to-background">
       {/* Modern colorful blobs/shapes */}
       <div className="blob absolute top-[20%] left-[15%] w-72 h-72 rounded-full bg-primary/10 blur-[80px] opacity-70 mix-blend-multiply" />
       <div className="blob absolute bottom-[25%] right-[15%] w-96 h-96 rounded-full bg-accent/20 blur-[100px] opacity-60 mix-blend-multiply" />
@@ -53,7 +46,7 @@ const Hero: React.FC = () => {
         </SlideDown>
         
         <SlideDown delay="delay-200">
-          <h1 className="text-4xl md:text-5xl lg:text-6xl xl:text-7xl font-bold mb-8 leading-tight tracking-tight bg-clip-text text-transparent bg-gradient-to-b from-foreground to-foreground/70">
+          <h1 className="md:text-5xl lg:text-6xl xl:text-7xl font-bold mb-8 leading-tight tracking-tight bg-clip-text text-transparent bg-gradient-to-b from-foreground to-foreground/70 text-base">
             Սկսիր քո մասնագիտական ուղին
             <br />
             <span className="relative inline-block">
@@ -71,10 +64,7 @@ const Hero: React.FC = () => {
         
         <FadeIn delay="delay-500">
           <div className="flex flex-wrap justify-center gap-6">
-            <button 
-              className="px-8 py-4 bg-gradient-to-r from-primary to-primary/80 text-primary-foreground font-medium rounded-lg shadow-lg shadow-primary/20 hover:shadow-xl hover:shadow-primary/30 transform hover:-translate-y-1 transition-all duration-300 backdrop-blur-sm border border-primary/20"
-              onClick={scrollToThemes}
-            >
+            <button className="px-8 py-4 bg-gradient-to-r from-primary to-primary/80 text-primary-foreground font-medium rounded-lg shadow-lg shadow-primary/20 hover:shadow-xl hover:shadow-primary/30 transform hover:-translate-y-1 transition-all duration-300 backdrop-blur-sm border border-primary/20" onClick={scrollToThemes}>
               Ուսումնասիրել թեմաները
             </button>
             <button className="px-8 py-4 bg-gradient-to-r from-secondary/80 to-secondary/40 text-secondary-foreground font-medium rounded-lg hover:bg-secondary/60 transition-all duration-300 backdrop-blur-sm border border-secondary/20">
@@ -84,10 +74,7 @@ const Hero: React.FC = () => {
         </FadeIn>
         
         <SlideUp delay="delay-700" className="mt-24">
-          <button 
-            onClick={scrollToThemes}
-            className="inline-flex flex-col items-center text-muted-foreground hover:text-foreground transition-colors group"
-          >
+          <button onClick={scrollToThemes} className="inline-flex flex-col items-center text-muted-foreground hover:text-foreground transition-colors group">
             <span className="text-sm mb-2 group-hover:translate-y-1 transition-transform">Ոլորել դեպի ներքև</span>
             <ChevronDown size={22} className="animate-bounce group-hover:animate-none group-hover:scale-125 transition-transform" />
           </button>
@@ -96,22 +83,14 @@ const Hero: React.FC = () => {
       
       {/* Animated floating dots */}
       <div className="absolute inset-0 pointer-events-none overflow-hidden">
-        {[...Array(15)].map((_, i) => (
-          <div 
-            key={i}
-            className="absolute w-1.5 h-1.5 rounded-full bg-primary/30"
-            style={{
-              top: `${Math.random() * 100}%`,
-              left: `${Math.random() * 100}%`,
-              animation: `float ${5 + Math.random() * 10}s ease-in-out infinite`,
-              animationDelay: `${Math.random() * 5}s`,
-              opacity: 0.1 + Math.random() * 0.5
-            }}
-          />
-        ))}
+        {[...Array(15)].map((_, i) => <div key={i} className="absolute w-1.5 h-1.5 rounded-full bg-primary/30" style={{
+        top: `${Math.random() * 100}%`,
+        left: `${Math.random() * 100}%`,
+        animation: `float ${5 + Math.random() * 10}s ease-in-out infinite`,
+        animationDelay: `${Math.random() * 5}s`,
+        opacity: 0.1 + Math.random() * 0.5
+      }} />)}
       </div>
-    </section>
-  );
+    </section>;
 };
-
 export default Hero;
