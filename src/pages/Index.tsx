@@ -98,7 +98,7 @@ const Index = () => {
       <Header />
       <main className="flex-grow">
         <Hero />
-        <div className="container mx-auto px-4 pb-16">
+        <div id="themes-section" className="container mx-auto px-4 pb-16">
           {user && userReservedProjectDetails.length > 0 && (
             <div className="mb-12">
               <h2 className="text-2xl font-semibold mb-6 text-left">Իմ Ամրագրված Նախագծերը</h2>

@@ -80,6 +80,14 @@ const Hero: React.FC = () => {
       themesSection.scrollIntoView({
         behavior: 'smooth'
       });
+    } else {
+      // If themes-section doesn't exist yet, wait for it to be created
+      console.log("Themes section not found, scrolling to where it should be");
+      // As a fallback, scroll down a reasonable amount
+      window.scrollTo({
+        top: window.innerHeight,
+        behavior: 'smooth'
+      });
     }
   };
   
