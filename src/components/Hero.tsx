@@ -1,13 +1,7 @@
 
 import React, { useEffect, useRef, useState } from 'react';
-import { ChevronDown, Filter } from 'lucide-react';
+import { ChevronDown } from 'lucide-react';
 import { FadeIn, SlideUp, SlideDown } from './LocalTransitions';
-import { 
-  DropdownMenu, 
-  DropdownMenuContent, 
-  DropdownMenuItem, 
-  DropdownMenuTrigger 
-} from '@/components/ui/dropdown-menu';
 
 const Hero: React.FC = () => {
   const heroRef = useRef<HTMLDivElement>(null);
@@ -118,32 +112,6 @@ const Hero: React.FC = () => {
             >
               Ուսումնասիրել թեմաները
             </button>
-            
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <button className="px-8 py-4 bg-gradient-to-r from-secondary/80 to-secondary/40 text-secondary-foreground font-medium rounded-lg hover:bg-secondary/60 transition-all duration-300 backdrop-blur-sm border border-secondary/20 flex items-center">
-                  <Filter className="mr-2 h-4 w-4" />
-                  Ֆիլտրել ըստ կատեգորիայի
-                </button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent className="bg-popover/95 backdrop-blur-sm border border-border/50">
-                <DropdownMenuItem 
-                  onClick={() => handleCategoryFilter('all')}
-                  className="cursor-pointer"
-                >
-                  Բոլորը
-                </DropdownMenuItem>
-                {categories.map(category => (
-                  <DropdownMenuItem 
-                    key={category} 
-                    className="cursor-pointer"
-                    onClick={() => handleCategoryFilter(category)}
-                  >
-                    {category}
-                  </DropdownMenuItem>
-                ))}
-              </DropdownMenuContent>
-            </DropdownMenu>
           </div>
         </FadeIn>
         
