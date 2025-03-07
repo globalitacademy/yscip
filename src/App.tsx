@@ -1,11 +1,14 @@
 
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { Toaster } from '@/components/ui/toaster';
+import { Toaster as SonnerToaster } from "sonner";
 import Index from '@/pages/Index';
 import ProjectDetails from '@/pages/ProjectDetails';
 import NotFound from '@/pages/NotFound';
 import Login from '@/pages/Login';
 import AdminDashboard from '@/pages/AdminDashboard';
+import UserManagementPage from '@/pages/UserManagementPage';
+import OrganizationsPage from '@/pages/OrganizationsPage';
 import AuthProvider, { useAuth } from '@/contexts/AuthContext';
 import './App.css';
 
@@ -39,35 +42,35 @@ function AppRoutes() {
       } />
       <Route path="/users" element={
         <ProtectedRoute allowedRoles={['admin']}>
-          <div>User Management Page (Coming Soon)</div>
+          <UserManagementPage />
         </ProtectedRoute>
       } />
       <Route path="/organizations" element={
         <ProtectedRoute allowedRoles={['admin']}>
-          <div>Organizations Management (Coming Soon)</div>
+          <OrganizationsPage />
         </ProtectedRoute>
       } />
       
       {/* Lecturer routes */}
       <Route path="/tasks" element={
-        <ProtectedRoute allowedRoles={['lecturer']}>
+        <ProtectedRoute allowedRoles={['lecturer', 'instructor']}>
           <div>Tasks Management (Coming Soon)</div>
         </ProtectedRoute>
       } />
       <Route path="/courses" element={
-        <ProtectedRoute allowedRoles={['lecturer']}>
+        <ProtectedRoute allowedRoles={['lecturer', 'instructor']}>
           <div>Courses Management (Coming Soon)</div>
         </ProtectedRoute>
       } />
       
       {/* Project Manager routes */}
       <Route path="/projects/manage" element={
-        <ProtectedRoute allowedRoles={['project_manager']}>
+        <ProtectedRoute allowedRoles={['project_manager', 'supervisor']}>
           <div>Projects Management (Coming Soon)</div>
         </ProtectedRoute>
       } />
       <Route path="/gantt" element={
-        <ProtectedRoute allowedRoles={['project_manager']}>
+        <ProtectedRoute allowedRoles={['project_manager', 'supervisor']}>
           <div>Gantt Chart (Coming Soon)</div>
         </ProtectedRoute>
       } />
@@ -107,6 +110,7 @@ function App() {
       <Router>
         <AppRoutes />
         <Toaster />
+        <SonnerToaster position="top-right" />
       </Router>
     </AuthProvider>
   );

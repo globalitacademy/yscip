@@ -1,3 +1,4 @@
+
 export type UserRole = 'admin' | 'lecturer' | 'project_manager' | 'employer' | 'student' | 'instructor' | 'supervisor';
 
 export interface User {
@@ -144,6 +145,7 @@ export const rolePermissions = {
     canAssignInstructors: false,
     canAssignSupervisors: false,
     canCreateProjects: true,
+    canAssignProjects: true,
     canViewAllProjects: false,
     canManageUsers: false
   },
@@ -167,7 +169,7 @@ export const rolePermissions = {
     canAssignInstructors: false,
     canAssignSupervisors: false,
     canCreateProjects: true,
-    canAssignProjects: false,
+    canAssignProjects: true,
     canViewAllProjects: false,
     canManageUsers: false
   },

@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { User, UserRole, mockUsers, getCourses, getGroups } from '@/data/userRoles';
 import { Button } from '@/components/ui/button';
@@ -126,7 +127,8 @@ const UserManagement: React.FC<UserManagementProps> = () => {
 
   const handleAssignSupervisor = (studentId: string, supervisorId: string) => {
     setUsers(prev => prev.map(user => {
-      if (user.id === supervisorId && (user.role === 'supervisor' || user.role === 'project_manager')) {
+      if (user.id === supervisorId && 
+         (user.role === 'supervisor' || user.role === 'project_manager')) {
         return {
           ...user,
           supervisedStudents: [...(user.supervisedStudents || []), studentId]
@@ -201,8 +203,11 @@ const UserManagement: React.FC<UserManagementProps> = () => {
                   <SelectContent>
                     <SelectItem value="admin">Ադմինիստրատոր</SelectItem>
                     <SelectItem value="supervisor">Ծրագրի ղեկավար</SelectItem>
+                    <SelectItem value="project_manager">Պրոեկտի մենեջեր</SelectItem>
                     <SelectItem value="instructor">Դասախոս</SelectItem>
+                    <SelectItem value="lecturer">Դասախոս</SelectItem>
                     <SelectItem value="student">Ուսանող</SelectItem>
+                    <SelectItem value="employer">Գործատու</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
@@ -291,8 +296,10 @@ const UserManagement: React.FC<UserManagementProps> = () => {
                   <TableCell>{user.email}</TableCell>
                   <TableCell>
                     {user.role === 'admin' && 'Ադմինիստրատոր'}
-                    {(user.role === 'supervisor' || user.role === 'project_manager') && 'Ծրագրի ղեկավար'}
-                    {(user.role === 'instructor' || user.role === 'lecturer') && 'Դասախոս'}
+                    {user.role === 'supervisor' && 'Ծրագրի ղեկավար'}
+                    {user.role === 'project_manager' && 'Պրոեկտի մենեջեր'}
+                    {user.role === 'instructor' && 'Դասախոս'}
+                    {user.role === 'lecturer' && 'Դասախոս'}
                     {user.role === 'employer' && 'Գործատու'}
                     {user.role === 'student' && 'Ուսանող'}
                   </TableCell>

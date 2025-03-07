@@ -6,6 +6,17 @@ import { useAuth } from '@/contexts/AuthContext';
 import { rolePermissions } from '@/data/userRoles';
 import { toast } from '@/components/ui/use-toast';
 
+interface ProjectReservation {
+  projectId: number;
+  userId: string;
+  projectTitle: string;
+  timestamp: string;
+  status: 'pending' | 'approved' | 'rejected';
+  supervisorId?: string;
+  instructorId?: string;
+  feedback?: string;
+}
+
 interface ProjectContextType {
   project: ProjectTheme | null;
   timeline: TimelineEvent[];
@@ -18,12 +29,15 @@ interface ProjectContextType {
   submitProject: (feedback: string) => void;
   approveProject: (feedback: string) => void;
   rejectProject: (feedback: string) => void;
-  reserveProject: () => void;
+  reserveProject: (supervisorId?: string, instructorId?: string) => void;
   isReserved: boolean;
   canStudentSubmit: boolean;
   canInstructorCreate: boolean;
   canInstructorAssign: boolean;
   canSupervisorApprove: boolean;
+  projectReservations: ProjectReservation[];
+  approveReservation: (reservationId: number) => void;
+  rejectReservation: (reservationId: number, feedback: string) => void;
 }
 
 const ProjectContext = createContext<ProjectContextType | undefined>(undefined);
@@ -45,6 +59,7 @@ export const ProjectProvider: React.FC<ProjectProviderProps> = ({
   const [tasks, setTasks] = useState<Task[]>([]);
   const [projectStatus, setProjectStatus] = useState<'not_submitted' | 'pending' | 'approved' | 'rejected'>('not_submitted');
   const [isReserved, setIsReserved] = useState(false);
+  const [projectReservations, setProjectReservations] = useState<ProjectReservation[]>([]);
 
   // Get permissions based on user role
   const permissions = user ? rolePermissions[user.role] : rolePermissions.student;
@@ -56,20 +71,23 @@ export const ProjectProvider: React.FC<ProjectProviderProps> = ({
   const canInstructorAssign = 'canAssignProjects' in permissions ? permissions.canAssignProjects : false;
   const canSupervisorApprove = permissions.canApproveProject;
 
-  // Check for existing reservations on mount
+  // Load project reservations from localStorage
   useEffect(() => {
-    if (projectId && user) {
-      const reservedProjects = localStorage.getItem('reservedProjects');
-      if (reservedProjects) {
-        try {
-          const reservations = JSON.parse(reservedProjects);
-          const isAlreadyReserved = reservations.some((res: any) => 
+    const reservedProjects = localStorage.getItem('reservedProjects');
+    if (reservedProjects) {
+      try {
+        const reservations = JSON.parse(reservedProjects);
+        setProjectReservations(reservations);
+        
+        // Check if current project is reserved by current user
+        if (projectId && user) {
+          const isAlreadyReserved = reservations.some((res: ProjectReservation) => 
             res.projectId === projectId && res.userId === user.id
           );
           setIsReserved(isAlreadyReserved);
-        } catch (e) {
-          console.error('Error parsing reserved projects:', e);
         }
+      } catch (e) {
+        console.error('Error parsing reserved projects:', e);
       }
     }
   }, [projectId, user]);
@@ -197,13 +215,13 @@ export const ProjectProvider: React.FC<ProjectProviderProps> = ({
     console.log("Project rejected with feedback:", feedback);
   };
 
-  const reserveProject = () => {
+  const reserveProject = (supervisorId?: string, instructorId?: string) => {
     // Only students can reserve projects
     if (!user || user.role !== 'student' || !project) return;
     
     // Save reservation in localStorage
     const reservedProjects = localStorage.getItem('reservedProjects');
-    let reservations = [];
+    let reservations: ProjectReservation[] = [];
     
     if (reservedProjects) {
       try {
@@ -214,21 +232,89 @@ export const ProjectProvider: React.FC<ProjectProviderProps> = ({
     }
     
     // Add new reservation
-    const newReservation = {
+    const newReservation: ProjectReservation = {
       projectId: project.id,
       userId: user.id,
       projectTitle: project.title,
-      timestamp: new Date().toISOString()
+      timestamp: new Date().toISOString(),
+      status: 'pending',
+      supervisorId,
+      instructorId
     };
     
     reservations.push(newReservation);
     localStorage.setItem('reservedProjects', JSON.stringify(reservations));
+    setProjectReservations(reservations);
     
     setIsReserved(true);
     toast({
-      title: "Պրոեկ��ն ամրագրված է",
-      description: `Դուք հաջողությամբ ամրագրել եք "${project.title}" պրոեկտը։`,
+      title: "Պրոեկտը ամրագրված է",
+      description: `Դուք հաջողությամբ ամրագրել եք "${project.title}" պրոեկտը։ Խնդրում ենք սպասել հաստատման։`,
     });
+  };
+
+  const approveReservation = (projectId: number) => {
+    if (!user || (user.role !== 'supervisor' && user.role !== 'instructor' && user.role !== 'project_manager')) return;
+    
+    const reservedProjects = localStorage.getItem('reservedProjects');
+    if (!reservedProjects) return;
+    
+    try {
+      let reservations: ProjectReservation[] = JSON.parse(reservedProjects);
+      
+      reservations = reservations.map(res => {
+        if (res.projectId === projectId) {
+          if ((user.role === 'supervisor' || user.role === 'project_manager') && res.supervisorId === user.id) {
+            return { ...res, status: 'approved' };
+          } else if (user.role === 'instructor' && res.instructorId === user.id) {
+            return { ...res, status: 'approved' };
+          }
+        }
+        return res;
+      });
+      
+      localStorage.setItem('reservedProjects', JSON.stringify(reservations));
+      setProjectReservations(reservations);
+      
+      toast({
+        title: "Հաստատված",
+        description: "Պրոեկտի ամրագրումը հաստատվել է։",
+      });
+    } catch (e) {
+      console.error('Error updating reservation:', e);
+    }
+  };
+
+  const rejectReservation = (projectId: number, feedback: string) => {
+    if (!user || (user.role !== 'supervisor' && user.role !== 'instructor' && user.role !== 'project_manager')) return;
+    
+    const reservedProjects = localStorage.getItem('reservedProjects');
+    if (!reservedProjects) return;
+    
+    try {
+      let reservations: ProjectReservation[] = JSON.parse(reservedProjects);
+      
+      reservations = reservations.map(res => {
+        if (res.projectId === projectId) {
+          if ((user.role === 'supervisor' || user.role === 'project_manager') && res.supervisorId === user.id) {
+            return { ...res, status: 'rejected', feedback };
+          } else if (user.role === 'instructor' && res.instructorId === user.id) {
+            return { ...res, status: 'rejected', feedback };
+          }
+        }
+        return res;
+      });
+      
+      localStorage.setItem('reservedProjects', JSON.stringify(reservations));
+      setProjectReservations(reservations);
+      
+      toast({
+        title: "Մերժված",
+        description: "Պրոեկտի ամրագրումը մերժվել է։",
+      });
+    } catch (e) {
+      console.error('Error updating reservation:', e);
+    }
   };
 
   return (
@@ -250,7 +336,10 @@ export const ProjectProvider: React.FC<ProjectProviderProps> = ({
         canStudentSubmit,
         canInstructorCreate,
         canInstructorAssign,
-        canSupervisorApprove
+        canSupervisorApprove,
+        projectReservations,
+        approveReservation,
+        rejectReservation
       }}
     >
       {children}
