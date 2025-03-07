@@ -7,15 +7,19 @@ import { Badge } from '@/components/ui/badge';
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { toast } from 'sonner';
 import { Edit, Trash, Image, PlusCircle, Search, Filter, ArrowUpDown } from 'lucide-react';
-import { projectThemes } from '@/data/projectThemes';
+import { projectThemes, ProjectTheme } from '@/data/projectThemes';
+import { Textarea } from '@/components/ui/textarea';
+import { Label } from '@/components/ui/label';
 
 const ProjectManagement: React.FC = () => {
   const [projects, setProjects] = useState(projectThemes);
   const [searchQuery, setSearchQuery] = useState('');
-  const [selectedProject, setSelectedProject] = useState<any>(null);
+  const [selectedProject, setSelectedProject] = useState<ProjectTheme | null>(null);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [isImageDialogOpen, setIsImageDialogOpen] = useState(false);
+  const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [newImageUrl, setNewImageUrl] = useState('');
+  const [editedProject, setEditedProject] = useState<Partial<ProjectTheme>>({});
   
   // Filter projects based on search query
   const filteredProjects = projects.filter(project => 
@@ -50,6 +54,40 @@ const ProjectManagement: React.FC = () => {
     setIsImageDialogOpen(false);
     setNewImageUrl('');
     toast.success(`"${selectedProject.title}" նախագծի նկարը հաջողությամբ թարմացվել է`);
+    setSelectedProject(null);
+  };
+
+  // Handle edit project initialization
+  const handleEditInit = (project: ProjectTheme) => {
+    setSelectedProject(project);
+    setEditedProject({
+      title: project.title,
+      description: project.description,
+      category: project.category,
+    });
+    setIsEditDialogOpen(true);
+  };
+
+  // Handle save edited project
+  const handleSaveEdit = () => {
+    if (!selectedProject || !editedProject.title?.trim()) return;
+    
+    const updatedProjects = projects.map(project => {
+      if (project.id === selectedProject.id) {
+        return { 
+          ...project, 
+          title: editedProject.title?.trim() || project.title,
+          description: editedProject.description?.trim() || project.description,
+          category: editedProject.category?.trim() || project.category
+        };
+      }
+      return project;
+    });
+    
+    setProjects(updatedProjects);
+    setIsEditDialogOpen(false);
+    setEditedProject({});
+    toast.success(`"${selectedProject.title}" նախագիծը հաջողությամբ թարմացվել է`);
     setSelectedProject(null);
   };
 
@@ -139,7 +177,12 @@ const ProjectManagement: React.FC = () => {
                 )}
               </div>
               <div className="mt-4 flex justify-end">
-                <Button variant="outline" size="sm" className="text-xs">
+                <Button 
+                  variant="outline" 
+                  size="sm" 
+                  className="text-xs"
+                  onClick={() => handleEditInit(project)}
+                >
                   <Edit className="mr-1 h-3 w-3" />
                   Խմբագրել
                 </Button>
@@ -215,6 +258,52 @@ const ProjectManagement: React.FC = () => {
           <DialogFooter className="flex-col sm:flex-row gap-2">
             <Button variant="outline" onClick={() => setIsImageDialogOpen(false)} className="w-full sm:w-auto">Չեղարկել</Button>
             <Button onClick={handleChangeImage} className="w-full sm:w-auto">Պահպանել</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Edit Project Dialog */}
+      <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>Նախագծի խմբագրում</DialogTitle>
+            <DialogDescription>
+              Խմբագրեք "{selectedProject?.title}" նախագծի տվյալները։
+            </DialogDescription>
+          </DialogHeader>
+          <div className="grid gap-4 py-4">
+            <div className="flex flex-col gap-2">
+              <Label htmlFor="project-title">Վերնագիր</Label>
+              <Input
+                id="project-title"
+                placeholder="Նախագծի վերնագիր"
+                value={editedProject.title || ''}
+                onChange={(e) => setEditedProject({...editedProject, title: e.target.value})}
+              />
+            </div>
+            <div className="flex flex-col gap-2">
+              <Label htmlFor="project-category">Կատեգորիա</Label>
+              <Input
+                id="project-category"
+                placeholder="Նախագծի կատեգորիա"
+                value={editedProject.category || ''}
+                onChange={(e) => setEditedProject({...editedProject, category: e.target.value})}
+              />
+            </div>
+            <div className="flex flex-col gap-2">
+              <Label htmlFor="project-description">Նկարագրություն</Label>
+              <Textarea
+                id="project-description"
+                placeholder="Նախագծի նկարագրություն"
+                value={editedProject.description || ''}
+                onChange={(e) => setEditedProject({...editedProject, description: e.target.value})}
+                rows={4}
+              />
+            </div>
+          </div>
+          <DialogFooter className="flex-col sm:flex-row gap-2">
+            <Button variant="outline" onClick={() => setIsEditDialogOpen(false)} className="w-full sm:w-auto">Չեղարկել</Button>
+            <Button onClick={handleSaveEdit} className="w-full sm:w-auto">Պահպանել</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
