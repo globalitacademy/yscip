@@ -18,6 +18,7 @@ import ProjectManagementPage from '@/pages/ProjectManagementPage';
 import StudentProjectsPage from '@/pages/StudentProjectsPage';
 import PortfolioPage from '@/pages/PortfolioPage';
 import ProjectSubmissionPage from '@/pages/ProjectSubmissionPage';
+import PendingApprovals from '@/pages/PendingApprovals';
 import AuthProvider, { useAuth } from '@/contexts/AuthContext';
 import './App.css';
 
@@ -53,6 +54,11 @@ function AppRoutes() {
       <Route path="/users" element={
         <ProtectedRoute allowedRoles={['admin']}>
           <UserManagementPage />
+        </ProtectedRoute>
+      } />
+      <Route path="/pending-approvals" element={
+        <ProtectedRoute allowedRoles={['admin']}>
+          <PendingApprovals />
         </ProtectedRoute>
       } />
       <Route path="/organizations" element={
