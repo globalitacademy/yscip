@@ -12,7 +12,7 @@ const Index: React.FC = () => {
     try {
       await createAdminUser();
     } catch (error) {
-      toast.error('Սխալ ադմին օգտատեր ստեղծելիս');
+      toast.error('Սխալ սուպերադմին մուտքի ընթացքում');
     }
   };
 
@@ -45,7 +45,7 @@ const Index: React.FC = () => {
             onClick={handleCreateAdmin}
             className="mb-8"
           >
-            Ստեղծել ադմին օգտատեր
+            Մուտք որպես սուպերադմին
           </Button>
         </div>
       </div>

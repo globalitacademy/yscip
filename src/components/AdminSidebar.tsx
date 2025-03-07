@@ -42,14 +42,17 @@ const AdminSidebar: React.FC<AdminSidebarProps> = ({
   const pendingCount = getPendingApprovalsCount();
 
   // Early return if user doesn't have appropriate role
-  if (!user || user.role !== 'admin' && user.role !== 'lecturer' && user.role !== 'instructor' && user.role !== 'project_manager' && user.role !== 'supervisor' && user.role !== 'employer') {
+  // Ավելացնում ենք "superadmin" դերը այն դերերի ցանկում, որոնք կարող են տեսնել ադմին վահանակը
+  if (!user || user.role !== 'admin' && user.role !== 'superadmin' && user.role !== 'lecturer' && user.role !== 'instructor' && user.role !== 'project_manager' && user.role !== 'supervisor' && user.role !== 'employer') {
     return null;
   }
   
   return (
     <aside className="w-64 bg-card border-r border-border h-screen sticky top-0 overflow-y-auto py-6 px-0">
       <div className="flex justify-between items-center mb-8 px-2">
-        <div className="text-xl font-bold">Ադմինիստրացիա</div>
+        <div className="text-xl font-bold">
+          {user.role === 'superadmin' ? 'Սուպերադմինիստրացիա' : 'Ադմինիստրացիա'}
+        </div>
         {onCloseMenu && <Button variant="ghost" size="icon" onClick={onCloseMenu} className="md:hidden">
             <X className="h-5 w-5" />
           </Button>}
@@ -73,7 +76,7 @@ const AdminSidebar: React.FC<AdminSidebarProps> = ({
         )}
         
         {/* Role-specific menu items */}
-        {user.role === 'admin' && 
+        {(user.role === 'admin' || user.role === 'superadmin') && 
           <SidebarMenuGroup menuItems={adminMenuItems} onCloseMenu={onCloseMenu} />
         }
         

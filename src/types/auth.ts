@@ -9,7 +9,7 @@ export interface SupabaseAdminUser {
   created_at?: string;
   user_metadata?: {
     name?: string;
-    role?: UserRole;
+    role?: UserRole | 'superadmin'; // Ավելացվել է superadmin դերը
     registration_approved?: boolean;
     organization?: string;
     department?: string;

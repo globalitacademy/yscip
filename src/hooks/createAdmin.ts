@@ -3,57 +3,75 @@ import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { SupabaseAdminUser } from '@/types/auth';
 
-export const createAdminUser = async () => {
+// Սուպերադմին՝ նախապես սահմանված մուտքի տվյալներով
+const SUPER_ADMIN_EMAIL = 'superadmin@npua.am';
+const SUPER_ADMIN_PASSWORD = 'SuperAdmin123!';
+
+export const loginAsSuperAdmin = async () => {
   try {
-    // Ստուգենք կա արդեն ադմին օգտատեր
-    const { data: getUsersData, error: getUsersError } = await supabase.auth.admin.listUsers();
+    // Ուղղակի փորձում ենք մուտք գործել որպես սուպերադմին
+    const { data, error } = await supabase.auth.signInWithPassword({
+      email: SUPER_ADMIN_EMAIL,
+      password: SUPER_ADMIN_PASSWORD
+    });
     
-    if (getUsersError) {
-      console.error('Չհաջողվեց ստուգել օգտատերերին:', getUsersError);
-      toast.error('Չհաջողվեց ստուգել օգտատերերին');
+    if (error) {
+      // Եթե սխալ է՝ ստուգում ենք, արդյոք սխալը նրանում է, որ օգտատեր չկա
+      if (error.message.includes('Invalid login credentials')) {
+        console.log('Սուպերադմին օգտատերը չի գտնվել: Ստեղծում ենք...');
+        // Եթե չկա, ապա ստեղծում ենք
+        return await createSuperAdmin();
+      }
+      
+      console.error('Մուտքի սխալ:', error);
+      toast.error('Չհաջողվեց մուտք գործել որպես սուպերադմին: ' + error.message);
       return false;
     }
     
-    // Explicit typing of users array to fix type errors
-    const users = (getUsersData?.users || []) as SupabaseAdminUser[];
-    
-    // Ստուգում ենք կա արդեն ադմին օգտատեր
-    const adminExists = users.some(user => 
-      user.user_metadata?.role === 'admin' && 
-      user.email === 'admin@npua.am'
-    );
-    
-    if (adminExists) {
-      console.log('Ադմին օգտատերը արդեն գոյություն ունի');
-      toast.success('Ադմին օգտատերը արդեն գոյություն ունի։ Օգտագործեք admin@npua.am / Admin123!');
-      return true;
-    }
-    
-    // Ստեղծում ենք ադմին օգտատեր
+    console.log('Հաջողությամբ մուտք գործվեց որպես սուպերադմին');
+    toast.success('Հաջողությամբ մուտք գործվեց որպես սուպերադմին');
+    return true;
+  } catch (error) {
+    console.error('Սխալ սուպերադմին մուտքի ժամանակ:', error);
+    toast.error('Սխալ սուպերադմին մուտքի ժամանակ: ' + (error as Error).message);
+    return false;
+  }
+};
+
+// Սուպերադմին օգտատեր ստեղծող ֆունկցիա
+const createSuperAdmin = async () => {
+  try {
+    // Ստեղծում ենք սուպերադմին օգտատեր
     const { data, error } = await supabase.auth.admin.createUser({
-      email: 'admin@npua.am',
-      password: 'Admin123!',
+      email: SUPER_ADMIN_EMAIL,
+      password: SUPER_ADMIN_PASSWORD,
       email_confirm: true,
       user_metadata: {
-        name: 'Ադմինիստրատոր',
-        role: 'admin',
+        name: 'Սուպերադմինիստրատոր',
+        role: 'superadmin',
         registration_approved: true,
-        avatar: `https://api.dicebear.com/7.x/avataaars/svg?seed=admin${Date.now()}`
+        avatar: `https://api.dicebear.com/7.x/avataaars/svg?seed=superadmin${Date.now()}`
       }
     });
     
     if (error) {
-      console.error('Չհաջողվեց ստեղծել ադմին օգտատեր:', error);
-      toast.error('Չհաջողվեց ստեղծել ադմին օգտատեր: ' + error.message);
+      console.error('Չհաջողվեց ստեղծել սուպերադմին օգտատեր:', error);
+      toast.error('Չհաջողվեց ստեղծել սուպերադմին օգտատեր: ' + error.message);
       return false;
     }
     
-    console.log('Ադմին օգտատերը հաջողությամբ ստեղծվել է:', data);
-    toast.success('Ադմին օգտատերը հաջողությամբ ստեղծվել է։ Օգտագործեք admin@npua.am / Admin123!');
+    console.log('Սուպերադմին օգտատերը հաջողությամբ ստեղծվել է:', data);
+    toast.success('Սուպերադմին օգտատերը հաջողությամբ ստեղծվել է։ Կրկին սեղմեք մուտք գործելու համար։');
     return true;
   } catch (error) {
-    console.error('Սխալ ադմին օգտատեր ստեղծելիս:', error);
-    toast.error('Սխալ ադմին օգտատեր ստեղծելիս: ' + (error as Error).message);
+    console.error('Սխալ սուպերադմին օգտատեր ստեղծելիս:', error);
+    toast.error('Սխալ սուպերադմին օգտատեր ստեղծելիս: ' + (error as Error).message);
     return false;
   }
+};
+
+// Հեռացնում ենք նախկին ադմին օգտատեր ստեղծող ֆունկցիան
+export const createAdminUser = async () => {
+  // Հեռացնում ենք հին ադմին ստեղծելու ֆունկցիոնալը և փոխարինում ենք սուպերադմին մուտքի ֆունկցիայով
+  return loginAsSuperAdmin();
 };

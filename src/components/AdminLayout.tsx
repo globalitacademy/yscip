@@ -18,8 +18,10 @@ const AdminLayout: React.FC<AdminLayoutProps> = ({ children, pageTitle }) => {
   const [isSidebarOpen, setIsSidebarOpen] = React.useState(false);
   
   // Redirect if not authenticated or doesn't have appropriate role
+  // Թույլատրում ենք նաև superadmin դերին մուտք գործել
   if (!isAuthenticated || !user || (
     user.role !== 'admin' && 
+    user.role !== 'superadmin' && 
     user.role !== 'lecturer' && 
     user.role !== 'instructor' && 
     user.role !== 'project_manager' && 
