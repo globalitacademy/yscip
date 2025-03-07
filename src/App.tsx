@@ -105,7 +105,7 @@ function AppRoutes() {
       
       {/* Lecturer routes */}
       <Route path="/tasks" element={
-        <ProtectedRoute allowedRoles={['admin', 'lecturer', 'instructor', 'project_manager', 'supervisor']}>
+        <ProtectedRoute allowedRoles={['admin', 'superadmin', 'lecturer', 'instructor', 'project_manager', 'supervisor']}>
           <TasksPage />
         </ProtectedRoute>
       } />
@@ -117,7 +117,7 @@ function AppRoutes() {
       
       {/* Project Manager routes */}
       <Route path="/projects/manage" element={
-        <ProtectedRoute allowedRoles={['admin', 'project_manager', 'supervisor']}>
+        <ProtectedRoute allowedRoles={['admin', 'superadmin', 'project_manager', 'supervisor']}>
           <ProjectManagementPage />
         </ProtectedRoute>
       } />

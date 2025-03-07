@@ -27,6 +27,7 @@ const Header: React.FC<HeaderProps> = ({ className }) => {
     if (!user) return null;
     
     switch (user.role) {
+      case 'superadmin':
       case 'admin':
         return (
           <div className="flex items-center gap-2 md:gap-4">
