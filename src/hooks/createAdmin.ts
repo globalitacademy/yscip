@@ -1,11 +1,12 @@
 
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
+import { SupabaseAdminUser } from '@/types/auth';
 
 export const createAdminUser = async () => {
   try {
     // Ստուգենք կա արդեն ադմին օգտատեր
-    const { data: { users }, error: getUsersError } = await supabase.auth.admin.listUsers();
+    const { data: getUsersData, error: getUsersError } = await supabase.auth.admin.listUsers();
     
     if (getUsersError) {
       console.error('Չհաջողվեց ստուգել օգտատերերին:', getUsersError);
@@ -13,8 +14,11 @@ export const createAdminUser = async () => {
       return false;
     }
     
+    // Explicit typing of users array to fix type errors
+    const users = (getUsersData?.users || []) as SupabaseAdminUser[];
+    
     // Ստուգում ենք կա արդեն ադմին օգտատեր
-    const adminExists = users?.some(user => 
+    const adminExists = users.some(user => 
       user.user_metadata?.role === 'admin' && 
       user.email === 'admin@npua.am'
     );
