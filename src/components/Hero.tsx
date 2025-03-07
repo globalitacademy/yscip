@@ -1,8 +1,34 @@
-import React, { useEffect, useRef } from 'react';
-import { ChevronDown } from 'lucide-react';
+
+import React, { useEffect, useRef, useState } from 'react';
+import { ChevronDown, Filter } from 'lucide-react';
 import { FadeIn, SlideUp, SlideDown } from './LocalTransitions';
+import { 
+  DropdownMenu, 
+  DropdownMenuContent, 
+  DropdownMenuItem, 
+  DropdownMenuTrigger 
+} from '@/components/ui/dropdown-menu';
+
 const Hero: React.FC = () => {
   const heroRef = useRef<HTMLDivElement>(null);
+  const [categories, setCategories] = useState<string[]>([]);
+
+  // Fetch categories from project themes
+  useEffect(() => {
+    const fetchCategories = async () => {
+      try {
+        // Import the project themes dynamically
+        const { projectThemes } = await import('@/data/projectThemes');
+        // Extract unique categories
+        const uniqueCategories = [...new Set(projectThemes.map(project => project.category))];
+        setCategories(uniqueCategories);
+      } catch (error) {
+        console.error("Error loading categories:", error);
+      }
+    };
+    
+    fetchCategories();
+  }, []);
 
   // Parallax effect on mouse move
   useEffect(() => {
@@ -21,6 +47,8 @@ const Hero: React.FC = () => {
     window.addEventListener('mousemove', handleMouseMove);
     return () => window.removeEventListener('mousemove', handleMouseMove);
   }, []);
+
+  // Function to scroll to themes section
   const scrollToThemes = () => {
     const themesSection = document.getElementById('themes-section');
     if (themesSection) {
@@ -29,6 +57,25 @@ const Hero: React.FC = () => {
       });
     }
   };
+  
+  // Function to handle category filter
+  const handleCategoryFilter = (category: string) => {
+    const themesSection = document.getElementById('themes-section');
+    if (themesSection) {
+      themesSection.scrollIntoView({ behavior: 'smooth' });
+      
+      // Set URL search parameter for category filtering
+      const url = new URL(window.location.href);
+      url.searchParams.set('category', category);
+      window.history.pushState({}, '', url);
+      
+      // Dispatch a custom event that ThemeGrid can listen for
+      window.dispatchEvent(new CustomEvent('categoryChanged', { 
+        detail: { category } 
+      }));
+    }
+  };
+
   return <section ref={heroRef} className="relative min-h-[90vh] flex items-center justify-center overflow-hidden pt-16 bg-gradient-to-b from-background/20 to-background">
       {/* Modern colorful blobs/shapes */}
       <div className="blob absolute top-[20%] left-[15%] w-72 h-72 rounded-full bg-primary/10 blur-[80px] opacity-70 mix-blend-multiply" />
@@ -64,17 +111,48 @@ const Hero: React.FC = () => {
         
         <FadeIn delay="delay-500">
           <div className="flex flex-wrap justify-center gap-6">
-            <button className="px-8 py-4 bg-gradient-to-r from-primary to-primary/80 text-primary-foreground font-medium rounded-lg shadow-lg shadow-primary/20 hover:shadow-xl hover:shadow-primary/30 transform hover:-translate-y-1 transition-all duration-300 backdrop-blur-sm border border-primary/20" onClick={scrollToThemes}>
+            <button 
+              className="px-8 py-4 bg-gradient-to-r from-primary to-primary/80 text-primary-foreground font-medium rounded-lg shadow-lg shadow-primary/20 hover:shadow-xl hover:shadow-primary/30 transform hover:-translate-y-1 transition-all duration-300 backdrop-blur-sm border border-primary/20"
+              onClick={scrollToThemes}
+              aria-label="Explore themes"
+            >
               Ուսումնասիրել թեմաները
             </button>
-            <button className="px-8 py-4 bg-gradient-to-r from-secondary/80 to-secondary/40 text-secondary-foreground font-medium rounded-lg hover:bg-secondary/60 transition-all duration-300 backdrop-blur-sm border border-secondary/20">
-              Ֆիլտրել ըստ կատեգորիայի
-            </button>
+            
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <button className="px-8 py-4 bg-gradient-to-r from-secondary/80 to-secondary/40 text-secondary-foreground font-medium rounded-lg hover:bg-secondary/60 transition-all duration-300 backdrop-blur-sm border border-secondary/20 flex items-center">
+                  <Filter className="mr-2 h-4 w-4" />
+                  Ֆիլտրել ըստ կատեգորիայի
+                </button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent className="bg-popover/95 backdrop-blur-sm border border-border/50">
+                <DropdownMenuItem 
+                  onClick={() => handleCategoryFilter('all')}
+                  className="cursor-pointer"
+                >
+                  Բոլորը
+                </DropdownMenuItem>
+                {categories.map(category => (
+                  <DropdownMenuItem 
+                    key={category} 
+                    className="cursor-pointer"
+                    onClick={() => handleCategoryFilter(category)}
+                  >
+                    {category}
+                  </DropdownMenuItem>
+                ))}
+              </DropdownMenuContent>
+            </DropdownMenu>
           </div>
         </FadeIn>
         
         <SlideUp delay="delay-700" className="mt-24">
-          <button onClick={scrollToThemes} className="inline-flex flex-col items-center text-muted-foreground hover:text-foreground transition-colors group">
+          <button 
+            onClick={scrollToThemes} 
+            className="inline-flex flex-col items-center text-muted-foreground hover:text-foreground transition-colors group"
+            aria-label="Scroll down"
+          >
             <span className="text-sm mb-2 group-hover:translate-y-1 transition-transform">Ոլորել դեպի ներքև</span>
             <ChevronDown size={22} className="animate-bounce group-hover:animate-none group-hover:scale-125 transition-transform" />
           </button>
@@ -93,4 +171,5 @@ const Hero: React.FC = () => {
       </div>
     </section>;
 };
+
 export default Hero;

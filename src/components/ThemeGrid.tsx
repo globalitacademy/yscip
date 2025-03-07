@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { ArrowRight, BookOpen, Users, Tag, GraduationCap, Layers, ChevronDown } from 'lucide-react';
@@ -39,6 +38,27 @@ const ThemeGrid: React.FC<ThemeGridProps> = ({ limit, createdProjects = [] }) =>
   const [assignments, setAssignments] = useState<any[]>([]);
   
   const categories = ["all", ...new Set(projectThemes.map(project => project.category))];
+  
+  useEffect(() => {
+    const handleCategoryChange = (event: CustomEvent) => {
+      if (event.detail && event.detail.category) {
+        setActiveCategory(event.detail.category);
+        setDisplayLimit(limit || 6);
+      }
+    };
+    
+    const urlParams = new URLSearchParams(window.location.search);
+    const categoryParam = urlParams.get('category');
+    if (categoryParam && categories.includes(categoryParam)) {
+      setActiveCategory(categoryParam);
+    }
+    
+    window.addEventListener('categoryChanged', handleCategoryChange as EventListener);
+    
+    return () => {
+      window.removeEventListener('categoryChanged', handleCategoryChange as EventListener);
+    };
+  }, [limit, categories]);
   
   useEffect(() => {
     try {
@@ -168,16 +188,24 @@ const ThemeGrid: React.FC<ThemeGridProps> = ({ limit, createdProjects = [] }) =>
   const hasMore = displayLimit < categoryFilteredProjects.length;
   
   return (
-    <div className="mt-12 text-left">
+    <div id="themes-section" className="mt-12 text-left">
       <div className="mb-8">
         <h2 className="text-2xl font-semibold mb-4">Ծրագրերի թեմաներն ըստ կատեգորիաների</h2>
         
         <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4 mb-6">
           <Select
-            defaultValue="all"
+            value={activeCategory}
             onValueChange={(value) => {
               setActiveCategory(value);
               setDisplayLimit(limit || 6);
+              
+              const url = new URL(window.location.href);
+              if (value === 'all') {
+                url.searchParams.delete('category');
+              } else {
+                url.searchParams.set('category', value);
+              }
+              window.history.pushState({}, '', url);
             }}
           >
             <SelectTrigger className="w-full sm:w-[220px] bg-background">
