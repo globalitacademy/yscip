@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { 
   LayoutDashboard, 
@@ -12,7 +11,8 @@ import {
   UserCog,
   Briefcase,
   ClipboardList,
-  Bell
+  Bell,
+  UserCheck
 } from 'lucide-react';
 
 // Define menu item type
@@ -39,6 +39,12 @@ export const adminMenuItems: SidebarMenuItemType[] = [
     label: 'Օգտատերեր', 
     path: '/users',
     icon: <Users className="w-5 h-5" />,
+    roles: ['admin']
+  },
+  { 
+    label: 'Հաստատման սպասող օգտատերեր', 
+    path: '/pending-approvals',
+    icon: <UserCheck className="w-5 h-5" />,
     roles: ['admin']
   },
   { 

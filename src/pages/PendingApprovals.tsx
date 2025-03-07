@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import AdminLayout from '@/components/AdminLayout';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -9,79 +9,51 @@ import { Badge } from '@/components/ui/badge';
 import { CheckCircle, XCircle, Eye } from 'lucide-react';
 import { toast } from 'sonner';
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-
-interface PendingUser {
-  id: string;
-  name: string;
-  email: string;
-  role: string;
-  avatar?: string;
-  department?: string;
-  organization?: string;
-  verificationStatus: 'verified' | 'pending';
-  registrationDate: string;
-}
+import { useAuth } from '@/contexts/AuthContext';
 
 const PendingApprovals: React.FC = () => {
-  const [pendingUsers, setPendingUsers] = useState<PendingUser[]>([
-    {
-      id: 'pending-1',
-      name: 'Դավիթ Մովսիսյան',
-      email: 'davit@example.com',
-      role: 'lecturer',
-      avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=davit',
-      department: 'Ինֆորմատիկայի ֆակուլտետ',
-      verificationStatus: 'verified',
-      registrationDate: '2023-06-15'
-    },
-    {
-      id: 'pending-2',
-      name: 'Սոնա Ասատրյան',
-      email: 'sona@example.com',
-      role: 'project_manager',
-      avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=sona',
-      department: 'Ինֆորմատիկայի ֆակուլտետ',
-      verificationStatus: 'verified',
-      registrationDate: '2023-06-17'
-    },
-    {
-      id: 'pending-3',
-      name: 'Արթուր Մելքոնյան',
-      email: 'artur@example.com',
-      role: 'employer',
-      avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=artur',
-      organization: 'Տեխնոլոջի Գրուպ',
-      verificationStatus: 'verified',
-      registrationDate: '2023-06-18'
-    },
-    {
-      id: 'pending-4',
-      name: 'Նարինե Հովհաննիսյան',
-      email: 'narine@example.com',
-      role: 'supervisor',
-      avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=narine',
-      department: 'Ինֆորմատիկայի ֆակուլտետ',
-      verificationStatus: 'pending',
-      registrationDate: '2023-06-20'
-    }
-  ]);
-  
-  const [selectedUser, setSelectedUser] = useState<PendingUser | null>(null);
+  const { user, getPendingUsers, approveRegistration } = useAuth();
+  const [pendingUsers, setPendingUsers] = useState<any[]>([]);
+  const [selectedUser, setSelectedUser] = useState<any | null>(null);
   const [viewDialogOpen, setViewDialogOpen] = useState(false);
   
-  const handleApprove = (userId: string) => {
-    // In a real application, this would make an API call
-    setPendingUsers(prev => prev.filter(user => user.id !== userId));
-    toast.success("Օգտատիրոջ գրանցումը հաստատվեց");
+  useEffect(() => {
+    // Ստանալ հաստատման սպասող օգտատերերի ցուցակը
+    const fetchPendingUsers = () => {
+      const users = getPendingUsers().filter(
+        (user: any) => user.verified && !user.registrationApproved
+      );
+      setPendingUsers(users);
+    };
+    
+    fetchPendingUsers();
+  }, [getPendingUsers]);
+  
+  const handleApprove = async (userId: string) => {
+    try {
+      // Կատարել API հարցում հաստատման համար
+      const success = await approveRegistration(userId);
+      
+      if (success) {
+        // Թարմացնել օգտատերերի ցուցակը
+        setPendingUsers(prev => prev.filter(user => user.id !== userId));
+        toast.success("Օգտատիրոջ գրանցումը հաստատվեց");
+      } else {
+        toast.error("Տեղի ունեցավ սխալ: Փորձեք կրկին");
+      }
+    } catch (error) {
+      console.error("Error approving user:", error);
+      toast.error("Տեղի ունեցավ սխալ: Փորձեք կրկին");
+    }
   };
   
   const handleReject = (userId: string) => {
-    // In a real application, this would make an API call
+    // Իրական API-ում այստեղ կկատարվի մերժման API հարցում
     setPendingUsers(prev => prev.filter(user => user.id !== userId));
     toast.success("Օգտատիրոջ գրանցումը մերժվեց");
   };
   
-  const handleViewDetails = (user: PendingUser) => {
+  const handleViewDetails = (user: any) => {
     setSelectedUser(user);
     setViewDialogOpen(true);
   };
@@ -97,6 +69,12 @@ const PendingApprovals: React.FC = () => {
       case 'student': return 'Ուսանող';
       default: return role;
     }
+  };
+  
+  const formatDate = (timestamp: number) => {
+    if (!timestamp) return 'Անհայտ';
+    const date = new Date(timestamp);
+    return date.toLocaleDateString('hy-AM');
   };
   
   return (
@@ -134,7 +112,7 @@ const PendingApprovals: React.FC = () => {
                       <div className="flex items-center gap-2">
                         <Avatar className="h-8 w-8">
                           <AvatarImage src={user.avatar} alt={user.name} />
-                          <AvatarFallback>{user.name.substring(0, 2)}</AvatarFallback>
+                          <AvatarFallback>{user.name?.substring(0, 2) || "??"}</AvatarFallback>
                         </Avatar>
                         <span>{user.name}</span>
                       </div>
@@ -142,13 +120,13 @@ const PendingApprovals: React.FC = () => {
                     <TableCell>{getRoleName(user.role)}</TableCell>
                     <TableCell>{user.email}</TableCell>
                     <TableCell>
-                      {user.verificationStatus === 'verified' ? (
+                      {user.verified ? (
                         <Badge variant="outline" className="bg-green-50 text-green-600 border-green-200">Վերիֆիկացված</Badge>
                       ) : (
                         <Badge variant="outline" className="bg-amber-50 text-amber-600 border-amber-200">Սպասման մեջ</Badge>
                       )}
                     </TableCell>
-                    <TableCell>{user.registrationDate}</TableCell>
+                    <TableCell>{user.id ? formatDate(parseInt(user.id.split('-')[1])) : 'Անհայտ'}</TableCell>
                     <TableCell className="text-right">
                       <div className="flex justify-end gap-2">
                         <Button 
@@ -200,7 +178,7 @@ const PendingApprovals: React.FC = () => {
                   <div className="flex items-center gap-4">
                     <Avatar className="h-16 w-16">
                       <AvatarImage src={selectedUser.avatar} alt={selectedUser.name} />
-                      <AvatarFallback>{selectedUser.name.substring(0, 2)}</AvatarFallback>
+                      <AvatarFallback>{selectedUser.name?.substring(0, 2) || "??"}</AvatarFallback>
                     </Avatar>
                     <div>
                       <h3 className="font-medium text-lg">{selectedUser.name}</h3>
@@ -217,7 +195,7 @@ const PendingApprovals: React.FC = () => {
                     <div>
                       <div className="text-sm font-medium mb-1">Վերիֆիկացիա</div>
                       <div>
-                        {selectedUser.verificationStatus === 'verified' ? (
+                        {selectedUser.verified ? (
                           <Badge variant="outline" className="bg-green-50 text-green-600 border-green-200">Վերիֆիկացված</Badge>
                         ) : (
                           <Badge variant="outline" className="bg-amber-50 text-amber-600 border-amber-200">Սպասման մեջ</Badge>
@@ -227,7 +205,7 @@ const PendingApprovals: React.FC = () => {
                     
                     <div>
                       <div className="text-sm font-medium mb-1">Գրանցման ամսաթիվ</div>
-                      <div>{selectedUser.registrationDate}</div>
+                      <div>{selectedUser.id ? formatDate(parseInt(selectedUser.id.split('-')[1])) : 'Անհայտ'}</div>
                     </div>
                     
                     {selectedUser.department && (
