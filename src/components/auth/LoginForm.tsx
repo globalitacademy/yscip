@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
@@ -14,12 +14,35 @@ interface LoginFormProps {
 }
 
 const LoginForm: React.FC<LoginFormProps> = ({ onShowDeveloperInfo, showDeveloperInfo }) => {
-  const { login, getPendingUsers } = useAuth();
+  const { login, getPendingUsers, syncRolesWithDatabase } = useAuth();
   const navigate = useNavigate();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [pendingUsers, setPendingUsers] = useState<any[]>([]);
+  const [isSyncing, setIsSyncing] = useState(false);
+
+  // Sync roles with database on component mount
+  useEffect(() => {
+    const synchronizeData = async () => {
+      try {
+        setIsSyncing(true);
+        await syncRolesWithDatabase();
+        toast.success('Տվյալների սինխրոնիզացիան հաջողվել է', {
+          description: 'Բոլոր բաժինները և ռոլերը թարմացվել են տվյալների բազայում',
+        });
+      } catch (error) {
+        console.error('Synchronization error:', error);
+        toast.error('Սինխրոնիզացիայի սխալ', {
+          description: 'Չհաջողվեց սինխրոնիզացնել տվյալները',
+        });
+      } finally {
+        setIsSyncing(false);
+      }
+    };
+
+    synchronizeData();
+  }, [syncRolesWithDatabase]);
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -86,8 +109,8 @@ const LoginForm: React.FC<LoginFormProps> = ({ onShowDeveloperInfo, showDevelope
           </Button>
         </div>
         
-        <Button type="submit" className="w-full" disabled={isLoading}>
-          {isLoading ? 'Մուտք...' : 'Մուտք գործել'}
+        <Button type="submit" className="w-full" disabled={isLoading || isSyncing}>
+          {isLoading ? 'Մուտք...' : isSyncing ? 'Սինխրոնիզացիա...' : 'Մուտք գործել'}
         </Button>
       </form>
 

@@ -1,8 +1,9 @@
 
 import React from 'react';
 import { Button } from '@/components/ui/button';
-import { Info, Copy } from 'lucide-react';
+import { Info, Copy, RefreshCw } from 'lucide-react';
 import { toast } from 'sonner';
+import { useAuth } from '@/contexts/AuthContext';
 
 interface DeveloperInfoProps {
   showDeveloperInfo: boolean;
@@ -15,6 +16,27 @@ const DeveloperInfo: React.FC<DeveloperInfoProps> = ({
   onToggleDeveloperInfo, 
   pendingUsers 
 }) => {
+  const { syncRolesWithDatabase } = useAuth();
+  const [isSyncing, setIsSyncing] = React.useState(false);
+  const [lastSynced, setLastSynced] = React.useState<string | null>(null);
+
+  const handleManualSync = async () => {
+    setIsSyncing(true);
+    try {
+      await syncRolesWithDatabase();
+      setLastSynced(new Date().toLocaleTimeString());
+      toast.success('Տվյալների սինխրոնիզացիան հաջողվել է', {
+        description: 'Բոլոր բաժինները և ռոլերը թարմացվել են տվյալների բազայում',
+      });
+    } catch (error) {
+      toast.error('Սինխրոնիզացիայի սխալ', {
+        description: 'Չհաջողվեց սինխրոնիզացնել տվյալները',
+      });
+    } finally {
+      setIsSyncing(false);
+    }
+  };
+
   return (
     <>
       <div className="mt-4">
@@ -33,6 +55,28 @@ const DeveloperInfo: React.FC<DeveloperInfoProps> = ({
             <Info size={16} />
             Մշակողի գործիքակազմ
           </h3>
+          
+          <div className="flex justify-between items-center mb-3">
+            <p className="text-sm text-muted-foreground">Տվյալների սինխրոնիզացիա:</p>
+            <div className="flex items-center gap-2">
+              {lastSynced && (
+                <span className="text-xs text-muted-foreground">
+                  Վերջին սինխրոնիզացիա: {lastSynced}
+                </span>
+              )}
+              <Button 
+                variant="outline" 
+                size="sm" 
+                className="h-7 px-2 py-1 text-xs"
+                onClick={handleManualSync}
+                disabled={isSyncing}
+              >
+                <RefreshCw size={12} className={`mr-1 ${isSyncing ? 'animate-spin' : ''}`} />
+                {isSyncing ? 'Սինխրոնիզացիա...' : 'Սինխրոնիզացնել'}
+              </Button>
+            </div>
+          </div>
+          
           <p className="text-sm text-muted-foreground mb-2">Սուպերադմինի հաշիվ՝</p>
           <div className="text-sm bg-muted p-2 rounded-md mb-3">
             <div><strong>Էլ․ հասցե:</strong> superadmin@example.com</div>

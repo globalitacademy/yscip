@@ -11,10 +11,17 @@ export interface AuthContextType {
   verifyEmail: (token: string) => Promise<boolean>;
   approveRegistration: (userId: string) => Promise<boolean>;
   getPendingUsers: () => any[];
+  syncRolesWithDatabase: () => Promise<boolean>;
 }
 
 export interface PendingUser extends Partial<User> {
   verificationToken: string;
   verified: boolean;
   password?: string; // Store password for real login after verification
+}
+
+export interface DatabaseSyncStatus {
+  lastSynced: number;
+  isSuccessful: boolean;
+  errorMessage?: string;
 }

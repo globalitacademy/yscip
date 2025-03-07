@@ -1,8 +1,14 @@
 
 import { User, UserRole, mockUsers } from '@/data/userRoles';
 import { toast } from 'sonner';
-import { PendingUser } from './types';
+import { PendingUser, DatabaseSyncStatus } from './types';
 import { superAdminUser, generateVerificationToken } from './authUtils';
+
+// Mock database sync status (in a real app, this would be stored in a real DB)
+let databaseSyncStatus: DatabaseSyncStatus = {
+  lastSynced: 0,
+  isSuccessful: false
+};
 
 export const createAuthService = (
   setUser: React.Dispatch<React.SetStateAction<User | null>>,
@@ -176,6 +182,42 @@ export const createAuthService = (
     return pendingUsers;
   };
 
+  // New function to synchronize roles with database
+  const syncRolesWithDatabase = async (): Promise<boolean> => {
+    try {
+      console.log('Starting database synchronization...');
+      
+      // Simulate API call to database
+      await new Promise(resolve => setTimeout(resolve, 1500));
+      
+      // In a real app, we would fetch data from the database and update our local state
+      // For this mock implementation, we're just updating the sync status
+      databaseSyncStatus = {
+        lastSynced: Date.now(),
+        isSuccessful: true
+      };
+      
+      console.log('Database synchronization completed successfully');
+      
+      // Save the current state to local storage (simulating a database)
+      localStorage.setItem('mockUsers', JSON.stringify(mockUsers));
+      localStorage.setItem('pendingUsers', JSON.stringify(pendingUsers));
+      localStorage.setItem('databaseSyncStatus', JSON.stringify(databaseSyncStatus));
+      
+      return true;
+    } catch (error) {
+      console.error('Database synchronization failed:', error);
+      
+      databaseSyncStatus = {
+        lastSynced: Date.now(),
+        isSuccessful: false,
+        errorMessage: error instanceof Error ? error.message : 'Unknown error'
+      };
+      
+      return false;
+    }
+  };
+
   return {
     login,
     logout,
@@ -183,6 +225,7 @@ export const createAuthService = (
     sendVerificationEmail,
     verifyEmail,
     approveRegistration,
-    getPendingUsers
+    getPendingUsers,
+    syncRolesWithDatabase
   };
 };
