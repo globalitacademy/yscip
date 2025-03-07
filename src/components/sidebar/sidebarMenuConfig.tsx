@@ -65,6 +65,12 @@ export const adminMenuItems: SidebarMenuItemType[] = [
     path: '/reports',
     icon: <FileBarChart className="w-5 h-5" />,
     roles: ['admin']
+  },
+  { 
+    label: 'Կարգավորումներ', 
+    path: '/settings',
+    icon: <Settings className="w-5 h-5" />,
+    roles: ['admin']
   }
 ];
 
@@ -102,6 +108,12 @@ export const supervisorMenuItems: SidebarMenuItemType[] = [
     label: 'Ուսանողներ', 
     path: '/supervised-students',
     icon: <UsersRound className="w-5 h-5" />,
+    roles: ['project_manager', 'supervisor']
+  },
+  { 
+    label: 'Թասքեր', 
+    path: '/tasks',
+    icon: <ClipboardList className="w-5 h-5" />,
     roles: ['project_manager', 'supervisor']
   }
 ];

@@ -1,5 +1,5 @@
 
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
@@ -7,9 +7,8 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { toast } from 'sonner';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
-import { UserRole, mockUsers } from '@/data/userRoles';
+import { UserRole } from '@/data/userRoles';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Checkbox } from '@/components/ui/checkbox';
 import {
   Select,
@@ -22,7 +21,7 @@ import { AlertCircle, Info, Copy } from 'lucide-react';
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 
 const Login: React.FC = () => {
-  const { login, switchRole, registerUser, sendVerificationEmail, getPendingUsers } = useAuth();
+  const { login, registerUser, sendVerificationEmail, getPendingUsers } = useAuth();
   const navigate = useNavigate();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -43,14 +42,6 @@ const Login: React.FC = () => {
   const [passwordError, setPasswordError] = useState('');
   const [confirmPasswordError, setConfirmPasswordError] = useState('');
   
-  useEffect(() => {
-    // Load pending users for developer info panel
-    if (showDeveloperInfo) {
-      const users = getPendingUsers();
-      setPendingUsers(users);
-    }
-  }, [showDeveloperInfo, getPendingUsers]);
-
   // Validation functions
   const validateEmail = (email: string): boolean => {
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -190,14 +181,6 @@ const Login: React.FC = () => {
     toast.success('Հաստատման հղումը պատճենված է');
   };
 
-  const handleQuickLogin = (role: UserRole) => {
-    const user = mockUsers.find(u => u.role === role);
-    if (user) {
-      setEmail(user.email);
-      setPassword('password'); // In a real app, we wouldn't do this
-    }
-  };
-
   // Role descriptions for registration form
   const getRoleDescription = (selectedRole: UserRole) => {
     switch (selectedRole) {
@@ -228,10 +211,9 @@ const Login: React.FC = () => {
           </CardHeader>
           <CardContent>
             <Tabs defaultValue="login" className="w-full">
-              <TabsList className="grid w-full grid-cols-3 mb-4">
+              <TabsList className="grid w-full grid-cols-2 mb-4">
                 <TabsTrigger value="login">Մուտք</TabsTrigger>
                 <TabsTrigger value="register">Գրանցում</TabsTrigger>
-                <TabsTrigger value="demo">Դեմո հաշիվներ</TabsTrigger>
               </TabsList>
               
               <TabsContent value="login">
@@ -274,7 +256,13 @@ const Login: React.FC = () => {
                   <Button 
                     variant="link" 
                     className="p-0 text-xs text-muted-foreground"
-                    onClick={() => setShowDeveloperInfo(!showDeveloperInfo)}
+                    onClick={() => {
+                      setShowDeveloperInfo(!showDeveloperInfo);
+                      if (!showDeveloperInfo) {
+                        const users = getPendingUsers();
+                        setPendingUsers(users);
+                      }
+                    }}
                   >
                     {showDeveloperInfo ? 'Թաքցնել մշակողի տեղեկատվությունը' : 'Ցուցադրել մշակողի տեղեկատվությունը'}
                   </Button>
@@ -444,7 +432,7 @@ const Login: React.FC = () => {
                         <SelectContent>
                           <SelectItem value="student">Ուսանող</SelectItem>
                           <SelectItem value="lecturer">Դասախոս</SelectItem>
-                          <SelectItem value="project_manager">Նախագծի ղեկավար</SelectItem>
+                          <SelectItem value="supervisor">Ղեկավար</SelectItem>
                           <SelectItem value="employer">Գործատու</SelectItem>
                         </SelectContent>
                       </Select>
@@ -492,38 +480,11 @@ const Login: React.FC = () => {
                   </form>
                 )}
               </TabsContent>
-              
-              <TabsContent value="demo">
-                <div className="space-y-3">
-                  <p className="text-sm text-muted-foreground mb-4">
-                    Ընտրեք ցանկացած դերակատարում՝ համակարգ մուտք գործելու համար:
-                  </p>
-                  
-                  {mockUsers
-                    .filter(user => user.registrationApproved)
-                    .map(user => (
-                    <div 
-                      key={user.id}
-                      className="flex items-center p-3 border rounded-lg hover:bg-accent cursor-pointer"
-                      onClick={() => handleQuickLogin(user.role)}
-                    >
-                      <Avatar className="h-10 w-10 mr-3">
-                        <AvatarImage src={user.avatar} alt={user.name} />
-                        <AvatarFallback>{user.name.substring(0, 2)}</AvatarFallback>
-                      </Avatar>
-                      <div>
-                        <p className="font-medium">{user.name}</p>
-                        <p className="text-sm text-muted-foreground">{user.email}</p>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </TabsContent>
             </Tabs>
           </CardContent>
           <CardFooter className="flex justify-center">
             <p className="text-sm text-muted-foreground">
-              {/* Removed "Demo version" text since we now have real accounts */}
+              © 2024 Պրակտիկա. Բոլոր իրավունքները պաշտպանված են։
             </p>
           </CardFooter>
         </Card>

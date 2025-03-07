@@ -16,7 +16,7 @@ const AdminSidebar: React.FC<AdminSidebarProps> = ({
   const { user } = useAuth();
 
   // Early return if user doesn't have appropriate role
-  if (!user || user.role !== 'admin' && user.role !== 'lecturer' && user.role !== 'supervisor') {
+  if (!user || (user.role !== 'admin' && user.role !== 'lecturer' && user.role !== 'supervisor')) {
     return null;
   }
 
@@ -49,10 +49,23 @@ const AdminSidebar: React.FC<AdminSidebarProps> = ({
     }
   };
 
+  const getSidebarTitle = () => {
+    switch (user.role) {
+      case 'admin':
+        return 'Ադմինիստրացիա';
+      case 'lecturer':
+        return 'Դասախոսի վահանակ';
+      case 'supervisor':
+        return 'Ղեկավարի վահանակ';
+      default:
+        return 'Կառավարման վահանակ';
+    }
+  };
+
   return (
     <aside className="w-64 bg-card border-r border-border h-screen sticky top-0 overflow-y-auto py-6 px-0">
       <div className="flex justify-between items-center mb-8 px-2">
-        <div className="text-xl font-bold">Ադմինիստրացիա</div>
+        <div className="text-xl font-bold">{getSidebarTitle()}</div>
         {onCloseMenu && 
           <Button variant="ghost" size="icon" onClick={onCloseMenu} className="md:hidden">
             <X className="h-5 w-5" />

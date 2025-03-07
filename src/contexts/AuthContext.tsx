@@ -8,7 +8,6 @@ interface AuthContextType {
   isAuthenticated: boolean;
   login: (email: string, password: string) => Promise<boolean>;
   logout: () => void;
-  switchRole: (role: UserRole) => void;
   registerUser: (userData: Partial<User>) => Promise<{success: boolean, token?: string}>;
   sendVerificationEmail: (email: string) => Promise<{success: boolean, token?: string}>;
   verifyEmail: (token: string) => Promise<boolean>;
@@ -241,15 +240,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     return true;
   };
 
-  const switchRole = (role: UserRole) => {
-    // For demo purposes, allow switching between mockUsers
-    const userWithRole = mockUsers.find(u => u.role === role);
-    if (userWithRole) {
-      setUser(userWithRole);
-      localStorage.setItem('currentUser', JSON.stringify(userWithRole));
-    }
-  };
-
   const getPendingUsers = () => {
     return pendingUsers;
   };
@@ -261,7 +251,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         isAuthenticated,
         login,
         logout,
-        switchRole,
         registerUser,
         sendVerificationEmail,
         verifyEmail,
