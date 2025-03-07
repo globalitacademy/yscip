@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { Github, Twitter, Linkedin, Mail } from 'lucide-react';
@@ -29,7 +30,7 @@ const Footer: React.FC = () => {
             </div>
           </div>
           
-          <div>
+          <div className="text-left">
             <h3 className="font-medium mb-4">Նավիգացիա</h3>
             <ul className="space-y-3">
               <li>
@@ -55,7 +56,7 @@ const Footer: React.FC = () => {
             </ul>
           </div>
           
-          <div>
+          <div className="text-left">
             <h3 className="font-medium mb-4">Ռեսուրսներ</h3>
             <ul className="space-y-3">
               <li>
@@ -82,8 +83,8 @@ const Footer: React.FC = () => {
           </div>
         </div>
         
-        <div className="mt-12 pt-6 border-t border-border flex flex-col md:flex-row justify-between items-center">
-          <p className="text-sm text-muted-foreground mb-4 md:mb-0">
+        <div className="mt-12 pt-6 border-t border-border flex flex-col md:flex-row justify-between items-start">
+          <p className="text-sm text-muted-foreground mb-4 md:mb-0 text-left">
             © {new Date().getFullYear()} Պրոեկտների Թեմաներ: Բոլոր իրավունքները պաշտպանված են։
           </p>
           <div className="flex space-x-6">
