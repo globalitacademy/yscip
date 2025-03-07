@@ -1,184 +1,93 @@
 
 import React, { useState, useEffect } from 'react';
 import AdminLayout from '@/components/AdminLayout';
-import { useAuth } from '@/contexts/AuthContext';
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
-import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
-import { AlertCircle, Users, Calendar, CheckCircle } from 'lucide-react';
-import { ProjectTheme } from '@/data/projectThemes';
-import { getStudentsForProject } from '@/data/userRoles';
+import { Loader2 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
-
-interface ProjectProposal {
-  id: string;
-  title: string;
-  description: string;
-  requirements?: string;
-  duration?: string;
-  status: 'pending' | 'approved' | 'rejected';
-  created_at: string;
-  employer_id: string;
-  organization?: string;
-  feedback?: string;
-}
+import { useAuth } from '@/contexts/AuthContext';
+import { ProjectProposal, ProjectProposalStatus } from '@/types/projectProposal';
 
 const MyProjectsPage: React.FC = () => {
+  const [projects, setProjects] = useState<ProjectProposal[]>([]);
+  const [isLoading, setIsLoading] = useState<boolean>(true);
   const { user } = useAuth();
-  const [approvedProposals, setApprovedProposals] = useState<ProjectProposal[]>([]);
-  const [projectThemes, setProjectThemes] = useState<ProjectTheme[]>([]);
-  const [loading, setLoading] = useState(true);
-  
+
   useEffect(() => {
-    const fetchApprovedProposals = async () => {
+    const fetchProjects = async () => {
       if (!user) return;
-      
+
       try {
-        setLoading(true);
-        
-        // Fetch approved proposals from Supabase
         const { data, error } = await supabase
           .from('project_proposals')
           .select('*')
-          .eq('employer_id', user.id)
-          .eq('status', 'approved');
-          
-        if (error) {
-          console.error('Error fetching approved proposals:', error);
-          throw error;
-        }
-        
-        setApprovedProposals(data || []);
-        
-        // Load project themes from localStorage or fall back to imported data
-        try {
-          const savedThemes = localStorage.getItem('projectThemes');
-          if (savedThemes) {
-            const themes = JSON.parse(savedThemes);
-            // Filter only this employer's projects
-            const employerProjects = themes.filter((theme: ProjectTheme) => 
-              theme.createdBy === user.id
-            );
-            setProjectThemes(employerProjects);
-          }
-        } catch (e) {
-          console.error('Error loading project themes:', e);
-        }
+          .eq('status', 'approved')
+          .order('created_at', { ascending: false });
+
+        if (error) throw error;
+
+        // Մշակում ենք տվյալները՝ փոխակերպելով status դաշտը ProjectProposalStatus տիպի
+        const typedData = data.map(item => ({
+          ...item,
+          status: item.status as ProjectProposalStatus
+        }));
+
+        setProjects(typedData);
       } catch (error) {
-        console.error('Error:', error);
+        console.error('Error fetching approved projects:', error);
       } finally {
-        setLoading(false);
+        setIsLoading(false);
       }
     };
-    
-    fetchApprovedProposals();
+
+    fetchProjects();
   }, [user]);
-  
-  if (loading) {
+
+  if (isLoading) {
     return (
       <AdminLayout pageTitle="Իմ նախագծերը">
-        <Card className="bg-muted/50">
-          <CardContent className="pt-6 text-center">
-            <p className="text-lg font-medium">Տվյալները բեռնվում են...</p>
-          </CardContent>
-        </Card>
+        <div className="flex justify-center items-center p-12">
+          <Loader2 className="h-8 w-8 animate-spin text-primary" />
+        </div>
       </AdminLayout>
     );
   }
-  
-  if (approvedProposals.length === 0 && projectThemes.length === 0) {
-    return (
-      <AdminLayout pageTitle="Իմ նախագծերը">
-        <Alert>
-          <AlertCircle className="h-4 w-4" />
-          <AlertTitle>Դեռևս նախագծեր չկան</AlertTitle>
-          <AlertDescription>
-            Ձեր ոչ մի նախագծի առաջարկ դեռ չի հաստատվել։ Հաստատված առաջարկները կհայտնվեն այստեղ։
-          </AlertDescription>
-        </Alert>
-      </AdminLayout>
-    );
-  }
-  
+
   return (
     <AdminLayout pageTitle="Իմ նախագծերը">
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {/* Approved proposals */}
-        {approvedProposals.map((project) => (
-          <Card key={`proposal-${project.id}`} className="flex flex-col">
-            <CardHeader>
-              <div className="flex justify-between items-start">
-                <div>
-                  <CardTitle className="line-clamp-2">{project.title}</CardTitle>
-                  <CardDescription>Առաջարկ #{project.id.substring(0, 8)}</CardDescription>
-                </div>
-                <Badge variant="outline" className="bg-green-100 text-green-800 flex items-center gap-1">
-                  <CheckCircle className="h-3 w-3" /> Հաստատված
-                </Badge>
-              </div>
-            </CardHeader>
-            
-            <CardContent className="flex-grow">
-              <p className="text-sm text-muted-foreground mb-4 line-clamp-3">
-                {project.description}
-              </p>
-              
-              {project.requirements && (
-                <div className="mb-3">
-                  <p className="text-xs text-muted-foreground">Տեխնիկական պահանջներ:</p>
-                  <p className="text-sm">{project.requirements}</p>
-                </div>
-              )}
-              
-              {project.duration && (
-                <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                  <Calendar className="h-4 w-4" />
-                  <span>{project.duration}</span>
-                </div>
-              )}
-            </CardContent>
-            
-            <CardFooter>
-              <Button className="w-full">Դիտել մանրամասներ</Button>
-            </CardFooter>
-          </Card>
-        ))}
-        
-        {/* Active projects */}
-        {projectThemes.map((project) => {
-          const assignedStudents = getStudentsForProject(project.id);
-          
-          return (
-            <Card key={`project-${project.id}`} className="flex flex-col">
-              <CardHeader>
-                <div className="flex justify-between items-start">
-                  <div>
-                    <CardTitle className="line-clamp-2">{project.title}</CardTitle>
-                    <CardDescription>Նախագիծ #{project.id}</CardDescription>
-                  </div>
-                  <Badge className="bg-primary/10 text-primary">Ակտիվ</Badge>
-                </div>
-              </CardHeader>
-              
-              <CardContent className="flex-grow">
-                <p className="text-sm text-muted-foreground mb-4 line-clamp-3">
-                  {project.description}
-                </p>
+      {projects.length === 0 ? (
+        <div className="text-center p-12 bg-muted/40 rounded-lg">
+          <h3 className="text-lg font-medium">Դուք դեռ չունեք հաստատված նախագծեր</h3>
+          <p className="text-muted-foreground mt-1">
+            Ձեր նախագծերը կհայտնվեն այստեղ, երբ հաստատվեն ադմինիստրատորի կողմից:
+          </p>
+        </div>
+      ) : (
+        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+          {projects.map((project) => (
+            <div key={project.id} className="bg-card border rounded-lg shadow-sm overflow-hidden">
+              <div className="p-6">
+                <h3 className="text-lg font-semibold mb-2">{project.title}</h3>
+                <p className="text-sm text-gray-600 line-clamp-3 mb-4">{project.description}</p>
                 
-                <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                  <Users className="h-4 w-4" />
-                  <span>{assignedStudents.length} ուսանող</span>
+                <div className="grid grid-cols-2 gap-3 text-sm">
+                  {project.duration && (
+                    <div>
+                      <p className="font-medium text-gray-500">Տևողություն</p>
+                      <p>{project.duration}</p>
+                    </div>
+                  )}
+                  
+                  {project.organization && (
+                    <div>
+                      <p className="font-medium text-gray-500">Կազմակերպություն</p>
+                      <p>{project.organization}</p>
+                    </div>
+                  )}
                 </div>
-              </CardContent>
-              
-              <CardFooter>
-                <Button className="w-full">Դիտել մանրամասներ</Button>
-              </CardFooter>
-            </Card>
-          );
-        })}
-      </div>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
     </AdminLayout>
   );
 };

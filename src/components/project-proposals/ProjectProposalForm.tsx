@@ -1,91 +1,79 @@
 
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
+import { Card, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
-import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
-import { 
-  Card, 
-  CardContent, 
-  CardDescription, 
-  CardFooter, 
-  CardHeader, 
-  CardTitle 
-} from '@/components/ui/card';
+import { Textarea } from '@/components/ui/textarea';
 import { toast } from 'sonner';
-import { useAuth } from '@/contexts/AuthContext';
+import { Loader2 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
+import { useAuth } from '@/contexts/AuthContext';
 
 const ProjectProposalForm: React.FC = () => {
-  const { user } = useAuth();
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
   const [requirements, setRequirements] = useState('');
   const [duration, setDuration] = useState('');
+  const [organization, setOrganization] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   
+  const { user } = useAuth();
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (!title || !description) {
-      toast.error('Լրացրեք պարտադիր դաշտերը');
+    if (!user) {
+      toast.error('Խնդրում ենք մուտք գործել համակարգ');
       return;
     }
     
-    if (!user) {
-      toast.error('Դուք չեք մուտք գործել համակարգ');
+    if (!title.trim() || !description.trim()) {
+      toast.error('Լրացրեք պարտադիր դաշտերը');
       return;
     }
     
     setIsSubmitting(true);
     
     try {
-      const { data, error } = await supabase
-        .from('project_proposals')
-        .insert([{
-          title,
-          description,
-          requirements,
-          duration,
-          employer_id: user.id,
-          organization: user.organization
-        }]);
-        
-      if (error) {
-        console.error('Error submitting proposal:', error);
-        throw error;
-      }
+      const { error } = await supabase.from('project_proposals').insert({
+        title,
+        description,
+        requirements: requirements || null,
+        duration: duration || null,
+        organization: organization || null,
+        employer_id: user.id,
+        status: 'pending'
+      });
       
-      // Reset form
+      if (error) throw error;
+      
+      toast.success('Նախագծի առաջարկը հաջողությամբ ուղարկված է');
+      
+      // Մաքրում ենք ձևը
       setTitle('');
       setDescription('');
       setRequirements('');
       setDuration('');
+      setOrganization('');
       
-      toast.success('Նախագծի առաջարկն ուղարկված է');
     } catch (error) {
-      toast.error('Տեղի ունեցավ սխալ: Խնդրում ենք փորձել կրկին');
-      console.error('Error:', error);
+      console.error('Error submitting proposal:', error);
+      toast.error('Սխալ նախագծի առաջարկը ուղարկելիս');
     } finally {
       setIsSubmitting(false);
     }
   };
-  
+
   return (
     <Card>
-      <CardHeader>
-        <CardTitle>Նոր նախագծի առաջարկ</CardTitle>
-        <CardDescription>
-          Լրացրեք ձևաթուղթը՝ նոր նախագիծ առաջարկելու համար
-        </CardDescription>
-      </CardHeader>
-      <form onSubmit={handleSubmit}>
-        <CardContent className="space-y-4">
+      <CardContent className="pt-6">
+        <form onSubmit={handleSubmit} className="space-y-6">
           <div className="space-y-2">
-            <Label htmlFor="title">Վերնագիր *</Label>
-            <Input 
-              id="title" 
-              placeholder="Նախագծի վերնագիր" 
+            <Label htmlFor="title">Վերնագիր<span className="text-red-500">*</span></Label>
+            <Input
+              id="title"
+              placeholder="Նախագծի վերնագիր"
               value={title}
               onChange={(e) => setTitle(e.target.value)}
               required
@@ -93,46 +81,60 @@ const ProjectProposalForm: React.FC = () => {
           </div>
           
           <div className="space-y-2">
-            <Label htmlFor="description">Նկարագրություն *</Label>
-            <Textarea 
-              id="description" 
-              placeholder="Մանրամասն նկարագրեք նախագիծը" 
-              rows={4}
+            <Label htmlFor="description">Նկարագրություն<span className="text-red-500">*</span></Label>
+            <Textarea
+              id="description"
+              placeholder="Մանրամասն նկարագրեք նախագիծը"
               value={description}
               onChange={(e) => setDescription(e.target.value)}
               required
+              className="min-h-32"
             />
           </div>
           
           <div className="space-y-2">
-            <Label htmlFor="requirements">Տեխնիկական պահանջներ</Label>
-            <Textarea 
-              id="requirements" 
-              placeholder="Ինչ տեխնոլոգիաներ, գործիքներ կամ հմտություններ են անհրաժեշտ" 
-              rows={3}
+            <Label htmlFor="requirements">Պահանջներ</Label>
+            <Textarea
+              id="requirements"
+              placeholder="Ինչ գիտելիքներ և հմտություններ են անհրաժեշտ"
               value={requirements}
               onChange={(e) => setRequirements(e.target.value)}
+              className="min-h-24"
             />
           </div>
           
-          <div className="space-y-2">
-            <Label htmlFor="duration">Տևողություն</Label>
-            <Input 
-              id="duration" 
-              placeholder="Օր.՝ 3 ամիս" 
-              value={duration}
-              onChange={(e) => setDuration(e.target.value)}
-            />
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <Label htmlFor="duration">Տևողություն</Label>
+              <Input
+                id="duration"
+                placeholder="Օր․՝ 3 ամիս"
+                value={duration}
+                onChange={(e) => setDuration(e.target.value)}
+              />
+            </div>
+            
+            <div className="space-y-2">
+              <Label htmlFor="organization">Կազմակերպություն</Label>
+              <Input
+                id="organization"
+                placeholder="Ձեր կազմակերպության անվանումը"
+                value={organization}
+                onChange={(e) => setOrganization(e.target.value)}
+              />
+            </div>
           </div>
-        </CardContent>
-        
-        <CardFooter className="flex justify-between">
-          <Button type="button" variant="outline">Չեղարկել</Button>
-          <Button type="submit" disabled={isSubmitting}>
-            {isSubmitting ? 'Ուղարկվում է...' : 'Ուղարկել առաջարկը'}
+          
+          <Button type="submit" className="w-full" disabled={isSubmitting}>
+            {isSubmitting ? (
+              <>
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                Ուղարկվում է...
+              </>
+            ) : 'Ուղարկել առաջարկը'}
           </Button>
-        </CardFooter>
-      </form>
+        </form>
+      </CardContent>
     </Card>
   );
 };

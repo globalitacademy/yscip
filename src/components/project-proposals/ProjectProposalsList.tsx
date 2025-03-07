@@ -1,166 +1,131 @@
 
 import React, { useState, useEffect } from 'react';
-import { useAuth } from '@/contexts/AuthContext';
-import { Button } from '@/components/ui/button';
-import { 
-  Card, 
-  CardContent, 
-  CardDescription, 
-  CardFooter, 
-  CardHeader, 
-  CardTitle 
-} from '@/components/ui/card';
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Clock, CheckCircle, XCircle, AlertTriangle } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Loader2, CheckCircle, XCircle, Clock } from 'lucide-react';
+import { format } from 'date-fns';
 import { supabase } from '@/integrations/supabase/client';
-
-interface ProjectProposal {
-  id: string;
-  title: string;
-  description: string;
-  requirements?: string;
-  duration?: string;
-  status: 'pending' | 'approved' | 'rejected';
-  created_at: string;
-  employer_id: string;
-  organization?: string;
-  feedback?: string;
-}
+import { useAuth } from '@/contexts/AuthContext';
+import { useToast } from '@/components/ui/use-toast';
+import { ProjectProposal, ProjectProposalStatus } from '@/types/projectProposal';
 
 const ProjectProposalsList: React.FC = () => {
-  const { user } = useAuth();
   const [proposals, setProposals] = useState<ProjectProposal[]>([]);
-  const [loading, setLoading] = useState(true);
-  
+  const [isLoading, setIsLoading] = useState<boolean>(true);
+  const { user } = useAuth();
+  const { toast } = useToast();
+
   useEffect(() => {
     const fetchProposals = async () => {
       if (!user) return;
-      
+
       try {
-        setLoading(true);
-        
         const { data, error } = await supabase
           .from('project_proposals')
           .select('*')
-          .eq('employer_id', user.id);
-          
-        if (error) {
-          console.error('Error fetching proposals:', error);
-          throw error;
-        }
-        
-        setProposals(data || []);
+          .order('created_at', { ascending: false });
+
+        if (error) throw error;
+
+        // Մշակում ենք տվյալները՝ փոխակերպելով status դաշտը ProjectProposalStatus տիպի
+        const typedData = data.map(item => ({
+          ...item,
+          status: item.status as ProjectProposalStatus
+        }));
+
+        setProposals(typedData);
       } catch (error) {
-        console.error('Error:', error);
+        console.error('Error fetching proposals:', error);
+        toast({
+          variant: "destructive",
+          title: "Սխալ",
+          description: "Չհաջողվեց բեռնել նախագծերի առաջարկները",
+        });
       } finally {
-        setLoading(false);
+        setIsLoading(false);
       }
     };
-    
+
     fetchProposals();
-  }, [user]);
-  
-  const getStatusBadge = (status: string) => {
+  }, [user, toast]);
+
+  const getStatusBadge = (status: ProjectProposalStatus) => {
     switch (status) {
-      case 'pending':
-        return (
-          <Badge variant="outline" className="bg-amber-100 text-amber-800 flex items-center gap-1">
-            <Clock className="h-3 w-3" /> Սպասում է
-          </Badge>
-        );
       case 'approved':
-        return (
-          <Badge variant="outline" className="bg-green-100 text-green-800 flex items-center gap-1">
-            <CheckCircle className="h-3 w-3" /> Հաստատված
-          </Badge>
-        );
+        return <Badge className="bg-green-500"><CheckCircle className="w-3 h-3 mr-1" /> Հաստատված</Badge>;
       case 'rejected':
-        return (
-          <Badge variant="outline" className="bg-red-100 text-red-800 flex items-center gap-1">
-            <XCircle className="h-3 w-3" /> Մերժված
-          </Badge>
-        );
+        return <Badge variant="destructive"><XCircle className="w-3 h-3 mr-1" /> Մերժված</Badge>;
+      case 'pending':
       default:
-        return null;
+        return <Badge variant="outline" className="text-amber-500 border-amber-500"><Clock className="w-3 h-3 mr-1" /> Սպասման մեջ</Badge>;
     }
   };
-  
-  const formatDate = (dateString: string) => {
-    const date = new Date(dateString);
-    return date.toLocaleDateString('hy-AM', {
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric'
-    });
-  };
-  
-  if (loading) {
+
+  if (isLoading) {
     return (
-      <Card className="bg-muted/50">
-        <CardContent className="pt-6 text-center">
-          <p className="text-lg font-medium">Տվյալները բեռնվում են...</p>
-        </CardContent>
-      </Card>
+      <div className="flex justify-center items-center p-12">
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+      </div>
     );
   }
-  
+
   if (proposals.length === 0) {
     return (
-      <Card className="bg-muted/50">
-        <CardContent className="pt-6 text-center">
-          <AlertTriangle className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
-          <p className="text-lg font-medium">Դեռևս նախագծի առաջարկներ չկան</p>
-          <p className="text-muted-foreground mt-2">
-            Օգտագործեք ձևաթուղթը՝ նոր նախագիծ առաջարկելու համար
-          </p>
-        </CardContent>
-      </Card>
+      <div className="text-center p-12 bg-muted/40 rounded-lg">
+        <h3 className="text-lg font-medium">Դուք դեռ չունեք նախագծերի առաջարկներ</h3>
+        <p className="text-muted-foreground mt-1">Ստեղծեք նոր առաջարկ՝ օգտագործելով «Նոր առաջարկ» ներդիրը</p>
+      </div>
     );
   }
-  
+
   return (
     <div className="space-y-4">
       {proposals.map((proposal) => (
         <Card key={proposal.id} className="overflow-hidden">
-          <CardHeader className="flex flex-row items-start justify-between pb-2">
-            <div>
-              <CardTitle>{proposal.title}</CardTitle>
-              <CardDescription>Ուղարկվել է {formatDate(proposal.created_at)}</CardDescription>
+          <CardHeader className="pb-3">
+            <div className="flex justify-between items-start">
+              <CardTitle className="text-xl">{proposal.title}</CardTitle>
+              {getStatusBadge(proposal.status)}
             </div>
-            {getStatusBadge(proposal.status)}
+            <CardDescription>
+              Ներկայացվել է {format(new Date(proposal.created_at), 'dd.MM.yyyy')}
+            </CardDescription>
           </CardHeader>
-          
-          <CardContent className="space-y-3">
-            <div>
-              <p className="text-sm font-medium text-muted-foreground mb-1">Նկարագրություն</p>
+          <CardContent className="pb-3">
+            <div className="mb-3">
+              <p className="text-sm font-medium text-gray-500 mb-1">Նկարագրություն</p>
               <p className="text-sm">{proposal.description}</p>
             </div>
             
             {proposal.requirements && (
-              <div>
-                <p className="text-sm font-medium text-muted-foreground mb-1">Տեխնիկական պահանջներ</p>
+              <div className="mb-3">
+                <p className="text-sm font-medium text-gray-500 mb-1">Պահանջներ</p>
                 <p className="text-sm">{proposal.requirements}</p>
               </div>
             )}
             
-            {proposal.duration && (
-              <div>
-                <p className="text-sm font-medium text-muted-foreground mb-1">Տևողություն</p>
-                <p className="text-sm">{proposal.duration}</p>
-              </div>
-            )}
-            
-            {proposal.feedback && (
-              <div className="bg-muted p-3 rounded-md mt-4">
-                <p className="text-sm font-medium text-muted-foreground mb-1">Հետադարձ կապ</p>
-                <p className="text-sm">{proposal.feedback}</p>
-              </div>
-            )}
+            <div className="flex flex-wrap gap-4 mt-4">
+              {proposal.duration && (
+                <div>
+                  <p className="text-xs font-medium text-gray-500 mb-1">Տևողություն</p>
+                  <p className="text-sm">{proposal.duration}</p>
+                </div>
+              )}
+              
+              {proposal.organization && (
+                <div>
+                  <p className="text-xs font-medium text-gray-500 mb-1">Կազմակերպություն</p>
+                  <p className="text-sm">{proposal.organization}</p>
+                </div>
+              )}
+            </div>
           </CardContent>
           
-          {proposal.status === 'approved' && (
-            <CardFooter>
-              <Button className="w-full">Դիտել նախագիծը</Button>
+          {proposal.feedback && (
+            <CardFooter className="border-t bg-muted/30 flex flex-col items-start pt-3">
+              <p className="text-sm font-medium text-gray-500 mb-1">Արձագանք</p>
+              <p className="text-sm">{proposal.feedback}</p>
             </CardFooter>
           )}
         </Card>
