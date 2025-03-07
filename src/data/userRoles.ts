@@ -1,5 +1,4 @@
-
-export type UserRole = 'admin' | 'lecturer' | 'project_manager' | 'employer' | 'student' | 'instructor' | 'supervisor';
+export type UserRole = 'admin' | 'lecturer' | 'project_manager' | 'employer' | 'student' | 'instructor' | 'supervisor' | 'superadmin';
 
 export interface User {
   id: string;
@@ -102,6 +101,31 @@ export const mockUsers: User[] = [
 ];
 
 export const rolePermissions = {
+  superadmin: {
+    canCreateRoles: true,
+    canEditRoles: true,
+    canApproveRegistrations: true,
+    
+    canManageSpecializations: true,
+    canRegisterOrganizations: true,
+    canViewReports: true,
+    
+    canAddTimeline: true,
+    canEditTimeline: true,
+    canApproveTimelineEvents: true,
+    canAddTasks: true,
+    canAssignTasks: true,
+    canApproveProject: true,
+    canSubmitProject: false,
+    canCreateUsers: true,
+    canAssignInstructors: true,
+    canAssignSupervisors: true,
+    canCreateProjects: true,
+    canAssignProjects: true,
+    canViewAllProjects: true,
+    canManageUsers: true
+  },
+  
   admin: {
     canCreateRoles: true,
     canEditRoles: true,

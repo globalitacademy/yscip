@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Navigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
@@ -18,7 +17,6 @@ const AdminLayout: React.FC<AdminLayoutProps> = ({ children, pageTitle }) => {
   const [isSidebarOpen, setIsSidebarOpen] = React.useState(false);
   
   // Redirect if not authenticated or doesn't have appropriate role
-  // Թույլատրում ենք նաև superadmin դերին մուտք գործել
   if (!isAuthenticated || !user || (
     user.role !== 'admin' && 
     user.role !== 'superadmin' && 

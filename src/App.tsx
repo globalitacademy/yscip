@@ -53,52 +53,52 @@ function AppRoutes() {
       
       {/* Admin routes */}
       <Route path="/admin" element={
-        <ProtectedRoute allowedRoles={['admin']}>
+        <ProtectedRoute allowedRoles={['admin', 'superadmin']}>
           <AdminDashboard />
         </ProtectedRoute>
       } />
       <Route path="/users" element={
-        <ProtectedRoute allowedRoles={['admin']}>
+        <ProtectedRoute allowedRoles={['admin', 'superadmin']}>
           <UserManagementPage />
         </ProtectedRoute>
       } />
       <Route path="/pending-approvals" element={
-        <ProtectedRoute allowedRoles={['admin']}>
+        <ProtectedRoute allowedRoles={['admin', 'superadmin']}>
           <PendingApprovals />
         </ProtectedRoute>
       } />
       <Route path="/organizations" element={
-        <ProtectedRoute allowedRoles={['admin']}>
+        <ProtectedRoute allowedRoles={['admin', 'superadmin']}>
           <OrganizationsPage />
         </ProtectedRoute>
       } />
       <Route path="/specializations" element={
-        <ProtectedRoute allowedRoles={['admin']}>
+        <ProtectedRoute allowedRoles={['admin', 'superadmin']}>
           <SpecializationsPage />
         </ProtectedRoute>
       } />
       <Route path="/courses/manage" element={
-        <ProtectedRoute allowedRoles={['admin', 'lecturer', 'instructor']}>
+        <ProtectedRoute allowedRoles={['admin', 'superadmin', 'lecturer', 'instructor']}>
           <CoursesPage />
         </ProtectedRoute>
       } />
       <Route path="/groups" element={
-        <ProtectedRoute allowedRoles={['admin', 'lecturer', 'instructor']}>
+        <ProtectedRoute allowedRoles={['admin', 'superadmin', 'lecturer', 'instructor']}>
           <GroupsPage />
         </ProtectedRoute>
       } />
       <Route path="/reports" element={
-        <ProtectedRoute allowedRoles={['admin']}>
+        <ProtectedRoute allowedRoles={['admin', 'superadmin']}>
           <ReportsPage />
         </ProtectedRoute>
       } />
       <Route path="/notifications" element={
-        <ProtectedRoute allowedRoles={['admin']}>
+        <ProtectedRoute allowedRoles={['admin', 'superadmin']}>
           <NotificationsPage />
         </ProtectedRoute>
       } />
       <Route path="/settings" element={
-        <ProtectedRoute allowedRoles={['admin']}>
+        <ProtectedRoute allowedRoles={['admin', 'superadmin']}>
           <SettingsPage />
         </ProtectedRoute>
       } />
