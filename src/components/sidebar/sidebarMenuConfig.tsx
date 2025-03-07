@@ -49,6 +49,30 @@ export const adminMenuItems: SidebarMenuItemType[] = [
     roles: ['admin']
   },
   { 
+    label: 'Կուրսեր', 
+    path: '/courses/manage',
+    icon: <BookOpen className="w-5 h-5" />,
+    roles: ['admin']
+  },
+  { 
+    label: 'Խմբեր', 
+    path: '/groups',
+    icon: <UsersRound className="w-5 h-5" />,
+    roles: ['admin']
+  },
+  { 
+    label: 'Դասախոսներ', 
+    path: '/lecturers',
+    icon: <UserCog className="w-5 h-5" />,
+    roles: ['admin']
+  },
+  { 
+    label: 'Ղեկավարներ', 
+    path: '/supervisors',
+    icon: <UserCog className="w-5 h-5" />,
+    roles: ['admin']
+  },
+  { 
     label: 'Կազմակերպություններ', 
     path: '/organizations',
     icon: <Building className="w-5 h-5" />,
@@ -61,9 +85,27 @@ export const adminMenuItems: SidebarMenuItemType[] = [
     roles: ['admin']
   },
   { 
+    label: 'Նախագծեր', 
+    path: '/projects/manage',
+    icon: <Briefcase className="w-5 h-5" />,
+    roles: ['admin']
+  },
+  { 
+    label: 'Թասքեր', 
+    path: '/tasks',
+    icon: <ClipboardList className="w-5 h-5" />,
+    roles: ['admin']
+  },
+  { 
     label: 'Հաշվետվություններ', 
     path: '/reports',
     icon: <FileBarChart className="w-5 h-5" />,
+    roles: ['admin']
+  },
+  { 
+    label: 'Ծանուցումներ', 
+    path: '/notifications',
+    icon: <Bell className="w-5 h-5" />,
     roles: ['admin']
   },
   { 
