@@ -12,10 +12,19 @@ import ProfileProjects from '@/components/portfolio/ProfileProjects';
 import ProfileSkills from '@/components/portfolio/ProfileSkills';
 import ProfileProgress from '@/components/portfolio/ProfileProgress';
 import ProfileCV from '@/components/portfolio/ProfileCV';
+import ProfileEditor from '@/components/portfolio/ProfileEditor';
+import { Pencil, Settings, ExternalLink } from 'lucide-react';
+import { 
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger
+} from '@/components/ui/dropdown-menu';
 
 const PortfolioPage: React.FC = () => {
   const { user } = useAuth();
   const [activeTab, setActiveTab] = useState('profile');
+  const [isProfileEditorOpen, setIsProfileEditorOpen] = useState(false);
 
   if (!user) {
     return (
@@ -31,6 +40,9 @@ const PortfolioPage: React.FC = () => {
       </div>
     );
   }
+
+  // Add some default bio if not present
+  const userBio = user.bio || "Փորձում եմ ամեն օր սովորել ինչ-որ նոր բան և կիսվել իմ գիտելիքներով մյուսների հետ։";
 
   return (
     <div className="min-h-screen flex flex-col">
@@ -74,14 +86,35 @@ const PortfolioPage: React.FC = () => {
                 
                 <div className="mt-4">
                   <p className="text-sm text-gray-600 italic">
-                    "Փորձում եմ ամեն օր սովորել ինչ-որ նոր բան և կիսվել իմ գիտելիքներով մյուսների հետ։"
+                    "{userBio}"
                   </p>
                 </div>
               </div>
               
               <div className="flex flex-col gap-2">
-                <Button variant="outline" size="sm">Խմբագրել</Button>
-                <Button variant="outline" size="sm">Կարգավորումներ</Button>
+                <Button 
+                  variant="outline" 
+                  size="sm" 
+                  className="flex items-center gap-1"
+                  onClick={() => setIsProfileEditorOpen(true)}
+                >
+                  <Pencil size={14} />
+                  Խմբագրել
+                </Button>
+                
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button variant="outline" size="sm" className="flex items-center gap-1">
+                      <Settings size={14} />
+                      Կարգավորումներ
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end">
+                    <DropdownMenuItem>Տեսանելիության կարգավորումներ</DropdownMenuItem>
+                    <DropdownMenuItem>Ծանուցումների կարգավորումներ</DropdownMenuItem>
+                    <DropdownMenuItem>Գաղտնաբառի փոփոխություն</DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
               </div>
             </div>
           </div>
@@ -125,7 +158,13 @@ const PortfolioPage: React.FC = () => {
                         </div>
                       </div>
                     </div>
-                    <Button variant="link" className="mt-4 p-0">Բոլոր նախագծերը →</Button>
+                    <Button 
+                      variant="link" 
+                      className="mt-4 p-0 flex items-center gap-1" 
+                      onClick={() => setActiveTab('projects')}
+                    >
+                      Բոլոր նախագծերը <ExternalLink size={14} />
+                    </Button>
                   </CardContent>
                 </Card>
                 
@@ -161,7 +200,13 @@ const PortfolioPage: React.FC = () => {
                         </div>
                       </div>
                     </div>
-                    <Button variant="link" className="mt-4 p-0">Բոլոր հմտությունները →</Button>
+                    <Button 
+                      variant="link" 
+                      className="mt-4 p-0 flex items-center gap-1" 
+                      onClick={() => setActiveTab('skills')}
+                    >
+                      Բոլոր հմտությունները <ExternalLink size={14} />
+                    </Button>
                   </CardContent>
                 </Card>
                 
@@ -185,7 +230,13 @@ const PortfolioPage: React.FC = () => {
                         <p className="text-sm text-gray-600">Միջին գնահատական</p>
                       </div>
                     </div>
-                    <Button variant="link" className="mt-4 p-0">Մանրամասն →</Button>
+                    <Button 
+                      variant="link" 
+                      className="mt-4 p-0 flex items-center gap-1" 
+                      onClick={() => setActiveTab('progress')}
+                    >
+                      Մանրամասն <ExternalLink size={14} />
+                    </Button>
                   </CardContent>
                 </Card>
               </div>
@@ -210,6 +261,12 @@ const PortfolioPage: React.FC = () => {
         </div>
       </main>
       <Footer />
+      
+      {/* Profile Editor */}
+      <ProfileEditor 
+        isOpen={isProfileEditorOpen} 
+        onClose={() => setIsProfileEditorOpen(false)} 
+      />
     </div>
   );
 };

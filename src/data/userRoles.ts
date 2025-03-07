@@ -15,6 +15,7 @@ export interface User {
   organization?: string;
   specialization?: string;
   registrationApproved?: boolean;
+  bio?: string; // Add bio field for user description
 }
 
 export const mockUsers: User[] = [
