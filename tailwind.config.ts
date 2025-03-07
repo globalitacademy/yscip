@@ -15,21 +15,12 @@ export default {
 			center: true,
 			padding: '2rem',
 			screens: {
-				'xs': '320px',   // Mobile
-				'sm': '640px',   // Small tablets
-				'md': '720px',   // Tablets
-				'lg': '1024px',  // Small desktops
-				'xl': '1440px',  // Desktops
-				'2xl': '1920px'  // Large desktops
+				sm: '640px',
+				md: '768px',
+				lg: '1024px',
+				xl: '1280px',
+				'2xl': '1400px'
 			}
-		},
-		screens: {
-			'xs': '320px',
-			'sm': '640px',
-			'md': '720px',
-			'lg': '1024px',
-			'xl': '1440px',
-			'2xl': '1920px',
 		},
 		extend: {
 			colors: {
