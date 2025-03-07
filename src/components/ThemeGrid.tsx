@@ -168,11 +168,11 @@ const ThemeGrid: React.FC<ThemeGridProps> = ({ limit, createdProjects = [] }) =>
   const hasMore = displayLimit < categoryFilteredProjects.length;
   
   return (
-    <div className="mt-12 text-left">
-      <div className="mb-8">
-        <h2 className="text-2xl font-semibold mb-4">Ծրագրերի թեմաներն ըստ կատեգորիաների</h2>
+    <div className="mt-6 sm:mt-12 text-left" id="themes-section">
+      <div className="mb-6 sm:mb-8">
+        <h2 className="text-xl sm:text-2xl font-semibold mb-4">Ծրագրերի թեմաներն ըստ կատեգորիաների</h2>
         
-        <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4 mb-6">
+        <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3 sm:gap-4 mb-4 sm:mb-6">
           <Select
             defaultValue="all"
             onValueChange={(value) => {
@@ -180,16 +180,16 @@ const ThemeGrid: React.FC<ThemeGridProps> = ({ limit, createdProjects = [] }) =>
               setDisplayLimit(limit || 6);
             }}
           >
-            <SelectTrigger className="w-full sm:w-[220px] bg-background">
+            <SelectTrigger className="w-full sm:w-[220px] bg-background text-sm">
               <SelectValue placeholder="Ընտրեք կատեգորիան" />
             </SelectTrigger>
             <SelectContent className="bg-popover">
-              <SelectItem value="all" className="flex items-center gap-2">
+              <SelectItem value="all" className="flex items-center gap-2 text-sm">
                 <Layers size={14} className="opacity-80" />
                 <span>Բոլորը</span>
               </SelectItem>
               {categories.filter(cat => cat !== "all").map((category) => (
-                <SelectItem key={category} value={category}>
+                <SelectItem key={category} value={category} className="text-sm">
                   {category}
                 </SelectItem>
               ))}
@@ -197,26 +197,26 @@ const ThemeGrid: React.FC<ThemeGridProps> = ({ limit, createdProjects = [] }) =>
           </Select>
         
           <div className="flex flex-wrap items-center gap-2">
-            <Badge variant="outline" className="bg-muted flex items-center gap-1">
-              <Tag size={14} />
+            <Badge variant="outline" className="bg-muted flex items-center gap-1 text-xs">
+              <Tag size={12} />
               {categoryFilteredProjects.length} նախագիծ
             </Badge>
             
             {user && (
-              <Badge variant="outline" className="bg-primary/10 text-primary flex items-center gap-1">
+              <Badge variant="outline" className="bg-primary/10 text-primary flex items-center gap-1 text-xs">
                 {user.role === 'student' ? (
                   <>
-                    <GraduationCap size={14} />
+                    <GraduationCap size={12} />
                     Ուսանող {user.course && user.group ? `(${user.course}-րդ կուրս, ${user.group})` : ''}
                   </>
                 ) : user.role === 'instructor' ? (
                   <>
-                    <BookOpen size={14} />
+                    <BookOpen size={12} />
                     Դասախոս
                   </>
                 ) : user.role === 'supervisor' ? (
                   <>
-                    <Users size={14} />
+                    <Users size={12} />
                     Ղեկավար
                   </>
                 ) : (
@@ -226,14 +226,14 @@ const ThemeGrid: React.FC<ThemeGridProps> = ({ limit, createdProjects = [] }) =>
             )}
             
             {user && user.role === 'student' && (
-              <Badge variant="secondary">
+              <Badge variant="secondary" className="text-xs">
                 {reservedProjects.filter(r => r.userId === user.id).length} ամրագրված նախագիծ
               </Badge>
             )}
           </div>
         </div>
 
-        <FadeIn className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-10">
+        <FadeIn className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 mb-6 sm:mb-10">
           {themes.map((theme) => (
             <ProjectCard
               key={theme.id}
@@ -243,22 +243,22 @@ const ThemeGrid: React.FC<ThemeGridProps> = ({ limit, createdProjects = [] }) =>
         </FadeIn>
         
         {themes.length === 0 && (
-          <div className="text-center p-10 bg-muted rounded-lg">
-            <p className="text-muted-foreground">Այս կատեգորիայում ծրագրեր չկան</p>
+          <div className="text-center p-6 sm:p-10 bg-muted rounded-lg">
+            <p className="text-muted-foreground text-sm sm:text-base">Այս կատեգորիայում ծրագրեր չկան</p>
           </div>
         )}
         
-        <div className="flex justify-center space-x-4 mt-8">
+        <div className="flex flex-col sm:flex-row justify-center items-center gap-3 sm:gap-4 mt-6 sm:mt-8">
           {hasMore && (
-            <Button onClick={loadMore} variant="outline" size="lg">
+            <Button onClick={loadMore} variant="outline" size="default" className="w-full sm:w-auto text-sm">
               Տեսնել ավելին
             </Button>
           )}
           
-          <Link to="/">
-            <Button variant="default" size="lg" className="group">
+          <Link to="/" className="w-full sm:w-auto">
+            <Button variant="default" size="default" className="group w-full text-sm">
               Բոլոր թեմաները
-              <ArrowRight className="ml-2 h-4 w-4 group-hover:translate-x-1 transition-transform" />
+              <ArrowRight className="ml-2 h-3 w-3 sm:h-4 sm:w-4 group-hover:translate-x-1 transition-transform" />
             </Button>
           </Link>
         </div>
