@@ -46,7 +46,7 @@ const Hero: React.FC = () => {
         </SlideDown>
         
         <SlideDown delay="delay-200">
-          <h1 className="md:text-5xl lg:text-6xl xl:text-7xl font-bold mb-8 leading-tight tracking-tight bg-clip-text text-transparent bg-gradient-to-b from-foreground to-foreground/70 text-base">
+          <h1 className="md:text-5xl lg:text-6xl font-bold mb-8 leading-tight tracking-tight bg-clip-text text-transparent bg-gradient-to-b from-foreground to-foreground/70 text-base xl:text-5xl">
             Սկսիր քո մասնագիտական ուղին
             <br />
             <span className="relative inline-block">
