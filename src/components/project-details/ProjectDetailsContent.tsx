@@ -11,6 +11,8 @@ import { toast } from '@/components/ui/use-toast';
 import ProjectHeader from './ProjectHeader';
 import ProjectTabs from './ProjectTabs';
 import { cn } from '@/lib/utils';
+import { AlertCircle } from 'lucide-react';
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 
 const ProjectDetailsContent: React.FC = () => {
   const { 
@@ -35,7 +37,7 @@ const ProjectDetailsContent: React.FC = () => {
     return (
       <div className="min-h-screen flex flex-col items-center justify-center">
         <h1 className="text-2xl font-bold mb-4">Պրոեկտը չի գտնվել</h1>
-        <Button onClick={() => navigate('/')}>Վերադառնալ գլխավոր էջ</Button>
+        <Button onClick={() => navigate('/projects')}>Վերադառնալ նախագծերի էջ</Button>
       </div>
     );
   }
@@ -76,6 +78,16 @@ const ProjectDetailsContent: React.FC = () => {
       
       <main className="flex-grow">
         <div className="container px-4 mx-auto py-8 max-w-6xl">
+          {projectStatus === 'rejected' && (
+            <Alert variant="destructive" className="mb-6">
+              <AlertCircle className="h-4 w-4" />
+              <AlertTitle>Նախագիծը մերժված է</AlertTitle>
+              <AlertDescription>
+                Ձեր նախագիծը մերժվել է ղեկավարի կողմից։ Խնդրում ենք վերանայել մերժման պատճառները և կապ հաստատել ղեկավարի հետ։
+              </AlertDescription>
+            </Alert>
+          )}
+          
           <ProjectHeader 
             project={project}
             projectStatus={projectStatus}

@@ -1,14 +1,81 @@
 
-import React from 'react';
-import { useParams } from 'react-router-dom';
+import React, { useEffect } from 'react';
+import { useParams, useNavigate } from 'react-router-dom';
 import { projectThemes } from '@/data/projectThemes';
 import { ProjectProvider } from '@/contexts/ProjectContext';
 import ProjectDetailsContent from '@/components/project-details/ProjectDetailsContent';
+import { toast } from '@/components/ui/use-toast';
+import { AlertCircle } from 'lucide-react';
+import { Skeleton } from '@/components/ui/skeleton';
+import { useAuth } from '@/contexts/AuthContext';
 
 const ProjectDetails: React.FC = () => {
   const { id } = useParams<{ id: string }>();
+  const navigate = useNavigate();
+  const { user } = useAuth();
   const projectId = id ? parseInt(id) : null;
   const project = projectThemes.find(p => p.id === projectId) || null;
+  
+  useEffect(() => {
+    if (!project && projectId) {
+      toast({
+        title: "Նախագիծը չի գտնվել",
+        description: "Նշված նախագիծը չի գտնվել։ Դուք կվերահղվեք նախագծերի էջ։",
+        variant: "destructive",
+      });
+      
+      // Redirect to projects page after 3 seconds
+      const timeout = setTimeout(() => {
+        navigate('/projects');
+      }, 3000);
+      
+      return () => clearTimeout(timeout);
+    }
+  }, [project, projectId, navigate]);
+  
+  if (!projectId) {
+    return (
+      <div className="min-h-screen flex flex-col items-center justify-center">
+        <AlertCircle className="h-16 w-16 text-destructive mb-4" />
+        <h1 className="text-2xl font-bold mb-4">Անվավեր նախագծի ID</h1>
+        <p className="text-muted-foreground mb-8">Խնդրում ենք ստուգել URL-ը և փորձել կրկին</p>
+        <button 
+          onClick={() => navigate('/projects')}
+          className="px-4 py-2 bg-primary text-white rounded hover:bg-primary/90 transition-colors"
+        >
+          Վերադառնալ նախագծերի էջ
+        </button>
+      </div>
+    );
+  }
+  
+  // Show loading skeleton while data is being fetched (simulating network request)
+  if (!project) {
+    return (
+      <div className="container mx-auto px-4 py-8">
+        <Skeleton className="h-8 w-64 mb-4" />
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-12">
+          <div className="md:col-span-2">
+            <Skeleton className="h-6 w-32 mb-3" />
+            <Skeleton className="h-10 w-3/4 mb-4" />
+            <Skeleton className="h-6 w-full mb-6" />
+            <div className="flex flex-wrap gap-3 mb-6">
+              {Array.from({ length: 4 }).map((_, i) => (
+                <Skeleton key={i} className="h-6 w-20" />
+              ))}
+            </div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 mb-6">
+              {Array.from({ length: 6 }).map((_, i) => (
+                <Skeleton key={i} className="h-5 w-full" />
+              ))}
+            </div>
+            <Skeleton className="h-10 w-48 mt-2" />
+          </div>
+          <Skeleton className="h-64 w-full md:h-auto" />
+        </div>
+      </div>
+    );
+  }
   
   return (
     <ProjectProvider projectId={projectId} initialProject={project}>

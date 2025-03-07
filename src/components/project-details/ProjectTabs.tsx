@@ -6,7 +6,9 @@ import {
   ListChecks, 
   MessageSquare, 
   FileText, 
-  Star 
+  Star,
+  Clock,
+  BarChart
 } from 'lucide-react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { SlideUp } from '@/components/LocalTransitions';
@@ -17,6 +19,7 @@ import ProjectDiscussions from '@/components/projects/ProjectDiscussions';
 import ProjectFiles from '@/components/projects/ProjectFiles';
 import ProjectEvaluation from '@/components/projects/ProjectEvaluation';
 import ProjectOverview from './ProjectOverview';
+import ProjectTimeline from './ProjectTimeline';
 import { ProjectTheme, Task, TimelineEvent } from '@/data/projectThemes';
 
 interface ProjectTabsProps {
@@ -61,7 +64,7 @@ const ProjectTabs: React.FC<ProjectTabsProps> = ({
 }) => {
   return (
     <Tabs defaultValue="overview" className="w-full mb-16">
-      <TabsList className="grid w-full grid-cols-3 md:grid-cols-6 h-auto">
+      <TabsList className="grid w-full grid-cols-3 md:grid-cols-7 h-auto">
         <TabsTrigger value="overview" className="flex items-center gap-2">
           <BookOpen size={16} /> Նկարագիր
         </TabsTrigger>
@@ -79,6 +82,9 @@ const ProjectTabs: React.FC<ProjectTabsProps> = ({
         </TabsTrigger>
         <TabsTrigger value="evaluation" className="flex items-center gap-2" disabled={!isReserved}>
           <Star size={16} /> Գնահատական
+        </TabsTrigger>
+        <TabsTrigger value="gantt" className="flex items-center gap-2" disabled={!isReserved}>
+          <BarChart size={16} /> Թայմլայն
         </TabsTrigger>
       </TabsList>
       
@@ -141,6 +147,15 @@ const ProjectTabs: React.FC<ProjectTabsProps> = ({
       <TabsContent value="evaluation" className="mt-6">
         <SlideUp>
           <ProjectEvaluation projectId={project.id} />
+        </SlideUp>
+      </TabsContent>
+      
+      <TabsContent value="gantt" className="mt-6">
+        <SlideUp>
+          <ProjectTimeline 
+            timeline={timeline} 
+            tasks={tasks}
+          />
         </SlideUp>
       </TabsContent>
     </Tabs>
