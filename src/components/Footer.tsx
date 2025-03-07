@@ -1,11 +1,8 @@
-
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { Github, Twitter, Linkedin, Mail } from 'lucide-react';
-
 const Footer: React.FC = () => {
-  return (
-    <footer className="border-t border-border bg-card py-12 mt-12">
+  return <footer className="border-t border-border bg-card py-12 mt-12">
       <div className="container px-4 mx-auto">
         <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
           <div className="md:col-span-2">
@@ -13,7 +10,7 @@ const Footer: React.FC = () => {
               <span className="bg-primary text-primary-foreground rounded-md p-1 transform -rotate-6">PΘ</span>
               <span>Պրոեկտների Թեմաներ</span>
             </Link>
-            <p className="text-muted-foreground max-w-md">
+            <p className="text-muted-foreground max-w-md text-left">
               Ընտրված 100 ժամանակակից պրոեկտի թեմաներ՝ ոգեշնչելու ծրագրավորողներին և օգնելու նրանց ընտրել իրենց հաջորդ ծրագրավորման մարտահրավերը։
             </p>
             <div className="flex space-x-4 mt-6">
@@ -99,8 +96,6 @@ const Footer: React.FC = () => {
           </div>
         </div>
       </div>
-    </footer>
-  );
+    </footer>;
 };
-
 export default Footer;
