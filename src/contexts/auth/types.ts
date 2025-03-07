@@ -1,5 +1,5 @@
 
-import { User, UserRole } from '@/data/userRoles';
+import { User } from '@/data/userRoles';
 
 export interface AuthContextType {
   user: User | null;
@@ -7,4 +7,3 @@ export interface AuthContextType {
   login: (email: string, password: string) => Promise<boolean>;
   logout: () => void;
 }
-

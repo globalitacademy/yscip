@@ -1,7 +1,7 @@
 
 import React from 'react';
 import { Button } from '@/components/ui/button';
-import { Info, Copy } from 'lucide-react';
+import { Info } from 'lucide-react';
 
 interface DeveloperInfoProps {
   showDeveloperInfo: boolean;
