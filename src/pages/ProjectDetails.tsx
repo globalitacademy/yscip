@@ -8,6 +8,8 @@ import { toast } from '@/components/ui/use-toast';
 import { AlertCircle } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useAuth } from '@/contexts/AuthContext';
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
+import { loadProjectReservations } from '@/utils/projectUtils';
 
 const ProjectDetails: React.FC = () => {
   const { id } = useParams<{ id: string }>();
@@ -15,6 +17,18 @@ const ProjectDetails: React.FC = () => {
   const { user } = useAuth();
   const projectId = id ? parseInt(id) : null;
   const project = projectThemes.find(p => p.id === projectId) || null;
+  
+  // Check if this supervisor has pending approvals for this project
+  const hasPendingApprovals = () => {
+    if (!user || !projectId || (user.role !== 'supervisor' && user.role !== 'project_manager')) {
+      return false;
+    }
+    
+    const reservations = loadProjectReservations();
+    return reservations.some(
+      res => res.projectId === projectId && res.supervisorId === user.id && res.status === 'pending'
+    );
+  };
   
   useEffect(() => {
     if (!project && projectId) {
@@ -32,6 +46,16 @@ const ProjectDetails: React.FC = () => {
       return () => clearTimeout(timeout);
     }
   }, [project, projectId, navigate]);
+  
+  // Show notification for supervisors if they have pending approvals
+  useEffect(() => {
+    if (hasPendingApprovals()) {
+      toast({
+        title: "Հաստատման հարցում",
+        description: "Այս նախագծի համար կա հաստատման սպասող հարցում։",
+      });
+    }
+  }, [user, projectId]);
   
   if (!projectId) {
     return (
@@ -76,9 +100,21 @@ const ProjectDetails: React.FC = () => {
       </div>
     );
   }
+
+  // Display approval notification for supervisors
+  const pendingApprovalAlert = hasPendingApprovals() && (
+    <Alert className="mb-4 border-amber-200 bg-amber-50 text-amber-800">
+      <AlertCircle className="h-4 w-4 text-amber-800" />
+      <AlertTitle>Հաստատման հարցում</AlertTitle>
+      <AlertDescription>
+        Ուսանողը հարցում է ուղարկել այս նախագծի համար։ Խնդրում ենք հաստատել կամ մերժել այն ադմինիստրատիվ վահանակից։
+      </AlertDescription>
+    </Alert>
+  );
   
   return (
     <ProjectProvider projectId={projectId} initialProject={project}>
+      {pendingApprovalAlert}
       <ProjectDetailsContent />
     </ProjectProvider>
   );

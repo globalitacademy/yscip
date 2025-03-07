@@ -26,10 +26,9 @@ const ProjectDetailsContent: React.FC = () => {
     updateTaskStatus, 
     submitProject, 
     approveProject, 
-    rejectProject, 
-    reserveProject, 
+    rejectProject,
     isReserved,
-    projectProgress 
+    projectProgress
   } = useProject();
   const navigate = useNavigate();
   
@@ -47,14 +46,6 @@ const ProjectDetailsContent: React.FC = () => {
       (p.category === project?.category || 
        p.techStack.some(tech => project?.techStack.includes(tech))))
     .slice(0, 3);
-  
-  const handleReserveProject = () => {
-    reserveProject();
-    toast({
-      title: "Պրոեկտն ամրագրված է",
-      description: `Դուք հաջողությամբ ամրագրել եք "${project.title}" պրոեկտը։`,
-    });
-  };
   
   const imageUrl = getProjectImage(project);
 
@@ -96,7 +87,6 @@ const ProjectDetailsContent: React.FC = () => {
             projectMembers={projectMembers}
             organization={organization}
             progressPercentage={projectProgress}
-            onReserveProject={handleReserveProject}
           />
           
           <ProjectTabs 

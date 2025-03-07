@@ -1,14 +1,16 @@
 
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { ArrowLeft, Clock, Users, BookOpen, User, Building, AlertCircle, CheckCircle } from 'lucide-react';
+import { ArrowLeft, Clock, Users, BookOpen, User, Building, AlertCircle, CheckCircle, X, HourglassIcon } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
 import { ProjectTheme } from '@/data/projectThemes';
 import { FadeIn } from '@/components/LocalTransitions';
+import SupervisorSelectionDialog from '@/components/SupervisorSelectionDialog';
 import { format } from 'date-fns';
 import { cn } from '@/lib/utils';
+import { useProject } from '@/contexts/ProjectContext';
 
 interface ProjectHeaderProps {
   project: ProjectTheme;
@@ -23,7 +25,6 @@ interface ProjectHeaderProps {
     logo: string;
   } | null;
   progressPercentage: number;
-  onReserveProject: () => void;
 }
 
 const ProjectHeader: React.FC<ProjectHeaderProps> = ({
@@ -34,8 +35,17 @@ const ProjectHeader: React.FC<ProjectHeaderProps> = ({
   projectMembers,
   organization,
   progressPercentage,
-  onReserveProject,
 }) => {
+  const { 
+    openSupervisorDialog, 
+    closeSupervisorDialog, 
+    showSupervisorDialog, 
+    selectedSupervisor, 
+    selectSupervisor, 
+    reserveProject,
+    getReservationStatus
+  } = useProject();
+
   const complexityColor = {
     Սկսնակ: 'bg-green-500/10 text-green-600 border-green-200',
     Միջին: 'bg-amber-500/10 text-amber-600 border-amber-200',
@@ -47,6 +57,37 @@ const ProjectHeader: React.FC<ProjectHeaderProps> = ({
   if (deadline) {
     deadline.setDate(deadline.getDate() + 30); // Mock deadline 30 days from now
   }
+  
+  // Get reservation status
+  const reservationStatus = getReservationStatus();
+
+  // Render reservation status badge
+  const renderReservationStatus = () => {
+    if (!reservationStatus) return null;
+    
+    switch (reservationStatus) {
+      case 'pending':
+        return (
+          <Badge variant="outline" className="bg-amber-100 text-amber-700 border-amber-200 px-3 py-1 flex items-center gap-1">
+            <HourglassIcon size={14} /> Սպասում է հաստատման
+          </Badge>
+        );
+      case 'approved':
+        return (
+          <Badge variant="outline" className="bg-green-100 text-green-700 border-green-200 px-3 py-1 flex items-center gap-1">
+            <CheckCircle size={14} /> Հաստատված է
+          </Badge>
+        );
+      case 'rejected':
+        return (
+          <Badge variant="outline" className="bg-red-100 text-red-700 border-red-200 px-3 py-1 flex items-center gap-1">
+            <X size={14} /> Մերժված է
+          </Badge>
+        );
+      default:
+        return null;
+    }
+  };
 
   return (
     <FadeIn>
@@ -106,9 +147,36 @@ const ProjectHeader: React.FC<ProjectHeaderProps> = ({
           </div>
           
           {!isReserved ? (
-            <Button onClick={onReserveProject} size="lg" className="mt-2">
-              Ամրագրել այս պրոեկտը
-            </Button>
+            <div className="space-y-3">
+              {renderReservationStatus()}
+              
+              {reservationStatus === 'rejected' && (
+                <div className="text-red-500 text-sm mb-3">
+                  Ձեր հարցումը մերժվել է։ Դուք կարող եք կրկին փորձել այլ ղեկավարի հետ։
+                </div>
+              )}
+              
+              {(!reservationStatus || reservationStatus === 'rejected') && (
+                <Button onClick={openSupervisorDialog} size="lg" className="mt-2">
+                  {reservationStatus === 'rejected' ? 'Կրկին փորձել' : 'Ամրագրել այս պրոեկտը'}
+                </Button>
+              )}
+              
+              {reservationStatus === 'pending' && (
+                <p className="text-sm text-muted-foreground mt-2">
+                  Խնդրում ենք սպասել մինչև ղեկավարը հաստատի կամ մերժի ձեր հարցումը։
+                </p>
+              )}
+              
+              <SupervisorSelectionDialog
+                isOpen={showSupervisorDialog}
+                onClose={closeSupervisorDialog}
+                onSelectSupervisor={selectSupervisor}
+                onReserveProject={reserveProject}
+                selectedSupervisor={selectedSupervisor}
+                projectTitle={project.title}
+              />
+            </div>
           ) : (
             <div className="space-y-3">
               <Badge variant="outline" className="bg-green-100 text-green-700 border-green-200 px-3 py-1">

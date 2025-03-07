@@ -37,9 +37,12 @@ export const isProjectReservedByUser = (
 ): boolean => {
   if (!projectId || !userId) return false;
   
-  return reservations.some(res => 
+  const reservation = reservations.find(res => 
     res.projectId === projectId && res.userId === userId
   );
+  
+  // Project is only considered reserved if the supervisor has approved
+  return !!reservation && reservation.status === 'approved';
 };
 
 // Save a new project reservation
@@ -52,6 +55,19 @@ export const saveProjectReservation = (
   if (!project) return;
   
   const reservations = loadProjectReservations();
+  
+  // Check if reservation already exists
+  const existingReservation = reservations.find(
+    res => res.projectId === project.id && res.userId === userId
+  );
+  
+  if (existingReservation) {
+    toast({
+      title: "Արդեն ամրագրված է",
+      description: "Դուք արդեն ամրագրել եք այս պրոեկտը։ Խնդրում ենք սպասել հաստատման։",
+    });
+    return;
+  }
   
   // Add new reservation
   const newReservation: ProjectReservation = {
@@ -68,8 +84,8 @@ export const saveProjectReservation = (
   localStorage.setItem('reservedProjects', JSON.stringify(reservations));
   
   toast({
-    title: "Պրոեկտը ամրագրված է",
-    description: `Դուք հաջողությամբ ամրագրել եք "${project.title}" պրոեկտը։ Խնդրում ենք սպասել հաստատման։`,
+    title: "Հարցումն ուղարկված է",
+    description: `Ձեր հարցումն ուղարկվել է ղեկավարին։ Խնդրում ենք սպասել հաստատման։`,
   });
 };
 
@@ -103,8 +119,8 @@ export const updateReservationStatus = (
   toast({
     title: status === 'approved' ? "Հաստատված" : "Մերժված",
     description: status === 'approved' 
-      ? "Պրոեկտի ամրագրումը հաստատվել է։" 
-      : "Պրոեկտի ամրագրումը մերժվել է։",
+      ? "Ուսանողի հարցումը հաստատվել է։" 
+      : "Ուսանողի հարցումը մերժվել է։",
   });
   
   return updatedReservations;
@@ -159,5 +175,15 @@ export const generateSampleTasks = (userId: string): Task[] => {
       dueDate: dueDate.toISOString().split('T')[0],
       createdBy: 'instructor1'
     }
+  ];
+};
+
+// Get supervisors from mock users
+export const getAvailableSupervisors = () => {
+  // For demonstration purposes, we'll return hardcoded supervisors
+  return [
+    { id: 'supervisor1', name: 'Արամ Հակոբյան', role: 'supervisor', avatar: '/placeholder.svg' },
+    { id: 'supervisor2', name: 'Լևոն Մարտիրոսյան', role: 'supervisor', avatar: '/placeholder.svg' },
+    { id: 'supervisor3', name: 'Աննա Պողոսյան', role: 'supervisor', avatar: '/placeholder.svg' }
   ];
 };

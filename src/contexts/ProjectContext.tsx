@@ -33,6 +33,8 @@ export const ProjectProvider: React.FC<ProjectProviderProps> = ({
   const [projectStatus, setProjectStatus] = useState<'not_submitted' | 'pending' | 'approved' | 'rejected'>('not_submitted');
   const [isReserved, setIsReserved] = useState(false);
   const [projectReservations, setProjectReservations] = useState<ProjectReservation[]>([]);
+  const [selectedSupervisor, setSelectedSupervisor] = useState<string | null>(null);
+  const [showSupervisorDialog, setShowSupervisorDialog] = useState(false);
 
   // Get permissions based on user role
   const permissions = useProjectPermissions(user?.role);
@@ -137,16 +139,30 @@ export const ProjectProvider: React.FC<ProjectProviderProps> = ({
     console.log("Project rejected with feedback:", feedback);
   };
 
-  const reserveProject = (supervisorId?: string, instructorId?: string) => {
-    // Only students can reserve projects
+  const openSupervisorDialog = () => {
     if (!user || user.role !== 'student' || !project) return;
+    setShowSupervisorDialog(true);
+  };
+
+  const closeSupervisorDialog = () => {
+    setShowSupervisorDialog(false);
+  };
+
+  const selectSupervisor = (supervisorId: string) => {
+    setSelectedSupervisor(supervisorId);
+  };
+
+  const reserveProject = () => {
+    // Only students can reserve projects and must select a supervisor
+    if (!user || user.role !== 'student' || !project || !selectedSupervisor) return;
     
-    // Save reservation in localStorage
-    saveProjectReservation(project, user.id, supervisorId, instructorId);
+    // Save reservation in localStorage with pending status
+    saveProjectReservation(project, user.id, selectedSupervisor);
     
     // Update local state
     setIsReserved(true);
     setProjectReservations(loadProjectReservations());
+    setShowSupervisorDialog(false);
   };
 
   const approveReservation = (projectId: number) => {
@@ -176,6 +192,16 @@ export const ProjectProvider: React.FC<ProjectProviderProps> = ({
     setProjectReservations(updatedReservations);
   };
 
+  const getReservationStatus = (): 'pending' | 'approved' | 'rejected' | null => {
+    if (!projectId || !user) return null;
+    
+    const reservation = projectReservations.find(
+      res => res.projectId === projectId && res.userId === user.id
+    );
+    
+    return reservation ? reservation.status : null;
+  };
+
   return (
     <ProjectContext.Provider
       value={{
@@ -199,7 +225,13 @@ export const ProjectProvider: React.FC<ProjectProviderProps> = ({
         projectReservations,
         approveReservation,
         rejectReservation,
-        projectProgress
+        projectProgress,
+        openSupervisorDialog,
+        closeSupervisorDialog,
+        showSupervisorDialog,
+        selectedSupervisor,
+        selectSupervisor,
+        getReservationStatus
       }}
     >
       {children}

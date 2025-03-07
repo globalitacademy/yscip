@@ -1,24 +1,47 @@
+
 import React from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
-import { X } from 'lucide-react';
+import { X, Bell } from 'lucide-react';
 import SidebarMenuGroup from './sidebar/SidebarMenuGroup';
 import { baseMenuItems, adminMenuItems, lecturerMenuItems, supervisorMenuItems } from './sidebar/sidebarMenuConfig';
+import { loadProjectReservations } from '@/utils/projectUtils';
+import { Badge } from '@/components/ui/badge';
+
 interface AdminSidebarProps {
   onCloseMenu?: () => void;
 }
+
 const AdminSidebar: React.FC<AdminSidebarProps> = ({
   onCloseMenu
 }) => {
   const {
     user
   } = useAuth();
+  
+  // Get pending approval count for supervisors
+  const getPendingApprovalsCount = () => {
+    if (!user || (user.role !== 'supervisor' && user.role !== 'project_manager')) {
+      return 0;
+    }
+    
+    const reservations = loadProjectReservations();
+    const pendingApprovals = reservations.filter(
+      res => res.supervisorId === user.id && res.status === 'pending'
+    );
+    
+    return pendingApprovals.length;
+  };
+  
+  const pendingCount = getPendingApprovalsCount();
 
   // Early return if user doesn't have appropriate role
   if (!user || user.role !== 'admin' && user.role !== 'lecturer' && user.role !== 'instructor' && user.role !== 'project_manager' && user.role !== 'supervisor') {
     return null;
   }
-  return <aside className="w-64 bg-card border-r border-border h-screen sticky top-0 overflow-y-auto py-6 px-0">
+  
+  return (
+    <aside className="w-64 bg-card border-r border-border h-screen sticky top-0 overflow-y-auto py-6 px-0">
       <div className="flex justify-between items-center mb-8 px-2">
         <div className="text-xl font-bold">Ադմինիստրացիա</div>
         {onCloseMenu && <Button variant="ghost" size="icon" onClick={onCloseMenu} className="md:hidden">
@@ -30,11 +53,26 @@ const AdminSidebar: React.FC<AdminSidebarProps> = ({
         {/* Base menu items (common for all roles) */}
         <SidebarMenuGroup menuItems={baseMenuItems} onCloseMenu={onCloseMenu} />
         
+        {/* Pending approvals notification for supervisors */}
+        {(user.role === 'supervisor' || user.role === 'project_manager') && pendingCount > 0 && (
+          <div className="px-4 py-2 mx-2 mb-2 bg-amber-50 text-amber-800 rounded-md flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <Bell className="h-4 w-4" />
+              <span className="text-sm">Նոր հարցումներ</span>
+            </div>
+            <Badge variant="secondary" className="bg-amber-200 text-amber-800">
+              {pendingCount}
+            </Badge>
+          </div>
+        )}
+        
         {/* Role-specific menu items */}
         <SidebarMenuGroup menuItems={adminMenuItems} onCloseMenu={onCloseMenu} />
         <SidebarMenuGroup menuItems={lecturerMenuItems} onCloseMenu={onCloseMenu} />
         <SidebarMenuGroup menuItems={supervisorMenuItems} onCloseMenu={onCloseMenu} />
       </nav>
-    </aside>;
+    </aside>
+  );
 };
+
 export default AdminSidebar;

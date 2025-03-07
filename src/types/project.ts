@@ -24,7 +24,7 @@ export interface ProjectContextType {
   submitProject: (feedback: string) => void;
   approveProject: (feedback: string) => void;
   rejectProject: (feedback: string) => void;
-  reserveProject: (supervisorId?: string, instructorId?: string) => void;
+  reserveProject: () => void;
   isReserved: boolean;
   canStudentSubmit: boolean;
   canInstructorCreate: boolean;
@@ -34,6 +34,12 @@ export interface ProjectContextType {
   approveReservation: (reservationId: number) => void;
   rejectReservation: (reservationId: number, feedback: string) => void;
   projectProgress: number;
+  openSupervisorDialog: () => void;
+  closeSupervisorDialog: () => void;
+  showSupervisorDialog: boolean;
+  selectedSupervisor: string | null;
+  selectSupervisor: (supervisorId: string) => void;
+  getReservationStatus: () => 'pending' | 'approved' | 'rejected' | null;
 }
 
 export interface ProjectProviderProps {
