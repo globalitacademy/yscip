@@ -5,6 +5,21 @@ import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
 import { useNavigate } from 'react-router-dom';
 
+// Define type for Supabase admin user to fix type errors
+interface SupabaseAdminUser {
+  id: string;
+  email?: string | null;
+  email_confirmed_at?: string | null;
+  user_metadata?: {
+    name?: string;
+    role?: UserRole;
+    registration_approved?: boolean;
+    organization?: string;
+    department?: string;
+    avatar?: string;
+  };
+}
+
 interface AuthContextType {
   user: User | null;
   isAuthenticated: boolean;
@@ -200,7 +215,18 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       }
 
       // Ստուգել արդյոք օգտատերը արդեն գրանցված է
-      const { data: { users } } = await supabase.auth.admin.listUsers();
+      const { data: getUsersData, error: getUsersError } = await supabase.auth.admin.listUsers();
+      
+      if (getUsersError) {
+        console.error('Failed to check existing users:', getUsersError);
+        return { 
+          success: false, 
+          message: 'Սխալ՝ օգտատերերի ստուգման ժամանակ։' 
+        };
+      }
+      
+      // Explicit typing of users array to fix type errors
+      const users = (getUsersData?.users || []) as SupabaseAdminUser[];
       const existingUser = users.find(u => u.email === email);
       
       if (existingUser) {
@@ -343,8 +369,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         return [];
       }
       
+      // Explicit typing of users array to fix type errors
+      const users = (data?.users || []) as SupabaseAdminUser[];
+      
       // Ֆիլտրել հաստատման սպասող օգտատերերին
-      const pendingUsers = data.users.filter(u => 
+      const pendingUsers = users.filter(u => 
         u.email_confirmed_at && // Էլ. հասցեն հաստատված է
         u.user_metadata?.role && // Ունի դեր
         ['lecturer', 'employer', 'project_manager', 'supervisor'].includes(u.user_metadata.role) && // Դերը պահանջում է հաստատում
