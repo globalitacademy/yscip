@@ -10,6 +10,7 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { UserRole, mockUsers } from '@/data/userRoles';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { Checkbox } from '@/components/ui/checkbox';
 import {
   Select,
   SelectContent,
@@ -17,16 +18,48 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { AlertCircle } from 'lucide-react';
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 
 const Login: React.FC = () => {
   const { login, switchRole, registerUser } = useAuth();
   const navigate = useNavigate();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
   const [name, setName] = useState('');
   const [role, setRole] = useState<UserRole>('student');
   const [organization, setOrganization] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [acceptTerms, setAcceptTerms] = useState(false);
+  const [verificationSent, setVerificationSent] = useState(false);
+
+  // Validation states
+  const [emailError, setEmailError] = useState('');
+  const [passwordError, setPasswordError] = useState('');
+  const [confirmPasswordError, setConfirmPasswordError] = useState('');
+
+  // Validation functions
+  const validateEmail = (email: string): boolean => {
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    const isValid = emailRegex.test(email);
+    setEmailError(isValid ? '' : 'Մուտքագրեք վավեր էլ․ հասցե');
+    return isValid;
+  };
+
+  const validatePassword = (password: string): boolean => {
+    // Password must be at least 8 characters and contain uppercase, lowercase and numbers
+    const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{8,}$/;
+    const isValid = passwordRegex.test(password);
+    setPasswordError(isValid ? '' : 'Գաղտնաբառը պետք է պարունակի առնվազն 8 նիշ, մեծատառ, փոքրատառ և թվանշան');
+    return isValid;
+  };
+
+  const validateConfirmPassword = (confirmPass: string): boolean => {
+    const isValid = confirmPass === password;
+    setConfirmPasswordError(isValid ? '' : 'Գաղտնաբառերը չեն համընկնում');
+    return isValid;
+  };
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -43,7 +76,7 @@ const Login: React.FC = () => {
       } else {
         toast({
           title: 'Մուտքը չի հաջողվել',
-          description: 'Էլ․ հասցեն կամ գաղտնաբառը սխալ է',
+          description: 'Էլ․ հասցեն կամ գաղտնաբառը սխալ է կամ Ձեր հաշիվը դեռ ակտիվացված չէ',
           variant: 'destructive',
         });
       }
@@ -63,13 +96,28 @@ const Login: React.FC = () => {
     setIsLoading(true);
 
     try {
-      // Validate fields
-      if (!email || !password || !name || !role) {
-        toast({
-          title: 'Սխալ',
-          description: 'Բոլոր պարտադիր դաշտերը պետք է լրացվեն',
-          variant: 'destructive',
-        });
+      // Validate all fields
+      const isEmailValid = validateEmail(email);
+      const isPasswordValid = validatePassword(password);
+      const isConfirmPasswordValid = validateConfirmPassword(confirmPassword);
+      
+      if (!name || !isEmailValid || !isPasswordValid || !isConfirmPasswordValid || !acceptTerms) {
+        if (!name) {
+          toast({
+            title: 'Սխալ',
+            description: 'Անուն Ազգանունը պարտադիր է',
+            variant: 'destructive',
+          });
+        }
+        
+        if (!acceptTerms) {
+          toast({
+            title: 'Սխալ',
+            description: 'Պետք է համաձայնեք գաղտնիության քաղաքականությանը',
+            variant: 'destructive',
+          });
+        }
+        
         setIsLoading(false);
         return;
       }
@@ -96,18 +144,16 @@ const Login: React.FC = () => {
       const success = await registerUser(userData);
       
       if (success) {
-        toast({
-          title: 'Գրանցումը հաջողվել է',
-          description: role === 'student' 
-            ? 'Դուք հաջողությամբ գրանցվել եք համակարգում: Կարող եք մուտք գործել:' 
-            : 'Դուք հաջողությամբ գրանցվել եք համակարգում: Ձեր հաշիվը կակտիվացվի հաստատումից հետո:',
-        });
+        setVerificationSent(true);
+        
         // Clear the form
         setName('');
         setEmail('');
         setPassword('');
+        setConfirmPassword('');
         setOrganization('');
         setRole('student');
+        setAcceptTerms(false);
       }
     } catch (error) {
       toast({
@@ -189,6 +235,12 @@ const Login: React.FC = () => {
                     />
                   </div>
                   
+                  <div className="flex items-center justify-end">
+                    <Button variant="link" type="button" className="p-0 h-auto text-sm">
+                      Մոռացել եք գաղտնաբառը?
+                    </Button>
+                  </div>
+                  
                   <Button type="submit" className="w-full" disabled={isLoading}>
                     {isLoading ? 'Մուտք...' : 'Մուտք գործել'}
                   </Button>
@@ -196,90 +248,144 @@ const Login: React.FC = () => {
               </TabsContent>
               
               <TabsContent value="register">
-                <form onSubmit={handleRegister} className="space-y-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="name">Անուն Ազգանուն</Label>
-                    <Input
-                      id="name"
-                      type="text"
-                      placeholder="Անուն Ազգանուն"
-                      value={name}
-                      onChange={(e) => setName(e.target.value)}
-                      required
-                    />
-                  </div>
-                  
-                  <div className="space-y-2">
-                    <Label htmlFor="register-email">Էլ․ հասցե</Label>
-                    <Input
-                      id="register-email"
-                      type="email"
-                      placeholder="name@example.com"
-                      value={email}
-                      onChange={(e) => setEmail(e.target.value)}
-                      required
-                    />
-                  </div>
-                  
-                  <div className="space-y-2">
-                    <Label htmlFor="register-password">Գաղտնաբառ</Label>
-                    <Input
-                      id="register-password"
-                      type="password"
-                      placeholder="••••••••"
-                      value={password}
-                      onChange={(e) => setPassword(e.target.value)}
-                      required
-                    />
-                  </div>
-                  
-                  <div className="space-y-2">
-                    <Label htmlFor="role">Դերակատարում</Label>
-                    <Select
-                      value={role}
-                      onValueChange={(value) => setRole(value as UserRole)}
-                    >
-                      <SelectTrigger>
-                        <SelectValue placeholder="Ընտրեք դերը" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="student">Ուսանող</SelectItem>
-                        <SelectItem value="lecturer">Դասախոս</SelectItem>
-                        <SelectItem value="project_manager">Նախագծի ղեկավար</SelectItem>
-                        <SelectItem value="employer">Գործատու</SelectItem>
-                      </SelectContent>
-                    </Select>
-                    <p className="text-sm text-muted-foreground mt-1">
-                      {getRoleDescription(role)}
-                    </p>
-                    
-                    {/* Show warning for roles that need approval */}
-                    {role !== 'student' && (
-                      <p className="text-sm text-amber-600 mt-2">
-                        Նշում: {role === 'employer' ? 'Գործատուի' : role === 'lecturer' ? 'Դասախոսի' : 'Ղեկավարի'} հաշիվը պետք է հաստատվի ադմինիստրատորի կողմից:
-                      </p>
-                    )}
-                  </div>
-                  
-                  {/* Show organization field only for employers */}
-                  {role === 'employer' && (
+                {verificationSent ? (
+                  <Alert className="mb-4">
+                    <AlertCircle className="h-4 w-4" />
+                    <AlertTitle>Հաստատման հղումն ուղարկված է</AlertTitle>
+                    <AlertDescription>
+                      Ձեր էլ․ փոստին ուղարկվել է հաստատման հղում։ Խնդրում ենք ստուգել Ձեր փոստարկղը և սեղմել հղման վրա՝ հաշիվը ակտիվացնելու համար։
+                      {role !== 'student' && (
+                        <p className="mt-2 text-amber-600">
+                          Նշում: {role === 'employer' ? 'Գործատուի' : role === 'lecturer' ? 'Դասախոսի' : 'Ղեկավարի'} հաշիվը պետք է նաև հաստատվի ադմինիստրատորի կողմից ակտիվացումից հետո:
+                        </p>
+                      )}
+                    </AlertDescription>
+                  </Alert>
+                ) : (
+                  <form onSubmit={handleRegister} className="space-y-4">
                     <div className="space-y-2">
-                      <Label htmlFor="organization">Կազմակերպություն</Label>
+                      <Label htmlFor="name">Անուն Ազգանուն</Label>
                       <Input
-                        id="organization"
+                        id="name"
                         type="text"
-                        placeholder="Կազմակերպության անունը"
-                        value={organization}
-                        onChange={(e) => setOrganization(e.target.value)}
+                        placeholder="Անուն Ազգանուն"
+                        value={name}
+                        onChange={(e) => setName(e.target.value)}
                         required
                       />
                     </div>
-                  )}
-                  
-                  <Button type="submit" className="w-full" disabled={isLoading}>
-                    {isLoading ? 'Գրանցում...' : 'Գրանցվել'}
-                  </Button>
-                </form>
+                    
+                    <div className="space-y-2">
+                      <Label htmlFor="register-email">Էլ․ հասցե</Label>
+                      <Input
+                        id="register-email"
+                        type="email"
+                        placeholder="name@example.com"
+                        value={email}
+                        onChange={(e) => {
+                          setEmail(e.target.value);
+                          if (e.target.value) validateEmail(e.target.value);
+                        }}
+                        required
+                        className={emailError ? "border-red-500" : ""}
+                      />
+                      {emailError && <p className="text-sm text-red-500 mt-1">{emailError}</p>}
+                    </div>
+                    
+                    <div className="space-y-2">
+                      <Label htmlFor="register-password">Գաղտնաբառ</Label>
+                      <Input
+                        id="register-password"
+                        type="password"
+                        placeholder="••••••••"
+                        value={password}
+                        onChange={(e) => {
+                          setPassword(e.target.value);
+                          if (e.target.value) validatePassword(e.target.value);
+                          if (confirmPassword) validateConfirmPassword(confirmPassword);
+                        }}
+                        required
+                        className={passwordError ? "border-red-500" : ""}
+                      />
+                      {passwordError && <p className="text-sm text-red-500 mt-1">{passwordError}</p>}
+                    </div>
+                    
+                    <div className="space-y-2">
+                      <Label htmlFor="confirm-password">Հաստատել գաղտնաբառը</Label>
+                      <Input
+                        id="confirm-password"
+                        type="password"
+                        placeholder="••••••••"
+                        value={confirmPassword}
+                        onChange={(e) => {
+                          setConfirmPassword(e.target.value);
+                          if (e.target.value) validateConfirmPassword(e.target.value);
+                        }}
+                        required
+                        className={confirmPasswordError ? "border-red-500" : ""}
+                      />
+                      {confirmPasswordError && <p className="text-sm text-red-500 mt-1">{confirmPasswordError}</p>}
+                    </div>
+                    
+                    <div className="space-y-2">
+                      <Label htmlFor="role">Դերակատարում</Label>
+                      <Select
+                        value={role}
+                        onValueChange={(value) => setRole(value as UserRole)}
+                      >
+                        <SelectTrigger id="role">
+                          <SelectValue placeholder="Ընտրեք դերը" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="student">Ուսանող</SelectItem>
+                          <SelectItem value="lecturer">Դասախոս</SelectItem>
+                          <SelectItem value="project_manager">Նախագծի ղեկավար</SelectItem>
+                          <SelectItem value="employer">Գործատու</SelectItem>
+                        </SelectContent>
+                      </Select>
+                      <p className="text-sm text-muted-foreground mt-1">
+                        {getRoleDescription(role)}
+                      </p>
+                      
+                      {/* Show warning for roles that need approval */}
+                      {role !== 'student' && (
+                        <p className="text-sm text-amber-600 mt-2">
+                          Նշում: {role === 'employer' ? 'Գործատուի' : role === 'lecturer' ? 'Դասախոսի' : 'Ղեկավարի'} հաշիվը պետք է հաստատվի ադմինիստրատորի կողմից:
+                        </p>
+                      )}
+                    </div>
+                    
+                    {/* Show organization field only for employers */}
+                    {role === 'employer' && (
+                      <div className="space-y-2">
+                        <Label htmlFor="organization">Կազմակերպություն</Label>
+                        <Input
+                          id="organization"
+                          type="text"
+                          placeholder="Կազմակերպության անունը"
+                          value={organization}
+                          onChange={(e) => setOrganization(e.target.value)}
+                          required
+                        />
+                      </div>
+                    )}
+                    
+                    <div className="flex items-center space-x-2 mt-4">
+                      <Checkbox 
+                        id="terms" 
+                        checked={acceptTerms} 
+                        onCheckedChange={(checked) => setAcceptTerms(checked as boolean)}
+                      />
+                      <Label htmlFor="terms" className="text-sm">
+                        Ես համաձայն եմ <Button variant="link" className="p-0 h-auto text-sm">գաղտնիության քաղաքականության</Button> պայմաններին
+                      </Label>
+                    </div>
+                    
+                    <Button type="submit" className="w-full" disabled={isLoading}>
+                      {isLoading ? 'Գրանցում...' : 'Գրանցվել'}
+                    </Button>
+                  </form>
+                )}
               </TabsContent>
               
               <TabsContent value="demo">

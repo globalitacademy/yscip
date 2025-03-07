@@ -6,6 +6,7 @@ import Index from '@/pages/Index';
 import ProjectDetails from '@/pages/ProjectDetails';
 import NotFound from '@/pages/NotFound';
 import Login from '@/pages/Login';
+import VerifyEmail from '@/pages/VerifyEmail';
 import AdminDashboard from '@/pages/AdminDashboard';
 import UserManagementPage from '@/pages/UserManagementPage';
 import OrganizationsPage from '@/pages/OrganizationsPage';
@@ -41,6 +42,7 @@ function AppRoutes() {
       <Route path="/" element={<Index />} />
       <Route path="/project/:id" element={<ProjectDetails />} />
       <Route path="/login" element={<Login />} />
+      <Route path="/verify-email" element={<VerifyEmail />} />
       
       {/* Admin routes */}
       <Route path="/admin" element={
