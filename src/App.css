@@ -49,10 +49,53 @@
   color: #888;
 }
 
-/* Responsive padding adjustments */
-@media (max-width: 640px) {
+/* Responsive breakpoints */
+/* Mobile (320px) */
+@media (max-width: 375px) {
   .container {
-    padding-left: 1rem;
-    padding-right: 1rem;
+    padding-left: 0.5rem;
+    padding-right: 0.5rem;
   }
+}
+
+/* Small mobile to large mobile */
+@media (min-width: 376px) and (max-width: 639px) {
+  .container {
+    padding-left: 0.75rem;
+    padding-right: 0.75rem;
+  }
+}
+
+/* Tablet (720px) */
+@media (min-width: 640px) and (max-width: 1023px) {
+  .container {
+    padding-left: 1.5rem;
+    padding-right: 1.5rem;
+  }
+}
+
+/* Desktop (1440px) */
+@media (min-width: 1024px) and (max-width: 1535px) {
+  .container {
+    padding-left: 2rem;
+    padding-right: 2rem;
+  }
+}
+
+/* Large Desktop (1920px) */
+@media (min-width: 1536px) {
+  .container {
+    padding-left: 2.5rem;
+    padding-right: 2.5rem;
+  }
+}
+
+/* Ensure smooth transitions for all elements */
+* {
+  transition: all 0.3s ease-in-out;
+}
+
+/* Exclude transition for certain elements where it might cause issues */
+button, a, input, select {
+  transition: background-color 0.3s, color 0.3s, border-color 0.3s, transform 0.3s;
 }
