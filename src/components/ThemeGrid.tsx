@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { ArrowRight, BookOpen, Users, Tag, GraduationCap, Layers, ChevronDown } from 'lucide-react';
@@ -187,31 +186,6 @@ const ThemeGrid: React.FC<ThemeGridProps> = ({ limit, createdProjects = [] }) =>
     setDisplayLimit(prev => Math.min(prev + 6, categoryFilteredProjects.length));
   };
   
-  const handleViewAllThemes = () => {
-    // Navigate to home page
-    navigate('/');
-    
-    // Reset any category filtering
-    setActiveCategory('all');
-    setDisplayLimit(limit || 6);
-    
-    // Clear URL parameters
-    const url = new URL(window.location.href);
-    url.searchParams.delete('category');
-    window.history.pushState({}, '', url);
-    
-    // Scroll to themes section
-    const themesSection = document.getElementById('themes-section');
-    if (themesSection) {
-      themesSection.scrollIntoView({ behavior: 'smooth' });
-    }
-    
-    // Dispatch event to notify other components
-    window.dispatchEvent(new CustomEvent('categoryChanged', { 
-      detail: { category: 'all' } 
-    }));
-  };
-  
   const hasMore = displayLimit < categoryFilteredProjects.length;
   
   return (
@@ -310,15 +284,12 @@ const ThemeGrid: React.FC<ThemeGridProps> = ({ limit, createdProjects = [] }) =>
             </Button>
           )}
           
-          <Button 
-            onClick={handleViewAllThemes} 
-            variant="default" 
-            size="lg" 
-            className="group"
-          >
-            Բոլոր թեմաները
-            <ArrowRight className="ml-2 h-4 w-4 group-hover:translate-x-1 transition-transform" />
-          </Button>
+          <Link to="/">
+            <Button variant="default" size="lg" className="group">
+              Բոլոր թեմաները
+              <ArrowRight className="ml-2 h-4 w-4 group-hover:translate-x-1 transition-transform" />
+            </Button>
+          </Link>
         </div>
       </div>
     </div>
