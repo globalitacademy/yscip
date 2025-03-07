@@ -1,19 +1,14 @@
-
 import React, { useState } from 'react';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import LoginForm from '@/components/auth/LoginForm';
 import RegisterForm from '@/components/auth/RegisterForm';
-
 const Login: React.FC = () => {
   const [showDeveloperInfo, setShowDeveloperInfo] = useState(false);
-
   const handleShowDeveloperInfo = () => {
     setShowDeveloperInfo(!showDeveloperInfo);
   };
-
-  return (
-    <div className="min-h-screen flex flex-col items-center justify-center bg-background p-4">
+  return <div className="min-h-screen flex flex-col items-center justify-center bg-background p-4">
       <div className="w-full max-w-md">
         <Card className="shadow-lg">
           <CardHeader className="space-y-1 text-center">
@@ -30,10 +25,7 @@ const Login: React.FC = () => {
               </TabsList>
               
               <TabsContent value="login">
-                <LoginForm 
-                  onShowDeveloperInfo={handleShowDeveloperInfo}
-                  showDeveloperInfo={showDeveloperInfo}
-                />
+                <LoginForm onShowDeveloperInfo={handleShowDeveloperInfo} showDeveloperInfo={showDeveloperInfo} />
               </TabsContent>
               
               <TabsContent value="register">
@@ -42,14 +34,10 @@ const Login: React.FC = () => {
             </Tabs>
           </CardContent>
           <CardFooter className="flex justify-center">
-            <p className="text-sm text-muted-foreground">
-              © 2024 Պրակտիկա. Բոլոր իրավունքները պաշտպանված են։
-            </p>
+            <p className="text-sm text-muted-foreground">© 2025 Պրակտիկա. Բոլոր իրավունքները պաշտպանված են։</p>
           </CardFooter>
         </Card>
       </div>
-    </div>
-  );
+    </div>;
 };
-
 export default Login;
