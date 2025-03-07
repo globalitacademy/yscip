@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { 
   LayoutDashboard, 
@@ -42,7 +43,7 @@ export const adminMenuItems: SidebarMenuItemType[] = [
     roles: ['admin']
   },
   { 
-    label: 'Հաստատման սպասող օգտատերեր', 
+    label: 'Օգտատերերի հաստատում', 
     path: '/pending-approvals',
     icon: <UserCheck className="w-5 h-5" />,
     roles: ['admin']
