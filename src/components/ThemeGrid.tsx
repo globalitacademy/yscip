@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { ArrowRight, BookOpen, Users, Tag, GraduationCap, Layers, ChevronDown } from 'lucide-react';
 import { projectThemes } from '@/data/projectThemes';
 import ProjectCard from '@/components/ProjectCard';
@@ -283,13 +283,6 @@ const ThemeGrid: React.FC<ThemeGridProps> = ({ limit, createdProjects = [] }) =>
               Տեսնել ավելին
             </Button>
           )}
-          
-          <Link to="/">
-            <Button variant="default" size="lg" className="group">
-              Բոլոր թեմաները
-              <ArrowRight className="ml-2 h-4 w-4 group-hover:translate-x-1 transition-transform" />
-            </Button>
-          </Link>
         </div>
       </div>
     </div>
