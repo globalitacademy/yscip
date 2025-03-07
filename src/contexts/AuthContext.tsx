@@ -9,16 +9,33 @@ interface AuthContextType {
   login: (email: string, password: string) => Promise<boolean>;
   logout: () => void;
   switchRole: (role: UserRole) => void;
-  registerUser: (userData: Partial<User>) => Promise<boolean>;
-  sendVerificationEmail: (email: string) => Promise<boolean>;
+  registerUser: (userData: Partial<User>) => Promise<{success: boolean, token?: string}>;
+  sendVerificationEmail: (email: string) => Promise<{success: boolean, token?: string}>;
   verifyEmail: (token: string) => Promise<boolean>;
   approveRegistration: (userId: string) => Promise<boolean>;
+  getPendingUsers: () => any[];
 }
 
 interface PendingUser extends Partial<User> {
   verificationToken: string;
   verified: boolean;
   password?: string; // Store password for real login after verification
+}
+
+// Add superadmin to mockUsers
+const superAdminUser: User = {
+  id: 'superadmin',
+  name: 'Սուպերադմին',
+  email: 'superadmin@example.com',
+  role: 'admin',
+  avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=superadmin',
+  department: 'Ադմինիստրացիա',
+  registrationApproved: true
+};
+
+// Check if superadmin already exists
+if (!mockUsers.some(user => user.email === superAdminUser.email)) {
+  mockUsers.push(superAdminUser);
 }
 
 // In a real app, this would be stored in a database
@@ -59,6 +76,14 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   }, [pendingUsers]);
 
   const login = async (email: string, password: string): Promise<boolean> => {
+    // Special case for superadmin
+    if (email === 'superadmin@example.com' && password === 'SuperAdmin123') {
+      setUser(superAdminUser);
+      setIsAuthenticated(true);
+      localStorage.setItem('currentUser', JSON.stringify(superAdminUser));
+      return true;
+    }
+    
     // First, check real registered users (from pendingUsers that are verified)
     const pendingUser = pendingUsers.find(
       u => u.email?.toLowerCase() === email.toLowerCase() && 
@@ -115,20 +140,20 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     return Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
   };
 
-  const registerUser = async (userData: Partial<User> & { password?: string }): Promise<boolean> => {
+  const registerUser = async (userData: Partial<User> & { password?: string }): Promise<{success: boolean, token?: string}> => {
     try {
       // Check if email already exists in mockUsers
       const emailExists = mockUsers.some(user => user.email.toLowerCase() === userData.email?.toLowerCase());
       if (emailExists) {
         toast.error(`Այս էլ․ հասցեն արդեն գրանցված է։`);
-        return false;
+        return { success: false };
       }
       
       // Check if email already exists in pendingUsers
       const pendingEmailExists = pendingUsers.some(user => user.email?.toLowerCase() === userData.email?.toLowerCase());
       if (pendingEmailExists) {
         toast.error(`Այս էլ․ հասցեով գրանցումն արդեն սպասման մեջ է։ Խնդրում ենք ստուգել Ձեր էլ․ փոստը։`);
-        return false;
+        return { success: false };
       }
       
       const verificationToken = generateVerificationToken();
@@ -158,26 +183,27 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         }`
       );
       
-      return true;
+      return { success: true, token: verificationToken };
     } catch (error) {
       console.error('Registration error:', error);
-      return false;
+      return { success: false };
     }
   };
 
-  const sendVerificationEmail = async (email: string): Promise<boolean> => {
+  const sendVerificationEmail = async (email: string): Promise<{success: boolean, token?: string}> => {
     const pendingUserIndex = pendingUsers.findIndex(u => u.email?.toLowerCase() === email.toLowerCase());
     
     if (pendingUserIndex === -1) {
-      return false;
+      return { success: false };
     }
     
-    console.log(`Verification email resent to ${email} with token: ${pendingUsers[pendingUserIndex].verificationToken}`);
-    console.log(`Verification link: http://localhost:3000/verify-email?token=${pendingUsers[pendingUserIndex].verificationToken}`);
+    const token = pendingUsers[pendingUserIndex].verificationToken;
+    console.log(`Verification email resent to ${email} with token: ${token}`);
+    console.log(`Verification link: http://localhost:3000/verify-email?token=${token}`);
     
     toast.success(`Հաստատման հղումը կրկին ուղարկված է Ձեր էլ․ փոստին։`);
     
-    return true;
+    return { success: true, token };
   };
 
   const verifyEmail = async (token: string): Promise<boolean> => {
@@ -224,6 +250,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   };
 
+  const getPendingUsers = () => {
+    return pendingUsers;
+  };
+
   return (
     <AuthContext.Provider
       value={{
@@ -235,7 +265,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         registerUser,
         sendVerificationEmail,
         verifyEmail,
-        approveRegistration
+        approveRegistration,
+        getPendingUsers
       }}
     >
       {children}

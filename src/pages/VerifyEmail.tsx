@@ -12,6 +12,7 @@ const VerifyEmail: React.FC = () => {
   const { verifyEmail } = useAuth();
   const [verificationStatus, setVerificationStatus] = useState<'loading' | 'success' | 'error'>('loading');
   const [errorMessage, setErrorMessage] = useState('');
+  const [isRoleWithApproval, setIsRoleWithApproval] = useState(false);
 
   useEffect(() => {
     // Get token from URL query params
@@ -35,6 +36,14 @@ const VerifyEmail: React.FC = () => {
         
         if (success) {
           setVerificationStatus('success');
+          
+          // Check in localStorage if this is a role that needs approval
+          const pendingUsers = JSON.parse(localStorage.getItem('pendingUsers') || '[]');
+          const user = pendingUsers.find((u: any) => u.verificationToken === token);
+          
+          if (user && ['lecturer', 'employer', 'project_manager', 'supervisor'].includes(user.role)) {
+            setIsRoleWithApproval(true);
+          }
         } else {
           setVerificationStatus('error');
           setErrorMessage('Հաստատման գործընթացի սխալ: Հղումն անվավեր է կամ արդեն օգտագործվել է։');
@@ -71,9 +80,25 @@ const VerifyEmail: React.FC = () => {
               <div className="text-center">
                 <CheckCircle className="h-16 w-16 text-green-500 mx-auto mb-4" />
                 <p className="text-lg font-medium">Ձեր էլ․ հասցեն հաջողությամբ հաստատվել է</p>
-                <p className="text-muted-foreground mt-2">
-                  Այժմ Դուք կարող եք մուտք գործել համակարգ Ձեր հաշվի տվյալներով:
-                </p>
+                
+                {isRoleWithApproval ? (
+                  <div className="mt-4 p-4 bg-amber-50 border border-amber-200 rounded-md text-left">
+                    <div className="flex items-start">
+                      <AlertCircle className="h-5 w-5 text-amber-500 mr-2 mt-0.5" />
+                      <div>
+                        <p className="font-medium text-amber-900">Անհրաժեշտ է ադմինիստրատորի հաստատում</p>
+                        <p className="text-sm text-amber-800 mt-1">
+                          Ձեր հաշիվը հաստատվել է, սակայն այն պետք է հաստատվի նաև ադմինիստրատորի կողմից: 
+                          Հաստատումից հետո Դուք կկարողանաք մուտք գործել համակարգ:
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                ) : (
+                  <p className="text-muted-foreground mt-2">
+                    Այժմ Դուք կարող եք մուտք գործել համակարգ Ձեր հաշվի տվյալներով:
+                  </p>
+                )}
               </div>
             )}
             

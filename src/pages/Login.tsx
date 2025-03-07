@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
@@ -18,11 +18,11 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { AlertCircle } from 'lucide-react';
+import { AlertCircle, Info, Copy } from 'lucide-react';
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 
 const Login: React.FC = () => {
-  const { login, switchRole, registerUser, sendVerificationEmail } = useAuth();
+  const { login, switchRole, registerUser, sendVerificationEmail, getPendingUsers } = useAuth();
   const navigate = useNavigate();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -34,11 +34,22 @@ const Login: React.FC = () => {
   const [acceptTerms, setAcceptTerms] = useState(false);
   const [verificationSent, setVerificationSent] = useState(false);
   const [resendEmail, setResendEmail] = useState('');
+  const [verificationToken, setVerificationToken] = useState('');
+  const [showDeveloperInfo, setShowDeveloperInfo] = useState(false);
+  const [pendingUsers, setPendingUsers] = useState<any[]>([]);
 
   // Validation states
   const [emailError, setEmailError] = useState('');
   const [passwordError, setPasswordError] = useState('');
   const [confirmPasswordError, setConfirmPasswordError] = useState('');
+  
+  useEffect(() => {
+    // Load pending users for developer info panel
+    if (showDeveloperInfo) {
+      const users = getPendingUsers();
+      setPendingUsers(users);
+    }
+  }, [showDeveloperInfo, getPendingUsers]);
 
   // Validation functions
   const validateEmail = (email: string): boolean => {
@@ -132,11 +143,12 @@ const Login: React.FC = () => {
         ...(role === 'employer' && { organization })
       };
 
-      const success = await registerUser(userData);
+      const result = await registerUser(userData);
       
-      if (success) {
+      if (result.success) {
         setVerificationSent(true);
         setResendEmail(email);
+        setVerificationToken(result.token || '');
         
         // Clear the form
         setName('');
@@ -159,8 +171,9 @@ const Login: React.FC = () => {
   const handleResendVerification = async () => {
     if (!resendEmail) return;
     
-    const success = await sendVerificationEmail(resendEmail);
-    if (success) {
+    const result = await sendVerificationEmail(resendEmail);
+    if (result.success) {
+      setVerificationToken(result.token || '');
       toast.success('Հաստատման հղումը կրկին ուղարկված է', {
         description: 'Խնդրում ենք ստուգել Ձեր էլ․ փոստը'
       });
@@ -169,6 +182,12 @@ const Login: React.FC = () => {
         description: 'Չհաջողվեց վերաուղարկել հաստատման հղումը'
       });
     }
+  };
+
+  const copyVerificationLink = () => {
+    const link = `${window.location.origin}/verify-email?token=${verificationToken}`;
+    navigator.clipboard.writeText(link);
+    toast.success('Հաստատման հղումը պատճենված է');
   };
 
   const handleQuickLogin = (role: UserRole) => {
@@ -198,7 +217,7 @@ const Login: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-background p-4">
+    <div className="min-h-screen flex flex-col items-center justify-center bg-background p-4">
       <div className="w-full max-w-md">
         <Card className="shadow-lg">
           <CardHeader className="space-y-1 text-center">
@@ -250,6 +269,64 @@ const Login: React.FC = () => {
                     {isLoading ? 'Մուտք...' : 'Մուտք գործել'}
                   </Button>
                 </form>
+
+                <div className="mt-4">
+                  <Button 
+                    variant="link" 
+                    className="p-0 text-xs text-muted-foreground"
+                    onClick={() => setShowDeveloperInfo(!showDeveloperInfo)}
+                  >
+                    {showDeveloperInfo ? 'Թաքցնել մշակողի տեղեկատվությունը' : 'Ցուցադրել մշակողի տեղեկատվությունը'}
+                  </Button>
+                </div>
+
+                {showDeveloperInfo && (
+                  <div className="mt-4 p-4 border rounded-md bg-muted/50">
+                    <h3 className="font-medium mb-2 flex items-center gap-1">
+                      <Info size={16} />
+                      Մշակողի գործիքակազմ
+                    </h3>
+                    <p className="text-sm text-muted-foreground mb-2">Սուպերադմինի հաշիվ՝</p>
+                    <div className="text-sm bg-muted p-2 rounded-md mb-3">
+                      <div><strong>Էլ․ հասցե:</strong> superadmin@example.com</div>
+                      <div><strong>Գաղտնաբառ:</strong> SuperAdmin123</div>
+                    </div>
+
+                    <p className="text-sm text-muted-foreground mb-2">Սպասման մեջ գտնվող օգտատերեր՝</p>
+                    <div className="max-h-40 overflow-auto text-xs">
+                      {pendingUsers.length === 0 ? (
+                        <p className="text-muted-foreground">Չկան սպասման մեջ գտնվող օգտատերեր</p>
+                      ) : (
+                        <ul className="space-y-2">
+                          {pendingUsers.map((user, index) => (
+                            <li key={index} className="p-2 bg-muted rounded-md">
+                              <div><strong>Անուն:</strong> {user.name}</div>
+                              <div><strong>Էլ․ հասցե:</strong> {user.email}</div>
+                              <div><strong>Դերակատարում:</strong> {user.role}</div>
+                              <div><strong>Հաստատված:</strong> {user.verified ? 'Այո' : 'Ոչ'}</div>
+                              <div><strong>Թույլատրված:</strong> {user.registrationApproved ? 'Այո' : 'Ոչ'}</div>
+                              <div className="flex items-center">
+                                <strong>Հաստատման հղում:</strong>
+                                <Button 
+                                  variant="ghost" 
+                                  size="sm" 
+                                  className="h-5 px-2 ml-1"
+                                  onClick={() => {
+                                    const link = `${window.location.origin}/verify-email?token=${user.verificationToken}`;
+                                    navigator.clipboard.writeText(link);
+                                    toast.success('Հաստատման հղումը պատճենված է');
+                                  }}
+                                >
+                                  <Copy size={12} />
+                                </Button>
+                              </div>
+                            </li>
+                          ))}
+                        </ul>
+                      )}
+                    </div>
+                  </div>
+                )}
               </TabsContent>
               
               <TabsContent value="register">
@@ -268,6 +345,24 @@ const Login: React.FC = () => {
                         <Button onClick={handleResendVerification} size="sm" variant="outline">
                           Վերաուղարկել հաստատման հղումը
                         </Button>
+                      </div>
+
+                      {/* Verification Link Display */}
+                      <div className="mt-4 bg-muted p-3 rounded-md">
+                        <p className="font-medium text-sm flex items-center mb-2">
+                          <Info size={14} className="mr-1" />
+                          Դեմո ռեժիմում հաստատեք հաշիվը հետևյալ հղումով:
+                        </p>
+                        <div className="flex items-center gap-2">
+                          <Input 
+                            readOnly 
+                            className="text-xs bg-background" 
+                            value={`${window.location.origin}/verify-email?token=${verificationToken}`}
+                          />
+                          <Button size="sm" variant="secondary" onClick={copyVerificationLink}>
+                            <Copy size={14} />
+                          </Button>
+                        </div>
                       </div>
                     </AlertDescription>
                   </Alert>
