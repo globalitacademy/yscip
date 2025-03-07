@@ -14,6 +14,7 @@ import {
 } from '@/components/ui/card';
 import { toast } from 'sonner';
 import { useAuth } from '@/contexts/AuthContext';
+import { supabase } from '@/integrations/supabase/client';
 
 const ProjectProposalForm: React.FC = () => {
   const { user } = useAuth();
@@ -23,7 +24,7 @@ const ProjectProposalForm: React.FC = () => {
   const [duration, setDuration] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
     if (!title || !description) {
@@ -31,37 +32,43 @@ const ProjectProposalForm: React.FC = () => {
       return;
     }
     
+    if (!user) {
+      toast.error('Դուք չեք մուտք գործել համակարգ');
+      return;
+    }
+    
     setIsSubmitting(true);
     
-    // In a real app, this would send data to the backend
-    setTimeout(() => {
-      // Save to localStorage for demo purposes
-      const proposals = JSON.parse(localStorage.getItem('projectProposals') || '[]');
-      const newProposal = {
-        id: Date.now(),
-        title,
-        description,
-        requirements,
-        duration,
-        status: 'pending',
-        createdAt: new Date().toISOString(),
-        employerId: user?.id,
-        employerName: user?.name,
-        organization: user?.organization
-      };
-      
-      proposals.push(newProposal);
-      localStorage.setItem('projectProposals', JSON.stringify(proposals));
+    try {
+      const { data, error } = await supabase
+        .from('project_proposals')
+        .insert([{
+          title,
+          description,
+          requirements,
+          duration,
+          employer_id: user.id,
+          organization: user.organization
+        }]);
+        
+      if (error) {
+        console.error('Error submitting proposal:', error);
+        throw error;
+      }
       
       // Reset form
       setTitle('');
       setDescription('');
       setRequirements('');
       setDuration('');
-      setIsSubmitting(false);
       
       toast.success('Նախագծի առաջարկն ուղարկված է');
-    }, 1000);
+    } catch (error) {
+      toast.error('Տեղի ունեցավ սխալ: Խնդրում ենք փորձել կրկին');
+      console.error('Error:', error);
+    } finally {
+      setIsSubmitting(false);
+    }
   };
   
   return (

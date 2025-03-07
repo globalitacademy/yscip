@@ -9,37 +9,85 @@ import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { AlertCircle, Users, Calendar, CheckCircle } from 'lucide-react';
 import { ProjectTheme } from '@/data/projectThemes';
 import { getStudentsForProject } from '@/data/userRoles';
+import { supabase } from '@/integrations/supabase/client';
+
+interface ProjectProposal {
+  id: string;
+  title: string;
+  description: string;
+  requirements?: string;
+  duration?: string;
+  status: 'pending' | 'approved' | 'rejected';
+  created_at: string;
+  employer_id: string;
+  organization?: string;
+  feedback?: string;
+}
 
 const MyProjectsPage: React.FC = () => {
   const { user } = useAuth();
-  const [approvedProjects, setApprovedProjects] = useState<any[]>([]);
+  const [approvedProposals, setApprovedProposals] = useState<ProjectProposal[]>([]);
   const [projectThemes, setProjectThemes] = useState<ProjectTheme[]>([]);
+  const [loading, setLoading] = useState(true);
   
   useEffect(() => {
-    // Load approved project proposals
-    const allProposals = JSON.parse(localStorage.getItem('projectProposals') || '[]');
-    const approved = allProposals.filter((p: any) => 
-      p.employerId === user?.id && p.status === 'approved'
-    );
-    setApprovedProjects(approved);
-    
-    // Load project themes from localStorage or fall back to imported data
-    try {
-      const savedThemes = localStorage.getItem('projectThemes');
-      if (savedThemes) {
-        const themes = JSON.parse(savedThemes);
-        // Filter only this employer's projects
-        const employerProjects = themes.filter((theme: ProjectTheme) => 
-          theme.createdBy === user?.id
-        );
-        setProjectThemes(employerProjects);
+    const fetchApprovedProposals = async () => {
+      if (!user) return;
+      
+      try {
+        setLoading(true);
+        
+        // Fetch approved proposals from Supabase
+        const { data, error } = await supabase
+          .from('project_proposals')
+          .select('*')
+          .eq('employer_id', user.id)
+          .eq('status', 'approved');
+          
+        if (error) {
+          console.error('Error fetching approved proposals:', error);
+          throw error;
+        }
+        
+        setApprovedProposals(data || []);
+        
+        // Load project themes from localStorage or fall back to imported data
+        try {
+          const savedThemes = localStorage.getItem('projectThemes');
+          if (savedThemes) {
+            const themes = JSON.parse(savedThemes);
+            // Filter only this employer's projects
+            const employerProjects = themes.filter((theme: ProjectTheme) => 
+              theme.createdBy === user.id
+            );
+            setProjectThemes(employerProjects);
+          }
+        } catch (e) {
+          console.error('Error loading project themes:', e);
+        }
+      } catch (error) {
+        console.error('Error:', error);
+      } finally {
+        setLoading(false);
       }
-    } catch (e) {
-      console.error('Error loading project themes:', e);
-    }
+    };
+    
+    fetchApprovedProposals();
   }, [user]);
   
-  if (approvedProjects.length === 0 && projectThemes.length === 0) {
+  if (loading) {
+    return (
+      <AdminLayout pageTitle="Իմ նախագծերը">
+        <Card className="bg-muted/50">
+          <CardContent className="pt-6 text-center">
+            <p className="text-lg font-medium">Տվյալները բեռնվում են...</p>
+          </CardContent>
+        </Card>
+      </AdminLayout>
+    );
+  }
+  
+  if (approvedProposals.length === 0 && projectThemes.length === 0) {
     return (
       <AdminLayout pageTitle="Իմ նախագծերը">
         <Alert>
@@ -57,13 +105,13 @@ const MyProjectsPage: React.FC = () => {
     <AdminLayout pageTitle="Իմ նախագծերը">
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {/* Approved proposals */}
-        {approvedProjects.map((project) => (
+        {approvedProposals.map((project) => (
           <Card key={`proposal-${project.id}`} className="flex flex-col">
             <CardHeader>
               <div className="flex justify-between items-start">
                 <div>
                   <CardTitle className="line-clamp-2">{project.title}</CardTitle>
-                  <CardDescription>Առաջարկ #{project.id}</CardDescription>
+                  <CardDescription>Առաջարկ #{project.id.substring(0, 8)}</CardDescription>
                 </div>
                 <Badge variant="outline" className="bg-green-100 text-green-800 flex items-center gap-1">
                   <CheckCircle className="h-3 w-3" /> Հաստատված

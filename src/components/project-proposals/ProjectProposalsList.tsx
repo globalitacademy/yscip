@@ -12,17 +12,17 @@ import {
 } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Clock, CheckCircle, XCircle, AlertTriangle } from 'lucide-react';
+import { supabase } from '@/integrations/supabase/client';
 
 interface ProjectProposal {
-  id: number;
+  id: string;
   title: string;
   description: string;
   requirements?: string;
   duration?: string;
   status: 'pending' | 'approved' | 'rejected';
-  createdAt: string;
-  employerId: string;
-  employerName: string;
+  created_at: string;
+  employer_id: string;
   organization?: string;
   feedback?: string;
 }
@@ -30,14 +30,34 @@ interface ProjectProposal {
 const ProjectProposalsList: React.FC = () => {
   const { user } = useAuth();
   const [proposals, setProposals] = useState<ProjectProposal[]>([]);
+  const [loading, setLoading] = useState(true);
   
   useEffect(() => {
-    // Load proposals from localStorage
-    const savedProposals = JSON.parse(localStorage.getItem('projectProposals') || '[]');
-    // Filter proposals for the current employer
-    if (user?.role === 'employer') {
-      setProposals(savedProposals.filter((p: ProjectProposal) => p.employerId === user.id));
-    }
+    const fetchProposals = async () => {
+      if (!user) return;
+      
+      try {
+        setLoading(true);
+        
+        const { data, error } = await supabase
+          .from('project_proposals')
+          .select('*')
+          .eq('employer_id', user.id);
+          
+        if (error) {
+          console.error('Error fetching proposals:', error);
+          throw error;
+        }
+        
+        setProposals(data || []);
+      } catch (error) {
+        console.error('Error:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+    
+    fetchProposals();
   }, [user]);
   
   const getStatusBadge = (status: string) => {
@@ -74,6 +94,16 @@ const ProjectProposalsList: React.FC = () => {
     });
   };
   
+  if (loading) {
+    return (
+      <Card className="bg-muted/50">
+        <CardContent className="pt-6 text-center">
+          <p className="text-lg font-medium">Տվյալները բեռնվում են...</p>
+        </CardContent>
+      </Card>
+    );
+  }
+  
   if (proposals.length === 0) {
     return (
       <Card className="bg-muted/50">
@@ -95,7 +125,7 @@ const ProjectProposalsList: React.FC = () => {
           <CardHeader className="flex flex-row items-start justify-between pb-2">
             <div>
               <CardTitle>{proposal.title}</CardTitle>
-              <CardDescription>Ուղարկվել է {formatDate(proposal.createdAt)}</CardDescription>
+              <CardDescription>Ուղարկվել է {formatDate(proposal.created_at)}</CardDescription>
             </div>
             {getStatusBadge(proposal.status)}
           </CardHeader>
