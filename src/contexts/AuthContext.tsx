@@ -8,6 +8,7 @@ interface AuthContextType {
   login: (email: string, password: string) => Promise<boolean>;
   logout: () => void;
   switchRole: (role: UserRole) => void;
+  registerUser: (userData: Partial<User>) => Promise<boolean>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -38,7 +39,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     // For demo, we'll just check if the email exists in our mock users
     const foundUser = mockUsers.find(u => u.email.toLowerCase() === email.toLowerCase());
     
-    if (foundUser) {
+    if (foundUser && foundUser.registrationApproved) {
       setUser(foundUser);
       setIsAuthenticated(true);
       localStorage.setItem('currentUser', JSON.stringify(foundUser));
@@ -51,6 +52,21 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     setUser(null);
     setIsAuthenticated(false);
     localStorage.removeItem('currentUser');
+  };
+
+  // Function to register a new user
+  const registerUser = async (userData: Partial<User>): Promise<boolean> => {
+    // In a real app, this would send the registration data to a backend
+    // For demo, we'll simulate registration success
+    console.log('Registration data:', userData);
+    
+    // Simulate user creation with pending approval for certain roles
+    const needsApproval = ['lecturer', 'employer', 'project_manager'].includes(userData.role as string);
+    
+    // Would normally store in database, for demo we'll just log it
+    console.log(`User registered with ${needsApproval ? 'pending' : 'automatic'} approval`);
+    
+    return true;
   };
 
   // Function to switch between roles (for demo purposes)
@@ -69,7 +85,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         isAuthenticated,
         login,
         logout,
-        switchRole
+        switchRole,
+        registerUser
       }}
     >
       {children}

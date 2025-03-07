@@ -10,12 +10,22 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { UserRole, mockUsers } from '@/data/userRoles';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 const Login: React.FC = () => {
-  const { login, switchRole } = useAuth();
+  const { login, switchRole, registerUser } = useAuth();
   const navigate = useNavigate();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [name, setName] = useState('');
+  const [role, setRole] = useState<UserRole>('student');
+  const [organization, setOrganization] = useState('');
   const [isLoading, setIsLoading] = useState(false);
 
   const handleLogin = async (e: React.FormEvent) => {
@@ -48,6 +58,68 @@ const Login: React.FC = () => {
     }
   };
 
+  const handleRegister = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsLoading(true);
+
+    try {
+      // Validate fields
+      if (!email || !password || !name || !role) {
+        toast({
+          title: 'Սխալ',
+          description: 'Բոլոր պարտադիր դաշտերը պետք է լրացվեն',
+          variant: 'destructive',
+        });
+        setIsLoading(false);
+        return;
+      }
+
+      // Check if employer has organization
+      if (role === 'employer' && !organization) {
+        toast({
+          title: 'Սխալ',
+          description: 'Կազմակերպության անունը պարտադիր է գործատուի համար',
+          variant: 'destructive',
+        });
+        setIsLoading(false);
+        return;
+      }
+
+      const userData = {
+        name,
+        email,
+        role,
+        registrationApproved: role === 'student', // Students are auto-approved
+        ...(role === 'employer' && { organization })
+      };
+
+      const success = await registerUser(userData);
+      
+      if (success) {
+        toast({
+          title: 'Գրանցումը հաջողվել է',
+          description: role === 'student' 
+            ? 'Դուք հաջողությամբ գրանցվել եք համակարգում: Կարող եք մուտք գործել:' 
+            : 'Դուք հաջողությամբ գրանցվել եք համակարգում: Ձեր հաշիվը կակտիվացվի հաստատումից հետո:',
+        });
+        // Clear the form
+        setName('');
+        setEmail('');
+        setPassword('');
+        setOrganization('');
+        setRole('student');
+      }
+    } catch (error) {
+      toast({
+        title: 'Սխալ',
+        description: 'Տեղի ունեցավ անսպասելի սխալ',
+        variant: 'destructive',
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   const handleQuickLogin = (role: UserRole) => {
     const user = mockUsers.find(u => u.role === role);
     if (user) {
@@ -56,20 +128,39 @@ const Login: React.FC = () => {
     }
   };
 
+  // Role descriptions for registration form
+  const getRoleDescription = (selectedRole: UserRole) => {
+    switch (selectedRole) {
+      case 'admin':
+        return 'Կառավարել օգտատերերին, նախագծերը և համակարգը';
+      case 'lecturer':
+        return 'Ստեղծել առաջադրանքներ, գնահատել ուսանողներին';
+      case 'project_manager':
+        return 'Կառավարել նախագծերը, հետևել առաջընթացին';
+      case 'employer':
+        return 'Հայտարարել նոր նախագծեր, համագործակցել ուսանողների հետ';
+      case 'student':
+        return 'Ընտրել և կատարել նախագծեր, զարգացնել հմտություններ';
+      default:
+        return '';
+    }
+  };
+
   return (
     <div className="min-h-screen flex items-center justify-center bg-background p-4">
       <div className="w-full max-w-md">
         <Card className="shadow-lg">
           <CardHeader className="space-y-1 text-center">
-            <CardTitle className="text-2xl font-bold">Մուտք</CardTitle>
+            <CardTitle className="text-2xl font-bold">Մուտք / Գրանցում</CardTitle>
             <CardDescription>
-              Մուտք գործեք համակարգ ձեր հաշվի տվյալներով
+              Մուտք գործեք համակարգ կամ ստեղծեք նոր հաշիվ
             </CardDescription>
           </CardHeader>
           <CardContent>
             <Tabs defaultValue="login" className="w-full">
-              <TabsList className="grid w-full grid-cols-2 mb-4">
+              <TabsList className="grid w-full grid-cols-3 mb-4">
                 <TabsTrigger value="login">Մուտք</TabsTrigger>
+                <TabsTrigger value="register">Գրանցում</TabsTrigger>
                 <TabsTrigger value="demo">Դեմո հաշիվներ</TabsTrigger>
               </TabsList>
               
@@ -104,13 +195,102 @@ const Login: React.FC = () => {
                 </form>
               </TabsContent>
               
+              <TabsContent value="register">
+                <form onSubmit={handleRegister} className="space-y-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="name">Անուն Ազգանուն</Label>
+                    <Input
+                      id="name"
+                      type="text"
+                      placeholder="Անուն Ազգանուն"
+                      value={name}
+                      onChange={(e) => setName(e.target.value)}
+                      required
+                    />
+                  </div>
+                  
+                  <div className="space-y-2">
+                    <Label htmlFor="register-email">Էլ․ հասցե</Label>
+                    <Input
+                      id="register-email"
+                      type="email"
+                      placeholder="name@example.com"
+                      value={email}
+                      onChange={(e) => setEmail(e.target.value)}
+                      required
+                    />
+                  </div>
+                  
+                  <div className="space-y-2">
+                    <Label htmlFor="register-password">Գաղտնաբառ</Label>
+                    <Input
+                      id="register-password"
+                      type="password"
+                      placeholder="••••••••"
+                      value={password}
+                      onChange={(e) => setPassword(e.target.value)}
+                      required
+                    />
+                  </div>
+                  
+                  <div className="space-y-2">
+                    <Label htmlFor="role">Դերակատարում</Label>
+                    <Select
+                      value={role}
+                      onValueChange={(value) => setRole(value as UserRole)}
+                    >
+                      <SelectTrigger>
+                        <SelectValue placeholder="Ընտրեք դերը" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="student">Ուսանող</SelectItem>
+                        <SelectItem value="lecturer">Դասախոս</SelectItem>
+                        <SelectItem value="project_manager">Նախագծի ղեկավար</SelectItem>
+                        <SelectItem value="employer">Գործատու</SelectItem>
+                      </SelectContent>
+                    </Select>
+                    <p className="text-sm text-muted-foreground mt-1">
+                      {getRoleDescription(role)}
+                    </p>
+                    
+                    {/* Show warning for roles that need approval */}
+                    {role !== 'student' && (
+                      <p className="text-sm text-amber-600 mt-2">
+                        Նշում: {role === 'employer' ? 'Գործատուի' : role === 'lecturer' ? 'Դասախոսի' : 'Ղեկավարի'} հաշիվը պետք է հաստատվի ադմինիստրատորի կողմից:
+                      </p>
+                    )}
+                  </div>
+                  
+                  {/* Show organization field only for employers */}
+                  {role === 'employer' && (
+                    <div className="space-y-2">
+                      <Label htmlFor="organization">Կազմակերպություն</Label>
+                      <Input
+                        id="organization"
+                        type="text"
+                        placeholder="Կազմակերպության անունը"
+                        value={organization}
+                        onChange={(e) => setOrganization(e.target.value)}
+                        required
+                      />
+                    </div>
+                  )}
+                  
+                  <Button type="submit" className="w-full" disabled={isLoading}>
+                    {isLoading ? 'Գրանցում...' : 'Գրանցվել'}
+                  </Button>
+                </form>
+              </TabsContent>
+              
               <TabsContent value="demo">
                 <div className="space-y-3">
                   <p className="text-sm text-muted-foreground mb-4">
                     Ընտրեք ցանկացած դերակատարում՝ համակարգ մուտք գործելու համար:
                   </p>
                   
-                  {mockUsers.map(user => (
+                  {mockUsers
+                    .filter(user => user.registrationApproved)
+                    .map(user => (
                     <div 
                       key={user.id}
                       className="flex items-center p-3 border rounded-lg hover:bg-accent cursor-pointer"

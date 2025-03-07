@@ -1,4 +1,5 @@
-export type UserRole = 'admin' | 'supervisor' | 'instructor' | 'student';
+
+export type UserRole = 'admin' | 'lecturer' | 'project_manager' | 'employer' | 'student';
 
 export interface User {
   id: string;
@@ -11,6 +12,9 @@ export interface User {
   group?: string;
   assignedProjects?: number[];
   supervisedStudents?: string[];
+  organization?: string;
+  specialization?: string;
+  registrationApproved?: boolean;
 }
 
 // Mock users for demo purposes
@@ -21,25 +25,37 @@ export const mockUsers: User[] = [
     email: 'admin@example.com',
     role: 'admin',
     avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=admin',
-    department: 'Ինֆորմատիկայի ֆակուլտետ'
+    department: 'Ինֆորմատիկայի ֆակուլտետ',
+    registrationApproved: true
   },
   {
-    id: 'supervisor1',
-    name: 'Ծրագրի ղեկավար',
-    email: 'supervisor@example.com',
-    role: 'supervisor',
+    id: 'project_manager1',
+    name: 'Նախագծի ղեկավար',
+    email: 'manager@example.com',
+    role: 'project_manager',
     avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=supervisor',
     department: 'Ինֆորմատիկայի ֆակուլտետ',
-    supervisedStudents: ['student1', 'student2']
+    supervisedStudents: ['student1', 'student2'],
+    registrationApproved: true
   },
   {
-    id: 'instructor1',
+    id: 'lecturer1',
     name: 'Դասախոս',
-    email: 'instructor@example.com',
-    role: 'instructor',
+    email: 'lecturer@example.com',
+    role: 'lecturer',
     avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=instructor',
     department: 'Ինֆորմատիկայի ֆակուլտետ',
-    assignedProjects: [1, 2, 3]
+    assignedProjects: [1, 2, 3],
+    registrationApproved: true
+  },
+  {
+    id: 'employer1',
+    name: 'Գործատու',
+    email: 'employer@example.com',
+    role: 'employer',
+    avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=employer',
+    organization: 'Տեխնոլոջի ՍՊԸ',
+    registrationApproved: true
   },
   {
     id: 'student1',
@@ -49,7 +65,8 @@ export const mockUsers: User[] = [
     avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=student',
     department: 'Ինֆորմատիկայի ֆակուլտետ',
     course: '2',
-    group: 'ԿՄ-021'
+    group: 'ԿՄ-021',
+    registrationApproved: true
   },
   {
     id: 'student2',
@@ -59,13 +76,25 @@ export const mockUsers: User[] = [
     avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=student2',
     department: 'Ինֆորմատիկայի ֆակուլտետ',
     course: '3',
-    group: 'ԿՄ-031'
+    group: 'ԿՄ-031',
+    registrationApproved: true
   }
 ];
 
 // Role permissions
 export const rolePermissions = {
   admin: {
+    // User Management
+    canCreateRoles: true,
+    canEditRoles: true,
+    canApproveRegistrations: true,
+    
+    // Administration
+    canManageSpecializations: true, // CRUD for specializations/courses/groups
+    canRegisterOrganizations: true, // Register partner companies
+    canViewReports: true, // Statistics, usage metrics
+    
+    // General permissions
     canAddTimeline: true,
     canEditTimeline: true,
     canApproveTimelineEvents: true,
@@ -81,7 +110,18 @@ export const rolePermissions = {
     canViewAllProjects: true,
     canManageUsers: true
   },
-  supervisor: {
+  
+  lecturer: {
+    // Task Management
+    canCreateModularTasks: true, // Create modular tasks by course/group
+    canSetDeadlines: true, // Set deadlines, evaluation criteria
+    
+    // Assessment
+    canAutoCheck: true, // Automated checking (quiz/test) and manual grading
+    canFilterByStudent: true, // Filter by student/group/course
+    canViewStudentProgress: true, // Student progress dashboard
+    
+    // General permissions
     canAddTimeline: true,
     canEditTimeline: true,
     canApproveTimelineEvents: true,
@@ -93,17 +133,50 @@ export const rolePermissions = {
     canAssignInstructors: false,
     canAssignSupervisors: false,
     canCreateProjects: true,
-    canAssignProjects: true,
-    canViewAllProjects: true,
+    canViewAllProjects: false,
     canManageUsers: false
   },
-  instructor: {
+  
+  project_manager: {
+    // Project Management
+    canCreateSteppedProjects: true, // Create step-by-step projects (Waterfall/Agile phases)
+    canModifyProjectSteps: true, // Change step sequence/deadlines
+    canApproveEmployerProjects: true, // Approve employer projects
+    
+    // Tracking
+    canViewGanttChart: true, // Gantt chart for implementation
+    canUpdateTaskStatus: true, // Update task status (To-Do/In Progress/Done)
+    
+    // General permissions
     canAddTimeline: true,
-    canEditTimeline: false,
+    canEditTimeline: true,
     canApproveTimelineEvents: true,
     canAddTasks: true,
     canAssignTasks: true,
     canApproveProject: true,
+    canSubmitProject: false,
+    canCreateUsers: false,
+    canAssignInstructors: false,
+    canAssignSupervisors: true,
+    canCreateProjects: true,
+    canAssignProjects: true,
+    canViewAllProjects: true,
+    canManageUsers: false
+  },
+  
+  employer: {
+    // Project Announcement
+    canAnnounceProjects: true, // Project description form (technologies, requirements, deadline)
+    canLinkProjectToCourse: true, // Link between project and course (e.g., "Python + Django" for a course)
+    canCollaborateWithManager: true, // Collaboration with project manager
+    
+    // General permissions
+    canAddTimeline: false,
+    canEditTimeline: false,
+    canApproveTimelineEvents: false,
+    canAddTasks: true,
+    canAssignTasks: false,
+    canApproveProject: false,
     canSubmitProject: false,
     canCreateUsers: false,
     canAssignInstructors: false,
@@ -113,7 +186,22 @@ export const rolePermissions = {
     canViewAllProjects: false,
     canManageUsers: false
   },
+  
   student: {
+    // Project Selection
+    canFilterProjects: true, // Filter by technology/course/difficulty
+    canApplyToProject: true, // Apply to project (CV/motivation letter upload)
+    
+    // Execution
+    canViewTaskTimeline: true, // Task list in timeline view
+    canUploadFiles: true, // File upload/submission (GitHub integration)
+    canViewProgressMap: true, // Mapping student progress (progress heatmap)
+    
+    // CV Generator
+    canGenerateCV: true, // Automatic form based on completed projects/skills
+    canDownloadCVFormats: true, // Download in PDF/Word format
+    
+    // General permissions
     canAddTimeline: false,
     canEditTimeline: false,
     canApproveTimelineEvents: false,
@@ -134,7 +222,7 @@ export const rolePermissions = {
 export const getCurrentUser = (): User => {
   // This would typically come from authentication
   // For demo purposes, we'll default to the student
-  return mockUsers.find(user => user.role === 'student') || mockUsers[3];
+  return mockUsers.find(user => user.role === 'student') || mockUsers[4];
 };
 
 export const getUsersByRole = (role: UserRole): User[] => {
