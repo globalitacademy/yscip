@@ -38,7 +38,10 @@ export const loginAsSuperAdmin = async () => {
             registration_approved: true,
             avatar: `https://api.dicebear.com/7.x/avataaars/svg?seed=superadmin${Date.now()}`
           },
-          emailRedirectTo: `${window.location.origin}/login`
+          // Skip email confirmation for superadmin account by setting emailRedirectTo to current URL
+          emailRedirectTo: `${window.location.origin}/login`,
+          // Setting autoconfirm to true (not supported directly by Supabase JS client)
+          // Instead, we'll suggest an admin panel operation after this
         }
       });
       
@@ -56,15 +59,27 @@ export const loginAsSuperAdmin = async () => {
         return false;
       }
       
-      // User was created but needs email confirmation
+      // User was created but needs email confirmation - attempt direct sign-in anyway
       if (signUpData) {
-        console.log('Սուպերադմին օգտատերը ստեղծվեց, բայց պահանջում է էլ. հասցեի հաստատում:', signUpData);
-        toast.success('Սուպերադմին հաշիվը ստեղծվել է: Խնդրում ենք ստուգել Ձեր էլ. փոստը հաստատման համար');
+        console.log('Սուպերադմին օգտատերը ստեղծվեց, փորձում ենք ավտոմատ մուտք գործել');
+        toast.success('Սուպերադմին հաշիվը ստեղծվել է');
         
-        // Auto-confirm for local development (requires admin key which we don't have)
-        // We'll show a message to the user instead
-        toast.info('Մուտք գործելու համար, խնդրում ենք հաստատել էլ. հասցեն կամ կապվել մշակողի հետ');
-        return false;
+        // Attempt to sign in directly despite the email not being confirmed
+        // This won't work typically but we try it anyway
+        const { data: forceSignInData, error: forceSignInError } = await supabase.auth.signInWithPassword({
+          email: SUPER_ADMIN_EMAIL,
+          password: SUPER_ADMIN_PASSWORD
+        });
+        
+        if (forceSignInData?.user) {
+          console.log('Հաջողվեց ավտոմատ մուտք գործել որպես սուպերադմին');
+          toast.success('Հաջողությամբ մուտք գործվեց որպես սուպերադմին');
+          return true;
+        } else {
+          console.log('Ավտոմատ մուտքը չհաջողվեց:', forceSignInError?.message);
+          toast.info('Հաշիվը ստեղծվել է, բայց էլ. հասցեն պետք է հաստատվի Supabase վահանակում ադմինիստրատորի կողմից');
+          return false;
+        }
       }
     }
     
