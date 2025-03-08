@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { User, UserRole, mockUsers, getCourses, getGroups } from '@/data/userRoles';
 import { Button } from '@/components/ui/button';
@@ -60,6 +59,7 @@ const UserManagement: React.FC<UserManagementProps> = () => {
       role: newUser.role as UserRole,
       department: newUser.department,
       avatar: `https://api.dicebear.com/7.x/avataaars/svg?seed=${id}`,
+      registrationApproved: true,
       course: newUser.role === 'student' ? newUser.course : undefined,
       group: newUser.role === 'student' ? newUser.group : undefined
     };
