@@ -1,4 +1,3 @@
-
 import { supabase } from '@/integrations/supabase/client';
 import { User, UserRole } from '@/data/userRoles';
 import { SupabaseAdminUser } from '@/types/auth';
@@ -20,16 +19,7 @@ export const useAuthAPI = () => {
 
       if (error) {
         console.error('Login error:', error);
-        
-        // If superadmin login fails, try to create the account
-        if (email === 'superadmin@npua.am') {
-          console.log('Superadmin login failed, attempting to create superadmin account');
-          const createResult = await createSuperAdminAccount();
-          if (createResult) {
-            toast.success('Սուպերադմին հաշիվը ստեղծվել է: Խնդրում ենք նորից փորձել մուտք գործել:');
-          }
-        }
-        
+        toast.error('Մուտքը չի հաջողվել: ' + error.message);
         return false;
       }
 
@@ -222,7 +212,7 @@ export const useAuthAPI = () => {
     try {
       // Ստուգել արդյոք ընթացիկ օգտատերը ադմին է կամ սուպերադմին
       if (!currentUser || (currentUser.role !== 'admin' && currentUser.role !== 'superadmin')) {
-        toast.error('Միայն ադմինիստրատորը կարող է հաստատել գրանցումները։');
+        toast.error('Միայն ադմինիստ��ատորը կարող է հաստատել գրանցումները։');
         return false;
       }
 

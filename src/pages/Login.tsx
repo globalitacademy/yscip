@@ -19,7 +19,7 @@ import {
 } from "@/components/ui/select";
 import { createAdminUser } from '@/hooks/createAdmin';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { Info } from 'lucide-react';
+import { Info, LucideUserCheck } from 'lucide-react';
 
 const Login: React.FC = () => {
   const { login, registerUser, isAuthenticated } = useAuth();
@@ -269,10 +269,11 @@ const Login: React.FC = () => {
                       <Button 
                         type="button" 
                         variant="outline" 
-                        className="ml-2 text-xs" 
+                        className="ml-2 text-xs flex items-center gap-1" 
                         onClick={handleSuperAdminLogin}
                       >
-                        Մուտքի տվյալներ
+                        <LucideUserCheck className="h-3 w-3" />
+                        <span>Լրացնել տվյալները</span>
                       </Button>
                     </AlertDescription>
                   </Alert>
