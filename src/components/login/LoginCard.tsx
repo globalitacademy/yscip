@@ -27,6 +27,7 @@ interface LoginCardProps {
   handleLogin: (e: React.FormEvent) => Promise<void>;
   handleRegister: (e: React.FormEvent) => Promise<void>;
   handleSuperAdminLogin: () => void;
+  handleMagicLinkLogin: () => Promise<void>;
   emailError: string;
   passwordError: string;
   confirmPasswordError: string;
@@ -56,6 +57,7 @@ const LoginCard: React.FC<LoginCardProps> = ({
   handleLogin,
   handleRegister,
   handleSuperAdminLogin,
+  handleMagicLinkLogin,
   emailError,
   passwordError,
   confirmPasswordError,
@@ -85,6 +87,7 @@ const LoginCard: React.FC<LoginCardProps> = ({
               password={password}
               setPassword={setPassword}
               handleLogin={handleLogin}
+              handleMagicLinkLogin={handleMagicLinkLogin}
               isLoading={isLoading}
               handleSuperAdminLogin={handleSuperAdminLogin}
             />

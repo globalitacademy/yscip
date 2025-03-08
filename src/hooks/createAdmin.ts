@@ -27,6 +27,12 @@ export const loginAsSuperAdmin = async () => {
     if (signInError) {
       console.log('Superadmin login error:', signInError.message);
       
+      // Get the current URL for redirects
+      const currentOrigin = window.location.origin;
+      const redirectUrl = `${currentOrigin}/verify-email`;
+      
+      console.log('Using redirect URL:', redirectUrl);
+      
       // Try to sign up (create) the superadmin user
       const { data: signUpData, error: signUpError } = await supabase.auth.signUp({
         email: SUPER_ADMIN_EMAIL,
@@ -38,10 +44,7 @@ export const loginAsSuperAdmin = async () => {
             registration_approved: true,
             avatar: `https://api.dicebear.com/7.x/avataaars/svg?seed=superadmin${Date.now()}`
           },
-          // Skip email confirmation for superadmin account by setting emailRedirectTo to current URL
-          emailRedirectTo: `${window.location.origin}/login`,
-          // Setting autoconfirm to true (not supported directly by Supabase JS client)
-          // Instead, we'll suggest an admin panel operation after this
+          emailRedirectTo: redirectUrl
         }
       });
       
@@ -59,13 +62,28 @@ export const loginAsSuperAdmin = async () => {
         return false;
       }
       
-      // User was created but needs email confirmation - attempt direct sign-in anyway
+      // User was created but needs email confirmation - attempt magic link login
       if (signUpData) {
-        console.log('Սուպերադմին օգտատերը ստեղծվեց, փորձում ենք ավտոմատ մուտք գործել');
+        console.log('Սուպերադմին օգտատերը ստեղծվեց, ուղարկում ենք magic link...');
         toast.success('Սուպերադմին հաշիվը ստեղծվել է');
         
-        // Attempt to sign in directly despite the email not being confirmed
-        // This won't work typically but we try it anyway
+        // Try to send a magic link to log in
+        const { data: magicLinkData, error: magicLinkError } = await supabase.auth.signInWithOtp({
+          email: SUPER_ADMIN_EMAIL,
+          options: {
+            emailRedirectTo: redirectUrl
+          }
+        });
+        
+        if (magicLinkError) {
+          console.error('Magic link error:', magicLinkError);
+          toast.error('Չհաջողվեց ուղարկել մուտքի հղումը: ' + magicLinkError.message);
+        } else {
+          toast.success('Մուտքի հղումն ուղարկվել է Ձեր էլ․ հասցեին: Խնդրում ենք ստուգել Ձեր փոստարկղը:');
+          console.log('Magic link sent successfully');
+        }
+        
+        // Also try direct sign-in just in case
         const { data: forceSignInData, error: forceSignInError } = await supabase.auth.signInWithPassword({
           email: SUPER_ADMIN_EMAIL,
           password: SUPER_ADMIN_PASSWORD
@@ -77,7 +95,10 @@ export const loginAsSuperAdmin = async () => {
           return true;
         } else {
           console.log('Ավտոմատ մուտքը չհաջողվեց:', forceSignInError?.message);
-          toast.info('Հաշիվը ստեղծվել է, բայց էլ. հասցեն պետք է հաստատվի Supabase վահանակում ադմինիստրատորի կողմից');
+          toast.info('Հաշիվը ստեղծվել է, ստուգեք Ձեր էլ. փոստը մուտքի հղման համար');
+          
+          // Show manual instructions
+          toast.info('Եթե հղումը չի հասնում, խնդրում ենք մուտք գործեք Supabase վահանակ և հաստատեք օգտատիրոջ էլ․ հասցեն');
           return false;
         }
       }

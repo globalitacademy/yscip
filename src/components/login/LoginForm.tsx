@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { Info, LucideUserCheck } from 'lucide-react';
+import { Info, LucideUserCheck, LinkIcon } from 'lucide-react';
 import { toast } from 'sonner';
 
 interface LoginFormProps {
@@ -13,6 +13,7 @@ interface LoginFormProps {
   password: string;
   setPassword: (password: string) => void;
   handleLogin: (e: React.FormEvent) => Promise<void>;
+  handleMagicLinkLogin: () => Promise<void>;
   isLoading: boolean;
   handleSuperAdminLogin: () => void;
 }
@@ -23,6 +24,7 @@ const LoginForm: React.FC<LoginFormProps> = ({
   password,
   setPassword,
   handleLogin,
+  handleMagicLinkLogin,
   isLoading,
   handleSuperAdminLogin
 }) => {
@@ -51,9 +53,24 @@ const LoginForm: React.FC<LoginFormProps> = ({
         />
       </div>
       
-      <div className="flex items-center justify-end">
-        <Button variant="link" type="button" className="p-0 h-auto text-sm">
+      <div className="flex items-center justify-between">
+        <Button 
+          variant="link" 
+          type="button" 
+          className="p-0 h-auto text-sm"
+          onClick={() => toast.info("Գաղտնաբառի վերականգնման գործառույթը ակտիվ չէ")}
+        >
           Մոռացել եք գաղտնաբառը?
+        </Button>
+        
+        <Button 
+          variant="link"
+          type="button"
+          className="p-0 h-auto text-sm flex items-center gap-1"
+          onClick={handleMagicLinkLogin}
+        >
+          <LinkIcon className="h-3 w-3" />
+          <span>Magic Link</span>
         </Button>
       </div>
       
@@ -76,6 +93,17 @@ const LoginForm: React.FC<LoginFormProps> = ({
       <Button type="submit" className="w-full" disabled={isLoading}>
         {isLoading ? 'Մուտք...' : 'Մուտք գործել'}
       </Button>
+      
+      <div className="text-center">
+        <Button 
+          variant="ghost" 
+          type="button" 
+          className="text-xs"
+          onClick={handleMagicLinkLogin}
+        >
+          Մուտք գործել Magic Link-ով
+        </Button>
+      </div>
     </form>
   );
 };

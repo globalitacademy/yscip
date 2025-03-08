@@ -1,5 +1,6 @@
+
 import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { toast } from 'sonner';
 import { UserRole } from '@/data/userRoles';
@@ -9,6 +10,7 @@ import LoginCard from '@/components/login/LoginCard';
 const Login: React.FC = () => {
   const { login, registerUser, isAuthenticated } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
@@ -28,6 +30,37 @@ const Login: React.FC = () => {
       navigate('/');
     }
   }, [isAuthenticated, navigate]);
+
+  // Ստուգել արդյոք URL-ում կա #access_token պարամետրը (Magic Link մուտքի համար)
+  useEffect(() => {
+    const checkForMagicLink = async () => {
+      const hash = window.location.hash;
+      if (hash && hash.includes('access_token')) {
+        try {
+          setIsLoading(true);
+          console.log('Magic Link detected in URL, processing...');
+          
+          // Supabase-ն ինքնաբերաբար կմշակի մուտքի տվյալները hash-ից
+          const { data, error } = await supabase.auth.getSession();
+          
+          if (error) {
+            console.error('Magic link error:', error);
+            toast.error('Magic link-ով մուտքի սխալ: ' + error.message);
+          } else if (data?.session) {
+            console.log('Magic link login successful!');
+            toast.success('Հաջողությամբ մուտք գործվեց Magic Link-ի միջոցով');
+            navigate('/');
+          }
+        } catch (error) {
+          console.error('Magic link processing error:', error);
+        } finally {
+          setIsLoading(false);
+        }
+      }
+    };
+    
+    checkForMagicLink();
+  }, [navigate, location]);
 
   useEffect(() => {
     const initSuperAdmin = async () => {
@@ -91,6 +124,41 @@ const Login: React.FC = () => {
     
     toast.info('Սուպերադմին տվյալները լրացված են: Սեղմեք "Մուտք գործել" կոճակը մուտք գործելու համար:');
     toast.info('Եթե առաջին անգամ եք մուտք գործում, ապա պետք է ստեղծել հաշիվ "Գրանցում" էջում:');
+  };
+
+  const handleMagicLinkLogin = async () => {
+    if (!email) {
+      toast.error('Մուտքագրեք Ձեր էլ. հասցեն Magic Link ստանալու համար');
+      return;
+    }
+    
+    if (!validateEmail(email)) {
+      return;
+    }
+    
+    setIsLoading(true);
+    
+    try {
+      const { data, error } = await supabase.auth.signInWithOtp({
+        email,
+        options: {
+          emailRedirectTo: `${window.location.origin}/login`
+        }
+      });
+      
+      if (error) {
+        console.error('Magic link error:', error);
+        toast.error('Չհաջողվեց ուղարկել մուտքի հղումը: ' + error.message);
+      } else {
+        toast.success('Մուտքի հղումն ուղարկվել է Ձեր էլ․ հասցեին: Խնդրում ենք ստուգել Ձեր փոստարկղը:');
+      }
+    } catch (error: any) {
+      toast.error('Սխալ', {
+        description: error.message || 'Տեղի ունեցավ անսպասելի սխալ',
+      });
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const handleRegister = async (e: React.FormEvent) => {
@@ -195,6 +263,7 @@ const Login: React.FC = () => {
           handleLogin={handleLogin}
           handleRegister={handleRegister}
           handleSuperAdminLogin={handleSuperAdminLogin}
+          handleMagicLinkLogin={handleMagicLinkLogin}
           emailError={emailError}
           passwordError={passwordError}
           confirmPasswordError={confirmPasswordError}
