@@ -42,15 +42,16 @@ export const loginAsSuperAdmin = async () => {
 const createSuperAdmin = async () => {
   try {
     // Ստեղծում ենք սուպերադմին օգտատեր
-    const { data, error } = await supabase.auth.admin.createUser({
+    const { data, error } = await supabase.auth.signUp({
       email: SUPER_ADMIN_EMAIL,
       password: SUPER_ADMIN_PASSWORD,
-      email_confirm: true,
-      user_metadata: {
-        name: 'Սուպերադմինիստրատոր',
-        role: 'superadmin',
-        registration_approved: true,
-        avatar: `https://api.dicebear.com/7.x/avataaars/svg?seed=superadmin${Date.now()}`
+      options: {
+        data: {
+          name: 'Սուպերադմինիստրատոր',
+          role: 'superadmin',
+          registration_approved: true,
+          avatar: `https://api.dicebear.com/7.x/avataaars/svg?seed=superadmin${Date.now()}`
+        }
       }
     });
     

@@ -1,4 +1,3 @@
-
 import { supabase } from '@/integrations/supabase/client';
 import { User, UserRole } from '@/data/userRoles';
 import { SupabaseAdminUser } from '@/types/auth';
@@ -19,11 +18,11 @@ export const useAuthAPI = () => {
       }
 
       if (data?.user) {
-        // Ստուգել արդյոք օգտատերը հաստատված է (եթե ուսանող չէ)
-        const isApproved = data.user.user_metadata?.registration_approved || false;
+        // Ստուգել արդյոք օգտատերը հաստատված է (եթե ուսանող չէ և ոչ էլ սուպերադմին)
         const role = data.user.user_metadata?.role || 'student';
+        const isApproved = data.user.user_metadata?.registration_approved || false;
 
-        if (!isApproved && role !== 'student') {
+        if (!isApproved && role !== 'student' && role !== 'superadmin') {
           toast.error('Ձեր հաշիվը սպասում է ադմինիստրատորի հաստատման։');
           await supabase.auth.signOut();
           return false;
@@ -166,8 +165,8 @@ export const useAuthAPI = () => {
   // Գրանցման հաստատման ֆունկցիա ադմինիստրատորի համար
   const approveRegistration = async (userId: string, currentUser: User | null): Promise<boolean> => {
     try {
-      // Ստուգել արդյոք ընթացիկ օգտատերը ադմին է
-      if (!currentUser || currentUser.role !== 'admin') {
+      // Ստուգել արդյոք ընթացիկ օգտատերը ադմին է կամ սուպերադմին
+      if (!currentUser || (currentUser.role !== 'admin' && currentUser.role !== 'superadmin')) {
         toast.error('Միայն ադմինիստրատորը կարող է հաստատել գրանցումները։');
         return false;
       }
@@ -211,8 +210,8 @@ export const useAuthAPI = () => {
   // Ստանալ հաստատման սպասող օգտատերերին
   const getPendingUsers = async (currentUser: User | null): Promise<any[]> => {
     try {
-      // Ստուգել արդյոք ընթացիկ օգտատերը ադմին է
-      if (!currentUser || currentUser.role !== 'admin') {
+      // Ստուգել արդյոք ընթացիկ օգտատերը ադմին է կամ սուպերադմին
+      if (!currentUser || (currentUser.role !== 'admin' && currentUser.role !== 'superadmin')) {
         return [];
       }
 
