@@ -18,8 +18,13 @@ export const useAuthAPI = () => {
       });
 
       if (error) {
-        console.error('Login error:', error);
-        toast.error('Մուտքը չի հաջողվել: ' + error.message);
+        // Show email confirmation warning if that's the issue
+        if (error.message.includes('Email not confirmed')) {
+          toast.warning('Ձեր էլ․ հասցեն դեռ չի հաստատվել: Խնդրում ենք ստուգել Ձեր է��․ փոստը հաստատման հղումով:');
+        } else {
+          console.error('Login error:', error);
+          toast.error('Մուտքը չի հաջողվել: ' + error.message);
+        }
         return false;
       }
 
@@ -46,39 +51,6 @@ export const useAuthAPI = () => {
       return false;
     } catch (error) {
       console.error('Login error:', error);
-      return false;
-    }
-  };
-
-  // Helper function to create superadmin account if it doesn't exist
-  const createSuperAdminAccount = async (): Promise<boolean> => {
-    try {
-      const SUPER_ADMIN_EMAIL = 'superadmin@npua.am';
-      const SUPER_ADMIN_PASSWORD = 'SuperAdmin123!';
-
-      // Create the superadmin account
-      const { data, error } = await supabase.auth.signUp({
-        email: SUPER_ADMIN_EMAIL,
-        password: SUPER_ADMIN_PASSWORD,
-        options: {
-          data: {
-            name: 'Սուպերադմինիստրատոր',
-            role: 'superadmin',
-            registration_approved: true,
-            avatar: `https://api.dicebear.com/7.x/avataaars/svg?seed=superadmin${Date.now()}`
-          }
-        }
-      });
-
-      if (error) {
-        console.error('Error creating superadmin account:', error);
-        return false;
-      }
-
-      console.log('Superadmin account created successfully');
-      return true;
-    } catch (error) {
-      console.error('Error in createSuperAdminAccount:', error);
       return false;
     }
   };

@@ -1,4 +1,3 @@
-
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 
@@ -9,68 +8,69 @@ const SUPER_ADMIN_PASSWORD = 'SuperAdmin123!';
 export const loginAsSuperAdmin = async () => {
   try {
     console.log('Attempting to login as superadmin...');
-    // Ուղղակի փորձում ենք մուտք գործել որպես սուպերադմին
-    const { data, error } = await supabase.auth.signInWithPassword({
+    
+    // First check if superadmin exists by trying to sign in
+    const { data: signInData, error: signInError } = await supabase.auth.signInWithPassword({
       email: SUPER_ADMIN_EMAIL,
       password: SUPER_ADMIN_PASSWORD
     });
     
-    if (error) {
-      // Եթե սխալ է՝ ստուգում ենք, արդյոք սխալը նրանում է, որ օգտատեր չկա
-      console.log('Superadmin login error:', error.message);
-      
-      if (error.message.includes('Invalid login credentials') || error.message.includes('Email not confirmed')) {
-        console.log('Սուպերադմին օգտատերը չի գտնվել կամ չի հաստատվել: Ստեղծում ենք...');
-        // Եթե չկա, ապա ստեղծում ենք
-        return await createSuperAdmin();
-      }
-      
-      console.error('Մուտքի սխալ:', error);
-      toast.error('Չհաջողվեց մուտք գործել որպես սուպերադմին: ' + error.message);
-      return false;
+    // If login success, return true
+    if (signInData?.user) {
+      console.log('Հաջողությամբ մուտք գործվեց որպես սուպերադմին');
+      toast.success('Հաջողությամբ մուտք գործվեց որպես սուպերադմին');
+      return true;
     }
     
-    console.log('Հաջողությամբ մուտք գործվեց որպես սուպերադմին');
-    toast.success('Հաջողությամբ մուտք գործվեց որպես սուպերադմին');
-    return true;
+    // If login error due to invalid credentials or unconfirmed email, create the account
+    if (signInError) {
+      console.log('Superadmin login error:', signInError.message);
+      
+      // Try to sign up (create) the superadmin user
+      const { data: signUpData, error: signUpError } = await supabase.auth.signUp({
+        email: SUPER_ADMIN_EMAIL,
+        password: SUPER_ADMIN_PASSWORD,
+        options: {
+          data: {
+            name: 'Սուպերադմինիստրատոր',
+            role: 'superadmin',
+            registration_approved: true,
+            avatar: `https://api.dicebear.com/7.x/avataaars/svg?seed=superadmin${Date.now()}`
+          },
+          emailRedirectTo: `${window.location.origin}/login`
+        }
+      });
+      
+      if (signUpError) {
+        // If rate limited, don't show as error but suggest waiting
+        if (signUpError.message.includes('security purposes') && signUpError.message.includes('seconds')) {
+          console.log('Rate limit error:', signUpError.message);
+          toast.warning('Խնդրում ենք սպասել մի քանի վայրկյան եւ փորձել կրկին։ ' + signUpError.message);
+          return false;
+        }
+        
+        // Other signup errors
+        console.error('Չհաջողվեց ստեղծել սուպերադմին օգտատեր:', signUpError);
+        toast.error('Չհաջողվեց ստեղծել սուպերադմին օգտատեր: ' + signUpError.message);
+        return false;
+      }
+      
+      // User was created but needs email confirmation
+      if (signUpData) {
+        console.log('Սուպերադմին օգտատերը ստեղծվեց, բայց պահանջում է էլ. հասցեի հաստատում:', signUpData);
+        toast.success('Սուպերադմին հաշիվը ստեղծվել է: Խնդրում ենք ստուգել Ձեր էլ. փոստը հաստատման համար');
+        
+        // Auto-confirm for local development (requires admin key which we don't have)
+        // We'll show a message to the user instead
+        toast.info('Մուտք գործելու համար, խնդրում ենք հաստատել էլ. հասցեն կամ կապվել մշակողի հետ');
+        return false;
+      }
+    }
+    
+    return false;
   } catch (error) {
     console.error('Սխալ սուպերադմին մուտքի ժամանակ:', error);
     toast.error('Սխալ սուպերադմին մուտքի ժամանակ: ' + (error as Error).message);
-    return false;
-  }
-};
-
-// Սուպերադմին օգտատեր ստեղծող ֆունկցիա
-const createSuperAdmin = async () => {
-  try {
-    console.log('Creating superadmin account...');
-    
-    // Ստեղծում ենք սուպերադմին օգտատեր
-    const { data, error } = await supabase.auth.signUp({
-      email: SUPER_ADMIN_EMAIL,
-      password: SUPER_ADMIN_PASSWORD,
-      options: {
-        data: {
-          name: 'Սուպերադմինիստրատոր',
-          role: 'superadmin',
-          registration_approved: true,
-          avatar: `https://api.dicebear.com/7.x/avataaars/svg?seed=superadmin${Date.now()}`
-        }
-      }
-    });
-    
-    if (error) {
-      console.error('Չհաջողվեց ստեղծել սուպերադմին օգտատեր:', error);
-      toast.error('Չհաջողվեց ստեղծել սուպերադմին օգտատեր: ' + error.message);
-      return false;
-    }
-    
-    console.log('Սուպերադմին օգտատերը հաջողությամբ ստեղծվել է:', data);
-    toast.success('Սուպերադմին օգտատերը հաջողությամբ ստեղծվել է։ Կրկին սեղմեք մուտք գործելու համար։');
-    return true;
-  } catch (error) {
-    console.error('Սխալ սուպերադմին օգտատեր ստեղծելիս:', error);
-    toast.error('Սխալ սուպերադմին օգտատեր ստեղծելիս: ' + (error as Error).message);
     return false;
   }
 };

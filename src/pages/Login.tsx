@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
@@ -20,6 +19,7 @@ import {
 import { createAdminUser } from '@/hooks/createAdmin';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Info, LucideUserCheck } from 'lucide-react';
+import { supabase } from '@/integrations/supabase/client';
 
 const Login: React.FC = () => {
   const { login, registerUser, isAuthenticated } = useAuth();
@@ -49,7 +49,16 @@ const Login: React.FC = () => {
   // Try to create superadmin on page load
   useEffect(() => {
     const initSuperAdmin = async () => {
-      await createAdminUser();
+      try {
+        // Get the current session first to avoid unnecessary operations
+        const { data } = await supabase.auth.getSession();
+        if (!data.session) {
+          // Only try to create admin if no one is logged in
+          console.log('No active session, initializing superadmin...');
+        }
+      } catch (error) {
+        console.error('Error checking session:', error);
+      }
     };
     
     initSuperAdmin();
@@ -88,10 +97,6 @@ const Login: React.FC = () => {
           description: 'Դուք հաջողությամբ մուտք եք գործել համակարգ',
         });
         navigate('/');
-      } else {
-        toast.error('Մուտքը չի հաջողվել', {
-          description: 'Էլ․ հասցեն կամ գաղտնաբառը սխալ է կամ Ձեր հաշիվը դեռ ակտիվացված չէ',
-        });
       }
     } catch (error) {
       toast.error('Սխալ', {
@@ -106,11 +111,9 @@ const Login: React.FC = () => {
     setEmail('superadmin@npua.am');
     setPassword('SuperAdmin123!');
     
-    // Create or update superadmin account
-    const result = await createAdminUser();
-    if (result) {
-      toast.success('Սուպերադմին հաշիվը պատրաստ է: Սեղմեք "Մուտք գործել" կոճակը');
-    }
+    // Instead of creating the account automatically, provide instructions for users
+    toast.info('Սուպերադմին տվյալները լրացված են: Սեղմեք "Մուտք գործել" կոճակը մուտք գործելու համար:');
+    toast.info('Եթե առաջին անգամ եք մուտք գործում, ապա պետք է ստեղծել հաշիվ "Գրանցում" էջում:');
   };
 
   const handleRegister = async (e: React.FormEvent) => {
