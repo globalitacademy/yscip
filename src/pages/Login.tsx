@@ -1,25 +1,11 @@
+
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
 import { toast } from 'sonner';
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { UserRole } from '@/data/userRoles';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Checkbox } from '@/components/ui/checkbox';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import { createAdminUser } from '@/hooks/createAdmin';
-import { Alert, AlertDescription } from '@/components/ui/alert';
-import { Info, LucideUserCheck } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
+import LoginCard from '@/components/login/LoginCard';
 
 const Login: React.FC = () => {
   const { login, registerUser, isAuthenticated } = useAuth();
@@ -199,242 +185,37 @@ const Login: React.FC = () => {
     }
   };
 
-  // Role descriptions for registration form
-  const getRoleDescription = (selectedRole: UserRole) => {
-    switch (selectedRole) {
-      case 'admin':
-        return 'Կառավարել օգտատերերին, նախագծերը և համակարգը';
-      case 'lecturer':
-        return 'Ստեղծել առաջադրանքներ, գնահատել ուսանողներին';
-      case 'project_manager':
-        return 'Կառավարել նախագծերը, հետևել առաջընթացին';
-      case 'employer':
-        return 'Հայտարարել նոր նախագծեր, համագործակցել ուսանողների հետ';
-      case 'student':
-        return 'Ընտրել և կատարել նախագծեր, զարգացնել հմտություններ';
-      default:
-        return '';
-    }
-  };
-
   return (
     <div className="min-h-screen flex flex-col items-center justify-center bg-background p-4">
       <div className="w-full max-w-md">
-        <Card className="shadow-lg">
-          <CardHeader className="space-y-1 text-center">
-            <CardTitle className="text-2xl font-bold">Մուտք / Գրանցում</CardTitle>
-            <CardDescription>
-              Մուտք գործեք համակարգ կամ ստեղծեք նոր հաշիվ
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <Tabs defaultValue="login" className="w-full">
-              <TabsList className="grid w-full grid-cols-2 mb-4">
-                <TabsTrigger value="login" id="login-tab">Մուտք</TabsTrigger>
-                <TabsTrigger value="register" id="register-tab">Գրանցում</TabsTrigger>
-              </TabsList>
-              
-              <TabsContent value="login">
-                <form onSubmit={handleLogin} className="space-y-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="email">Էլ․ հասցե</Label>
-                    <Input
-                      id="email"
-                      type="email"
-                      placeholder="name@example.com"
-                      value={email}
-                      onChange={(e) => setEmail(e.target.value)}
-                      required
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="password">Գաղտնաբառ</Label>
-                    <Input
-                      id="password"
-                      type="password"
-                      placeholder="••••••••"
-                      value={password}
-                      onChange={(e) => setPassword(e.target.value)}
-                      required
-                    />
-                  </div>
-                  
-                  <div className="flex items-center justify-end">
-                    <Button variant="link" type="button" className="p-0 h-auto text-sm">
-                      Մոռացել եք գաղտնաբառը?
-                    </Button>
-                  </div>
-                  
-                  <Alert className="bg-amber-50 border-amber-200">
-                    <Info className="h-4 w-4 text-amber-700" />
-                    <AlertDescription className="text-amber-700 flex justify-between items-center">
-                      <span>Մուտք գործեք որպես Սուպերադմին</span>
-                      <Button 
-                        type="button" 
-                        variant="outline" 
-                        className="ml-2 text-xs flex items-center gap-1" 
-                        onClick={handleSuperAdminLogin}
-                      >
-                        <LucideUserCheck className="h-3 w-3" />
-                        <span>Լրացնել տվյալները</span>
-                      </Button>
-                    </AlertDescription>
-                  </Alert>
-                  
-                  <Button type="submit" className="w-full" disabled={isLoading}>
-                    {isLoading ? 'Մուտք...' : 'Մուտք գործել'}
-                  </Button>
-                </form>
-              </TabsContent>
-              
-              <TabsContent value="register">
-                <form onSubmit={handleRegister} className="space-y-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="name">Անուն Ազգանուն</Label>
-                    <Input
-                      id="name"
-                      type="text"
-                      placeholder="Անուն Ազգանուն"
-                      value={name}
-                      onChange={(e) => setName(e.target.value)}
-                      required
-                    />
-                  </div>
-                  
-                  <div className="space-y-2">
-                    <Label htmlFor="register-email">Էլ․ հասցե</Label>
-                    <Input
-                      id="register-email"
-                      type="email"
-                      placeholder="name@example.com"
-                      value={email}
-                      onChange={(e) => {
-                        setEmail(e.target.value);
-                        if (e.target.value) validateEmail(e.target.value);
-                      }}
-                      required
-                      className={emailError ? "border-red-500" : ""}
-                    />
-                    {emailError && <p className="text-sm text-red-500 mt-1">{emailError}</p>}
-                  </div>
-                  
-                  <div className="space-y-2">
-                    <Label htmlFor="register-password">Գաղտնաբառ</Label>
-                    <Input
-                      id="register-password"
-                      type="password"
-                      placeholder="••••••••"
-                      value={password}
-                      onChange={(e) => {
-                        setPassword(e.target.value);
-                        if (e.target.value) validatePassword(e.target.value);
-                        if (confirmPassword) validateConfirmPassword(confirmPassword);
-                      }}
-                      required
-                      className={passwordError ? "border-red-500" : ""}
-                    />
-                    {passwordError && <p className="text-sm text-red-500 mt-1">{passwordError}</p>}
-                  </div>
-                  
-                  <div className="space-y-2">
-                    <Label htmlFor="confirm-password">Հաստատել գաղտնաբառը</Label>
-                    <Input
-                      id="confirm-password"
-                      type="password"
-                      placeholder="••••••••"
-                      value={confirmPassword}
-                      onChange={(e) => {
-                        setConfirmPassword(e.target.value);
-                        if (e.target.value) validateConfirmPassword(e.target.value);
-                      }}
-                      required
-                      className={confirmPasswordError ? "border-red-500" : ""}
-                    />
-                    {confirmPasswordError && <p className="text-sm text-red-500 mt-1">{confirmPasswordError}</p>}
-                  </div>
-                  
-                  <div className="space-y-2">
-                    <Label htmlFor="role">Դերակատարում</Label>
-                    <Select
-                      value={role}
-                      onValueChange={(value) => setRole(value as UserRole)}
-                    >
-                      <SelectTrigger id="role">
-                        <SelectValue placeholder="Ընտրեք դերը" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="student">Ուսանող</SelectItem>
-                        <SelectItem value="lecturer">Դասախոս</SelectItem>
-                        <SelectItem value="project_manager">Նախագծի ղեկավար</SelectItem>
-                        <SelectItem value="employer">Գործատու</SelectItem>
-                      </SelectContent>
-                    </Select>
-                    <p className="text-sm text-muted-foreground mt-1">
-                      {getRoleDescription(role)}
-                    </p>
-                    
-                    {/* Show warning for roles that need approval */}
-                    {role !== 'student' && (
-                      <p className="text-sm text-amber-600 mt-2">
-                        Նշում: {role === 'employer' ? 'Գործատուի' : role === 'lecturer' ? 'Դասախոսի' : 'Ղեկավարի'} հաշիվը պետք է հաստատվի ադմինիստրատորի կողմից:
-                      </p>
-                    )}
-                  </div>
-                  
-                  {/* Show organization field only for employers */}
-                  {role === 'employer' && (
-                    <div className="space-y-2">
-                      <Label htmlFor="organization">Կազմակերպություն</Label>
-                      <Input
-                        id="organization"
-                        type="text"
-                        placeholder="Կազմակերպության անունը"
-                        value={organization}
-                        onChange={(e) => setOrganization(e.target.value)}
-                        required
-                      />
-                    </div>
-                  )}
-                  
-                  {/* Show department field for lecturers and project managers */}
-                  {(role === 'lecturer' || role === 'project_manager') && (
-                    <div className="space-y-2">
-                      <Label htmlFor="department">Ֆակուլտետ</Label>
-                      <Input
-                        id="department"
-                        type="text"
-                        placeholder="Ֆակուլտետի անունը"
-                        value={department}
-                        onChange={(e) => setDepartment(e.target.value)}
-                        required
-                      />
-                    </div>
-                  )}
-                  
-                  <div className="flex items-center space-x-2 mt-4">
-                    <Checkbox 
-                      id="terms" 
-                      checked={acceptTerms} 
-                      onCheckedChange={(checked) => setAcceptTerms(checked as boolean)}
-                    />
-                    <Label htmlFor="terms" className="text-sm">
-                      Ես համաձայն եմ <Button variant="link" className="p-0 h-auto text-sm">գաղտնիության քաղաքականության</Button> պայմաններին
-                    </Label>
-                  </div>
-                  
-                  <Button type="submit" className="w-full" disabled={isLoading}>
-                    {isLoading ? 'Գրանցում...' : 'Գրանցվել'}
-                  </Button>
-                </form>
-              </TabsContent>
-            </Tabs>
-          </CardContent>
-          <CardFooter className="flex justify-center">
-            <p className="text-sm text-muted-foreground">
-              &copy; 2023 NPUA Projects. Բոլոր իրավունքները պաշտպանված են։
-            </p>
-          </CardFooter>
-        </Card>
+        <LoginCard
+          email={email}
+          setEmail={setEmail}
+          password={password}
+          setPassword={setPassword}
+          confirmPassword={confirmPassword}
+          setConfirmPassword={setConfirmPassword}
+          name={name}
+          setName={setName}
+          role={role}
+          setRole={setRole}
+          organization={organization}
+          setOrganization={setOrganization}
+          department={department}
+          setDepartment={setDepartment}
+          acceptTerms={acceptTerms}
+          setAcceptTerms={setAcceptTerms}
+          isLoading={isLoading}
+          handleLogin={handleLogin}
+          handleRegister={handleRegister}
+          handleSuperAdminLogin={handleSuperAdminLogin}
+          emailError={emailError}
+          passwordError={passwordError}
+          confirmPasswordError={confirmPasswordError}
+          validateEmail={validateEmail}
+          validatePassword={validatePassword}
+          validateConfirmPassword={validateConfirmPassword}
+        />
       </div>
     </div>
   );
