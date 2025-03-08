@@ -17,6 +17,9 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { createAdminUser } from '@/hooks/createAdmin';
+import { Alert, AlertDescription } from '@/components/ui/alert';
+import { Info } from 'lucide-react';
 
 const Login: React.FC = () => {
   const { login, registerUser, isAuthenticated } = useAuth();
@@ -42,6 +45,15 @@ const Login: React.FC = () => {
       navigate('/');
     }
   }, [isAuthenticated, navigate]);
+
+  // Try to create superadmin on page load
+  useEffect(() => {
+    const initSuperAdmin = async () => {
+      await createAdminUser();
+    };
+    
+    initSuperAdmin();
+  }, []);
 
   // Validation functions
   const validateEmail = (email: string): boolean => {
@@ -87,6 +99,17 @@ const Login: React.FC = () => {
       });
     } finally {
       setIsLoading(false);
+    }
+  };
+
+  const handleSuperAdminLogin = async () => {
+    setEmail('superadmin@npua.am');
+    setPassword('SuperAdmin123!');
+    
+    // Create or update superadmin account
+    const result = await createAdminUser();
+    if (result) {
+      toast.success('Սուպերադմին հաշիվը պատրաստ է: Սեղմեք "Մուտք գործել" կոճակը');
     }
   };
 
@@ -238,6 +261,21 @@ const Login: React.FC = () => {
                       Մոռացել եք գաղտնաբառը?
                     </Button>
                   </div>
+                  
+                  <Alert className="bg-amber-50 border-amber-200">
+                    <Info className="h-4 w-4 text-amber-700" />
+                    <AlertDescription className="text-amber-700 flex justify-between items-center">
+                      <span>Մուտք գործեք որպես Սուպերադմին</span>
+                      <Button 
+                        type="button" 
+                        variant="outline" 
+                        className="ml-2 text-xs" 
+                        onClick={handleSuperAdminLogin}
+                      >
+                        Մուտքի տվյալներ
+                      </Button>
+                    </AlertDescription>
+                  </Alert>
                   
                   <Button type="submit" className="w-full" disabled={isLoading}>
                     {isLoading ? 'Մուտք...' : 'Մուտք գործել'}

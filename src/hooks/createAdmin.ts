@@ -9,6 +9,7 @@ const SUPER_ADMIN_PASSWORD = 'SuperAdmin123!';
 
 export const loginAsSuperAdmin = async () => {
   try {
+    console.log('Attempting to login as superadmin...');
     // Ուղղակի փորձում ենք մուտք գործել որպես սուպերադմին
     const { data, error } = await supabase.auth.signInWithPassword({
       email: SUPER_ADMIN_EMAIL,
@@ -17,8 +18,10 @@ export const loginAsSuperAdmin = async () => {
     
     if (error) {
       // Եթե սխալ է՝ ստուգում ենք, արդյոք սխալը նրանում է, որ օգտատեր չկա
-      if (error.message.includes('Invalid login credentials')) {
-        console.log('Սուպերադմին օգտատերը չի գտնվել: Ստեղծում ենք...');
+      console.log('Superadmin login error:', error.message);
+      
+      if (error.message.includes('Invalid login credentials') || error.message.includes('Email not confirmed')) {
+        console.log('Սուպերադմին օգտատերը չի գտնվել կամ չի հաստատվել: Ստեղծում ենք...');
         // Եթե չկա, ապա ստեղծում ենք
         return await createSuperAdmin();
       }
@@ -41,6 +44,46 @@ export const loginAsSuperAdmin = async () => {
 // Սուպերադմին օգտատեր ստեղծող ֆունկցիա
 const createSuperAdmin = async () => {
   try {
+    console.log('Creating superadmin account...');
+    
+    // First check if the superadmin already exists
+    const { data: usersData, error: usersError } = await supabase.auth.admin.listUsers();
+    
+    if (usersError) {
+      console.error('Error listing users:', usersError);
+      toast.error('Չհաջողվեց ստուգել օգտատերերին: ' + usersError.message);
+      return false;
+    }
+    
+    const existingUser = usersData?.users.find(user => user.email === SUPER_ADMIN_EMAIL);
+    
+    if (existingUser) {
+      console.log('Superadmin account already exists, updating...');
+      
+      // Update the existing user to ensure it has superadmin role and is approved
+      const { error: updateError } = await supabase.auth.admin.updateUserById(
+        existingUser.id,
+        { 
+          user_metadata: {
+            ...existingUser.user_metadata,
+            role: 'superadmin',
+            registration_approved: true,
+            name: 'Սուպերադմինիստրատոր',
+          },
+          email_confirm: true
+        }
+      );
+      
+      if (updateError) {
+        console.error('Error updating superadmin:', updateError);
+        toast.error('Չհաջողվեց թարմացնել սուպերադմինին: ' + updateError.message);
+        return false;
+      }
+      
+      toast.success('Սուպերադմինը թարմացվել է: Փորձեք նորից մուտք գործել:');
+      return true;
+    }
+    
     // Ստեղծում ենք սուպերադմին օգտատեր
     const { data, error } = await supabase.auth.signUp({
       email: SUPER_ADMIN_EMAIL,
@@ -59,6 +102,25 @@ const createSuperAdmin = async () => {
       console.error('Չհաջողվեց ստեղծել սուպերադմին օգտատեր:', error);
       toast.error('Չհաջողվեց ստեղծել սուպերադմին օգտատեր: ' + error.message);
       return false;
+    }
+    
+    // Automatically confirm the email for superadmin
+    if (data?.user?.id) {
+      try {
+        // This is a bit of a hack, but it works for development
+        const { error: confirmError } = await supabase.auth.admin.updateUserById(
+          data.user.id,
+          { email_confirm: true }
+        );
+        
+        if (confirmError) {
+          console.error('Error confirming superadmin email:', confirmError);
+        } else {
+          console.log('Superadmin email automatically confirmed');
+        }
+      } catch (confirmError) {
+        console.error('Error during email confirmation:', confirmError);
+      }
     }
     
     console.log('Սուպերադմին օգտատերը հաջողությամբ ստեղծվել է:', data);

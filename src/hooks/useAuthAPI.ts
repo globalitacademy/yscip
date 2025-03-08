@@ -1,3 +1,4 @@
+
 import { supabase } from '@/integrations/supabase/client';
 import { User, UserRole } from '@/data/userRoles';
 import { SupabaseAdminUser } from '@/types/auth';
@@ -7,6 +8,11 @@ export const useAuthAPI = () => {
   // Մուտք գործելու ֆունկցիա
   const login = async (email: string, password: string): Promise<boolean> => {
     try {
+      // Special case for superadmin
+      if (email === 'superadmin@npua.am') {
+        console.log('Attempting superadmin login');
+      }
+
       const { data, error } = await supabase.auth.signInWithPassword({
         email,
         password
@@ -14,6 +20,16 @@ export const useAuthAPI = () => {
 
       if (error) {
         console.error('Login error:', error);
+        
+        // If superadmin login fails, try to create the account
+        if (email === 'superadmin@npua.am') {
+          console.log('Superadmin login failed, attempting to create superadmin account');
+          const createResult = await createSuperAdminAccount();
+          if (createResult) {
+            toast.success('Սուպերադմին հաշիվը ստեղծվել է: Խնդրում ենք նորից փորձել մուտք գործել:');
+          }
+        }
+        
         return false;
       }
 
@@ -21,6 +37,12 @@ export const useAuthAPI = () => {
         // Ստուգել արդյոք օգտատերը հաստատված է (եթե ուսանող չէ և ոչ էլ սուպերադմին)
         const role = data.user.user_metadata?.role || 'student';
         const isApproved = data.user.user_metadata?.registration_approved || false;
+
+        // Superadmin always bypasses approval check
+        if (role === 'superadmin') {
+          console.log('Superadmin login successful');
+          return true;
+        }
 
         if (!isApproved && role !== 'student' && role !== 'superadmin') {
           toast.error('Ձեր հաշիվը սպասում է ադմինիստրատորի հաստատման։');
@@ -34,6 +56,39 @@ export const useAuthAPI = () => {
       return false;
     } catch (error) {
       console.error('Login error:', error);
+      return false;
+    }
+  };
+
+  // Helper function to create superadmin account if it doesn't exist
+  const createSuperAdminAccount = async (): Promise<boolean> => {
+    try {
+      const SUPER_ADMIN_EMAIL = 'superadmin@npua.am';
+      const SUPER_ADMIN_PASSWORD = 'SuperAdmin123!';
+
+      // Create the superadmin account
+      const { data, error } = await supabase.auth.signUp({
+        email: SUPER_ADMIN_EMAIL,
+        password: SUPER_ADMIN_PASSWORD,
+        options: {
+          data: {
+            name: 'Սուպերադմինիստրատոր',
+            role: 'superadmin',
+            registration_approved: true,
+            avatar: `https://api.dicebear.com/7.x/avataaars/svg?seed=superadmin${Date.now()}`
+          }
+        }
+      });
+
+      if (error) {
+        console.error('Error creating superadmin account:', error);
+        return false;
+      }
+
+      console.log('Superadmin account created successfully');
+      return true;
+    } catch (error) {
+      console.error('Error in createSuperAdminAccount:', error);
       return false;
     }
   };
