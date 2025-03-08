@@ -1,9 +1,10 @@
+
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 
 // Սուպերադմին՝ նախապես սահմանված մուտքի տվյալներով
-const SUPER_ADMIN_EMAIL = 'superadmin@npua.am';
-const SUPER_ADMIN_PASSWORD = 'SuperAdmin123!';
+const SUPER_ADMIN_EMAIL = 'gitedu@bk.ru';
+const SUPER_ADMIN_PASSWORD = 'Gev2025*';
 
 export const loginAsSuperAdmin = async () => {
   try {

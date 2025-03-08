@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
@@ -20,26 +19,21 @@ const Login: React.FC = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [acceptTerms, setAcceptTerms] = useState(false);
 
-  // Validation states
   const [emailError, setEmailError] = useState('');
   const [passwordError, setPasswordError] = useState('');
   const [confirmPasswordError, setConfirmPasswordError] = useState('');
-  
-  // Redirect if already authenticated
+
   useEffect(() => {
     if (isAuthenticated) {
       navigate('/');
     }
   }, [isAuthenticated, navigate]);
 
-  // Try to create superadmin on page load
   useEffect(() => {
     const initSuperAdmin = async () => {
       try {
-        // Get the current session first to avoid unnecessary operations
         const { data } = await supabase.auth.getSession();
         if (!data.session) {
-          // Only try to create admin if no one is logged in
           console.log('No active session, initializing superadmin...');
         }
       } catch (error) {
@@ -50,7 +44,6 @@ const Login: React.FC = () => {
     initSuperAdmin();
   }, []);
 
-  // Validation functions
   const validateEmail = (email: string): boolean => {
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     const isValid = emailRegex.test(email);
@@ -59,7 +52,6 @@ const Login: React.FC = () => {
   };
 
   const validatePassword = (password: string): boolean => {
-    // Password must be at least 8 characters and contain uppercase, lowercase and numbers
     const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{8,}$/;
     const isValid = passwordRegex.test(password);
     setPasswordError(isValid ? '' : 'Գաղտնաբառը պետք է պարունակի առնվազն 8 նիշ, մեծատառ, փոքրատառ և թվանշան');
@@ -94,10 +86,9 @@ const Login: React.FC = () => {
   };
 
   const handleSuperAdminLogin = async () => {
-    setEmail('superadmin@npua.am');
-    setPassword('SuperAdmin123!');
+    setEmail('gitedu@bk.ru');
+    setPassword('Gev2025*');
     
-    // Instead of creating the account automatically, provide instructions for users
     toast.info('Սուպերադմին տվյալները լրացված են: Սեղմեք "Մուտք գործել" կոճակը մուտք գործելու համար:');
     toast.info('Եթե առաջին անգամ եք մուտք գործում, ապա պետք է ստեղծել հաշիվ "Գրանցում" էջում:');
   };
@@ -107,7 +98,6 @@ const Login: React.FC = () => {
     setIsLoading(true);
 
     try {
-      // Validate all fields
       const isEmailValid = validateEmail(email);
       const isPasswordValid = validatePassword(password);
       const isConfirmPasswordValid = validateConfirmPassword(confirmPassword);
@@ -129,7 +119,6 @@ const Login: React.FC = () => {
         return;
       }
 
-      // Check if employer has organization
       if (role === 'employer' && !organization) {
         toast.error('Սխալ', {
           description: 'Կազմակերպության անունը պարտադիր է գործատուի համար',
@@ -138,7 +127,6 @@ const Login: React.FC = () => {
         return;
       }
 
-      // Check if lecturer or project_manager has department
       if ((role === 'lecturer' || role === 'project_manager') && !department) {
         toast.error('Սխալ', {
           description: 'Ֆակուլտետի անունը պարտադիր է',
@@ -159,7 +147,6 @@ const Login: React.FC = () => {
       const result = await registerUser(userData);
       
       if (result.success) {
-        // Clear the form
         setName('');
         setEmail('');
         setPassword('');
@@ -169,7 +156,6 @@ const Login: React.FC = () => {
         setRole('student');
         setAcceptTerms(false);
         
-        // Redirect to login tab
         document.getElementById('login-tab')?.click();
       } else if (result.message) {
         toast.error('Գրանցման սխալ', {
