@@ -1,57 +1,191 @@
 
-import React from 'react';
-import { FadeIn, SlideUp, SlideDown, StaggeredContainer } from '@/components/LocalTransitions';
-import ThemeGrid from '@/components/ThemeGrid';
-import { Button } from '@/components/ui/button';
-import { createAdminUser } from '@/hooks/createAdmin';
-import { toast } from 'sonner';
+import React, { useState, useEffect } from 'react';
 import Header from '@/components/Header';
-import Footer from '@/components/Footer';
 import Hero from '@/components/Hero';
+import ThemeGrid from '@/components/ThemeGrid';
+import Footer from '@/components/Footer';
+import { useAuth } from '@/contexts/AuthContext';
+import { toast } from 'sonner';
+import { projectThemes } from '@/data/projectThemes';
+import { Card } from '@/components/ui/card';
+import { Check, BookOpen, Clock } from 'lucide-react';
+import { Badge } from '@/components/ui/badge';
+import { Link } from 'react-router-dom';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
-const Index: React.FC = () => {
-  const handleCreateAdmin = async () => {
-    try {
-      await createAdminUser();
-    } catch (error) {
-      toast.error('Սխալ սուպերադմին մուտքի ընթացքում');
+const Index = () => {
+  const { user } = useAuth();
+  const [createdProjects, setCreatedProjects] = useState<any[]>([]);
+  const [reservedProjects, setReservedProjects] = useState<any[]>([]);
+  
+  // Load projects from localStorage
+  useEffect(() => {
+    // Get created projects
+    const storedProjects = localStorage.getItem('createdProjects');
+    if (storedProjects) {
+      try {
+        const parsedProjects = JSON.parse(storedProjects);
+        setCreatedProjects(parsedProjects);
+        console.log('Loaded created projects:', parsedProjects);
+      } catch (e) {
+        console.error('Error parsing stored projects:', e);
+      }
     }
-  };
+    
+    // Get reserved projects
+    const storedReservations = localStorage.getItem('reservedProjects');
+    if (storedReservations) {
+      try {
+        const parsedReservations = JSON.parse(storedReservations);
+        setReservedProjects(parsedReservations);
+        console.log('Loaded reserved projects:', parsedReservations);
+      } catch (e) {
+        console.error('Error parsing reserved projects:', e);
+      }
+    }
+  }, []);
+
+  // Display user role toast when logged in
+  useEffect(() => {
+    if (user) {
+      const roleMap: Record<string, string> = {
+        'student': 'Ուսանող',
+        'instructor': 'Դասախոս',
+        'admin': 'Ադմինիստրատոր',
+        'supervisor': 'Ղեկավար'
+      };
+      
+      const roleName = roleMap[user.role] || user.role;
+      
+      toast.success(`Մուտք եք գործել որպես ${roleName}`, {
+        duration: 3000,
+        position: 'top-right'
+      });
+    }
+  }, [user]);
+
+  // Filter user's reserved projects
+  const userReservedProjects = user 
+    ? reservedProjects.filter(rp => rp.userId === user.id)
+    : [];
+
+  // Find actual project details for reserved projects
+  const userReservedProjectDetails = userReservedProjects.map(rp => {
+    const project = [...projectThemes, ...createdProjects].find(p => p.id === rp.projectId);
+    return { ...rp, project };
+  }).filter(rp => rp.project); // Filter out any without matching project details
 
   return (
     <div className="min-h-screen flex flex-col">
       <Header />
       <main className="flex-grow">
-        <div className="container mx-auto px-4 py-12">
-          <Hero />
-          <FadeIn>
-            <h2 className="text-2xl font-bold mb-4 text-center">Անցումային էֆեկտներ</h2>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12">
-              <SlideUp className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md">
-                <h3 className="font-bold mb-2">Վերևից ներքև</h3>
-                <p>Այս բլոկը հայտնվում է ներքևից վերև սահելով</p>
-              </SlideUp>
-              <FadeIn className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md delay-150">
-                <h3 className="font-bold mb-2">Աստիճանաբար</h3>
-                <p>Այս բլոկը պարզապես աստիճանաբար հայտնվում է</p>
-              </FadeIn>
-              <SlideDown className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md delay-300">
-                <h3 className="font-bold mb-2">Վերևից ներքև</h3>
-                <p>Այս բլոկը հայտնվում է վերևից ներքև սահելով</p>
-              </SlideDown>
+        <Hero />
+        <div className="container mx-auto px-4 pb-16">
+          {user && userReservedProjectDetails.length > 0 && (
+            <div className="mb-12">
+              <h2 className="text-2xl font-semibold mb-6">Իմ Ամրագրված Նախագծերը</h2>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {userReservedProjectDetails.map((rp) => (
+                  <Card key={rp.projectId} className="p-6 hover:shadow-md transition-shadow">
+                    <div className="flex justify-between items-start mb-4">
+                      <h3 className="text-lg font-medium">{rp.project?.title || rp.projectTitle}</h3>
+                      <Badge variant="outline" className="bg-green-100 text-green-700">
+                        <Check size={14} className="mr-1" /> Ամրագրված
+                      </Badge>
+                    </div>
+                    
+                    <div className="flex flex-wrap gap-2 mb-4">
+                      {rp.project?.techStack?.map((tech: string, i: number) => (
+                        <Badge key={i} variant="secondary" className="text-xs">
+                          {tech}
+                        </Badge>
+                      ))}
+                    </div>
+                    
+                    <div className="flex items-center justify-between mt-4">
+                      <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                        <Clock size={14} />
+                        <span>Ամրագրվել է {new Date(rp.timestamp).toLocaleDateString('hy-AM')}</span>
+                      </div>
+                      <Link to={`/project/${rp.projectId}`} className="text-primary text-sm font-medium">
+                        Դիտել մանրամասներ
+                      </Link>
+                    </div>
+                  </Card>
+                ))}
+              </div>
             </div>
-          </FadeIn>
-          <ThemeGrid />
+          )}
           
-          <div className="mt-8 flex justify-center">
-            <Button 
-              variant="outline" 
-              onClick={handleCreateAdmin}
-              className="mb-8"
-            >
-              Մուտք որպես սուպերադմին
-            </Button>
-          </div>
+          <Tabs defaultValue="all-projects" className="mb-6">
+            <TabsList className="h-auto mb-6">
+              <TabsTrigger value="all-projects">Բոլոր Նախագծերը</TabsTrigger>
+              {user?.role !== 'student' && (
+                <TabsTrigger value="created-projects">Ստեղծված Նախագծեր</TabsTrigger>
+              )}
+              {user?.role === 'supervisor' && (
+                <TabsTrigger value="assigned-projects">Հանձնարարված Նախագծեր</TabsTrigger>
+              )}
+            </TabsList>
+            
+            <TabsContent value="all-projects">
+              <ThemeGrid 
+                createdProjects={createdProjects} 
+              />
+            </TabsContent>
+            
+            {user?.role !== 'student' && (
+              <TabsContent value="created-projects">
+                {createdProjects.length > 0 ? (
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    {createdProjects.map((project) => (
+                      <Card key={project.id} className="p-6 hover:shadow-md transition-shadow">
+                        <div className="flex justify-between items-start mb-4">
+                          <h3 className="text-lg font-medium">{project.title}</h3>
+                          <Badge variant="outline" className="bg-blue-100 text-blue-700">
+                            <BookOpen size={14} className="mr-1" /> Ստեղծված
+                          </Badge>
+                        </div>
+                        
+                        <p className="text-sm text-muted-foreground mb-4 line-clamp-2">
+                          {project.description}
+                        </p>
+                        
+                        <div className="flex flex-wrap gap-2 mb-4">
+                          {project.techStack?.map((tech: string, i: number) => (
+                            <Badge key={i} variant="secondary" className="text-xs">
+                              {tech}
+                            </Badge>
+                          ))}
+                        </div>
+                        
+                        <div className="flex items-center justify-end mt-4">
+                          <Link to={`/project/${project.id}`} className="text-primary text-sm font-medium">
+                            Դիտել մանրամասներ
+                          </Link>
+                        </div>
+                      </Card>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="text-center p-10 bg-muted rounded-lg">
+                    <p className="text-muted-foreground">Դեռևս ստեղծված նախագծեր չկան</p>
+                    <Link to="/admin" className="text-primary font-medium mt-2 inline-block">
+                      Ստեղծել նոր նախագիծ
+                    </Link>
+                  </div>
+                )}
+              </TabsContent>
+            )}
+            
+            {user?.role === 'supervisor' && (
+              <TabsContent value="assigned-projects">
+                <div className="text-center p-10 bg-muted rounded-lg">
+                  <p className="text-muted-foreground">Այս բաժինը դեռևս մշակման փուլում է։</p>
+                </div>
+              </TabsContent>
+            )}
+          </Tabs>
         </div>
       </main>
       <Footer />

@@ -1,11 +1,15 @@
 
-import React, { createContext, useContext } from 'react';
-import { AuthContextType } from '@/types/auth';
-import { useAuthSession } from '@/hooks/useAuthSession';
-import { useAuthAPI } from '@/hooks/useAuthAPI';
-import { toast } from 'sonner';
+import React, { createContext, useContext, useState, useEffect } from 'react';
+import { User, UserRole, mockUsers } from '@/data/userRoles';
 
-// AuthContext ստեղծում
+interface AuthContextType {
+  user: User | null;
+  isAuthenticated: boolean;
+  login: (email: string, password: string) => Promise<boolean>;
+  logout: () => void;
+  switchRole: (role: UserRole) => void;
+}
+
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export const useAuth = () => {
@@ -17,16 +21,45 @@ export const useAuth = () => {
 };
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const { user, isAuthenticated, loading } = useAuthSession();
-  const { login, logout, registerUser, verifyEmail, approveRegistration, getPendingUsers } = useAuthAPI();
+  const [user, setUser] = useState<User | null>(null);
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
 
-  // Helper functions to pass current user to API functions
-  const handleApproveRegistration = async (userId: string): Promise<boolean> => {
-    return approveRegistration(userId, user);
+  // Check for existing session on mount
+  useEffect(() => {
+    const storedUser = localStorage.getItem('currentUser');
+    if (storedUser) {
+      setUser(JSON.parse(storedUser));
+      setIsAuthenticated(true);
+    }
+  }, []);
+
+  const login = async (email: string, password: string): Promise<boolean> => {
+    // In a real app, this would validate credentials against a backend
+    // For demo, we'll just check if the email exists in our mock users
+    const foundUser = mockUsers.find(u => u.email.toLowerCase() === email.toLowerCase());
+    
+    if (foundUser) {
+      setUser(foundUser);
+      setIsAuthenticated(true);
+      localStorage.setItem('currentUser', JSON.stringify(foundUser));
+      return true;
+    }
+    return false;
   };
 
-  const handleGetPendingUsers = async (): Promise<any[]> => {
-    return getPendingUsers(user);
+  const logout = () => {
+    setUser(null);
+    setIsAuthenticated(false);
+    localStorage.removeItem('currentUser');
+  };
+
+  // Function to switch between roles (for demo purposes)
+  const switchRole = (role: UserRole) => {
+    const userWithRole = mockUsers.find(u => u.role === role);
+    if (userWithRole) {
+      setUser(userWithRole);
+      localStorage.setItem('currentUser', JSON.stringify(userWithRole));
+    }
   };
 
   return (
@@ -36,19 +69,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         isAuthenticated,
         login,
         logout,
-        registerUser,
-        verifyEmail,
-        approveRegistration: handleApproveRegistration,
-        getPendingUsers: handleGetPendingUsers
+        switchRole
       }}
     >
-      {loading ? (
-        <div className="min-h-screen flex items-center justify-center">
-          <div className="animate-spin rounded-full h-16 w-16 border-t-2 border-b-2 border-primary"></div>
-        </div>
-      ) : (
-        children
-      )}
+      {children}
     </AuthContext.Provider>
   );
 };

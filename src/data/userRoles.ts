@@ -1,247 +1,137 @@
 
-// User role types
-export type UserRole = 'admin' | 'lecturer' | 'project_manager' | 'employer' | 'student' | 'instructor' | 'supervisor' | 'superadmin';
+export type UserRole = 'admin' | 'supervisor' | 'instructor' | 'student';
 
-// User type for the application
 export interface User {
   id: string;
-  email: string;
   name: string;
+  email: string;
   role: UserRole;
-  registrationApproved: boolean;
   avatar?: string;
-  organization?: string;
   department?: string;
-  // Add missing properties
-  course?: string;
-  group?: string;
-  bio?: string;
-  supervisedStudents?: string[];
   assignedProjects?: number[];
+  supervisedStudents?: string[];
 }
 
-// Mock users for testing and development
+// Mock users for demo purposes
 export const mockUsers: User[] = [
   {
     id: 'admin1',
-    email: 'admin@npua.am',
     name: 'Ադմինիստրատոր',
+    email: 'admin@example.com',
     role: 'admin',
-    registrationApproved: true,
     avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=admin',
     department: 'Ինֆորմատիկայի ֆակուլտետ'
   },
   {
-    id: 'lecturer1',
-    email: 'lecturer@npua.am',
-    name: 'Վահան Պետրոսյան',
-    role: 'lecturer',
-    registrationApproved: true,
-    avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=lecturer',
-    department: 'Ինֆորմատիկայի ֆակուլտետ'
-  },
-  {
     id: 'supervisor1',
-    email: 'supervisor@npua.am',
-    name: 'Արամ Հակոբյան',
+    name: 'Ծրագրի ղեկավար',
+    email: 'supervisor@example.com',
     role: 'supervisor',
-    registrationApproved: true,
     avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=supervisor',
     department: 'Ինֆորմատիկայի ֆակուլտետ',
     supervisedStudents: ['student1', 'student2']
   },
   {
-    id: 'student1',
-    email: 'student1@npua.am',
-    name: 'Արման Մկրտչյան',
-    role: 'student',
-    registrationApproved: true,
-    avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=student1',
-    department: 'Ինֆորմատիկայի ֆակուլտետ',
-    course: '3',
-    group: 'ԿՄ-021'
-  },
-  {
-    id: 'student2',
-    email: 'student2@npua.am',
-    name: 'Անահիտ Սարգսյան',
-    role: 'student',
-    registrationApproved: true,
-    avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=student2',
-    department: 'Ինֆորմատիկայի ֆակուլտետ',
-    course: '2',
-    group: 'ԿՄ-031'
-  },
-  {
-    id: 'employer1',
-    email: 'employer@example.com',
-    name: 'Սամվել Գևորգյան',
-    role: 'employer',
-    registrationApproved: true,
-    avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=employer',
-    organization: 'SoftDev LLC'
-  },
-  {
     id: 'instructor1',
-    email: 'instructor@npua.am',
-    name: 'Կարեն Մանուկյան',
+    name: 'Դասախոս',
+    email: 'instructor@example.com',
     role: 'instructor',
-    registrationApproved: true,
     avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=instructor',
     department: 'Ինֆորմատիկայի ֆակուլտետ',
     assignedProjects: [1, 2, 3]
   },
   {
-    id: 'project_manager1',
-    email: 'pm@npua.am',
-    name: 'Տիգրան Հայրապետյան',
-    role: 'project_manager',
-    registrationApproved: true,
-    avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=pm',
+    id: 'student1',
+    name: 'Ուսանող',
+    email: 'student@example.com',
+    role: 'student',
+    avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=student',
+    department: 'Ինֆորմատիկայի ֆակուլտետ'
+  },
+  {
+    id: 'student2',
+    name: 'Երկրորդ Ուսանող',
+    email: 'student2@example.com',
+    role: 'student',
+    avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=student2',
     department: 'Ինֆորմատիկայի ֆակուլտետ'
   }
 ];
 
-// Define available permissions for different roles
+// Role permissions
 export const rolePermissions = {
-  superadmin: {
-    canManageUsers: true,
-    canManageProjects: true,
-    canManageCourses: true,
-    canManageOrganizations: true,
-    canApproveProjects: true,
-    canViewAllProjects: true,
-    canAddTimeline: true,
-    canApproveTimelineEvents: true,
-    canAddTasks: true,
-    canSubmitProject: true,
-    canApproveProject: true,
-    canCreateProjects: true,
-    canAssignProjects: true
-  },
   admin: {
-    canManageUsers: true,
-    canManageProjects: true,
-    canManageCourses: true,
-    canManageOrganizations: true,
-    canApproveProjects: true,
-    canViewAllProjects: true,
     canAddTimeline: true,
+    canEditTimeline: true,
     canApproveTimelineEvents: true,
     canAddTasks: true,
-    canSubmitProject: false,
+    canAssignTasks: true,
     canApproveProject: true,
-    canCreateProjects: true,
-    canAssignProjects: true
-  },
-  lecturer: {
-    canManageStudents: true,
-    canManageCourses: true,
-    canViewStudentProjects: true,
-    canEvaluateProjects: true,
-    canAddTimeline: true,
-    canApproveTimelineEvents: true,
-    canAddTasks: true,
     canSubmitProject: false,
-    canApproveProject: true,
+    canCreateUsers: true,
+    canAssignInstructors: true,
+    canAssignSupervisors: true,
     canCreateProjects: true,
-    canAssignProjects: true
-  },
-  project_manager: {
-    canManageProjects: true,
     canAssignProjects: true,
     canViewAllProjects: true,
-    canAddTimeline: true,
-    canApproveTimelineEvents: true,
-    canAddTasks: true,
-    canSubmitProject: false,
-    canApproveProject: true,
-    canCreateProjects: true
+    canManageUsers: true
   },
   supervisor: {
-    canReviewProjects: true,
-    canMentor: true,
-    canEvaluateProjects: true,
     canAddTimeline: true,
+    canEditTimeline: true,
     canApproveTimelineEvents: true,
     canAddTasks: true,
-    canSubmitProject: false,
+    canAssignTasks: true,
     canApproveProject: true,
-    canCreateProjects: false,
-    canAssignProjects: false
+    canSubmitProject: false,
+    canCreateUsers: false,
+    canAssignInstructors: false,
+    canAssignSupervisors: false,
+    canCreateProjects: true,
+    canAssignProjects: true,
+    canViewAllProjects: true,
+    canManageUsers: false
   },
   instructor: {
-    canTeach: true,
-    canGrade: true,
     canAddTimeline: true,
+    canEditTimeline: false,
     canApproveTimelineEvents: true,
     canAddTasks: true,
-    canSubmitProject: false,
+    canAssignTasks: true,
     canApproveProject: true,
+    canSubmitProject: false,
+    canCreateUsers: false,
+    canAssignInstructors: false,
+    canAssignSupervisors: false,
     canCreateProjects: true,
-    canAssignProjects: true
-  },
-  employer: {
-    canSubmitProjects: true,
-    canViewOwnProjects: true,
-    canAddTimeline: false,
-    canApproveTimelineEvents: false,
-    canAddTasks: false,
-    canSubmitProject: true,
-    canApproveProject: false,
-    canCreateProjects: true,
-    canAssignProjects: false
+    canAssignProjects: false,
+    canViewAllProjects: false,
+    canManageUsers: false
   },
   student: {
-    canSelectProjects: true,
-    canSubmitWork: true,
-    canViewAssignedProjects: true,
     canAddTimeline: false,
+    canEditTimeline: false,
     canApproveTimelineEvents: false,
     canAddTasks: false,
-    canSubmitProject: true,
+    canAssignTasks: false,
     canApproveProject: false,
+    canSubmitProject: true,
+    canCreateUsers: false,
+    canAssignInstructors: false,
+    canAssignSupervisors: false,
     canCreateProjects: false,
-    canAssignProjects: false
-  },
+    canAssignProjects: false,
+    canViewAllProjects: false,
+    canManageUsers: false
+  }
 };
 
-// Get current user (mock function for now)
 export const getCurrentUser = (): User => {
-  // In a real application, this would get the current user from context or session
-  return mockUsers[0]; // Return admin user as default
+  // This would typically come from authentication
+  // For demo purposes, we'll default to the student
+  return mockUsers.find(user => user.role === 'student') || mockUsers[3];
 };
 
-// Get users by role
 export const getUsersByRole = (role: UserRole): User[] => {
   return mockUsers.filter(user => user.role === role);
-};
-
-// Get available courses
-export const getCourses = (): string[] => {
-  return ['1', '2', '3', '4', '5'];
-};
-
-// Get groups by course
-export const getGroups = (course?: string): string[] => {
-  if (!course) return [];
-  
-  const groups: Record<string, string[]> = {
-    '1': ['ԿՄ-011', 'ԿՄ-012', 'ԿՄ-013'],
-    '2': ['ԿՄ-021', 'ԿՄ-022', 'ԿՄ-023'],
-    '3': ['ԿՄ-031', 'ԿՄ-032', 'ԿՄ-033'],
-    '4': ['ԿՄ-041', 'ԿՄ-042', 'ԿՄ-043'],
-    '5': ['ԿՄ-051', 'ԿՄ-052', 'ԿՄ-053'],
-  };
-  
-  return groups[course] || [];
-};
-
-// Get students by course and group
-export const getStudentsByCourseAndGroup = (course?: string, group?: string): User[] => {
-  if (!course || !group) return [];
-  
-  return mockUsers.filter(
-    user => user.role === 'student' && user.course === course && user.group === group
-  );
 };
