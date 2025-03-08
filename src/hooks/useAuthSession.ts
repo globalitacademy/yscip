@@ -2,13 +2,12 @@
 import { useState, useEffect } from 'react';
 import { User } from '@/data/userRoles';
 import { supabase } from '@/integrations/supabase/client';
-import { useAuthAPI } from './useAuthAPI';
+import { mapSupabaseUserToUser } from './auth/authUtils';
 
 export const useAuthSession = () => {
   const [user, setUser] = useState<User | null>(null);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [loading, setLoading] = useState(true);
-  const { mapSupabaseUserToUser } = useAuthAPI();
 
   useEffect(() => {
     const checkSession = async () => {
