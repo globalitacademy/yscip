@@ -24,6 +24,6 @@ export const useProjectPermissions = (userRole?: string): UserPermissions => {
     canSubmitProject: permissions.canSubmitProject || false,
     canApproveProject: permissions.canApproveProject || false,
     canCreateProjects: permissions.canCreateProjects || false,
-    canAssignProjects: 'canAssignProjects' in permissions ? permissions.canAssignProjects : false,
+    canAssignProjects: permissions.canAssignProjects || false,
   };
 };
