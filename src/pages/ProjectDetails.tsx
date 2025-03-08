@@ -26,12 +26,12 @@ import TaskManager from '@/components/TaskManager';
 import ProjectApproval from '@/components/ProjectApproval';
 import { ProjectProvider, useProject } from '@/contexts/ProjectContext';
 import { v4 as uuidv4 } from 'uuid';
+import { getProjectImage } from '@/lib/getProjectImage';
 
 const ProjectDetailsContent: React.FC = () => {
   const { project, timeline, tasks, projectStatus, addTimelineEvent, completeTimelineEvent, addTask, updateTaskStatus, submitProject, approveProject, rejectProject, reserveProject, isReserved } = useProject();
   const navigate = useNavigate();
   
-  // Find similar projects based on category or tech stack
   const similarProjects = projectThemes
     .filter(p => p.id !== project?.id && 
       (p.category === project?.category || 
@@ -61,7 +61,7 @@ const ProjectDetailsContent: React.FC = () => {
     Առաջադեմ: 'bg-red-500/10 text-red-600 border-red-200',
   }[project.complexity];
   
-  const fallbackImage = "https://images.unsplash.com/photo-1488590528505-98d2b5aba04b?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1470&q=80";
+  const imageUrl = getProjectImage(project);
 
   return (
     <div className="min-h-screen flex flex-col">
@@ -69,13 +69,11 @@ const ProjectDetailsContent: React.FC = () => {
       
       <main className="flex-grow">
         <div className="container px-4 mx-auto py-8 max-w-6xl">
-          {/* Back button */}
           <Link to="/" className="mb-6 inline-flex items-center text-sm text-muted-foreground hover:text-primary transition-colors">
             <ArrowLeft size={16} className="mr-1" /> Վերադառնալ բոլոր պրոեկտների ցանկին
           </Link>
           
           <FadeIn>
-            {/* Project header */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-12">
               <div className="md:col-span-2">
                 <Badge variant="outline" className={cn("font-medium mb-3", complexityColor)}>
@@ -122,7 +120,7 @@ const ProjectDetailsContent: React.FC = () => {
               
               <div className="rounded-lg overflow-hidden border border-border h-64 md:h-auto">
                 <img 
-                  src={project.image || fallbackImage} 
+                  src={imageUrl} 
                   alt={project.title}
                   className="w-full h-full object-cover"
                 />
@@ -147,7 +145,6 @@ const ProjectDetailsContent: React.FC = () => {
               <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
                 <div className="md:col-span-2">
                   <SlideUp className="space-y-8">
-                    {/* Detailed description */}
                     <section>
                       <h2 className="text-2xl font-bold mb-4">Նախագծի նկարագրություն</h2>
                       <div className="prose prose-slate max-w-none">
@@ -155,7 +152,6 @@ const ProjectDetailsContent: React.FC = () => {
                       </div>
                     </section>
                     
-                    {/* Steps */}
                     <section>
                       <h2 className="text-2xl font-bold mb-4">Իրականացման քայլեր</h2>
                       <div className="space-y-3 relative">
@@ -173,7 +169,6 @@ const ProjectDetailsContent: React.FC = () => {
                       </div>
                     </section>
                     
-                    {/* Learning outcomes */}
                     {project.learningOutcomes && (
                       <section>
                         <h2 className="text-2xl font-bold mb-4">Ինչ կսովորեք</h2>
@@ -192,7 +187,6 @@ const ProjectDetailsContent: React.FC = () => {
                 
                 <div>
                   <SlideUp className="space-y-8">
-                    {/* Prerequisites */}
                     {project.prerequisites && (
                       <div className="border border-border rounded-lg p-6">
                         <h3 className="text-lg font-medium mb-3 flex items-center">
@@ -211,7 +205,6 @@ const ProjectDetailsContent: React.FC = () => {
                       </div>
                     )}
                     
-                    {/* Related projects */}
                     {similarProjects.length > 0 && (
                       <div className="border border-border rounded-lg p-6">
                         <h3 className="text-lg font-medium mb-3">Նմանատիպ պրոեկտներ</h3>
@@ -225,7 +218,7 @@ const ProjectDetailsContent: React.FC = () => {
                             >
                               <div className="w-16 h-16 rounded overflow-hidden flex-shrink-0">
                                 <img 
-                                  src={relatedProject.image || fallbackImage} 
+                                  src={getProjectImage(relatedProject)} 
                                   alt={relatedProject.title}
                                   className="w-full h-full object-cover"
                                 />

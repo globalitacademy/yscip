@@ -11,7 +11,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger
 } from '@/components/ui/dropdown-menu';
-import { LogOut, User, UserCog, UserCog2, GraduationCap, ChevronDown } from 'lucide-react';
+import { LogOut, User, UserCog, GraduationCap, ChevronDown, Building, School } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { mockUsers } from '@/data/userRoles';
 
@@ -30,11 +30,15 @@ const UserMenu: React.FC = () => {
   const getRoleIcon = (role: string) => {
     switch (role) {
       case 'admin':
-        return <UserCog2 className="h-4 w-4 mr-2" />;
+        return <UserCog className="h-4 w-4 mr-2" />;
+      case 'project_manager':
       case 'supervisor':
         return <UserCog className="h-4 w-4 mr-2" />;
+      case 'lecturer':
       case 'instructor':
-        return <User className="h-4 w-4 mr-2" />;
+        return <School className="h-4 w-4 mr-2" />;
+      case 'employer':
+        return <Building className="h-4 w-4 mr-2" />;
       case 'student':
         return <GraduationCap className="h-4 w-4 mr-2" />;
       default:
@@ -46,10 +50,16 @@ const UserMenu: React.FC = () => {
     switch (role) {
       case 'admin':
         return 'Ադմինիստրատոր';
+      case 'project_manager':
+        return 'Նախագծի ղեկավար';
       case 'supervisor':
-        return 'Ծրագրի ղեկավար';
+        return 'Ղեկավար';
+      case 'lecturer':
+        return 'Դասախոս';
       case 'instructor':
         return 'Դասախոս';
+      case 'employer':
+        return 'Գործատու';
       case 'student':
         return 'Ուսանող';
       default:
@@ -85,7 +95,7 @@ const UserMenu: React.FC = () => {
         <DropdownMenuLabel>Փոխել դերը (Դեմո)</DropdownMenuLabel>
         
         {mockUsers
-          .filter(u => u.id !== user.id)
+          .filter(u => u.id !== user.id && u.registrationApproved)
           .map(u => (
             <DropdownMenuItem key={u.id} onClick={() => switchRole(u.role)}>
               <div className="flex items-center">

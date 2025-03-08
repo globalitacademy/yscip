@@ -1,6 +1,6 @@
 
 import React, { useState } from 'react';
-import { User, UserRole, mockUsers } from '@/data/userRoles';
+import { User, UserRole, mockUsers, getCourses, getGroups } from '@/data/userRoles';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -22,9 +22,9 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { toast } from "@/components/ui/use-toast";
+import { toast } from "sonner";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Plus, Pencil, Trash, UserPlus, Users } from 'lucide-react';
+import { Plus, Pencil, Trash, UserPlus, Users, GraduationCap, BookOpen } from 'lucide-react';
 
 interface UserManagementProps {
   // Props can be added if needed
@@ -33,20 +33,22 @@ interface UserManagementProps {
 const UserManagement: React.FC<UserManagementProps> = () => {
   const [users, setUsers] = useState<User[]>(mockUsers);
   const [openNewUser, setOpenNewUser] = useState(false);
+  const [openEditUser, setOpenEditUser] = useState<string | null>(null);
   const [newUser, setNewUser] = useState<Partial<User>>({
     name: '',
     email: '',
     role: 'student',
-    department: 'Ինֆորմատիկայի ֆակուլտետ'
+    department: 'Ինֆորմատիկայի ֆակուլտետ',
+    course: '',
+    group: ''
   });
+  
+  const courseOptions = getCourses();
+  const groupOptions = getGroups(newUser.course);
 
   const handleCreateUser = () => {
     if (!newUser.name || !newUser.email || !newUser.role) {
-      toast({
-        title: "Սխալ",
-        description: "Խնդրում ենք լրացնել բոլոր պարտադիր դաշտերը",
-        variant: "destructive",
-      });
+      toast.error("Խնդրում ենք լրացնել բոլոր պարտադիր դաշտերը");
       return;
     }
 
@@ -57,7 +59,9 @@ const UserManagement: React.FC<UserManagementProps> = () => {
       email: newUser.email,
       role: newUser.role as UserRole,
       department: newUser.department,
-      avatar: `https://api.dicebear.com/7.x/avataaars/svg?seed=${id}`
+      avatar: `https://api.dicebear.com/7.x/avataaars/svg?seed=${id}`,
+      course: newUser.role === 'student' ? newUser.course : undefined,
+      group: newUser.role === 'student' ? newUser.group : undefined
     };
 
     setUsers(prev => [...prev, createdUser]);
@@ -65,19 +69,66 @@ const UserManagement: React.FC<UserManagementProps> = () => {
       name: '',
       email: '',
       role: 'student',
-      department: 'Ինֆորմատիկայի ֆակուլտետ'
+      department: 'Ինֆորմատիկայի ֆակուլտետ',
+      course: '',
+      group: ''
     });
     setOpenNewUser(false);
 
-    toast({
-      title: "Օգտատերը ստեղծված է",
-      description: `${createdUser.name} օգտատերը հաջողությամբ ստեղծվել է։`,
+    toast.success(`${createdUser.name} օգտատերը հաջողությամբ ստեղծվել է։`);
+  };
+
+  const handleEditUser = (userId: string) => {
+    const user = users.find(u => u.id === userId);
+    if (!user) return;
+    
+    setNewUser({
+      name: user.name,
+      email: user.email,
+      role: user.role,
+      department: user.department,
+      course: user.course,
+      group: user.group
     });
+    
+    setOpenEditUser(userId);
+  };
+  
+  const handleUpdateUser = () => {
+    if (!openEditUser) return;
+    
+    setUsers(prev => prev.map(user => {
+      if (user.id === openEditUser) {
+        return {
+          ...user,
+          name: newUser.name || user.name,
+          email: newUser.email || user.email,
+          role: newUser.role as UserRole || user.role,
+          department: newUser.department || user.department,
+          course: newUser.role === 'student' ? newUser.course : undefined,
+          group: newUser.role === 'student' ? newUser.group : undefined
+        };
+      }
+      return user;
+    }));
+    
+    setNewUser({
+      name: '',
+      email: '',
+      role: 'student',
+      department: 'Ինֆորմատիկայի ֆակուլտետ',
+      course: '',
+      group: ''
+    });
+    
+    setOpenEditUser(null);
+    toast.success("Օգտատիրոջ տվյալները հաջողությամբ թարմացվել են։");
   };
 
   const handleAssignSupervisor = (studentId: string, supervisorId: string) => {
     setUsers(prev => prev.map(user => {
-      if (user.id === supervisorId) {
+      if (user.id === supervisorId && 
+         (user.role === 'supervisor' || user.role === 'project_manager')) {
         return {
           ...user,
           supervisedStudents: [...(user.supervisedStudents || []), studentId]
@@ -86,26 +137,24 @@ const UserManagement: React.FC<UserManagementProps> = () => {
       return user;
     }));
 
-    toast({
-      title: "Ղեկավարը նշանակված է",
-      description: "Ուսանողին հաջողությամբ նշանակվել է ղեկավար։",
-    });
+    toast.success("Ուսանողին հաջողությամբ նշանակվել է ղեկավար։");
   };
 
   const handleDeleteUser = (userId: string) => {
     setUsers(prev => prev.filter(user => user.id !== userId));
     
-    toast({
-      title: "Օգտատերը ջնջված է",
-      description: "Օգտատերը հաջողությամբ ջնջվել է համակարգից։",
-    });
+    toast.success("Օգտատերը հաջողությամբ ջնջվել է համակարգից։");
   };
 
-  const supervisors = users.filter(user => user.role === 'supervisor');
+  const supervisors = users.filter(user => 
+    user.role === 'supervisor' || user.role === 'project_manager'
+  );
   const students = users.filter(user => user.role === 'student');
+  
+  const showStudentFields = newUser.role === 'student';
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-8 text-left">
       <div className="flex justify-between items-center">
         <h2 className="text-2xl font-bold">Օգտատերերի կառավարում</h2>
         <Dialog open={openNewUser} onOpenChange={setOpenNewUser}>
@@ -154,8 +203,11 @@ const UserManagement: React.FC<UserManagementProps> = () => {
                   <SelectContent>
                     <SelectItem value="admin">Ադմինիստրատոր</SelectItem>
                     <SelectItem value="supervisor">Ծրագրի ղեկավար</SelectItem>
+                    <SelectItem value="project_manager">Պրոեկտի մենեջեր</SelectItem>
                     <SelectItem value="instructor">Դասախոս</SelectItem>
+                    <SelectItem value="lecturer">Դասախոս</SelectItem>
                     <SelectItem value="student">Ուսանող</SelectItem>
+                    <SelectItem value="employer">Գործատու</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
@@ -168,6 +220,39 @@ const UserManagement: React.FC<UserManagementProps> = () => {
                   placeholder="Օրինակ՝ Ինֆորմատիկայի ֆակուլտետ"
                 />
               </div>
+              
+              {showStudentFields && (
+                <>
+                  <div className="grid gap-2">
+                    <Label htmlFor="course">Կուրս</Label>
+                    <Select
+                      value={newUser.course}
+                      onValueChange={(value) => setNewUser(prev => ({ ...prev, course: value }))}
+                    >
+                      <SelectTrigger id="course">
+                        <SelectValue placeholder="Ընտրեք կուրսը" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="1">1-ին կուրս</SelectItem>
+                        <SelectItem value="2">2-րդ կուրս</SelectItem>
+                        <SelectItem value="3">3-րդ կուրս</SelectItem>
+                        <SelectItem value="4">4-րդ կուրս</SelectItem>
+                        <SelectItem value="5">5-րդ կուրս</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  
+                  <div className="grid gap-2">
+                    <Label htmlFor="group">Խումբ</Label>
+                    <Input
+                      id="group"
+                      value={newUser.group}
+                      onChange={(e) => setNewUser(prev => ({ ...prev, group: e.target.value }))}
+                      placeholder="Օրինակ՝ ԿՄ-021"
+                    />
+                  </div>
+                </>
+              )}
             </div>
             <DialogFooter>
               <Button variant="outline" onClick={() => setOpenNewUser(false)}>Չեղարկել</Button>
@@ -186,11 +271,12 @@ const UserManagement: React.FC<UserManagementProps> = () => {
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead className="w-[50px]">ID</TableHead>
-                <TableHead>Օգտատեր</TableHead>
-                <TableHead>Էլ․ հասցե</TableHead>
-                <TableHead>Դերակատարում</TableHead>
-                <TableHead>Ֆակուլտետ</TableHead>
+                <TableHead className="w-[50px] text-left">ID</TableHead>
+                <TableHead className="text-left">Օգտատեր</TableHead>
+                <TableHead className="text-left">Էլ․ հասցե</TableHead>
+                <TableHead className="text-left">Դերակատարում</TableHead>
+                <TableHead className="text-left">Ֆակուլտետ</TableHead>
+                <TableHead className="text-left">Կուրս/Խումբ</TableHead>
                 <TableHead className="text-right">Գործողություններ</TableHead>
               </TableRow>
             </TableHeader>
@@ -211,10 +297,18 @@ const UserManagement: React.FC<UserManagementProps> = () => {
                   <TableCell>
                     {user.role === 'admin' && 'Ադմինիստրատոր'}
                     {user.role === 'supervisor' && 'Ծրագրի ղեկավար'}
+                    {user.role === 'project_manager' && 'Պրոեկտի մենեջեր'}
                     {user.role === 'instructor' && 'Դասախոս'}
+                    {user.role === 'lecturer' && 'Դասախոս'}
+                    {user.role === 'employer' && 'Գործատու'}
                     {user.role === 'student' && 'Ուսանող'}
                   </TableCell>
                   <TableCell>{user.department}</TableCell>
+                  <TableCell>
+                    {user.role === 'student' && user.course && user.group ? 
+                      `${user.course}-րդ կուրս, ${user.group}` : 
+                      ''}
+                  </TableCell>
                   <TableCell className="text-right">
                     <div className="flex justify-end gap-2">
                       {user.role === 'student' && (
@@ -252,13 +346,95 @@ const UserManagement: React.FC<UserManagementProps> = () => {
                           </DialogContent>
                         </Dialog>
                       )}
-                      <Button variant="outline" size="icon">
-                        <Pencil size={14} />
-                      </Button>
+                      <Dialog open={openEditUser === user.id} onOpenChange={(open) => {
+                        if (open) {
+                          handleEditUser(user.id);
+                        } else {
+                          setOpenEditUser(null);
+                        }
+                      }}>
+                        <DialogTrigger asChild>
+                          <Button variant="outline" size="icon" title="Խմբագրել">
+                            <Pencil size={14} />
+                          </Button>
+                        </DialogTrigger>
+                        <DialogContent>
+                          <DialogHeader>
+                            <DialogTitle>Խմբագրել օգտատիրոջը</DialogTitle>
+                            <DialogDescription>
+                              Փոփոխեք {user.name} օգտատիրոջ տվյալները։
+                            </DialogDescription>
+                          </DialogHeader>
+                          <div className="grid gap-4 py-4">
+                            <div className="grid gap-2">
+                              <Label htmlFor="edit-name">Անուն Ազգանուն</Label>
+                              <Input
+                                id="edit-name"
+                                value={newUser.name}
+                                onChange={(e) => setNewUser(prev => ({ ...prev, name: e.target.value }))}
+                              />
+                            </div>
+                            <div className="grid gap-2">
+                              <Label htmlFor="edit-email">Էլ․ հասցե</Label>
+                              <Input
+                                id="edit-email"
+                                type="email"
+                                value={newUser.email}
+                                onChange={(e) => setNewUser(prev => ({ ...prev, email: e.target.value }))}
+                              />
+                            </div>
+                            <div className="grid gap-2">
+                              <Label htmlFor="edit-department">Ֆակուլտետ</Label>
+                              <Input
+                                id="edit-department"
+                                value={newUser.department}
+                                onChange={(e) => setNewUser(prev => ({ ...prev, department: e.target.value }))}
+                              />
+                            </div>
+                            
+                            {showStudentFields && (
+                              <>
+                                <div className="grid gap-2">
+                                  <Label htmlFor="edit-course">Կուրս</Label>
+                                  <Select
+                                    value={newUser.course}
+                                    onValueChange={(value) => setNewUser(prev => ({ ...prev, course: value }))}
+                                  >
+                                    <SelectTrigger id="edit-course">
+                                      <SelectValue placeholder="Ընտրեք կուրսը" />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                      <SelectItem value="1">1-ին կուրս</SelectItem>
+                                      <SelectItem value="2">2-րդ կուրս</SelectItem>
+                                      <SelectItem value="3">3-րդ կուրս</SelectItem>
+                                      <SelectItem value="4">4-րդ կուրս</SelectItem>
+                                      <SelectItem value="5">5-րդ կուրս</SelectItem>
+                                    </SelectContent>
+                                  </Select>
+                                </div>
+                                
+                                <div className="grid gap-2">
+                                  <Label htmlFor="edit-group">Խումբ</Label>
+                                  <Input
+                                    id="edit-group"
+                                    value={newUser.group}
+                                    onChange={(e) => setNewUser(prev => ({ ...prev, group: e.target.value }))}
+                                  />
+                                </div>
+                              </>
+                            )}
+                          </div>
+                          <DialogFooter>
+                            <Button variant="outline" onClick={() => setOpenEditUser(null)}>Չեղարկել</Button>
+                            <Button onClick={handleUpdateUser}>Պահպանել</Button>
+                          </DialogFooter>
+                        </DialogContent>
+                      </Dialog>
                       <Button 
                         variant="destructive" 
                         size="icon"
                         onClick={() => handleDeleteUser(user.id)}
+                        title="Ջնջել"
                       >
                         <Trash size={14} />
                       </Button>

@@ -5,6 +5,7 @@ import { cn } from '@/lib/utils';
 import { ProjectTheme } from '@/data/projectThemes';
 import { ArrowRight, Code, Layers, FileCheck, Clock } from 'lucide-react';
 import { Link } from 'react-router-dom';
+import { getProjectImage } from '@/lib/getProjectImage';
 
 interface ProjectCardProps {
   project: ProjectTheme;
@@ -18,8 +19,8 @@ const ProjectCard: React.FC<ProjectCardProps> = ({ project, className }) => {
     Առաջադեմ: 'bg-red-500/10 text-red-600 border-red-200',
   }[project.complexity];
 
-  // Fallback image if none provided
-  const imageUrl = project.image || "https://images.unsplash.com/photo-1488590528505-98d2b5aba04b?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1470&q=80";
+  // Use the image utility function
+  const imageUrl = getProjectImage(project);
 
   return (
     <Link 

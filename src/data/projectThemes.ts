@@ -32,6 +32,11 @@ export interface ProjectTheme {
   learningOutcomes?: string[];
   timeline?: TimelineEvent[];
   tasks?: Task[];
+  createdBy?: string;
+  createdAt?: string;
+  assignedInstructor?: string;
+  assignedInstructorName?: string;
+  assignedGroups?: string[];
 }
 
 // Import all project categories
