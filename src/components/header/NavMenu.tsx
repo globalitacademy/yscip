@@ -1,9 +1,11 @@
 
 import React from 'react';
-import { Link } from 'react-router-dom';
-import { Button } from '@/components/ui/button';
-import { LayoutDashboard, GraduationCap, BookOpen, ClipboardList, Users, Building, FileText } from 'lucide-react';
-import { User } from '@/contexts/auth/types';
+import { User } from '@/types/auth.types';
+import AdminNav from './nav/AdminNav';
+import TeacherNav from './nav/TeacherNav';
+import ProjectManagerNav from './nav/ProjectManagerNav';
+import EmployerNav from './nav/EmployerNav';
+import StudentNav from './nav/StudentNav';
 
 interface NavMenuProps {
   user: User | null;
@@ -14,114 +16,21 @@ const NavMenu: React.FC<NavMenuProps> = ({ user }) => {
   
   switch (user.role) {
     case 'admin':
-      return (
-        <div className="flex items-center gap-1 sm:gap-2 md:gap-4 overflow-x-auto hide-scrollbar">
-          <Link to="/admin">
-            <Button variant="outline" size="sm" className="gap-1 whitespace-nowrap">
-              <LayoutDashboard size={16} />
-              <span className="hidden md:inline">Կառավարման վահանակ</span>
-            </Button>
-          </Link>
-          <Link to="/users">
-            <Button variant="outline" size="sm" className="gap-1 whitespace-nowrap">
-              <Users size={16} />
-              <span className="hidden md:inline">Օգտատերեր</span>
-            </Button>
-          </Link>
-          <Link to="/organizations">
-            <Button variant="outline" size="sm" className="gap-1 whitespace-nowrap">
-              <Building size={16} />
-              <span className="hidden md:inline">Կազմակերպություններ</span>
-            </Button>
-          </Link>
-        </div>
-      );
+      return <AdminNav />;
     
     case 'lecturer':
     case 'instructor':
-      return (
-        <div className="flex items-center gap-1 sm:gap-2 md:gap-4 overflow-x-auto hide-scrollbar">
-          <Link to="/courses">
-            <Button variant="outline" size="sm" className="gap-1 whitespace-nowrap">
-              <BookOpen size={16} />
-              <span className="hidden md:inline">Կուրսեր</span>
-            </Button>
-          </Link>
-          <Link to="/tasks">
-            <Button variant="outline" size="sm" className="gap-1 whitespace-nowrap">
-              <ClipboardList size={16} />
-              <span className="hidden md:inline">Առաջադրանքներ</span>
-            </Button>
-          </Link>
-          <Link to="/groups">
-            <Button variant="outline" size="sm" className="gap-1 whitespace-nowrap">
-              <Users size={16} />
-              <span className="hidden md:inline">Խմբեր</span>
-            </Button>
-          </Link>
-        </div>
-      );
+      return <TeacherNav />;
     
     case 'project_manager':
     case 'supervisor':
-      return (
-        <div className="flex items-center gap-1 sm:gap-2 md:gap-4 overflow-x-auto hide-scrollbar">
-          <Link to="/projects/manage">
-            <Button variant="outline" size="sm" className="gap-1 whitespace-nowrap">
-              <LayoutDashboard size={16} />
-              <span className="hidden md:inline">Նախագծեր</span>
-            </Button>
-          </Link>
-          <Link to="/tasks">
-            <Button variant="outline" size="sm" className="gap-1 whitespace-nowrap">
-              <ClipboardList size={16} />
-              <span className="hidden md:inline">Առաջադրանքներ</span>
-            </Button>
-          </Link>
-          <Link to="/gantt">
-            <Button variant="outline" size="sm" className="gap-1 whitespace-nowrap">
-              <FileText size={16} />
-              <span className="hidden md:inline">Ժամանակացույց</span>
-            </Button>
-          </Link>
-        </div>
-      );
+      return <ProjectManagerNav />;
     
     case 'employer':
-      return (
-        <div className="flex items-center gap-1 sm:gap-2 md:gap-4 overflow-x-auto hide-scrollbar">
-          <Link to="/projects/my">
-            <Button variant="outline" size="sm" className="gap-1 whitespace-nowrap">
-              <ClipboardList size={16} />
-              <span className="hidden md:inline">Իմ նախագծերը</span>
-            </Button>
-          </Link>
-          <Link to="/projects/submit">
-            <Button variant="outline" size="sm" className="gap-1 whitespace-nowrap">
-              <FileText size={16} />
-              <span className="hidden md:inline">Նախագծի առաջարկ</span>
-            </Button>
-          </Link>
-        </div>
-      );
+      return <EmployerNav />;
     
     case 'student':
-      return (
-        <div className="flex items-center gap-1 sm:gap-2 md:gap-4 overflow-x-auto hide-scrollbar">
-          <Link to="/projects">
-            <Button variant="outline" size="sm" className="gap-1 whitespace-nowrap">
-              <ClipboardList size={16} />
-              <span className="hidden md:inline">Նախագծեր</span>
-            </Button>
-          </Link>
-          <Link to="/portfolio">
-            <Button variant="outline" size="sm" className="gap-1 whitespace-nowrap">
-              <FileText size={16} />
-              <span className="hidden md:inline">Պորտֆոլիո</span>
-            </Button>
-          </Link>
-        </div>
-      );
+      return <StudentNav />;
     
     default:
       return null;
