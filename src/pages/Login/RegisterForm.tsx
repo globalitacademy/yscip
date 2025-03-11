@@ -171,6 +171,7 @@ const RegisterForm: React.FC<RegisterFormProps> = ({
             <SelectItem value="lecturer">Դասախոս</SelectItem>
             <SelectItem value="project_manager">Նախագծի ղեկավար</SelectItem>
             <SelectItem value="employer">Գործատու</SelectItem>
+            <SelectItem value="admin">Ադմինիստրատոր</SelectItem>
           </SelectContent>
         </Select>
         <p className="text-sm text-muted-foreground mt-1">
@@ -180,7 +181,7 @@ const RegisterForm: React.FC<RegisterFormProps> = ({
         {/* Show warning for roles that need approval */}
         {role !== 'student' && (
           <p className="text-sm text-amber-600 mt-2">
-            Նշում: {role === 'employer' ? 'Գործատուի' : role === 'lecturer' ? 'Դասախոսի' : 'Ղեկավարի'} հաշիվը պետք է հաստատվի ադմինիստրատորի կողմից:
+            Նշում: {role === 'employer' ? 'Գործատուի' : role === 'lecturer' ? 'Դասախոսի' : role === 'admin' ? 'Ադմինիստրատորի' : 'Ղեկավարի'} հաշիվը պետք է հաստատվի ադմինիստրատորի կողմից:
           </p>
         )}
       </div>
