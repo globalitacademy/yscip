@@ -19,21 +19,34 @@ const VerifyEmail: React.FC = () => {
     const params = new URLSearchParams(location.search);
     const token = params.get('token');
     const email = params.get('email'); // Some email verification links include email
+    const type = params.get('type'); // Check if this is a recovery link
 
-    if (email) {
-      const checkIfAdmin = async () => {
+    console.log('Verification params:', { token, email, type });
+
+    const checkIfAdmin = async () => {
+      if (email) {
         const result = await isDesignatedAdmin(email);
+        console.log('Is designated admin check result:', result);
         setIsAdmin(result);
         
         if (result) {
           // If this is the designated admin, automatic success
           setVerificationStatus('success');
+          // Try to manually verify the email if needed
+          try {
+            await supabase.auth.updateUser({
+              data: { email_confirmed: true }
+            });
+            console.log('Admin email manually confirmed');
+          } catch (err) {
+            console.error('Error manually confirming admin email:', err);
+          }
           return;
         }
-      };
-      
-      checkIfAdmin();
-    }
+      }
+    };
+    
+    checkIfAdmin();
 
     if (!token && !isAdmin) {
       setVerificationStatus('error');
@@ -45,25 +58,44 @@ const VerifyEmail: React.FC = () => {
     const verifyToken = async () => {
       try {
         if (isAdmin) {
+          console.log('Admin account, skipping token verification');
           setVerificationStatus('success');
           return;
         }
         
         // For normal users, need to verify the token
         if (token) {
-          // This would be an actual token verification in production
-          // For demo we're just simulating success
-          await new Promise(resolve => setTimeout(resolve, 1000));
-          setVerificationStatus('success');
+          console.log('Verifying token');
+          if (type === 'recovery') {
+            // This is a password reset link, don't try to verify it
+            navigate('/login');
+            return;
+          }
+          
+          // For email verification links
+          const { error } = await supabase.auth.verifyOtp({
+            token_hash: token,
+            type: 'email'
+          });
+          
+          if (error) {
+            console.error('Token verification error:', error);
+            setVerificationStatus('error');
+            setErrorMessage('Հաստատման գործընթացի սխալ: ' + error.message);
+          } else {
+            console.log('Token verified successfully');
+            setVerificationStatus('success');
+          }
         }
       } catch (error) {
+        console.error('Verification process error:', error);
         setVerificationStatus('error');
         setErrorMessage('Հաստատման գործընթացի սխալ: Խնդրում ենք փորձել կրկին։');
       }
     };
 
     verifyToken();
-  }, [location.search, isAdmin]);
+  }, [location.search, isAdmin, navigate]);
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-background p-4">
