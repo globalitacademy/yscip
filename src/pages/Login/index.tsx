@@ -2,7 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/auth';
-import { toast } from '@/components/ui/use-toast';
+import { toast } from 'sonner';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { DBUser } from '@/types/database.types';
@@ -41,23 +41,18 @@ const Login: React.FC = () => {
     try {
       const success = await login(email, password);
       if (success) {
-        toast({
-          title: 'Մուտքն հաջողվել է',
+        toast.success('Մուտքն հաջողվել է', {
           description: 'Դուք հաջողությամբ մուտք եք գործել համակարգ',
         });
         navigate('/');
       } else {
-        toast({
-          title: 'Մուտքը չի հաջողվել',
+        toast.error('Մուտքը չի հաջողվել', {
           description: 'Էլ․ հասցեն կամ գաղտնաբառը սխալ է կամ Ձեր հաշիվը դեռ ակտիվացված չէ',
-          variant: 'destructive',
         });
       }
     } catch (error) {
-      toast({
-        title: 'Սխալ',
+      toast.error('Սխալ', {
         description: 'Տեղի ունեցավ անսպասելի սխալ',
-        variant: 'destructive',
       });
     } finally {
       setIsLoading(false);
@@ -70,10 +65,8 @@ const Login: React.FC = () => {
     try {
       // Check if employer has organization
       if (userData.role === 'employer' && !userData.organization) {
-        toast({
-          title: 'Սխալ',
+        toast.error('Սխալ', {
           description: 'Կազմակերպության անունը պարտադիր է գործատուի համար',
-          variant: 'destructive',
         });
         setIsLoading(false);
         return;
@@ -96,10 +89,8 @@ const Login: React.FC = () => {
         setVerificationSent(true);
       }
     } catch (error) {
-      toast({
-        title: 'Սխալ',
+      toast.error('Սխալ', {
         description: 'Տեղի ունեցավ անսպասելի սխալ',
-        variant: 'destructive',
       });
     } finally {
       setIsLoading(false);
