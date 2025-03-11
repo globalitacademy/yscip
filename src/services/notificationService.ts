@@ -1,4 +1,3 @@
-
 import { supabase } from '@/integrations/supabase/client';
 import { DBNotification } from '@/types/database.types';
 
@@ -111,6 +110,46 @@ export const createNotification = async (
     return true;
   } catch (error) {
     console.error('Unexpected error creating notification:', error);
+    return false;
+  }
+};
+
+// Delete a single notification
+export const deleteNotification = async (notificationId: number): Promise<boolean> => {
+  try {
+    const { error } = await supabase
+      .from('notifications')
+      .delete()
+      .eq('id', notificationId);
+    
+    if (error) {
+      console.error('Error deleting notification:', error);
+      return false;
+    }
+    
+    return true;
+  } catch (error) {
+    console.error('Unexpected error deleting notification:', error);
+    return false;
+  }
+};
+
+// Delete all notifications for a user
+export const deleteAllNotifications = async (userId: string): Promise<boolean> => {
+  try {
+    const { error } = await supabase
+      .from('notifications')
+      .delete()
+      .eq('user_id', userId);
+    
+    if (error) {
+      console.error('Error deleting all notifications:', error);
+      return false;
+    }
+    
+    return true;
+  } catch (error) {
+    console.error('Unexpected error deleting all notifications:', error);
     return false;
   }
 };
