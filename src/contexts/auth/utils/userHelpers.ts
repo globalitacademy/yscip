@@ -13,42 +13,62 @@ export async function getUserBySession(session: any): Promise<DBUser | null> {
 
     console.log('Getting user data by session for user ID:', session.user.id);
     
-    // Use a direct query that avoids RLS recursion
-    const { data: userData, error } = await supabase.rpc(
-      'get_user_by_id',
-      { user_id: session.user.id }
-    );
+    // Query the profiles table to get user data
+    const { data: userData, error } = await supabase
+      .from('users')
+      .select('*')
+      .eq('id', session.user.id)
+      .single();
     
     if (error) {
       console.error('Error fetching user data by session:', error);
       // Fallback to a basic user object if we can't get the full profile
       return {
         id: session.user.id,
-        email: session.user.email,
+        email: session.user.email || '',
         name: 'User',
-        role: isDesignatedAdminEmail(session.user.email) ? 'admin' : 'student',
+        role: isDesignatedAdminEmail(session.user.email || '') ? 'admin' : 'student',
         created_at: new Date().toISOString(),
         updated_at: new Date().toISOString(),
-        registration_approved: isDesignatedAdminEmail(session.user.email) ? true : true // Auto-approve designated admin
+        registration_approved: isDesignatedAdminEmail(session.user.email || '') ? true : true // Auto-approve designated admin
       };
     }
     
     if (!userData) {
       console.log('No user data found for session user ID:', session.user.id);
-      return {
-        id: session.user.id,
-        email: session.user.email,
-        name: 'User',
-        role: isDesignatedAdminEmail(session.user.email) ? 'admin' : 'student',
-        created_at: new Date().toISOString(),
-        updated_at: new Date().toISOString(),
-        registration_approved: isDesignatedAdminEmail(session.user.email) ? true : true // Auto-approve designated admin
-      };
+      
+      // If user data not found, insert a new record
+      const { data: newUser, error: insertError } = await supabase
+        .from('users')
+        .insert({
+          id: session.user.id,
+          email: session.user.email || '',
+          name: session.user.user_metadata?.name || 'User',
+          role: isDesignatedAdminEmail(session.user.email || '') ? 'admin' : 'student',
+          registration_approved: isDesignatedAdminEmail(session.user.email || '') ? true : false
+        })
+        .select('*')
+        .single();
+      
+      if (insertError || !newUser) {
+        console.error('Error creating user profile:', insertError);
+        return {
+          id: session.user.id,
+          email: session.user.email || '',
+          name: 'User',
+          role: isDesignatedAdminEmail(session.user.email || '') ? 'admin' : 'student',
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString(),
+          registration_approved: isDesignatedAdminEmail(session.user.email || '') ? true : true
+        };
+      }
+      
+      return newUser as DBUser;
     }
     
     // Ensure the designated admin is always marked as approved
-    if (isDesignatedAdminEmail(session.user.email) && (!userData.registration_approved || userData.role !== 'admin')) {
-      await ensureDesignatedAdminApproved(session.user.id, session.user.email);
+    if (isDesignatedAdminEmail(session.user.email || '') && (!userData.registration_approved || userData.role !== 'admin')) {
+      await ensureDesignatedAdminApproved(session.user.id, session.user.email || '');
       userData.registration_approved = true;
       userData.role = 'admin';
     }
@@ -61,12 +81,12 @@ export async function getUserBySession(session: any): Promise<DBUser | null> {
     if (session && session.user) {
       return {
         id: session.user.id,
-        email: session.user.email,
+        email: session.user.email || '',
         name: 'User',
-        role: isDesignatedAdminEmail(session.user.email) ? 'admin' : 'student',
+        role: isDesignatedAdminEmail(session.user.email || '') ? 'admin' : 'student',
         created_at: new Date().toISOString(),
         updated_at: new Date().toISOString(),
-        registration_approved: isDesignatedAdminEmail(session.user.email) ? true : true // Auto-approve designated admin
+        registration_approved: isDesignatedAdminEmail(session.user.email || '') ? true : true
       };
     }
     return null;
@@ -91,17 +111,24 @@ export async function checkUserApprovalStatus(userId: string): Promise<boolean> 
       return true;
     }
     
-    const { data, error } = await supabase.rpc(
-      'check_user_approval',
-      { user_id: userId }
-    );
+    const { data, error } = await supabase
+      .from('users')
+      .select('role, registration_approved')
+      .eq('id', userId)
+      .single();
     
     if (error) {
       console.error('Error checking user approval status:', error);
       return false;
     }
     
-    return !!data;
+    if (!data) {
+      console.log('No user data found for approval check');
+      return false;
+    }
+    
+    // Students are auto-approved, other roles need explicit approval
+    return data.role === 'student' || !!data.registration_approved;
   } catch (err) {
     console.error('Unexpected error in checkUserApprovalStatus:', err);
     return false;

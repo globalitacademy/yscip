@@ -8,8 +8,9 @@ import {
   verifyEmail, 
   resetPassword, 
   updatePassword,
+  registerUser
 } from '../operations';
-import { registerUser } from '../operations/userOperations';
+import { DBUser } from '@/types/database.types';
 
 export function useAuthProvider() {
   const { 

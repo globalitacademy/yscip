@@ -67,6 +67,7 @@ export const login = async (email: string, password: string): Promise<boolean> =
       return false;
     }
 
+    console.log('Login successful, session established');
     return true;
   } catch (error) {
     console.error('Unexpected login error:', error);
