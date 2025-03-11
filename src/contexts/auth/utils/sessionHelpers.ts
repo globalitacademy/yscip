@@ -39,7 +39,7 @@ export const getUserBySession = async (session: any): Promise<DBUser | null> => 
               email: authUser.email,
               name: authUser.user_metadata.name || authUser.email?.split('@')[0] || 'User',
               role: authUser.user_metadata.role || 'student',
-              registration_approved: authUser.user_metadata.registration_approved || false
+              registration_approved: authUser.user_metadata.role === 'student' || false
             })
             .select('*')
             .single();

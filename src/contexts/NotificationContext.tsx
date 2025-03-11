@@ -1,6 +1,6 @@
 
 import React, { createContext, useContext, useState, useEffect } from 'react';
-import { useAuth } from '@/contexts/AuthContext';
+import { useAuth } from '@/contexts/auth';
 import { getUserNotifications, getUnreadNotificationsCount } from '@/services/notificationService';
 import { DBNotification } from '@/types/database.types';
 import { supabase } from '@/integrations/supabase/client';
