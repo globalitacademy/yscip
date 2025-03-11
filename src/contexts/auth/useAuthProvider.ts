@@ -6,7 +6,7 @@ import { useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 
 export function useAuthProvider() {
-  const { user, isAuthenticated, isApproved, loading, setUser, refreshUser } = useSession();
+  const { user, isAuthenticated, isApproved, loading, error, setUser, refreshUser } = useSession();
 
   // Listen for auth state changes
   useEffect(() => {
@@ -43,6 +43,7 @@ export function useAuthProvider() {
     isAuthenticated,
     isApproved,
     loading,
+    error,
     login,
     logout: async () => {
       console.log('Logging out user');

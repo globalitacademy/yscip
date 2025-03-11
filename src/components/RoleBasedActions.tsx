@@ -1,8 +1,9 @@
 
 import React from 'react';
 import { Card, CardContent } from '@/components/ui/card';
-import { Users, ClipboardList, FileText, LayoutDashboard, Building, BookOpen, GraduationCap } from 'lucide-react';
+import { Users, ClipboardList, FileText, LayoutDashboard, Building, BookOpen, GraduationCap, AlertCircle } from 'lucide-react';
 import ActionCard from './ActionCard';
+import { Button } from './ui/button';
 
 interface RoleBasedActionsProps {
   isAuthenticated: boolean;
@@ -11,6 +12,32 @@ interface RoleBasedActionsProps {
 }
 
 const RoleBasedActions: React.FC<RoleBasedActionsProps> = ({ isAuthenticated, user, isApproved }) => {
+  // Function to handle reload for error states
+  const handleReload = () => {
+    window.location.reload();
+  };
+
+  // Error state if user is authenticated but no user data is available
+  if (isAuthenticated && !user) {
+    return (
+      <div className="mb-10">
+        <Card className="bg-destructive/10 border-destructive/20 text-destructive">
+          <CardContent className="py-6 flex flex-col items-center">
+            <AlertCircle className="h-12 w-12 mb-4 text-destructive" />
+            <p className="text-center mb-4">Օգտատիրոջ տվյալները հասանելի չեն: Խնդրում ենք կրկին փորձել:</p>
+            <Button 
+              variant="outline" 
+              className="mt-2"
+              onClick={handleReload}
+            >
+              Թարմացնել էջը
+            </Button>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
+
   if (!isAuthenticated || !user) {
     return (
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-10">
@@ -176,7 +203,15 @@ const RoleBasedActions: React.FC<RoleBasedActionsProps> = ({ isAuthenticated, us
       );
     
     default:
-      return null;
+      return (
+        <div className="mb-10">
+          <Card className="bg-muted">
+            <CardContent className="py-6">
+              <p className="text-center">Անհայտ օգտատիրոջ դեր: {user.role}</p>
+            </CardContent>
+          </Card>
+        </div>
+      );
   }
 };
 

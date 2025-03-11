@@ -6,6 +6,7 @@ export interface AuthContextType {
   isAuthenticated: boolean;
   isApproved: boolean;
   loading: boolean;
+  error: Error | null;
   login: (email: string, password: string) => Promise<boolean>;
   logout: () => void;
   registerUser: (userData: Partial<DBUser> & { password: string }) => Promise<boolean>;

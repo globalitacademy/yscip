@@ -27,19 +27,37 @@ import PortfolioPage from '@/pages/PortfolioPage';
 import ProjectSubmissionPage from '@/pages/ProjectSubmissionPage';
 import PendingApprovals from '@/pages/PendingApprovals';
 import ApprovalPending from '@/components/ApprovalPending';
+import GanttPage from '@/pages/GanttPage';
 import { AuthProvider, useAuth } from '@/contexts/auth';
 import { NotificationProvider } from '@/contexts/NotificationContext';
 import './App.css';
 
 // Protected Route component
 const ProtectedRoute = ({ children, allowedRoles }: { children: React.ReactNode, allowedRoles: string[] }) => {
-  const { user, isAuthenticated, isApproved, loading } = useAuth();
+  const { user, isAuthenticated, isApproved, loading, error } = useAuth();
   
   if (loading) {
     return (
       <div className="flex items-center justify-center h-screen">
         <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary"></div>
         <span className="ml-3">Բեռնում...</span>
+      </div>
+    );
+  }
+  
+  if (error) {
+    return (
+      <div className="flex flex-col items-center justify-center h-screen p-4">
+        <div className="bg-destructive/10 p-6 rounded-lg text-center max-w-md">
+          <h2 className="text-xl font-bold text-destructive mb-2">Նույնականացման սխալ</h2>
+          <p className="mb-4">{error.message}</p>
+          <button 
+            className="px-4 py-2 bg-primary text-primary-foreground rounded-md"
+            onClick={() => window.location.href = '/login'}
+          >
+            Վերադառնալ մուտքի էջ
+          </button>
+        </div>
       </div>
     );
   }
@@ -74,13 +92,30 @@ const ProtectedRoute = ({ children, allowedRoles }: { children: React.ReactNode,
 
 // Role-based dashboard redirect
 const RoleBasedRedirect = () => {
-  const { user, isAuthenticated, isApproved, loading } = useAuth();
+  const { user, isAuthenticated, isApproved, loading, error } = useAuth();
   
   if (loading) {
     return (
       <div className="flex items-center justify-center h-screen">
         <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary"></div>
         <span className="ml-3">Բեռնում...</span>
+      </div>
+    );
+  }
+  
+  if (error) {
+    return (
+      <div className="flex flex-col items-center justify-center h-screen p-4">
+        <div className="bg-destructive/10 p-6 rounded-lg text-center max-w-md">
+          <h2 className="text-xl font-bold text-destructive mb-2">Նույնականացման սխալ</h2>
+          <p className="mb-4">{error.message}</p>
+          <button 
+            className="px-4 py-2 bg-primary text-primary-foreground rounded-md"
+            onClick={() => window.location.href = '/login'}
+          >
+            Վերադառնալ մուտքի էջ
+          </button>
+        </div>
       </div>
     );
   }
@@ -110,13 +145,30 @@ const RoleBasedRedirect = () => {
 };
 
 function AppRoutes() {
-  const { loading } = useAuth();
+  const { loading, error } = useAuth();
   
   if (loading) {
     return (
       <div className="flex items-center justify-center h-screen">
         <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary"></div>
         <span className="ml-3">Բեռնում...</span>
+      </div>
+    );
+  }
+  
+  if (error) {
+    return (
+      <div className="flex flex-col items-center justify-center h-screen p-4">
+        <div className="bg-destructive/10 p-6 rounded-lg text-center max-w-md">
+          <h2 className="text-xl font-bold text-destructive mb-2">Նույնականացման սխալ</h2>
+          <p className="mb-4">{error.message}</p>
+          <button 
+            className="px-4 py-2 bg-primary text-primary-foreground rounded-md"
+            onClick={() => window.location.href = '/login'}
+          >
+            Վերադառնալ մուտքի էջ
+          </button>
+        </div>
       </div>
     );
   }
@@ -224,7 +276,7 @@ function AppRoutes() {
       } />
       <Route path="/gantt" element={
         <ProtectedRoute allowedRoles={['project_manager', 'supervisor']}>
-          <div>Gantt Chart (Coming Soon)</div>
+          <GanttPage />
         </ProtectedRoute>
       } />
       

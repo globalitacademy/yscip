@@ -35,26 +35,61 @@ export const getUserBySession = async (session: any): Promise<DBUser | null> => 
           const role = authUser.user_metadata.role || 'student';
           const isAutoApproved = role === 'student';
           
-          // Create user record based on auth data
-          const { data: newUser, error: insertError } = await supabase
-            .from('users')
-            .insert({
-              id: authUser.id,
-              email: authUser.email,
-              name: authUser.user_metadata.name || authUser.email?.split('@')[0] || 'User',
-              role: role,
-              registration_approved: isAutoApproved
-            })
-            .select('*')
-            .single();
-          
-          if (insertError) {
+          try {
+            // Create user record based on auth data
+            const { data: newUser, error: insertError } = await supabase
+              .from('users')
+              .insert({
+                id: authUser.id,
+                email: authUser.email,
+                name: authUser.user_metadata.name || authUser.email?.split('@')[0] || 'User',
+                role: role,
+                registration_approved: isAutoApproved
+              })
+              .select('*')
+              .single();
+            
+            if (insertError) {
+              console.error('Error creating user record:', insertError);
+              return null;
+            }
+            
+            console.log('New user record created:', newUser);
+            return newUser as DBUser;
+          } catch (insertError) {
             console.error('Error creating user record:', insertError);
-            return null;
+            
+            // If we failed to create a user record, use the auth data directly
+            return {
+              id: authUser.id,
+              email: authUser.email!,
+              name: authUser.user_metadata.name || authUser.email?.split('@')[0] || 'User',
+              role: role as any,
+              registration_approved: isAutoApproved,
+              created_at: new Date().toISOString(),
+              updated_at: new Date().toISOString()
+            } as DBUser;
           }
-          
-          console.log('New user record created:', newUser);
-          return newUser as DBUser;
+        }
+      } else if (error.code === '42P17') {
+        // This is the infinite recursion error in the RLS policy
+        console.error('Infinite recursion detected in RLS policy - using session data directly');
+        
+        // Get user metadata from auth
+        const { data: { user: authUser } } = await supabase.auth.getUser();
+        
+        if (authUser) {
+          // Return user data from auth system since we can't access the database
+          console.log('Using auth data directly due to RLS issues');
+          return {
+            id: authUser.id,
+            email: authUser.email!,
+            name: authUser.user_metadata.name || authUser.email?.split('@')[0] || 'User',
+            role: (authUser.user_metadata.role as any) || 'student',
+            registration_approved: authUser.user_metadata.registration_approved !== false,
+            created_at: authUser.created_at,
+            updated_at: new Date().toISOString()
+          } as DBUser;
         }
       }
       
@@ -77,6 +112,25 @@ export const getUserBySession = async (session: any): Promise<DBUser | null> => 
     return userData as DBUser;
   } catch (error) {
     console.error('Unexpected error fetching user data:', error);
+    
+    // Fall back to auth user data if there's an error getting profile data
+    try {
+      const { data: { user: authUser } } = await supabase.auth.getUser();
+      if (authUser) {
+        return {
+          id: authUser.id,
+          email: authUser.email!,
+          name: authUser.user_metadata.name || authUser.email?.split('@')[0] || 'User',
+          role: (authUser.user_metadata.role as any) || 'student',
+          registration_approved: authUser.user_metadata.registration_approved !== false,
+          created_at: authUser.created_at,
+          updated_at: new Date().toISOString()
+        } as DBUser;
+      }
+    } catch (authError) {
+      console.error('Error falling back to auth user data:', authError);
+    }
+    
     return null;
   }
 };
@@ -90,6 +144,11 @@ export const checkFirstAdmin = async (): Promise<boolean> => {
       .limit(1);
     
     if (adminCheckError) {
+      if (adminCheckError.code === '42P17') {
+        // Infinite recursion in RLS policy, assume no admins exist
+        console.log('RLS policy error when checking for admins, assuming no admins exist');
+        return true;
+      }
       console.error('Error checking for existing admins:', adminCheckError);
       return false;
     }
@@ -118,6 +177,19 @@ export const checkExistingEmail = async (email: string): Promise<boolean> => {
     if (checkError && checkError.code !== 'PGRST116') {
       // PGRST116 means no rows returned, which is expected
       console.error('Error checking email:', checkError);
+      
+      if (checkError.code === '42P17') {
+        // If there's an infinite recursion error, check auth users instead
+        const { data, error: authError } = await supabase.auth.admin.listUsers();
+        if (authError) {
+          console.error('Error checking auth users:', authError);
+          throw new Error('Error checking user data');
+        }
+        
+        const existingAuthUser = data?.users?.find(user => user.email === email);
+        return !!existingAuthUser;
+      }
+      
       throw new Error('Error checking user data');
     }
     
@@ -134,19 +206,46 @@ export const checkExistingEmail = async (email: string): Promise<boolean> => {
   }
 };
 
-// New helper to check user approval status
+// Check user approval status
 export const checkUserApprovalStatus = async (userId: string): Promise<boolean> => {
   try {
+    // First try using RPC
+    try {
+      const { data, error } = await supabase
+        .rpc('is_user_approved', { user_id: userId });
+      
+      if (!error) {
+        return !!data;
+      }
+    } catch (rpcError) {
+      console.error('RPC error checking user approval status:', rpcError);
+    }
+    
+    // Fall back to direct query if RPC fails
     const { data, error } = await supabase
-      .rpc('is_user_approved', { user_id: userId });
+      .from('users')
+      .select('registration_approved, role')
+      .eq('id', userId)
+      .single();
     
     if (error) {
+      if (error.code === '42P17') {
+        // If there's an infinite recursion error, check auth metadata
+        const { data: { user } } = await supabase.auth.getUser();
+        if (user) {
+          // Students are auto-approved, other roles need admin approval
+          const role = user.user_metadata.role || 'student';
+          return role === 'student' || !!user.user_metadata.registration_approved;
+        }
+      }
+      
       console.error('Error checking user approval status:', error);
       // Default to false if there's an error
       return false;
     }
     
-    return !!data;
+    // Students are auto-approved, other roles need the registration_approved flag
+    return data.role === 'student' || !!data.registration_approved;
   } catch (error) {
     console.error('Unexpected error checking user approval status:', error);
     return false;

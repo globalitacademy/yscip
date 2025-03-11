@@ -8,21 +8,33 @@ import Hero from '@/components/Hero';
 import RoleBasedActions from '@/components/RoleBasedActions';
 import ThemeProjectSection from '@/components/ThemeProjectSection';
 import { useAuth } from '@/contexts/auth';
+import { toast } from 'sonner';
 
 const Index: React.FC = () => {
-  const { user, isAuthenticated, isApproved } = useAuth();
+  const { user, isAuthenticated, isApproved, loading, error } = useAuth();
   const navigate = useNavigate();
   
-  console.log("Index page - Auth state:", { isAuthenticated, user, isApproved });
+  console.log("Index page - Auth state:", { isAuthenticated, user, isApproved, loading, error });
+  
+  // Show error toast if auth error occurs
+  useEffect(() => {
+    if (error) {
+      console.error("Auth error:", error);
+      toast.error("Նույնականացման սխալ", {
+        description: error.message
+      });
+    }
+  }, [error]);
   
   // Redirect to role-specific dashboard if authenticated
   useEffect(() => {
-    if (isAuthenticated && user) {
+    if (isAuthenticated && user && !loading) {
       console.log("User authenticated, redirecting based on role:", user.role);
       
       if (!isApproved && user.role !== 'student') {
-        console.log("User not approved, staying on index");
-        return; // Stay on page for unapproved non-students
+        console.log("User not approved, navigating to approval pending page");
+        navigate('/approval-pending');
+        return;
       }
       
       switch (user.role) {
@@ -52,7 +64,18 @@ const Index: React.FC = () => {
           console.log("Unknown role, staying on index");
       }
     }
-  }, [isAuthenticated, user, isApproved, navigate]);
+  }, [isAuthenticated, user, isApproved, loading, navigate]);
+
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-background">
+        <div className="flex flex-col items-center gap-4">
+          <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary"></div>
+          <p className="text-muted-foreground">Բեռնում...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen flex flex-col bg-background">

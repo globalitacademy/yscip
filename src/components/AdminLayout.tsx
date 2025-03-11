@@ -7,6 +7,7 @@ import Footer from '@/components/Footer';
 import AdminSidebar from '@/components/AdminSidebar';
 import { Menu } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { toast } from 'sonner';
 
 interface AdminLayoutProps {
   children: React.ReactNode;
@@ -14,18 +15,74 @@ interface AdminLayoutProps {
 }
 
 const AdminLayout: React.FC<AdminLayoutProps> = ({ children, pageTitle }) => {
-  const { user, isAuthenticated } = useAuth();
+  const { user, isAuthenticated, isApproved, loading, error } = useAuth();
   const [isSidebarOpen, setIsSidebarOpen] = React.useState(false);
   
+  // Show loading state
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-background">
+        <div className="flex flex-col items-center gap-4">
+          <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary"></div>
+          <p className="text-muted-foreground">Բեռնում...</p>
+        </div>
+      </div>
+    );
+  }
+  
+  // Show error state
+  if (error) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-background">
+        <div className="text-center max-w-md p-6 bg-destructive/10 rounded-lg">
+          <h2 className="text-xl font-semibold text-destructive mb-4">Նույնականացման սխալ</h2>
+          <p className="mb-4">{error.message}</p>
+          <Button 
+            variant="outline" 
+            onClick={() => window.location.href = '/login'}
+          >
+            Վերադառնալ մուտքի էջ
+          </Button>
+        </div>
+      </div>
+    );
+  }
+  
   // Redirect if not authenticated or doesn't have appropriate role
-  if (!isAuthenticated || !user || (
+  if (!isAuthenticated || !user) {
+    console.log("User not authenticated, redirecting to login");
+    toast.error("Մուտքը արգելափակված է", {
+      description: "Նախքան շարունակելը, խնդրում ենք մուտք գործել համակարգ"
+    });
+    return <Navigate to="/login" replace />;
+  }
+  
+  // Check for appropriate role
+  if (
     user.role !== 'admin' && 
     user.role !== 'lecturer' && 
     user.role !== 'instructor' && 
     user.role !== 'project_manager' && 
     user.role !== 'supervisor'
-  )) {
-    return <Navigate to="/login" replace />;
+  ) {
+    console.log("User doesn't have appropriate role, redirecting to dashboard");
+    toast.error("Մուտքը արգելափակված է", {
+      description: "Ձեզ չունեք բավարար իրավունք այս էջը դիտելու համար"
+    });
+    
+    // Redirect to appropriate dashboard based on role
+    if (user.role === 'employer') {
+      return <Navigate to="/employer-dashboard" replace />;
+    } else if (user.role === 'student') {
+      return <Navigate to="/student-dashboard" replace />;
+    }
+    return <Navigate to="/" replace />;
+  }
+  
+  // Check if approved
+  if (!isApproved && user.role !== 'student') {
+    console.log("User not approved, redirecting to approval pending page");
+    return <Navigate to="/approval-pending" replace />;
   }
   
   const toggleSidebar = () => {

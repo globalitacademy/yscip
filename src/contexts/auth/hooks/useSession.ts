@@ -8,6 +8,7 @@ export function useSession() {
   const [user, setUser] = useState<DBUser | null>(null);
   const [loading, setLoading] = useState(true);
   const [isApproved, setIsApproved] = useState(true); // Default to true for students
+  const [error, setError] = useState<Error | null>(null);
 
   console.log('useSession hook initialized');
 
@@ -22,6 +23,8 @@ export function useSession() {
     try {
       console.log('Refreshing user data for session:', session.user.id);
       setLoading(true);
+      setError(null);
+      
       const userData = await getUserBySession(session);
       
       if (userData) {
@@ -37,8 +40,9 @@ export function useSession() {
         setUser(null);
         setIsApproved(false);
       }
-    } catch (error) {
-      console.error('Error refreshing user data:', error);
+    } catch (err) {
+      console.error('Error refreshing user data:', err);
+      setError(err instanceof Error ? err : new Error(String(err)));
       setUser(null);
       setIsApproved(false);
     } finally {
@@ -53,12 +57,14 @@ export function useSession() {
       try {
         console.log('Getting initial session...');
         setLoading(true);
+        setError(null);
         
         const { data: { session }, error } = await supabase.auth.getSession();
         
         if (error) {
           console.error('Error getting initial session:', error);
           if (mounted) {
+            setError(new Error(error.message));
             setUser(null);
             setIsApproved(false);
           }
@@ -89,9 +95,10 @@ export function useSession() {
           setUser(null);
           setIsApproved(false);
         }
-      } catch (error) {
-        console.error('Unexpected error getting initial session:', error);
+      } catch (err) {
+        console.error('Unexpected error getting initial session:', err);
         if (mounted) {
+          setError(err instanceof Error ? err : new Error(String(err)));
           setUser(null);
           setIsApproved(false);
         }
@@ -112,6 +119,7 @@ export function useSession() {
     isAuthenticated: !!user,
     isApproved,
     loading,
+    error,
     setUser,
     refreshUser
   };
