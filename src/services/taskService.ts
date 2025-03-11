@@ -1,3 +1,4 @@
+
 import { supabase } from '@/integrations/supabase/client';
 import { DBTask, Task, convertDBTaskToTask } from '@/types/database.types';
 
@@ -31,7 +32,7 @@ export const getTasksAssignedToUser = async (userId: string): Promise<Task[]> =>
   return (data as DBTask[]).map(convertDBTaskToTask);
 };
 
-export const createTask = async (task: Omit<DBTask, 'id' | 'created_at' | 'updated_at'>): Promise<DBTask | null> => {
+export const createTask = async (task: Omit<DBTask, 'id' | 'created_at' | 'updated_at'>): Promise<Task | null> => {
   const { data, error } = await supabase
     .from('tasks')
     .insert(task)
@@ -43,14 +44,15 @@ export const createTask = async (task: Omit<DBTask, 'id' | 'created_at' | 'updat
     return null;
   }
   
-  return data as DBTask;
+  return convertDBTaskToTask(data as DBTask);
 };
 
-export const updateTaskStatus = async (id: number, status: DBTask['status']): Promise<boolean> => {
+export const updateTaskStatus = async (id: string, status: DBTask['status']): Promise<boolean> => {
+  const numericId = parseInt(id, 10);
   const { error } = await supabase
     .from('tasks')
     .update({ status, updated_at: new Date().toISOString() })
-    .eq('id', id);
+    .eq('id', numericId);
   
   if (error) {
     console.error(`Error updating task status for task ${id}:`, error);
@@ -60,11 +62,12 @@ export const updateTaskStatus = async (id: number, status: DBTask['status']): Pr
   return true;
 };
 
-export const updateTask = async (id: number, task: Partial<DBTask>): Promise<boolean> => {
+export const updateTask = async (id: string, task: Partial<DBTask>): Promise<boolean> => {
+  const numericId = parseInt(id, 10);
   const { error } = await supabase
     .from('tasks')
     .update({ ...task, updated_at: new Date().toISOString() })
-    .eq('id', id);
+    .eq('id', numericId);
   
   if (error) {
     console.error(`Error updating task ${id}:`, error);
@@ -74,11 +77,12 @@ export const updateTask = async (id: number, task: Partial<DBTask>): Promise<boo
   return true;
 };
 
-export const deleteTask = async (id: number): Promise<boolean> => {
+export const deleteTask = async (id: string): Promise<boolean> => {
+  const numericId = parseInt(id, 10);
   const { error } = await supabase
     .from('tasks')
     .delete()
-    .eq('id', id);
+    .eq('id', numericId);
   
   if (error) {
     console.error(`Error deleting task ${id}:`, error);

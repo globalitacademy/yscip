@@ -1,7 +1,8 @@
+
 import React, { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
 import { getTasksForProject, getTasksAssignedToUser } from '@/services/taskService';
-import { Task } from '@/types/database.types';
+import { Task, convertDBTaskToTask } from '@/types/database.types';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent } from "@/components/ui/card";
 import TaskManager from '@/components/TaskManager';

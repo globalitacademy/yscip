@@ -1,4 +1,5 @@
-import React from 'react';
+
+import React, { useState } from 'react';
 import { Task } from '@/types/database.types';
 import { User, UserRole, getCurrentUser, getUsersByRole, rolePermissions } from '@/data/userRoles';
 import { 
@@ -63,8 +64,8 @@ const TaskManager: React.FC<TaskManagerProps> = ({
     title: '',
     description: '',
     status: 'todo' as const,
-    assignedTo: '',
-    dueDate: ''
+    assigned_to: '',
+    due_date: ''
   });
 
   const students = getUsersByRole('student');
@@ -74,14 +75,14 @@ const TaskManager: React.FC<TaskManagerProps> = ({
     if (onAddTask) {
       onAddTask({
         ...newTask,
-        createdBy: currentUser.id,
+        created_by: currentUser.id,
       });
       setNewTask({
         title: '',
         description: '',
         status: 'todo',
-        assignedTo: '',
-        dueDate: ''
+        assigned_to: '',
+        due_date: ''
       });
       setOpen(false);
       toast({
@@ -171,16 +172,16 @@ const TaskManager: React.FC<TaskManagerProps> = ({
                     <Input
                       id="dueDate"
                       type="date"
-                      value={newTask.dueDate}
-                      onChange={(e) => setNewTask({ ...newTask, dueDate: e.target.value })}
+                      value={newTask.due_date}
+                      onChange={(e) => setNewTask({ ...newTask, due_date: e.target.value })}
                       required
                     />
                   </div>
                   <div className="grid gap-2">
                     <Label htmlFor="assignee">Նշանակված ուսանող</Label>
                     <Select 
-                      onValueChange={(value) => setNewTask({ ...newTask, assignedTo: value })}
-                      defaultValue={newTask.assignedTo}
+                      onValueChange={(value) => setNewTask({ ...newTask, assigned_to: value })}
+                      defaultValue={newTask.assigned_to}
                     >
                       <SelectTrigger id="assignee">
                         <SelectValue placeholder="Ընտրեք ուսանող" />
@@ -257,13 +258,13 @@ const TaskManager: React.FC<TaskManagerProps> = ({
                         <div className="flex items-center gap-1">
                           <UserIcon size={12} className="text-muted-foreground" />
                           <span className="text-muted-foreground">
-                            {students.find(s => s.id === task.assignedTo)?.name || 'Չնշանակված'}
+                            {students.find(s => s.id === task.assigned_to)?.name || 'Չնշանակված'}
                           </span>
                         </div>
-                        {task.dueDate && (
+                        {task.due_date && (
                           <Badge variant="outline" className="flex items-center gap-1 text-xs">
                             <Clock size={10} />
-                            {new Date(task.dueDate).toLocaleDateString('hy-AM')}
+                            {new Date(task.due_date).toLocaleDateString('hy-AM')}
                           </Badge>
                         )}
                       </div>

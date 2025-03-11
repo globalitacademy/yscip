@@ -1,3 +1,4 @@
+
 export type UserRole = 'admin' | 'lecturer' | 'project_manager' | 'employer' | 'student' | 'instructor' | 'supervisor';
 
 export interface DBUser {
@@ -78,8 +79,17 @@ export interface DBTimelineEvent {
   updated_at: string;
 }
 
-export interface Task extends Omit<DBTask, 'id'> {
+export interface Task {
   id: string;
+  title: string;
+  description: string;
+  status: 'todo' | 'in-progress' | 'review' | 'done';
+  assigned_to?: string;
+  created_by?: string;
+  project_id: number;
+  due_date?: string;
+  created_at: string;
+  updated_at: string;
 }
 
 export const convertDBTaskToTask = (dbTask: DBTask): Task => ({
