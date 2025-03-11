@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -29,12 +28,10 @@ const RegisterForm: React.FC<RegisterFormProps> = ({
   const [organization, setOrganization] = useState('');
   const [acceptTerms, setAcceptTerms] = useState(false);
 
-  // Validation states
   const [emailError, setEmailError] = useState('');
   const [passwordError, setPasswordError] = useState('');
   const [confirmPasswordError, setConfirmPasswordError] = useState('');
 
-  // Check email validation when it changes
   useEffect(() => {
     if (email) {
       const { errorMessage } = validateEmail(email);
@@ -42,14 +39,12 @@ const RegisterForm: React.FC<RegisterFormProps> = ({
     }
   }, [email]);
 
-  // Check password validation when it changes
   useEffect(() => {
     if (password) {
       const { errorMessage } = validatePassword(password);
       setPasswordError(errorMessage);
     }
     
-    // Also revalidate confirm password if it exists
     if (confirmPassword) {
       const { errorMessage } = validateConfirmPassword(confirmPassword, password);
       setConfirmPasswordError(errorMessage);
@@ -59,7 +54,6 @@ const RegisterForm: React.FC<RegisterFormProps> = ({
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    // Validate all fields
     const isEmailValid = validateEmail(email).isValid;
     const isPasswordValid = validatePassword(password).isValid;
     const isConfirmPasswordValid = validateConfirmPassword(confirmPassword, password).isValid;
@@ -79,11 +73,10 @@ const RegisterForm: React.FC<RegisterFormProps> = ({
     await onRegister(userData);
   };
 
-  // Role descriptions for registration form
   const getRoleDescription = (selectedRole: UserRole) => {
     switch (selectedRole) {
       case 'admin':
-        return 'Կառավարել օգտատերերին, նախագծերը և համակարգը';
+        return 'Կառավարել օգտատերերին, նախագծերը և համակարգը (Առաջին ադմինը ստանում է լիարժեք մուտք)';
       case 'lecturer':
         return 'Ստեղծել առաջադրանքներ, գնահատել ուսանողներին';
       case 'project_manager':
@@ -178,7 +171,6 @@ const RegisterForm: React.FC<RegisterFormProps> = ({
           {getRoleDescription(role)}
         </p>
         
-        {/* Show warning for roles that need approval */}
         {role !== 'student' && (
           <p className="text-sm text-amber-600 mt-2">
             Նշում: {role === 'employer' ? 'Գործատուի' : role === 'lecturer' ? 'Դասախոսի' : role === 'admin' ? 'Ադմինիստրատորի' : 'Ղեկավարի'} հաշիվը պետք է հաստատվի ադմինիստրատորի կողմից:
@@ -186,7 +178,6 @@ const RegisterForm: React.FC<RegisterFormProps> = ({
         )}
       </div>
       
-      {/* Show organization field only for employers */}
       {role === 'employer' && (
         <div className="space-y-2">
           <Label htmlFor="organization">Կազմակերպություն</Label>

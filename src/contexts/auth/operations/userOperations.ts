@@ -2,7 +2,7 @@
 import { supabase } from '@/integrations/supabase/client';
 import { DBUser } from '@/types/database.types';
 import { toast } from 'sonner';
-import { isDesignatedAdmin, verifyDesignatedAdmin } from '../utils';
+import { isDesignatedAdmin, verifyDesignatedAdmin, checkFirstAdmin, approveFirstAdmin } from '../utils';
 
 export const registerUser = async (
   userData: Partial<DBUser> & { password: string }
@@ -16,6 +16,13 @@ export const registerUser = async (
     
     // Check if this is the designated admin account
     const isAdmin = await isDesignatedAdmin(cleanEmail);
+    
+    // Check if this is the first admin (if role is admin)
+    let isFirstAdmin = false;
+    if (userData.role === 'admin' && !isAdmin) {
+      isFirstAdmin = await checkFirstAdmin();
+      console.log('Checking if first admin:', isFirstAdmin);
+    }
     
     // For admin account, verify it first
     if (isAdmin) {
@@ -94,6 +101,38 @@ export const registerUser = async (
         console.error('Auto-login for admin failed:', signInError);
       }
     }
+    
+    // For first admin (not the designated one), approve them
+    if (isFirstAdmin && authData.user) {
+      console.log('First admin detected, ensuring approval');
+      await approveFirstAdmin(cleanEmail);
+      
+      // Update profile to set as admin
+      const { error: updateError } = await supabase
+        .from('users')
+        .update({ 
+          role: 'admin', 
+          registration_approved: true 
+        })
+        .eq('id', authData.user.id);
+        
+      if (updateError) {
+        console.error('Error updating first admin profile:', updateError);
+      } else {
+        console.log('First admin profile updated successfully');
+      }
+      
+      // Attempt to automatically sign in the first admin after registration
+      try {
+        await supabase.auth.signInWithPassword({
+          email: cleanEmail,
+          password: userData.password
+        });
+        console.log('Auto-login for first admin successful');
+      } catch (signInError) {
+        console.error('Auto-login for first admin failed:', signInError);
+      }
+    }
 
     // If automatic profile creation via trigger doesn't work, create manually
     if (authData.user && !isAdmin) {
@@ -111,9 +150,9 @@ export const registerUser = async (
             id: authData.user.id,
             name: userData.name,
             email: cleanEmail,
-            role: userData.role,
+            role: isFirstAdmin ? 'admin' : userData.role,
             organization: userData.organization,
-            registration_approved: userData.role === 'student', // Auto-approve students
+            registration_approved: userData.role === 'student' || isFirstAdmin, // Auto-approve students and first admin
           });
 
         if (insertError) {
@@ -124,6 +163,10 @@ export const registerUser = async (
 
     if (isAdmin) {
       toast.success('Ադմինի հաշիվը հաջողությամբ ստեղծվել է', {
+        description: 'Դուք կարող եք հիմա մուտք գործել համակարգ'
+      });
+    } else if (isFirstAdmin) {
+      toast.success('Առաջին ադմինի հաշիվը հաջողությամբ ստեղծվել է', {
         description: 'Դուք կարող եք հիմա մուտք գործել համակարգ'
       });
     } else {

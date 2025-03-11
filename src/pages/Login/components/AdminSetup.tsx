@@ -25,6 +25,7 @@ export const AdminSetup: React.FC<AdminSetupProps> = ({ email }) => {
     const checkAdminStatus = async () => {
       if (email) {
         const isAdminEmail = await isDesignatedAdmin(email);
+        
         if (isAdminEmail) {
           console.log('Admin email detected, ensuring verification and setup');
           setDesignatedAdminMessage(true);
@@ -75,13 +76,17 @@ export const AdminSetup: React.FC<AdminSetupProps> = ({ email }) => {
           } catch (err) {
             console.error('Unexpected error in admin verification:', err);
           }
+        } else if (isFirstAdmin) {
+          // Check if this could be the first admin
+          console.log('Potential first admin detected:', email);
+          setIsFirstAdmin(true);
         }
       }
     };
 
     checkExistingAdmins();
     checkAdminStatus();
-  }, [email, resetAdminAccount]);
+  }, [email, resetAdminAccount, isFirstAdmin]);
 
   const handleResetAdmin = async () => {
     try {

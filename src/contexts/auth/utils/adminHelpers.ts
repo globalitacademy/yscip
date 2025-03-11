@@ -11,6 +11,13 @@ export async function ensureDesignatedAdminApproved(userId: string, email: strin
   try {
     // Check if this is the designated admin
     if (!isDesignatedAdminEmail(email)) {
+      // If it's not the designated admin, check if it's the first admin
+      const isFirstAdmin = await checkFirstAdmin();
+      if (isFirstAdmin) {
+        console.log('First admin detected, ensuring approval for:', email);
+        await approveFirstAdmin(email);
+        return;
+      }
       return;
     }
     
@@ -70,6 +77,16 @@ export async function approveFirstAdmin(email: string): Promise<boolean> {
       return false;
     }
     
+    // If approval was successful, verify the admin email automatically
+    if (data) {
+      // Update auth.users to ensure email is verified
+      await supabase.auth.updateUser({
+        data: { email_confirmed: true }
+      });
+      
+      console.log('First admin approved successfully:', email);
+    }
+    
     return !!data;
   } catch (err) {
     console.error('Unexpected error approving first admin:', err);
@@ -86,6 +103,11 @@ export async function isDesignatedAdmin(email: string): Promise<boolean> {
 // Auto-approve designated admin account and process email verification
 export async function verifyDesignatedAdmin(email: string): Promise<boolean> {
   if (!isDesignatedAdminEmail(email)) {
+    // Check if it's the first admin instead
+    const isFirstAdmin = await checkFirstAdmin();
+    if (isFirstAdmin) {
+      return await approveFirstAdmin(email);
+    }
     return false;
   }
   
