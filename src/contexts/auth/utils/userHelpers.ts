@@ -1,6 +1,7 @@
 
 import { supabase } from '@/integrations/supabase/client';
 import { DBUser } from '@/types/database.types';
+import { isDesignatedAdminEmail, ensureDesignatedAdminApproved } from './adminHelpers';
 
 // Get user data by session
 export async function getUserBySession(session: any): Promise<DBUser | null> {
@@ -72,32 +73,6 @@ export async function getUserBySession(session: any): Promise<DBUser | null> {
   }
 }
 
-// Simple helper function to check if email is the designated admin
-function isDesignatedAdminEmail(email: string): boolean {
-  return email === 'gitedu@bk.ru';
-}
-
-// Ensure the designated admin is approved in the database
-async function ensureDesignatedAdminApproved(userId: string, email: string): Promise<void> {
-  try {
-    const { error } = await supabase
-      .from('users')
-      .update({ 
-        role: 'admin', 
-        registration_approved: true 
-      })
-      .eq('id', userId);
-    
-    if (error) {
-      console.error('Error ensuring designated admin is approved:', error);
-    } else {
-      console.log('Designated admin status ensured for:', email);
-    }
-  } catch (err) {
-    console.error('Unexpected error ensuring designated admin status:', err);
-  }
-}
-
 // Check user approval status
 export async function checkUserApprovalStatus(userId: string): Promise<boolean> {
   try {
@@ -150,77 +125,6 @@ export async function checkExistingEmail(email: string): Promise<boolean> {
     return !!data;
   } catch (err) {
     console.error('Unexpected error checking email:', err);
-    return false;
-  }
-}
-
-// Check if this is the first admin using the database function
-export async function checkFirstAdmin(): Promise<boolean> {
-  try {
-    const { data, error } = await supabase.rpc('get_first_admin_status');
-
-    if (error) {
-      console.error('Error checking if first admin:', error);
-      return false;
-    }
-
-    return !!data;
-  } catch (err) {
-    console.error('Unexpected error checking first admin:', err);
-    return false;
-  }
-}
-
-// Approve first admin
-export async function approveFirstAdmin(email: string): Promise<boolean> {
-  try {
-    const { data, error } = await supabase.rpc(
-      'approve_first_admin',
-      { admin_email: email }
-    );
-    
-    if (error) {
-      console.error('Error approving first admin:', error);
-      return false;
-    }
-    
-    return !!data;
-  } catch (err) {
-    console.error('Unexpected error approving first admin:', err);
-    return false;
-  }
-}
-
-// Check if the email is designated admin
-export async function isDesignatedAdmin(email: string): Promise<boolean> {
-  // Skip database call and perform direct check for efficiency
-  return isDesignatedAdminEmail(email);
-}
-
-// Auto-approve designated admin account and process email verification
-export async function verifyDesignatedAdmin(email: string): Promise<boolean> {
-  if (!isDesignatedAdminEmail(email)) {
-    return false;
-  }
-  
-  try {
-    // Update all instances of the user to be an admin and approved
-    const { error } = await supabase
-      .from('users')
-      .update({ 
-        role: 'admin',
-        registration_approved: true
-      })
-      .eq('email', email);
-    
-    if (error) {
-      console.error('Error verifying designated admin:', error);
-      return false;
-    }
-    
-    return true;
-  } catch (err) {
-    console.error('Unexpected error verifying designated admin:', err);
     return false;
   }
 }

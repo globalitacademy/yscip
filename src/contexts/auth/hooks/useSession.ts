@@ -2,7 +2,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { DBUser } from '@/types/database.types';
-import { getUserBySession, checkUserApprovalStatus } from '../utils/sessionHelpers';
+import { getUserBySession, checkUserApprovalStatus } from '../utils';
 
 export function useSession() {
   const [user, setUser] = useState<DBUser | null>(null);

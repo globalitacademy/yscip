@@ -1,7 +1,13 @@
 import { supabase } from '@/integrations/supabase/client';
 import { DBUser } from '@/types/database.types';
 import { toast } from 'sonner';
-import { checkExistingEmail, checkFirstAdmin, approveFirstAdmin, isDesignatedAdmin, verifyDesignatedAdmin } from '../utils/sessionHelpers';
+import { 
+  checkExistingEmail, 
+  checkFirstAdmin, 
+  approveFirstAdmin, 
+  isDesignatedAdmin, 
+  verifyDesignatedAdmin 
+} from '../utils';
 
 export const registerUser = async (userData: Partial<DBUser> & { password: string }): Promise<boolean> => {
   try {

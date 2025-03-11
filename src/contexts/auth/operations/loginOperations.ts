@@ -1,7 +1,7 @@
 
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
-import { isDesignatedAdmin } from '../utils/sessionHelpers';
+import { isDesignatedAdmin } from '../utils';
 
 export const login = async (email: string, password: string): Promise<boolean> => {
   try {
