@@ -26,50 +26,54 @@ export const AdminSetup: React.FC<AdminSetupProps> = ({ email }) => {
       if (email) {
         const isAdminEmail = await isDesignatedAdmin(email);
         if (isAdminEmail) {
+          console.log('Admin email detected, ensuring verification and setup');
           setDesignatedAdminMessage(true);
           setShowAdminReset(true);
           
-          // Ensure admin is verified
           try {
-            console.log('Verifying designated admin account from AdminSetup');
-            const { error } = await supabase.rpc('verify_designated_admin');
-            if (error) {
-              console.error('Error verifying designated admin:', error);
-              toast.error('Ադմինի հաշվի ստուգման սխալ', {
-                description: 'Փորձեք վերակայել ադմինի հաշիվը ստորև'
-              });
-            } else {
-              console.log('Successfully verified designated admin');
+            // First ensure admin is properly set up in the database
+            const { error: ensureError } = await supabase.rpc('ensure_admin_login');
+            if (ensureError) {
+              console.error('Error ensuring admin account:', ensureError);
               
-              // Try to auto-login if this is the admin email
+              // If there's an error, try resetting the admin account
+              const resetSuccess = await resetAdminAccount();
+              if (!resetSuccess) {
+                toast.error('Ադմինի հաշվի ստուգման սխալ', {
+                  description: 'Փորձեք վերակայել ադմինի հաշիվը ստորև'
+                });
+              }
+            } else {
+              console.log('Admin account ensured successfully');
+              
+              // Try to auto-login with admin credentials
               try {
-                const { data: sessionData, error: sessionError } = await supabase.auth.getSession();
+                const { error: signInError } = await supabase.auth.signInWithPassword({
+                  email: 'gitedu@bk.ru',
+                  password: 'Qolej2025*'
+                });
                 
-                if (sessionError) {
-                  console.error('Error getting session for admin auto-login:', sessionError);
-                } else if (!sessionData.session) {
-                  console.log('No active session, trying admin auto-login');
-                  
-                  const { error: signInError } = await supabase.auth.signInWithPassword({
-                    email: 'gitedu@bk.ru',
-                    password: 'Qolej2025*'
+                if (signInError) {
+                  console.log('Admin auto-login attempt failed:', signInError.message);
+                  toast.error('Ավտոմատ մուտքը չի հաջողվել', {
+                    description: 'Խնդրում ենք մուտք գործել ձեռքով՝ օգտագործելով մուտքի ձևը'
+                  });
+                } else {
+                  console.log('Admin auto-login successful');
+                  toast.success('Ադմինիստրատորի հաշիվը հաստատված է', {
+                    description: 'Դուք հիմա կուղղորդվեք կառավարման վահանակ'
                   });
                   
-                  if (signInError) {
-                    console.log('Admin auto-login attempt failed:', signInError.message);
-                  } else {
-                    console.log('Admin auto-login successful');
-                    setTimeout(() => {
-                      window.location.href = '/admin';
-                    }, 1000);
-                  }
+                  setTimeout(() => {
+                    window.location.href = '/admin';
+                  }, 1000);
                 }
-              } catch (autoLoginErr) {
-                console.error('Error in admin auto-login attempt:', autoLoginErr);
+              } catch (err) {
+                console.error('Error in admin auto-login attempt:', err);
               }
             }
           } catch (err) {
-            console.error('Unexpected error verifying admin:', err);
+            console.error('Unexpected error in admin verification:', err);
           }
         }
       }
@@ -77,11 +81,11 @@ export const AdminSetup: React.FC<AdminSetupProps> = ({ email }) => {
 
     checkExistingAdmins();
     checkAdminStatus();
-  }, [email]);
+  }, [email, resetAdminAccount]);
 
   const handleResetAdmin = async () => {
     try {
-      console.log('Attempting to reset admin account from AdminSetup');
+      console.log('Attempting to reset admin account');
       const success = await resetAdminAccount();
       
       if (success) {

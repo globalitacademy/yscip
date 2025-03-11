@@ -434,6 +434,10 @@ export type Database = {
         }
         Returns: undefined
       }
+      ensure_admin_login: {
+        Args: Record<PropertyKey, never>
+        Returns: boolean
+      }
       get_first_admin_status: {
         Args: Record<PropertyKey, never>
         Returns: boolean
