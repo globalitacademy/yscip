@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -21,7 +20,6 @@ const LoginForm: React.FC<LoginFormProps> = ({ onLogin, isLoading }) => {
   const navigate = useNavigate();
   const location = useLocation();
 
-  // Check for password reset token in URL
   useEffect(() => {
     const handlePasswordReset = async () => {
       const hash = location.hash;
@@ -42,7 +40,33 @@ const LoginForm: React.FC<LoginFormProps> = ({ onLogin, isLoading }) => {
     if (isResetting) {
       await handlePasswordUpdate();
     } else {
-      await onLogin(email, password);
+      try {
+        const { data, error } = await supabase.auth.signInWithPassword({
+          email,
+          password
+        });
+
+        if (error) {
+          console.error('Login error:', error);
+          if (error.message === 'Invalid login credentials') {
+            toast.error('Սխալ էլ․ հասցե կամ գաղտնաբառ');
+          } else {
+            toast.error('Մուտքը չի հաջողվել: ' + error.message);
+          }
+          return;
+        }
+
+        if (!data.session) {
+          toast.error('Մուտքը չի հաջողվել');
+          return;
+        }
+
+        toast.success('Մուտքն հաջողվել է');
+        navigate('/');
+      } catch (err) {
+        console.error('Unexpected login error:', err);
+        toast.error('Տեղի ունեցավ անսպասելի սխալ');
+      }
     }
   };
 
@@ -61,7 +85,7 @@ const LoginForm: React.FC<LoginFormProps> = ({ onLogin, isLoading }) => {
 
     try {
       const { error } = await supabase.auth.updateUser({
-        password: newPassword,
+        password: newPassword
       });
 
       if (error) {
@@ -69,7 +93,18 @@ const LoginForm: React.FC<LoginFormProps> = ({ onLogin, isLoading }) => {
       } else {
         toast.success('Գաղտնաբառը հաջողությամբ թարմացվել է');
         setIsResetting(false);
-        navigate('/login');
+        const { error: loginError } = await supabase.auth.signInWithPassword({
+          email: email || (await supabase.auth.getSession()).data.session?.user?.email || '',
+          password: newPassword
+        });
+
+        if (loginError) {
+          toast.error('Գաղտնաբառը թարմացված է, բայց ավտոմատ մուտքը չի հաջողվել: Խնդրում ենք փորձել մուտք գործել ձեռքով');
+          navigate('/login');
+        } else {
+          toast.success('Մուտքն հաջողվել է');
+          navigate('/');
+        }
       }
     } catch (err) {
       console.error('Password update error:', err);
@@ -197,3 +232,4 @@ const LoginForm: React.FC<LoginFormProps> = ({ onLogin, isLoading }) => {
 };
 
 export default LoginForm;
+
