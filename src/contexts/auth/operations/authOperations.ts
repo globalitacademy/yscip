@@ -19,7 +19,7 @@ export const login = async (email: string, password: string): Promise<boolean> =
         if (rpcError) {
           console.error('Error verifying admin via RPC:', rpcError);
           toast.error('Ադմինի հաշվի ստուգման սխալ', {
-            description: 'Խնդրում ենք փորձեք վերակայել ադմինի հաշիվը և նորից գրանցվել'
+            description: 'Փորձեք վերակայել ադմինի հաշիվը և նորից գրանցվել'
           });
           return false;
         } else {
@@ -28,7 +28,7 @@ export const login = async (email: string, password: string): Promise<boolean> =
       } catch (err) {
         console.error('Error in admin verification process:', err);
         toast.error('Ադմինի հաշվի ստուգման սխալ', {
-          description: 'Խնդրում ենք փորձեք վերակայել ադմինի հաշիվը և նորից գրանցվել'
+          description: 'Փորձեք վերակայել ադմինի հաշիվը և նորից գրանցվել'
         });
         return false;
       }
