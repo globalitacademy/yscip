@@ -144,3 +144,23 @@ export async function approveFirstAdmin(email: string): Promise<boolean> {
     return false;
   }
 }
+
+// Check if the email is designated admin
+export async function isDesignatedAdmin(email: string): Promise<boolean> {
+  try {
+    const { data, error } = await supabase.rpc(
+      'is_designated_admin',
+      { email_to_check: email }
+    );
+    
+    if (error) {
+      console.error('Error checking if designated admin:', error);
+      return false;
+    }
+    
+    return !!data;
+  } catch (err) {
+    console.error('Unexpected error checking designated admin:', err);
+    return false;
+  }
+}

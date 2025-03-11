@@ -419,6 +419,12 @@ export type Database = {
         }
         Returns: boolean
       }
+      approve_specific_admin: {
+        Args: {
+          admin_email: string
+        }
+        Returns: boolean
+      }
       create_notification: {
         Args: {
           p_user_id: string
@@ -430,6 +436,12 @@ export type Database = {
       }
       get_first_admin_status: {
         Args: Record<PropertyKey, never>
+        Returns: boolean
+      }
+      is_designated_admin: {
+        Args: {
+          email_to_check: string
+        }
         Returns: boolean
       }
     }

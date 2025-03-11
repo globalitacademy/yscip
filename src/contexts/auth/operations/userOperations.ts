@@ -2,7 +2,7 @@
 import { supabase } from '@/integrations/supabase/client';
 import { DBUser } from '@/types/database.types';
 import { toast } from 'sonner';
-import { checkExistingEmail, checkFirstAdmin, approveFirstAdmin } from '../utils/sessionHelpers';
+import { checkExistingEmail, checkFirstAdmin, approveFirstAdmin, isDesignatedAdmin } from '../utils/sessionHelpers';
 
 export const registerUser = async (userData: Partial<DBUser> & { password: string }): Promise<boolean> => {
   try {
@@ -14,9 +14,13 @@ export const registerUser = async (userData: Partial<DBUser> & { password: strin
       return false;
     }
 
-    // Check if this is the first admin account
+    // Check if this is the designated admin email
+    const isSpecificAdmin = await isDesignatedAdmin(userData.email!);
+    console.log('Is designated admin check result:', isSpecificAdmin);
+    
+    // Check if this is the first admin account (if not the designated admin)
     let isFirstAdmin = false;
-    if (userData.role === 'admin') {
+    if (userData.role === 'admin' && !isSpecificAdmin) {
       isFirstAdmin = await checkFirstAdmin();
       console.log('Is first admin check result:', isFirstAdmin);
     }
@@ -28,7 +32,7 @@ export const registerUser = async (userData: Partial<DBUser> & { password: strin
       options: {
         data: {
           name: userData.name,
-          role: userData.role
+          role: isSpecificAdmin ? 'admin' : userData.role
         }
       }
     });
@@ -37,6 +41,13 @@ export const registerUser = async (userData: Partial<DBUser> & { password: strin
       console.error('Registration error:', error);
       toast.error('Գրանցումը չի հաջողվել: ' + error.message);
       return false;
+    }
+
+    // If this is the designated admin, they are automatically approved
+    if (isSpecificAdmin) {
+      console.log('Registering designated admin:', userData.email);
+      toast.success('Դուք գրանցվել եք որպես ադմինիստրատոր և ձեր հաշիվը ավտոմատ հաստատվել է։');
+      return true;
     }
 
     // If this is the first admin, automatically approve them using our secure function
@@ -67,7 +78,7 @@ export const registerUser = async (userData: Partial<DBUser> & { password: strin
     
     // Students are auto-approved, other roles need admin approval
     const isStudent = userData.role === 'student';
-    const needsApproval = !isStudent && !isFirstAdmin;
+    const needsApproval = !isStudent && !isFirstAdmin && !isSpecificAdmin;
     
     toast.success(
       `Գրանցման հայտն ընդունված է։ Խնդրում ենք ստուգել Ձեր էլ․ փոստը՝ հաշիվը ակտիվացնելու համար։${
