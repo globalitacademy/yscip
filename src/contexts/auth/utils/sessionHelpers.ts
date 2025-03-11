@@ -26,7 +26,9 @@ export async function getUserBySession(session: any): Promise<DBUser | null> {
         email: session.user.email,
         name: 'User',
         role: 'student',
-        created_at: new Date().toISOString()
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
+        registration_approved: true // Students are auto-approved
       };
     }
     
@@ -37,7 +39,9 @@ export async function getUserBySession(session: any): Promise<DBUser | null> {
         email: session.user.email,
         name: 'User',
         role: 'student',
-        created_at: new Date().toISOString()
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
+        registration_approved: true // Students are auto-approved
       };
     }
     
@@ -52,7 +56,9 @@ export async function getUserBySession(session: any): Promise<DBUser | null> {
         email: session.user.email,
         name: 'User',
         role: 'student',
-        created_at: new Date().toISOString()
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
+        registration_approved: true // Students are auto-approved
       };
     }
     return null;
@@ -81,5 +87,44 @@ export async function checkUserApprovalStatus(userId: string): Promise<boolean> 
   }
 }
 
-// Export other helper functions
-export { checkExistingEmail, checkFirstAdmin } from './sessionHelpers';
+// Check if email exists
+export async function checkExistingEmail(email: string): Promise<boolean> {
+  try {
+    const { data, error } = await supabase
+      .from('users')
+      .select('id')
+      .eq('email', email)
+      .single();
+
+    if (error) {
+      console.error('Error checking existing email:', error);
+      return false;
+    }
+
+    return !!data;
+  } catch (err) {
+    console.error('Unexpected error checking email:', err);
+    return false;
+  }
+}
+
+// Check if this is the first admin
+export async function checkFirstAdmin(): Promise<boolean> {
+  try {
+    const { data, error } = await supabase
+      .from('users')
+      .select('id')
+      .eq('role', 'admin')
+      .single();
+
+    if (error) {
+      return true; // If error, assume no admin exists
+    }
+
+    return !data; // Return true if no admin found
+  } catch (err) {
+    console.error('Unexpected error checking first admin:', err);
+    return true; // If error, assume no admin exists
+  }
+}
+
