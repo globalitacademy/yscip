@@ -8,6 +8,10 @@ import NotFound from '@/pages/NotFound';
 import Login from '@/pages/Login';
 import VerifyEmail from '@/pages/VerifyEmail';
 import AdminDashboard from '@/pages/AdminDashboard';
+import TeacherDashboard from '@/pages/TeacherDashboard';
+import ProjectManagerDashboard from '@/pages/ProjectManagerDashboard';
+import StudentDashboard from '@/pages/StudentDashboard';
+import EmployerDashboard from '@/pages/EmployerDashboard';
 import UserManagementPage from '@/pages/UserManagementPage';
 import OrganizationsPage from '@/pages/OrganizationsPage';
 import CoursesPage from '@/pages/CoursesPage';
@@ -23,7 +27,6 @@ import PortfolioPage from '@/pages/PortfolioPage';
 import ProjectSubmissionPage from '@/pages/ProjectSubmissionPage';
 import PendingApprovals from '@/pages/PendingApprovals';
 import ApprovalPending from '@/components/ApprovalPending';
-import EmployerDashboard from '@/pages/EmployerDashboard';
 import { AuthProvider, useAuth } from '@/contexts/auth';
 import { NotificationProvider } from '@/contexts/NotificationContext';
 import './App.css';
@@ -55,13 +58,13 @@ const ProtectedRoute = ({ children, allowedRoles }: { children: React.ReactNode,
     if (user.role === 'admin') {
       return <Navigate to="/admin" replace />;
     } else if (user.role === 'lecturer' || user.role === 'instructor') {
-      return <Navigate to="/courses" replace />;
+      return <Navigate to="/teacher-dashboard" replace />;
     } else if (user.role === 'project_manager' || user.role === 'supervisor') {
-      return <Navigate to="/projects/manage" replace />;
+      return <Navigate to="/project-manager-dashboard" replace />;
     } else if (user.role === 'employer') {
-      return <Navigate to="/projects/my" replace />;
+      return <Navigate to="/employer-dashboard" replace />;
     } else if (user.role === 'student') {
-      return <Navigate to="/projects" replace />;
+      return <Navigate to="/student-dashboard" replace />;
     }
     return <Navigate to="/" replace />;
   }
@@ -94,13 +97,13 @@ const RoleBasedRedirect = () => {
   if (user.role === 'admin') {
     return <Navigate to="/admin" replace />;
   } else if (user.role === 'lecturer' || user.role === 'instructor') {
-    return <Navigate to="/courses" replace />;
+    return <Navigate to="/teacher-dashboard" replace />;
   } else if (user.role === 'project_manager' || user.role === 'supervisor') {
-    return <Navigate to="/projects/manage" replace />;
+    return <Navigate to="/project-manager-dashboard" replace />;
   } else if (user.role === 'employer') {
-    return <Navigate to="/projects/my" replace />;
+    return <Navigate to="/employer-dashboard" replace />;
   } else if (user.role === 'student') {
-    return <Navigate to="/projects" replace />;
+    return <Navigate to="/student-dashboard" replace />;
   }
   
   return <Navigate to="/" replace />;
@@ -126,6 +129,28 @@ function AppRoutes() {
       <Route path="/login" element={<Login />} />
       <Route path="/verify-email" element={<VerifyEmail />} />
       <Route path="/approval-pending" element={<ApprovalPending />} />
+      
+      {/* Role-specific dashboards */}
+      <Route path="/teacher-dashboard" element={
+        <ProtectedRoute allowedRoles={['lecturer', 'instructor']}>
+          <TeacherDashboard />
+        </ProtectedRoute>
+      } />
+      <Route path="/project-manager-dashboard" element={
+        <ProtectedRoute allowedRoles={['project_manager', 'supervisor']}>
+          <ProjectManagerDashboard />
+        </ProtectedRoute>
+      } />
+      <Route path="/student-dashboard" element={
+        <ProtectedRoute allowedRoles={['student']}>
+          <StudentDashboard />
+        </ProtectedRoute>
+      } />
+      <Route path="/employer-dashboard" element={
+        <ProtectedRoute allowedRoles={['employer']}>
+          <EmployerDashboard />
+        </ProtectedRoute>
+      } />
       
       {/* Admin routes */}
       <Route path="/admin" element={

@@ -26,17 +26,17 @@ const Index: React.FC = () => {
           break;
         case 'lecturer':
         case 'instructor':
-          navigate('/courses');
+          navigate('/teacher-dashboard');
           break;
         case 'project_manager':
         case 'supervisor':
-          navigate('/projects/manage');
+          navigate('/project-manager-dashboard');
           break;
         case 'employer':
-          navigate('/projects/my');
+          navigate('/employer-dashboard');
           break;
         case 'student':
-          navigate('/projects');
+          navigate('/student-dashboard');
           break;
       }
     }

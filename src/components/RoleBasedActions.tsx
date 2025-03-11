@@ -87,7 +87,7 @@ const RoleBasedActions: React.FC<RoleBasedActionsProps> = ({ isAuthenticated, us
             title="Կուրսեր"
             description="Կառավարել կուրսերը"
             icon={<BookOpen className="h-6 w-6 text-primary" />}
-            href="/courses"
+            href="/teacher-dashboard"
             buttonText="Մուտք"
           />
           <ActionCard 
@@ -115,7 +115,7 @@ const RoleBasedActions: React.FC<RoleBasedActionsProps> = ({ isAuthenticated, us
             title="Նախագծեր"
             description="Կառավարել նախագծերը"
             icon={<ClipboardList className="h-6 w-6 text-primary" />}
-            href="/projects/manage"
+            href="/project-manager-dashboard"
             buttonText="Մուտք"
           />
           <ActionCard 
@@ -142,7 +142,7 @@ const RoleBasedActions: React.FC<RoleBasedActionsProps> = ({ isAuthenticated, us
             title="Իմ նախագծերը"
             description="Դիտել իմ նախագծերը"
             icon={<ClipboardList className="h-6 w-6 text-primary" />}
-            href="/projects/my"
+            href="/employer-dashboard"
             buttonText="Մուտք"
           />
           <ActionCard 
@@ -162,7 +162,7 @@ const RoleBasedActions: React.FC<RoleBasedActionsProps> = ({ isAuthenticated, us
             title="Նախագծեր"
             description="Դիտել հասանելի նախագծերը"
             icon={<ClipboardList className="h-6 w-6 text-primary" />}
-            href="/projects"
+            href="/student-dashboard"
             buttonText="Մուտք"
           />
           <ActionCard 
