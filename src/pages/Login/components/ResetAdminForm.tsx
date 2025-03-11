@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
 import { resetAdminAccount } from '@/contexts/auth/operations/authOperations';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
+import { Loader2 } from 'lucide-react';
 
 const ResetAdminForm: React.FC = () => {
   const [isResetting, setIsResetting] = useState(false);
@@ -12,11 +13,16 @@ const ResetAdminForm: React.FC = () => {
     setIsResetting(true);
     
     try {
+      console.log('Calling resetAdminAccount function');
       const success = await resetAdminAccount();
       if (success) {
         toast.success('Հաշիվը վերակայվել է', {
           description: 'Կարող եք կրկին գրանցվել որպես ադմին'
         });
+        // Reload the page to reset the form to registration state
+        setTimeout(() => {
+          window.location.href = '/login';
+        }, 1500);
       }
     } catch (error) {
       console.error('Error in reset admin process:', error);
@@ -38,7 +44,12 @@ const ResetAdminForm: React.FC = () => {
             className="text-red-500 border-red-200 hover:bg-red-50 hover:text-red-600"
             disabled={isResetting}
           >
-            {isResetting ? 'Վերակայում...' : 'Վերակայել Ադմինի հաշիվը'}
+            {isResetting ? (
+              <>
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                Վերակայում...
+              </>
+            ) : 'Վերակայել Ադմինի հաշիվը'}
           </Button>
         </AlertDialogTrigger>
         <AlertDialogContent>

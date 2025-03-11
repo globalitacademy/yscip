@@ -1,3 +1,4 @@
+
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { isDesignatedAdmin } from '../utils/sessionHelpers';
@@ -14,14 +15,27 @@ export const login = async (email: string, password: string): Promise<boolean> =
       
       try {
         // Call the RPC function to verify the admin before login
-        await supabase.rpc('verify_designated_admin');
-        console.log('Admin verification completed');
+        const { error: rpcError } = await supabase.rpc('verify_designated_admin');
+        if (rpcError) {
+          console.error('Error verifying admin via RPC:', rpcError);
+          toast.error('Ադմինի հաշվի ստուգման սխալ', {
+            description: 'Խնդրում ենք փորձեք վերակայել ադմինի հաշիվը և նորից գրանցվել'
+          });
+          return false;
+        } else {
+          console.log('Admin verification via RPC successful');
+        }
       } catch (err) {
-        console.error('Error verifying admin:', err);
+        console.error('Error in admin verification process:', err);
+        toast.error('Ադմինի հաշվի ստուգման սխալ', {
+          description: 'Խնդրում ենք փորձեք վերակայել ադմինի հաշիվը և նորից գրանցվել'
+        });
+        return false;
       }
     }
     
     // Proceed with login
+    console.log('Signing in with email and password...');
     const { data, error } = await supabase.auth.signInWithPassword({
       email,
       password
@@ -35,9 +49,15 @@ export const login = async (email: string, password: string): Promise<boolean> =
           description: 'Խնդրում ենք ստուգել Ձեր էլ․ փոստը հաստատման հղման համար'
         });
       } else if (error.message.includes('Invalid login credentials')) {
-        toast.error('Սխալ մուտքի տվյալներ', {
-          description: 'Խնդրում ենք ստուգել Ձեր էլ․ հասցեն և գաղտնաբառը'
-        });
+        if (isAdmin) {
+          toast.error('Ադմինի մուտքը չի հաջողվել', {
+            description: 'Փորձեք վերակայել ադմինի հաշիվը և նորից գրանցվել'
+          });
+        } else {
+          toast.error('Սխալ մուտքի տվյալներ', {
+            description: 'Խնդրում ենք ստուգել Ձեր էլ․ հասցեն և գաղտնաբառը'
+          });
+        }
       } else {
         toast.error('Մուտքը չի հաջողվել', {
           description: error.message
@@ -186,7 +206,7 @@ export const resetAdminAccount = async (): Promise<boolean> => {
     console.log('Resetting admin account');
     
     // Call a specialized RPC function to reset the admin account
-    const { error } = await supabase.rpc('reset_admin_account');
+    const { data, error } = await supabase.rpc('reset_admin_account');
     
     if (error) {
       console.error('Error resetting admin account:', error);
@@ -196,7 +216,7 @@ export const resetAdminAccount = async (): Promise<boolean> => {
       return false;
     }
     
-    console.log('Admin account reset successfully');
+    console.log('Admin account reset successful, result:', data);
     toast.success('Ադմինիստրատորի հաշիվը վերակայվել է', {
       description: 'Այժմ կարող եք կրկին գրանցվել'
     });

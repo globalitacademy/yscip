@@ -9,6 +9,7 @@ import { useAuth } from '@/contexts/auth';
 import ForgotPasswordForm from './ForgotPasswordForm';
 import { isDesignatedAdmin } from '@/contexts/auth/utils/sessionHelpers';
 import { supabase } from '@/integrations/supabase/client';
+import { Loader2 } from 'lucide-react';
 
 interface LoginCredentialsFormProps {
   onResetEmailSent: () => void;
@@ -62,17 +63,22 @@ const LoginCredentialsForm: React.FC<LoginCredentialsFormProps> = ({
       if (isAdmin) {
         try {
           // Call verify_designated_admin RPC directly to ensure admin account is verified
-          const { error: rpcError } = await supabase.rpc('verify_designated_admin');
+          console.log('Calling verify_designated_admin RPC function');
+          const { data, error: rpcError } = await supabase.rpc('verify_designated_admin');
           if (rpcError) {
             console.error('Error verifying admin via RPC:', rpcError);
+            toast.error('Ադմինի հաշվի ստուգման սխալ', {
+              description: 'Փորձեք վերակայել ադմինի հաշիվը և նորից գրանցվել'
+            });
           } else {
-            console.log('Admin verification via RPC successful');
+            console.log('Admin verification via RPC successful, result:', data);
           }
         } catch (err) {
           console.error('Error in admin verification process:', err);
         }
       }
       
+      console.log('Now calling login function');
       const success = await login(email, password);
       
       if (success) {
@@ -83,6 +89,9 @@ const LoginCredentialsForm: React.FC<LoginCredentialsFormProps> = ({
         console.log('Login was not successful');
         // If admin login failed, suggest account reset
         if (isAdmin) {
+          toast.error('Ադմինի մուտքը չի հաջողվել', {
+            description: 'Փորձեք վերակայել ադմինի հաշիվը և նորից գրանցվել'
+          });
           navigate('/?admin_reset=true#');
         }
         // Error messages are handled in authOperations.ts
@@ -141,7 +150,12 @@ const LoginCredentialsForm: React.FC<LoginCredentialsFormProps> = ({
         className="w-full" 
         disabled={externalLoading || isLoggingIn}
       >
-        {externalLoading || isLoggingIn ? 'Մուտք...' : 'Մուտք գործել'}
+        {externalLoading || isLoggingIn ? (
+          <>
+            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+            Մուտք...
+          </>
+        ) : 'Մուտք գործել'}
       </Button>
     </form>
   );
