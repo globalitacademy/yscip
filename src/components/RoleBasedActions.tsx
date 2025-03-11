@@ -8,10 +8,11 @@ import ProjectManagerActions from './role-actions/ProjectManagerActions';
 import EmployerActions from './role-actions/EmployerActions';
 import StudentActions from './role-actions/StudentActions';
 import GuestActions from './role-actions/GuestActions';
+import { DBUser } from '@/types/database.types';
 
 interface RoleBasedActionsProps {
   isAuthenticated: boolean;
-  user: any | null;
+  user: DBUser | null;
   isApproved: boolean;
 }
 

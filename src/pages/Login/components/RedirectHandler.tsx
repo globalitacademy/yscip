@@ -1,7 +1,7 @@
 
 import { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { DBUser } from '@/types/database.types';
+import { DBUser, UserRole } from '@/types/database.types';
 
 interface RedirectHandlerProps {
   isAuthenticated: boolean;

@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { User } from '@/types/auth.types';
+import { DBUser } from '@/types/database.types';
 import AdminNav from './nav/AdminNav';
 import TeacherNav from './nav/TeacherNav';
 import ProjectManagerNav from './nav/ProjectManagerNav';
@@ -8,7 +8,7 @@ import EmployerNav from './nav/EmployerNav';
 import StudentNav from './nav/StudentNav';
 
 interface NavMenuProps {
-  user: User | null;
+  user: DBUser | null;
 }
 
 const NavMenu: React.FC<NavMenuProps> = ({ user }) => {
