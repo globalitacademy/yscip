@@ -17,9 +17,9 @@ const ResetAdminForm: React.FC = () => {
       const success = await resetAdminAccount();
       if (success) {
         toast.success('Հաշիվը վերակայվել է', {
-          description: 'Կարող եք կրկին գրանցվել որպես ադմին'
+          description: 'Այժմ կարող եք մուտք գործել gitedu@bk.ru և Qolej2025* օգտագործելով'
         });
-        // Reload the page to reset the form to registration state
+        // Reload the page to reset the form to login state
         setTimeout(() => {
           window.location.href = '/login';
         }, 1500);
@@ -56,9 +56,9 @@ const ResetAdminForm: React.FC = () => {
           <AlertDialogHeader>
             <AlertDialogTitle>Ադմինի հաշվի վերակայում</AlertDialogTitle>
             <AlertDialogDescription>
-              Այս գործողությունը կջնջի ադմինի հաշիվը (gitedu@bk.ru)։ 
-              Դուք պետք է կրկին գրանցվեք այդ էլ․ հասցեով։ 
-              Շարունակե՞լ։
+              Այս գործողությունը կջնջի ադմինի հաշիվը (gitedu@bk.ru) և կստեղծի նորը՝ նախասահմանված գաղտնաբառով: 
+              Դուք կկարողանաք մուտք գործել օգտագործելով gitedu@bk.ru և Qolej2025* գաղտնաբառը:
+              Շարունակե՞լ:
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>

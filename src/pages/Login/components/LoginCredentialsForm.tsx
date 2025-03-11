@@ -8,7 +8,6 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/auth';
 import ForgotPasswordForm from './ForgotPasswordForm';
 import { isDesignatedAdmin } from '@/contexts/auth/utils/sessionHelpers';
-import { supabase } from '@/integrations/supabase/client';
 import { Loader2 } from 'lucide-react';
 
 interface LoginCredentialsFormProps {
@@ -57,28 +56,8 @@ const LoginCredentialsForm: React.FC<LoginCredentialsFormProps> = ({
     setIsLoggingIn(true);
     
     try {
-      console.log('Attempting login for:', email, 'Is admin:', isAdmin);
+      console.log('Attempting login for:', email, 'Is admin:', isAdmin, 'Password:', password);
       
-      // Special handling for designated admin
-      if (isAdmin) {
-        try {
-          // Call verify_designated_admin RPC directly to ensure admin account is verified
-          console.log('Calling verify_designated_admin RPC function');
-          const { data, error: rpcError } = await supabase.rpc('verify_designated_admin');
-          if (rpcError) {
-            console.error('Error verifying admin via RPC:', rpcError);
-            toast.error('Ադմինի հաշվի ստուգման սխալ', {
-              description: 'Փորձեք վերակայել ադմինի հաշիվը և նորից գրանցվել'
-            });
-          } else {
-            console.log('Admin verification via RPC successful, result:', data);
-          }
-        } catch (err) {
-          console.error('Error in admin verification process:', err);
-        }
-      }
-      
-      console.log('Now calling login function');
       const success = await login(email, password);
       
       if (success) {

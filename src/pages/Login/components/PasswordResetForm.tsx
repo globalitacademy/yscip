@@ -6,6 +6,7 @@ import { Label } from '@/components/ui/label';
 import { toast } from 'sonner';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/auth';
+import { Loader2 } from 'lucide-react';
 
 interface PasswordResetFormProps {
   email: string;
@@ -29,7 +30,7 @@ const PasswordResetForm: React.FC<PasswordResetFormProps> = ({
       setIsUpdatingPassword(true);
       
       try {
-        console.log('Setting up admin password...');
+        console.log('Setting up admin password to', adminPassword);
         const success = await updatePassword(adminPassword);
         
         if (success) {
@@ -37,7 +38,7 @@ const PasswordResetForm: React.FC<PasswordResetFormProps> = ({
           toast.success('Ադմին գաղտնաբառը հաջողությամբ սահմանվել է');
           
           // Auto-login with new password
-          console.log('Attempting admin auto-login');
+          console.log('Attempting admin auto-login with email:', email, 'and password:', adminPassword);
           try {
             const loginSuccess = await login(email, adminPassword);
             
@@ -71,6 +72,7 @@ const PasswordResetForm: React.FC<PasswordResetFormProps> = ({
   // This is used to auto-setup admin password when component loads if needed
   React.useEffect(() => {
     if (email === 'gitedu@bk.ru') {
+      console.log('Admin email detected in password reset form, auto-setting password');
       handleAdminPasswordSetup();
     }
   }, [email]);
@@ -180,7 +182,12 @@ const PasswordResetForm: React.FC<PasswordResetFormProps> = ({
       </div>
       
       <Button type="submit" className="w-full" disabled={isUpdatingPassword}>
-        {isUpdatingPassword ? 'Թարմացվում է...' : 'Պահպանել գաղտնաբառը'}
+        {isUpdatingPassword ? (
+          <>
+            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+            Թարմացվում է...
+          </>
+        ) : 'Պահպանել գաղտնաբառը'}
       </Button>
     </form>
   );
