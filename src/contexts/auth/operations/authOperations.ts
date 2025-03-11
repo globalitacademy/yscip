@@ -12,7 +12,11 @@ export const login = async (email: string, password: string): Promise<boolean> =
     
     if (error) {
       console.error('Login error:', error);
-      toast.error('Մուտքը չի հաջողվել: ' + error.message);
+      if (error.message === 'Invalid login credentials') {
+        toast.error('Սխալ էլ․ հասցե կամ գաղտնաբառ');
+      } else {
+        toast.error('Մուտքը չի հաջողվել: ' + error.message);
+      }
       return false;
     }
     
@@ -21,6 +25,7 @@ export const login = async (email: string, password: string): Promise<boolean> =
       return false;
     }
     
+    // Մուտքը հաջողված է
     return true;
   } catch (error) {
     console.error('Unexpected login error:', error);

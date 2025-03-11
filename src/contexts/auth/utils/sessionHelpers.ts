@@ -5,18 +5,31 @@ import { DBUser } from '@/types/database.types';
 export const getUserBySession = async (session: any): Promise<DBUser | null> => {
   if (!session) return null;
 
-  const { data: userData, error } = await supabase
-    .from('users')
-    .select('*')
-    .eq('id', session.user.id)
-    .single();
-  
-  if (error) {
-    console.error('Error fetching user data:', error);
+  try {
+    console.log('Fetching user data for ID:', session.user.id);
+    
+    const { data: userData, error } = await supabase
+      .from('users')
+      .select('*')
+      .eq('id', session.user.id)
+      .single();
+    
+    if (error) {
+      console.error('Error fetching user data:', error);
+      return null;
+    }
+    
+    if (!userData) {
+      console.error('No user data found for ID:', session.user.id);
+      return null;
+    }
+    
+    console.log('User data fetched successfully:', userData);
+    return userData as DBUser;
+  } catch (error) {
+    console.error('Unexpected error fetching user data:', error);
     return null;
   }
-  
-  return userData as DBUser;
 };
 
 export const checkFirstAdmin = async (): Promise<boolean> => {

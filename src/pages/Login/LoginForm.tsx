@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -6,8 +7,9 @@ import { LoginFormProps } from './types';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { useNavigate, useLocation } from 'react-router-dom';
+import { useAuth } from '@/contexts/auth';
 
-const LoginForm: React.FC<LoginFormProps> = ({ onLogin, isLoading }) => {
+const LoginForm: React.FC<LoginFormProps> = ({ onLogin, isLoading: externalLoading }) => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [newPassword, setNewPassword] = useState('');
@@ -16,9 +18,11 @@ const LoginForm: React.FC<LoginFormProps> = ({ onLogin, isLoading }) => {
   const [isSendingReset, setIsSendingReset] = useState(false);
   const [isResetting, setIsResetting] = useState(false);
   const [isUpdatingPassword, setIsUpdatingPassword] = useState(false);
+  const [isLoggingIn, setIsLoggingIn] = useState(false);
   
   const navigate = useNavigate();
   const location = useLocation();
+  const { login } = useAuth();
 
   useEffect(() => {
     const handlePasswordReset = async () => {
@@ -40,32 +44,21 @@ const LoginForm: React.FC<LoginFormProps> = ({ onLogin, isLoading }) => {
     if (isResetting) {
       await handlePasswordUpdate();
     } else {
+      setIsLoggingIn(true);
       try {
-        const { data, error } = await supabase.auth.signInWithPassword({
-          email,
-          password
-        });
-
-        if (error) {
-          console.error('Login error:', error);
-          if (error.message === 'Invalid login credentials') {
-            toast.error('Սխալ էլ․ հասցե կամ գաղտնաբառ');
-          } else {
-            toast.error('Մուտքը չի հաջողվել: ' + error.message);
-          }
-          return;
+        const success = await login(email, password);
+        
+        if (success) {
+          toast.success('Մուտքն հաջողվել է');
+          navigate('/');
+        } else {
+          // Սխալի մասին արդեն ծանուցում է login ֆունկցիան
         }
-
-        if (!data.session) {
-          toast.error('Մուտքը չի հաջողվել');
-          return;
-        }
-
-        toast.success('Մուտքն հաջողվել է');
-        navigate('/');
       } catch (err) {
         console.error('Unexpected login error:', err);
         toast.error('Տեղի ունեցավ անսպասելի սխալ');
+      } finally {
+        setIsLoggingIn(false);
       }
     }
   };
@@ -93,17 +86,23 @@ const LoginForm: React.FC<LoginFormProps> = ({ onLogin, isLoading }) => {
       } else {
         toast.success('Գաղտնաբառը հաջողությամբ թարմացվել է');
         setIsResetting(false);
-        const { error: loginError } = await supabase.auth.signInWithPassword({
-          email: email || (await supabase.auth.getSession()).data.session?.user?.email || '',
-          password: newPassword
-        });
-
-        if (loginError) {
-          toast.error('Գաղտնաբառը թարմացված է, բայց ավտոմատ մուտքը չի հաջողվել: Խնդրում ենք փորձել մուտք գործել ձեռքով');
-          navigate('/login');
+        
+        // Փորձենք մուտք գործել նոր գաղտնաբառով
+        const currentEmail = email || (await supabase.auth.getSession()).data.session?.user?.email || '';
+        
+        if (currentEmail) {
+          const success = await login(currentEmail, newPassword);
+          
+          if (success) {
+            toast.success('Մուտքն հաջողվել է');
+            navigate('/');
+          } else {
+            toast.error('Գաղտնաբառը թարմացված է, բայց ավտոմատ մուտքը չի հաջողվել: Խնդրում ենք փորձել մուտք գործել ձեռքով');
+            navigate('/login');
+          }
         } else {
-          toast.success('Մուտքն հաջողվել է');
-          navigate('/');
+          toast.error('Չհաջողվեց պարզել օգտատիրոջ էլ․ հասցեն: Խնդրում ենք ձեռքով մուտք գործել');
+          navigate('/login');
         }
       }
     } catch (err) {
@@ -222,8 +221,8 @@ const LoginForm: React.FC<LoginFormProps> = ({ onLogin, isLoading }) => {
             </Button>
           </div>
           
-          <Button type="submit" className="w-full" disabled={isLoading}>
-            {isLoading ? 'Մուտք...' : 'Մուտք գործել'}
+          <Button type="submit" className="w-full" disabled={externalLoading || isLoggingIn}>
+            {externalLoading || isLoggingIn ? 'Մուտք...' : 'Մուտք գործել'}
           </Button>
         </>
       )}
@@ -232,4 +231,3 @@ const LoginForm: React.FC<LoginFormProps> = ({ onLogin, isLoading }) => {
 };
 
 export default LoginForm;
-
