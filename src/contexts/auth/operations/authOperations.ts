@@ -1,11 +1,28 @@
+
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
+import { isDesignatedAdmin } from '../utils/sessionHelpers';
 
 export const login = async (email: string, password: string): Promise<boolean> => {
   try {
     console.log('Attempting login for:', email);
-    console.log('Attempting to login with email:', email);
     
+    // Check if this is the designated admin email
+    const isAdmin = await isDesignatedAdmin(email);
+    
+    if (isAdmin) {
+      console.log('Admin login attempt detected, ensuring account is verified');
+      
+      try {
+        // Call the RPC function to verify the admin before login
+        await supabase.rpc('verify_designated_admin');
+        console.log('Admin verification completed');
+      } catch (err) {
+        console.error('Error verifying admin:', err);
+      }
+    }
+    
+    // Proceed with login
     const { data, error } = await supabase.auth.signInWithPassword({
       email,
       password
