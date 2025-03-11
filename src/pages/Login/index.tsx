@@ -9,7 +9,7 @@ import { DBUser } from '@/types/database.types';
 import LoginForm from './LoginForm';
 import RegisterForm from './RegisterForm';
 import { RegisterUserData } from './types';
-import { checkFirstAdmin } from '@/contexts/auth/utils/sessionHelpers';
+import { checkFirstAdmin, isDesignatedAdmin } from '@/contexts/auth/utils/sessionHelpers';
 
 const Login: React.FC = () => {
   const { login, registerUser, user, isAuthenticated, isApproved } = useAuth();
@@ -17,6 +17,7 @@ const Login: React.FC = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [verificationSent, setVerificationSent] = useState(false);
   const [isFirstAdmin, setIsFirstAdmin] = useState(false);
+  const [designatedAdminMessage, setDesignatedAdminMessage] = useState(false);
 
   // Check if there are existing admins
   useEffect(() => {
@@ -68,11 +69,20 @@ const Login: React.FC = () => {
     setIsLoading(true);
 
     try {
+      // Check if this is the designated admin
+      const isAdmin = await isDesignatedAdmin(email);
+      
       const success = await login(email, password);
       if (success) {
-        toast.success('Մուտքն հաջողվել է', {
-          description: 'Դուք հաջողությամբ մուտք եք գործել համակարգ',
-        });
+        if (isAdmin) {
+          toast.success('Մուտքն հաջողվել է', {
+            description: 'Դուք հաջողությամբ մուտք եք գործել համակարգ որպես ադմինիստրատոր',
+          });
+        } else {
+          toast.success('Մուտքն հաջողվել է', {
+            description: 'Դուք հաջողությամբ մուտք եք գործել համակարգ',
+          });
+        }
         // No need to navigate here as the useEffect will handle redirection
       } else {
         toast.error('Մուտքը չի հաջողվել', {
@@ -92,6 +102,13 @@ const Login: React.FC = () => {
     setIsLoading(true);
 
     try {
+      // Check if this is the designated admin
+      const isAdmin = await isDesignatedAdmin(userData.email);
+      
+      if (isAdmin) {
+        setDesignatedAdminMessage(true);
+      }
+      
       // Check if employer has organization
       if (userData.role === 'employer' && !userData.organization) {
         toast.error('Սխալ', {
@@ -101,14 +118,14 @@ const Login: React.FC = () => {
         return;
       }
 
-      const autoApprove = userData.role === 'student' || (userData.role === 'admin' && isFirstAdmin);
+      const autoApprove = userData.role === 'student' || (userData.role === 'admin' && isFirstAdmin) || isAdmin;
       
       const formattedUserData: Partial<DBUser> & { password: string } = {
         name: userData.name,
         email: userData.email,
         password: userData.password,
-        role: userData.role,
-        registration_approved: autoApprove, // Students and first admin are auto-approved
+        role: isAdmin ? 'admin' : userData.role,
+        registration_approved: autoApprove,
         ...(userData.role === 'employer' && { organization: userData.organization })
       };
 
@@ -116,6 +133,14 @@ const Login: React.FC = () => {
       
       if (success) {
         setVerificationSent(true);
+        
+        if (isAdmin) {
+          setTimeout(() => {
+            toast.info('Կարող եք մուտք գործել համակարգ', {
+              description: 'Ձեր ադմինիստրատորի հաշիվը ակտիվ է։ Օգտագործեք մուտքի ձևը հիմա։'
+            });
+          }, 1500);
+        }
       }
     } catch (error) {
       toast.error('Սխալ', {
@@ -138,6 +163,11 @@ const Login: React.FC = () => {
             {isFirstAdmin && (
               <div className="mt-2 p-2 bg-blue-50 text-blue-700 rounded-md">
                 Առաջին ադմինիստրատորի հաշիվը կհաստատվի ավտոմատ կերպով
+              </div>
+            )}
+            {designatedAdminMessage && (
+              <div className="mt-2 p-2 bg-green-50 text-green-700 rounded-md">
+                Ադմինիստրատորի հաշիվը (gitedu@bk.ru) գրանցված է։ Մուտք գործեք Ձեր գաղտնաբառով։
               </div>
             )}
           </CardHeader>

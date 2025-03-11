@@ -1,8 +1,7 @@
-
 import { supabase } from '@/integrations/supabase/client';
 import { DBUser } from '@/types/database.types';
 import { toast } from 'sonner';
-import { checkExistingEmail, checkFirstAdmin, approveFirstAdmin, isDesignatedAdmin } from '../utils/sessionHelpers';
+import { checkExistingEmail, checkFirstAdmin, approveFirstAdmin, isDesignatedAdmin, verifyDesignatedAdmin } from '../utils/sessionHelpers';
 
 export const registerUser = async (userData: Partial<DBUser> & { password: string }): Promise<boolean> => {
   try {
@@ -10,6 +9,11 @@ export const registerUser = async (userData: Partial<DBUser> & { password: strin
     const emailExists = await checkExistingEmail(userData.email!);
     
     if (emailExists) {
+      // Special case for designated admin
+      if (await isDesignatedAdmin(userData.email!)) {
+        toast.info(`Այս էլ․ հասցեն արդեն գրանցված է որպես ադմինիստրատոր։ Կարող եք մուտք գործել Ձեր գաղտնաբառով կամ օգտագործել գաղտնաբառի վերականգնման հնարավորությունը։`);
+        return false;
+      }
       toast.error(`Այս էլ․ հասցեն արդեն գրանցված է։`);
       return false;
     }
@@ -33,7 +37,11 @@ export const registerUser = async (userData: Partial<DBUser> & { password: strin
         data: {
           name: userData.name,
           role: isSpecificAdmin ? 'admin' : userData.role
-        }
+        },
+        // Skip email verification for designated admin
+        emailRedirectTo: isSpecificAdmin 
+          ? `${window.location.origin}/login` 
+          : `${window.location.origin}/verify-email`
       }
     });
     
@@ -43,10 +51,12 @@ export const registerUser = async (userData: Partial<DBUser> & { password: strin
       return false;
     }
 
-    // If this is the designated admin, they are automatically approved
+    // If this is the designated admin, ensure they are automatically approved
     if (isSpecificAdmin) {
       console.log('Registering designated admin:', userData.email);
-      toast.success('Դուք գրանցվել եք որպես ադմինիստրատոր և ձեր հաշիվը ավտոմատ հաստատվել է։');
+      await verifyDesignatedAdmin(userData.email!);
+      
+      toast.success('Դուք գրանցվել եք որպես ադմինիստրատոր և ձեր հաշիվը ավտոմատ հաստատվել է։ Կարող եք անմիջապես մուտք գործել համակարգ։');
       return true;
     }
 
@@ -137,3 +147,4 @@ export const updateUserProfile = async (userId: string, updates: Partial<DBUser>
     return false;
   }
 };
+

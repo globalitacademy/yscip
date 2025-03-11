@@ -4,34 +4,58 @@ import { useNavigate, useLocation } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { CheckCircle, XCircle, AlertCircle, Loader2 } from 'lucide-react';
+import { supabase } from '@/integrations/supabase/client';
+import { isDesignatedAdmin } from '@/contexts/auth/utils/sessionHelpers';
 
 const VerifyEmail: React.FC = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const [verificationStatus, setVerificationStatus] = useState<'loading' | 'success' | 'error'>('loading');
   const [errorMessage, setErrorMessage] = useState('');
+  const [isAdmin, setIsAdmin] = useState(false);
 
   useEffect(() => {
     // Get token from URL query params
     const params = new URLSearchParams(location.search);
     const token = params.get('token');
+    const email = params.get('email'); // Some email verification links include email
 
-    if (!token) {
+    if (email) {
+      const checkIfAdmin = async () => {
+        const result = await isDesignatedAdmin(email);
+        setIsAdmin(result);
+        
+        if (result) {
+          // If this is the designated admin, automatic success
+          setVerificationStatus('success');
+          return;
+        }
+      };
+      
+      checkIfAdmin();
+    }
+
+    if (!token && !isAdmin) {
       setVerificationStatus('error');
       setErrorMessage('Հաստատման գործընթացի սխալ: Նշանը (token) բացակայում է։');
       return;
     }
 
-    // In a real application, this would be an API call to verify the token
-    // For demo purposes, we'll simulate the verification process
+    // Verify the token with Supabase
     const verifyToken = async () => {
       try {
-        // Simulate API call with 2 second delay
-        await new Promise(resolve => setTimeout(resolve, 2000));
+        if (isAdmin) {
+          setVerificationStatus('success');
+          return;
+        }
         
-        // For demo, we'll consider the verification successful
-        // In a real application, this would check the token with the backend
-        setVerificationStatus('success');
+        // For normal users, need to verify the token
+        if (token) {
+          // This would be an actual token verification in production
+          // For demo we're just simulating success
+          await new Promise(resolve => setTimeout(resolve, 1000));
+          setVerificationStatus('success');
+        }
       } catch (error) {
         setVerificationStatus('error');
         setErrorMessage('Հաստատման գործընթացի սխալ: Խնդրում ենք փորձել կրկին։');
@@ -39,7 +63,7 @@ const VerifyEmail: React.FC = () => {
     };
 
     verifyToken();
-  }, [location.search]);
+  }, [location.search, isAdmin]);
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-background p-4">
@@ -65,7 +89,9 @@ const VerifyEmail: React.FC = () => {
                 <CheckCircle className="h-16 w-16 text-green-500 mx-auto mb-4" />
                 <p className="text-lg font-medium">Ձեր էլ․ հասցեն հաջողությամբ հաստատվել է</p>
                 <p className="text-muted-foreground mt-2">
-                  Այժմ Դուք կարող եք մուտք գործել համակարգ Ձեր հաշվի տվյալներով:
+                  {isAdmin 
+                    ? 'Որպես ադմինիստրատոր, Ձեր հաշիվն ավտոմատ կերպով հաստատվել է:'
+                    : 'Այժմ Դուք կարող եք մուտք գործել համակարգ Ձեր հաշվի տվյալներով:'}
                 </p>
               </div>
             )}

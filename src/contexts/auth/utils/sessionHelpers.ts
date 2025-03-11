@@ -25,10 +25,10 @@ export async function getUserBySession(session: any): Promise<DBUser | null> {
         id: session.user.id,
         email: session.user.email,
         name: 'User',
-        role: 'student',
+        role: isDesignatedAdminEmail(session.user.email) ? 'admin' : 'student',
         created_at: new Date().toISOString(),
         updated_at: new Date().toISOString(),
-        registration_approved: true // Students are auto-approved
+        registration_approved: isDesignatedAdminEmail(session.user.email) ? true : true // Auto-approve designated admin
       };
     }
     
@@ -38,11 +38,18 @@ export async function getUserBySession(session: any): Promise<DBUser | null> {
         id: session.user.id,
         email: session.user.email,
         name: 'User',
-        role: 'student',
+        role: isDesignatedAdminEmail(session.user.email) ? 'admin' : 'student',
         created_at: new Date().toISOString(),
         updated_at: new Date().toISOString(),
-        registration_approved: true // Students are auto-approved
+        registration_approved: isDesignatedAdminEmail(session.user.email) ? true : true // Auto-approve designated admin
       };
+    }
+    
+    // Ensure the designated admin is always marked as approved
+    if (isDesignatedAdminEmail(session.user.email) && (!userData.registration_approved || userData.role !== 'admin')) {
+      await ensureDesignatedAdminApproved(session.user.id, session.user.email);
+      userData.registration_approved = true;
+      userData.role = 'admin';
     }
     
     console.log('User data retrieved successfully');
@@ -55,13 +62,39 @@ export async function getUserBySession(session: any): Promise<DBUser | null> {
         id: session.user.id,
         email: session.user.email,
         name: 'User',
-        role: 'student',
+        role: isDesignatedAdminEmail(session.user.email) ? 'admin' : 'student',
         created_at: new Date().toISOString(),
         updated_at: new Date().toISOString(),
-        registration_approved: true // Students are auto-approved
+        registration_approved: isDesignatedAdminEmail(session.user.email) ? true : true // Auto-approve designated admin
       };
     }
     return null;
+  }
+}
+
+// Simple helper function to check if email is the designated admin
+function isDesignatedAdminEmail(email: string): boolean {
+  return email === 'gitedu@bk.ru';
+}
+
+// Ensure the designated admin is approved in the database
+async function ensureDesignatedAdminApproved(userId: string, email: string): Promise<void> {
+  try {
+    const { error } = await supabase
+      .from('users')
+      .update({ 
+        role: 'admin', 
+        registration_approved: true 
+      })
+      .eq('id', userId);
+    
+    if (error) {
+      console.error('Error ensuring designated admin is approved:', error);
+    } else {
+      console.log('Designated admin status ensured for:', email);
+    }
+  } catch (err) {
+    console.error('Unexpected error ensuring designated admin status:', err);
   }
 }
 
@@ -69,6 +102,19 @@ export async function getUserBySession(session: any): Promise<DBUser | null> {
 export async function checkUserApprovalStatus(userId: string): Promise<boolean> {
   try {
     console.log('Checking approval status for user ID:', userId);
+    
+    // First check if this is the designated admin
+    const { data: userData } = await supabase
+      .from('users')
+      .select('email')
+      .eq('id', userId)
+      .single();
+    
+    if (userData && isDesignatedAdminEmail(userData.email)) {
+      // Make sure the admin is approved
+      await ensureDesignatedAdminApproved(userId, userData.email);
+      return true;
+    }
     
     const { data, error } = await supabase.rpc(
       'check_user_approval',
@@ -147,20 +193,34 @@ export async function approveFirstAdmin(email: string): Promise<boolean> {
 
 // Check if the email is designated admin
 export async function isDesignatedAdmin(email: string): Promise<boolean> {
+  // Skip database call and perform direct check for efficiency
+  return isDesignatedAdminEmail(email);
+}
+
+// Auto-approve designated admin account and process email verification
+export async function verifyDesignatedAdmin(email: string): Promise<boolean> {
+  if (!isDesignatedAdminEmail(email)) {
+    return false;
+  }
+  
   try {
-    const { data, error } = await supabase.rpc(
-      'is_designated_admin',
-      { email_to_check: email }
-    );
+    // Update all instances of the user to be an admin and approved
+    const { error } = await supabase
+      .from('users')
+      .update({ 
+        role: 'admin',
+        registration_approved: true
+      })
+      .eq('email', email);
     
     if (error) {
-      console.error('Error checking if designated admin:', error);
+      console.error('Error verifying designated admin:', error);
       return false;
     }
     
-    return !!data;
+    return true;
   } catch (err) {
-    console.error('Unexpected error checking designated admin:', err);
+    console.error('Unexpected error verifying designated admin:', err);
     return false;
   }
 }
