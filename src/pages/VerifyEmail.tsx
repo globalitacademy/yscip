@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { CheckCircle, XCircle, AlertCircle, Loader2 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
-import { isDesignatedAdmin } from '@/contexts/auth/utils';
+import { isDesignatedAdmin, checkFirstAdmin } from '@/contexts/auth/utils';
 import { toast } from 'sonner';
 
 const VerifyEmail: React.FC = () => {
@@ -14,6 +14,7 @@ const VerifyEmail: React.FC = () => {
   const [verificationStatus, setVerificationStatus] = useState<'loading' | 'success' | 'error'>('loading');
   const [errorMessage, setErrorMessage] = useState('');
   const [isAdmin, setIsAdmin] = useState(false);
+  const [isFirstAdmin, setIsFirstAdmin] = useState(false);
   const [email, setEmail] = useState<string | null>(null);
 
   useEffect(() => {
@@ -28,19 +29,56 @@ const VerifyEmail: React.FC = () => {
       setEmail(emailParam);
     }
 
-    const checkIfAdmin = async () => {
+    const processUser = async () => {
       if (emailParam) {
         try {
-          const result = await isDesignatedAdmin(emailParam);
-          console.log('Is designated admin check result:', result);
-          setIsAdmin(result);
+          // Check if designated admin
+          const adminResult = await isDesignatedAdmin(emailParam);
+          setIsAdmin(adminResult);
           
-          if (result) {
+          // Check if first admin
+          if (!adminResult) {
+            const firstAdminResult = await checkFirstAdmin();
+            setIsFirstAdmin(firstAdminResult);
+            
+            if (firstAdminResult) {
+              console.log('First admin detected:', emailParam);
+              setVerificationStatus('success');
+              
+              // Call the RPC to ensure first admin is approved
+              try {
+                const { error } = await supabase.rpc(
+                  'approve_first_admin',
+                  { admin_email: emailParam }
+                );
+                
+                if (error) {
+                  console.error('Error approving first admin:', error);
+                } else {
+                  console.log('First admin approved successfully');
+                  toast.success('Առաջին ադմինի հաշիվը հաստատվել է', {
+                    description: 'Ձեզ տրվել են լիարժեք ադմինիստրատորի իրավունքներ'
+                  });
+                  
+                  // Auto redirect to admin dashboard
+                  setTimeout(() => {
+                    navigate('/admin');
+                  }, 2000);
+                }
+              } catch (err) {
+                console.error('Error in first admin approval:', err);
+              }
+              
+              return;
+            }
+          }
+          
+          if (adminResult) {
+            console.log('Admin email detected, verifying account');
             setVerificationStatus('success');
             
             // Ensure admin verification and create proper profile
-            console.log('Admin email detected, verifying account');
-            const { error } = await supabase.rpc('verify_designated_admin');
+            const { error } = await supabase.rpc('ensure_admin_login');
             
             if (error) {
               console.error('Error verifying admin via RPC:', error);
@@ -64,13 +102,13 @@ const VerifyEmail: React.FC = () => {
                   });
                 } else {
                   console.log('Admin auto-login successful');
-                  setTimeout(() => {
-                    navigate('/admin');
-                  }, 1500);
-                  
                   toast.success('Ադմինիստրատորի հաշիվը հաստատվել է', {
                     description: 'Դուք հիմա կուղղորդվեք կառավարման վահանակ'
                   });
+                  
+                  setTimeout(() => {
+                    navigate('/admin');
+                  }, 1500);
                 }
               } catch (err) {
                 console.error('Error in admin auto-login:', err);
@@ -79,28 +117,18 @@ const VerifyEmail: React.FC = () => {
             return;
           }
         } catch (err) {
-          console.error('Error checking if admin:', err);
+          console.error('Error checking user type:', err);
         }
       }
     };
     
-    checkIfAdmin();
+    // First process special admin cases
+    processUser();
 
-    if (!token && !isAdmin) {
-      if (type === 'recovery') {
-        // This is a password reset link, redirect to login with recovery parameters
-        navigate(`/login#type=recovery${emailParam ? `&email=${encodeURIComponent(emailParam)}` : ''}`);
-        return;
-      }
-      
-      setVerificationStatus('error');
-      setErrorMessage('Հաստատման գործընթացի սխալ: Նշանը (token) բացակայում է։');
-      return;
-    }
-
+    // Handle verification token process for regular users
     const verifyToken = async () => {
       try {
-        if (isAdmin) {
+        if (isAdmin || isFirstAdmin) {
           console.log('Admin account, skipping token verification');
           setVerificationStatus('success');
           return;
@@ -113,6 +141,7 @@ const VerifyEmail: React.FC = () => {
             return;
           }
           
+          // Verify the OTP token
           const { error } = await supabase.auth.verifyOtp({
             token_hash: token,
             type: 'email'
@@ -126,43 +155,46 @@ const VerifyEmail: React.FC = () => {
             console.log('Token verified successfully');
             setVerificationStatus('success');
             
-            // If we have an email, try signing in the user automatically
-            if (emailParam) {
-              try {
-                const { data, error: signInError } = await supabase.auth.getSession();
-                
-                if (signInError) {
-                  console.error('Error getting session after verification:', signInError);
-                } else if (data.session) {
-                  console.log('User is signed in after verification');
-                  // Redirect based on user role
-                  const { data: userData, error: userError } = await supabase
-                    .from('users')
-                    .select('role')
-                    .eq('email', emailParam)
-                    .single();
-                    
-                  if (!userError && userData) {
-                    console.log('User role after verification:', userData.role);
-                    setTimeout(() => {
-                      switch (userData.role) {
-                        case 'admin':
-                          navigate('/admin');
-                          break;
-                        case 'student':
-                          navigate('/student-dashboard');
-                          break;
-                        default:
-                          navigate('/');
-                      }
-                    }, 1500);
-                  }
+            // Auto sign-in the user after verification if possible
+            try {
+              const { data, error: signInError } = await supabase.auth.getSession();
+              
+              if (signInError) {
+                console.error('Error getting session after verification:', signInError);
+              } else if (data.session) {
+                console.log('User is signed in after verification');
+                // Redirect based on user role
+                const { data: userData, error: userError } = await supabase
+                  .from('users')
+                  .select('role')
+                  .eq('email', emailParam || '')
+                  .single();
+                  
+                if (!userError && userData) {
+                  console.log('User role after verification:', userData.role);
+                  
+                  // Redirect to appropriate dashboard
+                  setTimeout(() => {
+                    switch (userData.role) {
+                      case 'admin':
+                        navigate('/admin');
+                        break;
+                      case 'student':
+                        navigate('/student-dashboard');
+                        break;
+                      default:
+                        navigate('/');
+                    }
+                  }, 1500);
                 }
-              } catch (err) {
-                console.error('Error in auto-redirect after verification:', err);
               }
+            } catch (err) {
+              console.error('Error in auto-redirect after verification:', err);
             }
           }
+        } else if (!isAdmin && !isFirstAdmin) {
+          setVerificationStatus('error');
+          setErrorMessage('Հաստատման գործընթացի սխալ: Նշանը (token) բացակայում է։');
         }
       } catch (error) {
         console.error('Verification process error:', error);
@@ -172,10 +204,10 @@ const VerifyEmail: React.FC = () => {
     };
 
     verifyToken();
-  }, [location.search, isAdmin, navigate]);
+  }, [location.search, navigate, isAdmin, isFirstAdmin]);
 
   const handleDashboardClick = () => {
-    if (isAdmin) {
+    if (isAdmin || isFirstAdmin) {
       navigate('/admin');
     } else {
       navigate('/login');
@@ -208,6 +240,8 @@ const VerifyEmail: React.FC = () => {
                 <p className="text-muted-foreground mt-2">
                   {isAdmin 
                     ? 'Որպես ադմինիստրատոր, Ձեր հաշիվն ավտոմատ կերպով հաստատվել է:'
+                    : isFirstAdmin
+                    ? 'Որպես առաջին ադմինիստրատոր, Ձեզ տրվել են լիարժեք իրավունքներ:'
                     : 'Այժմ Դուք կարող եք մուտք գործել համակարգ Ձեր հաշվի տվյալներով:'}
                 </p>
               </div>
@@ -241,7 +275,7 @@ const VerifyEmail: React.FC = () => {
               variant={verificationStatus === 'success' ? "default" : "outline"}
               className="w-full max-w-xs"
             >
-              {isAdmin ? 'Անցնել կառավարման վահանակ' : 
+              {isAdmin || isFirstAdmin ? 'Անցնել կառավարման վահանակ' : 
                 (verificationStatus === 'success' ? 'Մուտք գործել' : 'Վերադառնալ մուտքի էջ')}
             </Button>
           </CardFooter>

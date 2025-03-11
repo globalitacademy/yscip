@@ -28,9 +28,9 @@ export const registerUser = async (
     if (isAdmin) {
       console.log('Admin registration detected, ensuring admin verification first');
       try {
-        const { error: verifyError } = await supabase.rpc('verify_designated_admin');
-        if (verifyError) {
-          console.error('Error verifying admin before registration:', verifyError);
+        const { error } = await supabase.rpc('ensure_admin_login');
+        if (error) {
+          console.error('Error verifying admin before registration:', error);
         } else {
           console.log('Admin verified successfully before registration');
         }
@@ -47,7 +47,8 @@ export const registerUser = async (
         data: {
           name: userData.name,
           role: isAdmin ? 'admin' : userData.role,
-          organization: userData.organization
+          organization: userData.organization,
+          email_confirmed: isAdmin || isFirstAdmin // Pre-confirm email for admins
         },
         emailRedirectTo: `${window.location.origin}/verify-email`
       }
@@ -61,11 +62,15 @@ export const registerUser = async (
         if (isAdmin) {
           console.log('Admin account already exists, verifying it');
           try {
-            await verifyDesignatedAdmin(cleanEmail);
-            toast.success('Ադմինի հաշիվը հաջողությամբ հաստատվել է', {
-              description: 'Դուք կարող եք հիմա մուտք գործել համակարգ'
-            });
-            return true;
+            const { error } = await supabase.rpc('ensure_admin_login');
+            if (error) {
+              console.error('Error verifying existing admin:', error);
+            } else {
+              toast.success('Ադմինի հաշիվը հաջողությամբ հաստատվել է', {
+                description: 'Դուք կարող եք հիմա մուտք գործել համակարգ'
+              });
+              return true;
+            }
           } catch (verifyErr) {
             console.error('Error verifying existing admin account:', verifyErr);
           }
@@ -85,12 +90,17 @@ export const registerUser = async (
 
     console.log('User registered successfully with Auth:', authData.user?.id);
     
-    // For designated admin, ensure verification
-    if (isAdmin && authData.user) {
-      console.log('Designated admin detected, ensuring verification');
-      await verifyDesignatedAdmin(cleanEmail);
+    // For designated admin or first admin, ensure verification and auto-approval
+    if ((isAdmin || isFirstAdmin) && authData.user) {
+      console.log(`${isAdmin ? 'Designated admin' : 'First admin'} detected, ensuring verification`);
       
-      // Attempt to automatically sign in the admin after registration
+      if (isAdmin) {
+        await supabase.rpc('ensure_admin_login');
+      } else if (isFirstAdmin) {
+        await approveFirstAdmin(cleanEmail);
+      }
+      
+      // Auto sign-in after registration for admins
       try {
         await supabase.auth.signInWithPassword({
           email: cleanEmail,
@@ -101,41 +111,9 @@ export const registerUser = async (
         console.error('Auto-login for admin failed:', signInError);
       }
     }
-    
-    // For first admin (not the designated one), approve them
-    if (isFirstAdmin && authData.user) {
-      console.log('First admin detected, ensuring approval');
-      await approveFirstAdmin(cleanEmail);
-      
-      // Update profile to set as admin
-      const { error: updateError } = await supabase
-        .from('users')
-        .update({ 
-          role: 'admin', 
-          registration_approved: true 
-        })
-        .eq('id', authData.user.id);
-        
-      if (updateError) {
-        console.error('Error updating first admin profile:', updateError);
-      } else {
-        console.log('First admin profile updated successfully');
-      }
-      
-      // Attempt to automatically sign in the first admin after registration
-      try {
-        await supabase.auth.signInWithPassword({
-          email: cleanEmail,
-          password: userData.password
-        });
-        console.log('Auto-login for first admin successful');
-      } catch (signInError) {
-        console.error('Auto-login for first admin failed:', signInError);
-      }
-    }
 
     // If automatic profile creation via trigger doesn't work, create manually
-    if (authData.user && !isAdmin) {
+    if (authData.user) {
       const { error: profileError } = await supabase
         .from('users')
         .select('id')
@@ -150,9 +128,9 @@ export const registerUser = async (
             id: authData.user.id,
             name: userData.name,
             email: cleanEmail,
-            role: isFirstAdmin ? 'admin' : userData.role,
+            role: isFirstAdmin ? 'admin' : (isAdmin ? 'admin' : userData.role),
             organization: userData.organization,
-            registration_approved: userData.role === 'student' || isFirstAdmin, // Auto-approve students and first admin
+            registration_approved: userData.role === 'student' || isAdmin || isFirstAdmin, // Auto-approve students and admins
           });
 
         if (insertError) {
@@ -167,7 +145,7 @@ export const registerUser = async (
       });
     } else if (isFirstAdmin) {
       toast.success('Առաջին ադմինի հաշիվը հաջողությամբ ստեղծվել է', {
-        description: 'Դուք կարող եք հիմա մուտք գործել համակարգ'
+        description: 'Դուք կարող եք հիմա մուտք գործել համակարգ լիարժեք իրավունքներով'
       });
     } else {
       toast.success('Գրանցումը հաջողված է', {

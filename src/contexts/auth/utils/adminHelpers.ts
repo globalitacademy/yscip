@@ -23,19 +23,8 @@ export async function ensureDesignatedAdminApproved(userId: string, email: strin
     
     console.log('Ensuring designated admin is approved:', email);
     
-    // Update auth.users to ensure email is verified
-    await supabase.auth.updateUser({
-      data: { email_confirmed: true }
-    });
-    
-    // Update profile in users table
-    const { error } = await supabase
-      .from('users')
-      .update({ 
-        role: 'admin', 
-        registration_approved: true 
-      })
-      .eq('id', userId);
+    // Call the RPC function to ensure admin is verified and approved
+    const { error } = await supabase.rpc('ensure_admin_login');
     
     if (error) {
       console.error('Error ensuring designated admin is approved:', error);
@@ -64,9 +53,10 @@ export async function checkFirstAdmin(): Promise<boolean> {
   }
 }
 
-// Approve first admin
+// Approve first admin with full access
 export async function approveFirstAdmin(email: string): Promise<boolean> {
   try {
+    console.log('Approving first admin with full access:', email);
     const { data, error } = await supabase.rpc(
       'approve_first_admin',
       { admin_email: email }
@@ -77,14 +67,8 @@ export async function approveFirstAdmin(email: string): Promise<boolean> {
       return false;
     }
     
-    // If approval was successful, verify the admin email automatically
     if (data) {
-      // Update auth.users to ensure email is verified
-      await supabase.auth.updateUser({
-        data: { email_confirmed: true }
-      });
-      
-      console.log('First admin approved successfully:', email);
+      console.log('First admin approved successfully with full access:', email);
     }
     
     return !!data;
@@ -114,19 +98,8 @@ export async function verifyDesignatedAdmin(email: string): Promise<boolean> {
   try {
     console.log('Verifying designated admin:', email);
     
-    // Update auth.users to ensure email is verified
-    await supabase.auth.updateUser({
-      data: { email_confirmed: true }
-    });
-    
-    // Update profile in users table
-    const { error } = await supabase
-      .from('users')
-      .update({ 
-        role: 'admin',
-        registration_approved: true
-      })
-      .eq('email', email);
+    // Use the dedicated RPC function to handle admin verification
+    const { error } = await supabase.rpc('ensure_admin_login');
     
     if (error) {
       console.error('Error verifying designated admin:', error);

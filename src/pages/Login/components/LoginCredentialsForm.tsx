@@ -1,130 +1,179 @@
 
 import React, { useState } from 'react';
-import { useForm } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
-import { z } from 'zod';
-import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
-import { Eye, EyeOff, Loader2 } from 'lucide-react';
-import { loginValidationSchema } from '../validation';
-import ForgotPasswordForm from './ForgotPasswordForm';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { validateEmail } from '../validation';
+import { sendVerificationEmail } from '@/contexts/auth/operations';
+import { toast } from 'sonner';
+import { supabase } from '@/integrations/supabase/client';
 
 interface LoginCredentialsFormProps {
-  onLogin?: (email: string, password: string) => Promise<void>;
-  onResetEmailSent?: () => void;
+  onLogin: (email: string, password: string) => Promise<void>;
+  onResetEmailSent: () => void;
   externalLoading?: boolean;
-  isLoading?: boolean;
+  defaultEmail?: string;
 }
 
 const LoginCredentialsForm: React.FC<LoginCredentialsFormProps> = ({ 
   onLogin, 
   onResetEmailSent,
   externalLoading,
-  isLoading: propIsLoading
+  defaultEmail = ''
 }) => {
-  const [showPassword, setShowPassword] = useState(false);
-  const [email, setEmail] = useState('');
-  const [formError, setFormError] = useState<string | null>(null);
-  const isLoading = propIsLoading || externalLoading || false;
+  const [email, setEmail] = useState(defaultEmail);
+  const [password, setPassword] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
+  const [showForgotPassword, setShowForgotPassword] = useState(false);
+  const [forgotEmail, setForgotEmail] = useState('');
+  const [emailError, setEmailError] = useState('');
 
-  const form = useForm<z.infer<typeof loginValidationSchema>>({
-    resolver: zodResolver(loginValidationSchema),
-    defaultValues: {
-      email: '',
-      password: '',
-    },
-  });
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    await onLogin(email, password);
+  };
 
-  const onSubmit = async (values: z.infer<typeof loginValidationSchema>) => {
+  const handleForgotPasswordSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    const { isValid, errorMessage } = validateEmail(forgotEmail || email);
+    if (!isValid) {
+      setEmailError(errorMessage);
+      return;
+    }
+    
+    setIsLoading(true);
     try {
-      setFormError(null);
-      if (onLogin) {
-        await onLogin(values.email, values.password);
+      const emailToUse = forgotEmail || email;
+      
+      const { error } = await supabase.auth.resetPasswordForEmail(emailToUse, {
+        redirectTo: `${window.location.origin}/login`,
+      });
+      
+      if (error) {
+        console.error('Password reset error:', error);
+        toast.error('Սխալ', {
+          description: error.message
+        });
+      } else {
+        onResetEmailSent();
+        toast.success('Հղումն ուղարկված է', {
+          description: 'Գաղտնաբառը վերականգնելու հղումը ուղարկվել է Ձեր էլ․ փոստին'
+        });
       }
     } catch (error) {
-      setFormError(error instanceof Error ? error.message : 'Մուտքի սխալ');
+      console.error('Error sending password reset:', error);
+      toast.error('Սխալ', {
+        description: 'Տեղի ունեցավ անսպասելի սխալ'
+      });
+    } finally {
+      setIsLoading(false);
     }
   };
 
-  React.useEffect(() => {
-    const subscription = form.watch((value) => {
-      if (value.email) {
-        setEmail(value.email as string);
-      }
-    });
-    return () => subscription.unsubscribe();
-  }, [form.watch]);
+  const handleResendVerification = async () => {
+    if (!email) return;
+    
+    const { isValid, errorMessage } = validateEmail(email);
+    if (!isValid) {
+      setEmailError(errorMessage);
+      return;
+    }
+    
+    setIsLoading(true);
+    try {
+      await sendVerificationEmail(email);
+    } catch (error) {
+      console.error('Error resending verification email:', error);
+      toast.error('Սխալ', {
+        description: 'Տեղի ունեցավ անսպասելի սխալ'
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
-  return (
-    <Form {...form}>
-      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-        <FormField
-          control={form.control}
-          name="email"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Էլ․ հասցե</FormLabel>
-              <FormControl>
-                <Input placeholder="your@email.com" {...field} type="email" />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
+  return showForgotPassword ? (
+    <form onSubmit={handleForgotPasswordSubmit} className="space-y-4">
+      <div className="space-y-2">
+        <Label htmlFor="forgot-email">Էլ․ հասցե</Label>
+        <Input
+          id="forgot-email"
+          placeholder="name@example.com"
+          type="email"
+          value={forgotEmail || email}
+          onChange={(e) => setForgotEmail(e.target.value)}
+          className={emailError ? "border-red-500" : ""}
+          required
         />
-        <FormField
-          control={form.control}
-          name="password"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Գաղտնաբառ</FormLabel>
-              <FormControl>
-                <div className="relative">
-                  <Input
-                    placeholder="Մուտքագրեք գաղտնաբառը"
-                    {...field}
-                    type={showPassword ? 'text' : 'password'}
-                  />
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    size="icon"
-                    className="absolute right-2 top-1/2 -translate-y-1/2"
-                    onClick={() => setShowPassword(!showPassword)}
-                  >
-                    {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-                    <span className="sr-only">Show password</span>
-                  </Button>
-                </div>
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
+        {emailError && <p className="text-sm text-red-500 mt-1">{emailError}</p>}
+      </div>
+      
+      <Button type="submit" className="w-full" disabled={isLoading}>
+        {isLoading ? 'Հղման ուղարկում...' : 'Ուղարկել վերականգնման հղումը'}
+      </Button>
+      
+      <Button 
+        type="button" 
+        variant="ghost" 
+        className="w-full"
+        onClick={() => setShowForgotPassword(false)}
+      >
+        Վերադառնալ մուտքի էջ
+      </Button>
+    </form>
+  ) : (
+    <form onSubmit={handleSubmit} className="space-y-4">
+      <div className="space-y-2">
+        <Label htmlFor="email">Էլ․ հասցե</Label>
+        <Input
+          id="email"
+          placeholder="name@example.com"
+          type="email"
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
+          required
         />
-        
-        {formError && (
-          <div className="text-sm text-red-500">{formError}</div>
-        )}
-        
-        <div className="flex justify-end">
-          <ForgotPasswordForm 
-            email={email} 
-            onReset={onResetEmailSent || (() => {})} 
-          />
+      </div>
+      
+      <div className="space-y-2">
+        <div className="flex items-center justify-between">
+          <Label htmlFor="password">Գաղտնաբառ</Label>
+          <Button 
+            variant="link" 
+            className="p-0 h-auto text-sm"
+            onClick={() => setShowForgotPassword(true)}
+            type="button"
+          >
+            Մոռացե՞լ եք գաղտնաբառը
+          </Button>
         </div>
-        
-        <Button disabled={isLoading} className="w-full" type="submit">
-          {isLoading ? (
-            <>
-              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-              Մուտք գործել...
-            </>
-          ) : (
-            'Մուտք գործել'
-          )}
+        <Input
+          id="password"
+          placeholder="••••••••"
+          type="password"
+          value={password}
+          onChange={(e) => setPassword(e.target.value)}
+          required
+        />
+      </div>
+      
+      <Button type="submit" className="w-full" disabled={externalLoading || isLoading}>
+        {externalLoading ? 'Մուտք գործել...' : 'Մուտք գործել'}
+      </Button>
+      
+      <div className="text-center mt-4">
+        <Button 
+          variant="link" 
+          className="p-0 h-auto text-sm text-muted-foreground"
+          onClick={handleResendVerification}
+          type="button"
+          disabled={isLoading}
+        >
+          Չե՞ք ստացել հաստատման հղումը: Ուղարկել կրկին
         </Button>
-      </form>
-    </Form>
+      </div>
+    </form>
   );
 };
 
