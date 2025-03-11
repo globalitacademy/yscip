@@ -1,6 +1,3 @@
 
-// This file re-exports from the refactored structure for backward compatibility
-import { AuthProvider, useAuth } from './auth';
-
-export { AuthProvider, useAuth };
-export default AuthProvider;
+// This file re-exports the AuthContext components for backward compatibility
+export { AuthProvider, useAuth } from './auth';
