@@ -6,44 +6,61 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Building, FileText, Users, CheckCircle } from 'lucide-react';
 import CreatedProjectsTab from '@/components/tabs/CreatedProjectsTab';
 import { useAuth } from '@/contexts/auth';
+import { supabase } from '@/integrations/supabase/client';
+import { toast } from 'sonner';
 
 const EmployerDashboard: React.FC = () => {
   const { user } = useAuth();
   const [createdProjects, setCreatedProjects] = useState<any[]>([]);
+  const [completedProjects, setCompletedProjects] = useState<number>(0);
+  const [loading, setLoading] = useState<boolean>(true);
   
-  // Fetch or mock the created projects data
+  // Fetch real data from Supabase
   useEffect(() => {
-    // In a real application, you would fetch this data from your backend
-    // For now, we'll use mock data
-    const mockProjects = [
-      {
-        id: '1',
-        title: 'Էլեկտրոնային առևտրի հարթակ',
-        description: 'Ստեղծել վեբ հավելված ապրանքների առցանց վաճառքի համար, ներառյալ վճարման համակարգ և պատվերների կառավարում։',
-        techStack: ['React', 'Node.js', 'MongoDB'],
-        category: 'Էլեկտրոնային առևտուր',
-        createdBy: user?.id
-      },
-      {
-        id: '2',
-        title: 'Մոբայլ բանկինգ հավելված',
-        description: 'Մշակել մոբայլ հավելված` բանկային գործառնությունների կառավարման համար, անվտանգության բարձր մակարդակով։',
-        techStack: ['Flutter', 'Firebase', 'REST API'],
-        category: 'Ֆինտեխ',
-        createdBy: user?.id
-      },
-      {
-        id: '3',
-        title: 'Առաքման ծառայություն',
-        description: 'Ստեղծել համակարգ առաքման պատվերների հետևման և կառավարման համար։',
-        techStack: ['React Native', 'GraphQL', 'PostgreSQL'],
-        category: 'Լոջիստիկա',
-        createdBy: user?.id
+    const fetchProjects = async () => {
+      if (!user) return;
+      
+      try {
+        setLoading(true);
+        
+        // Query the employer_projects table
+        const { data, error } = await supabase
+          .from('employer_projects')
+          .select('*')
+          .eq('created_by', user.id);
+        
+        if (error) {
+          throw error;
+        }
+        
+        if (data) {
+          // Convert database format to component format
+          const formattedProjects = data.map(project => ({
+            id: project.id,
+            title: project.title,
+            description: project.description,
+            techStack: project.tech_stack || [],
+            category: project.category,
+            createdBy: project.created_by,
+            createdAt: project.created_at
+          }));
+          
+          setCreatedProjects(formattedProjects);
+          
+          // For now, just set a mock completed count
+          // In a real app, you might have a status field to count completed projects
+          setCompletedProjects(1);
+        }
+      } catch (error) {
+        console.error('Error fetching projects:', error);
+        toast.error('Նախագծերը բեռնելիս սխալ առաջացավ։');
+      } finally {
+        setLoading(false);
       }
-    ];
+    };
     
-    setCreatedProjects(mockProjects);
-  }, [user?.id]);
+    fetchProjects();
+  }, [user]);
   
   return (
     <div className="min-h-screen flex flex-col bg-background">
@@ -58,7 +75,7 @@ const EmployerDashboard: React.FC = () => {
             </CardHeader>
             <CardContent>
               <div className="flex items-center justify-between">
-                <span className="text-2xl font-bold">{createdProjects.length}</span>
+                <span className="text-2xl font-bold">{loading ? '...' : createdProjects.length}</span>
                 <FileText className="h-6 w-6 text-muted-foreground" />
               </div>
             </CardContent>
@@ -70,7 +87,7 @@ const EmployerDashboard: React.FC = () => {
             </CardHeader>
             <CardContent>
               <div className="flex items-center justify-between">
-                <span className="text-2xl font-bold">1</span>
+                <span className="text-2xl font-bold">{loading ? '...' : completedProjects}</span>
                 <CheckCircle className="h-6 w-6 text-muted-foreground" />
               </div>
             </CardContent>
@@ -103,7 +120,13 @@ const EmployerDashboard: React.FC = () => {
         
         <div className="mt-8">
           <h2 className="text-2xl font-bold mb-4">Իմ նախագծերը</h2>
-          <CreatedProjectsTab user={user} createdProjects={createdProjects} />
+          {loading ? (
+            <div className="flex justify-center items-center p-12">
+              <p>Բեռնում...</p>
+            </div>
+          ) : (
+            <CreatedProjectsTab user={user} createdProjects={createdProjects} />
+          )}
         </div>
       </main>
       <Footer />
