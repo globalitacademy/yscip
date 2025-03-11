@@ -57,7 +57,7 @@ const AdminLayout: React.FC<AdminLayoutProps> = ({ children, pageTitle }) => {
     return <Navigate to="/login" replace />;
   }
   
-  // Check for appropriate role - Fix the TypeScript error by comparing correctly
+  // Check for appropriate role
   const adminRoles = ['admin', 'lecturer', 'instructor', 'project_manager', 'supervisor'];
   if (!adminRoles.includes(user.role)) {
     console.log("User doesn't have appropriate role, redirecting to dashboard");

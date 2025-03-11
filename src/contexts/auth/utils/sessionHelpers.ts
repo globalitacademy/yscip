@@ -2,16 +2,17 @@
 import { supabase } from '@/integrations/supabase/client';
 import { DBUser } from '@/types/database.types';
 
+// Get user data by session
 export async function getUserBySession(session: any): Promise<DBUser | null> {
   try {
-    console.log('Getting user data for session:', session.user.id);
-    
-    if (!session.user) {
-      console.log('No user in session');
+    if (!session || !session.user || !session.user.id) {
+      console.log('No valid session provided to getUserBySession');
       return null;
     }
+
+    console.log('Getting user data by session for user ID:', session.user.id);
     
-    // First try to get user from database
+    // Query the user from the database using the auth.id
     const { data: userData, error } = await supabase
       .from('users')
       .select('*')
@@ -19,207 +20,91 @@ export async function getUserBySession(session: any): Promise<DBUser | null> {
       .single();
     
     if (error) {
-      // Handle RLS errors - this may be due to RLS policies blocking access
-      console.error('Error fetching user from database:', error);
-      return await createOrReturnUserFromAuth(session.user);
+      console.error('Error fetching user data by session:', error);
+      return null;
     }
     
-    if (userData) {
-      console.log('User found in database', userData.id);
-      return userData as DBUser;
-    } else {
-      console.log('User not found in database, creating from auth');
-      return await createOrReturnUserFromAuth(session.user);
+    if (!userData) {
+      console.log('No user data found for session user ID:', session.user.id);
+      return null;
     }
+    
+    console.log('User data retrieved successfully');
+    return userData as DBUser;
   } catch (err) {
     console.error('Unexpected error in getUserBySession:', err);
-    return await createOrReturnUserFromAuth(session.user);
-  }
-}
-
-export async function createOrReturnUserFromAuth(authUser: any): Promise<DBUser | null> {
-  if (!authUser) {
-    console.log('No auth user provided');
-    return null;
-  }
-  
-  try {
-    console.log('Trying to get role from auth metadata');
-    
-    // Safely get email with fallback
-    const email = authUser.email || '';
-    
-    // Get role from metadata and default to student if not set
-    const role = authUser.user_metadata?.role || 'student';
-    
-    // For students, auto-approve. For other roles, approval is needed.
-    const isAutoApproved = role === 'student';
-    
-    console.log(`User role from metadata: ${role}, auto-approved: ${isAutoApproved}`);
-    
-    // Try to create user record in database if it doesn't exist
-    try {
-      console.log('Attempting to create user record in database');
-      
-      const { data: existingUser, error: checkError } = await supabase
-        .from('users')
-        .select('id')
-        .eq('id', authUser.id)
-        .maybeSingle();
-      
-      if (checkError) {
-        console.error('Error checking for existing user:', checkError);
-        throw checkError;
-      }
-      
-      if (!existingUser) {
-        console.log('User does not exist in database, creating...');
-        const { data: newUser, error: insertError } = await supabase
-          .from('users')
-          .insert({
-            id: authUser.id,
-            email: email,
-            name: authUser.user_metadata?.name || (email ? email.split('@')[0] : 'User'),
-            role: role,
-            registration_approved: isAutoApproved
-          })
-          .select()
-          .single();
-        
-        if (insertError) {
-          console.error('Error inserting user:', insertError);
-          throw insertError;
-        }
-        
-        console.log('User created successfully:', newUser?.id);
-        return newUser as DBUser;
-      } else {
-        console.log('User already exists in database');
-      }
-    } catch (insertError) {
-      console.error('Error creating user record:', insertError);
-      
-      // If we failed to create a user record, use the auth data directly
-      return {
-        id: authUser.id,
-        email: email,
-        name: authUser.user_metadata?.name || (email ? email.split('@')[0] : 'User'),
-        role: role as any,
-        registration_approved: isAutoApproved,
-        created_at: new Date().toISOString(),
-        updated_at: new Date().toISOString()
-      };
-    }
-    
-    // If we haven't returned yet, try to get user data again
-    const { data: userData, error: userError } = await supabase
-      .from('users')
-      .select('*')
-      .eq('id', authUser.id)
-      .single();
-    
-    if (userError) {
-      console.error('Error getting user after creation/check:', userError);
-      
-      if (authUser) {
-        // Return user data from auth system since we can't access the database
-        console.log('Using auth data directly due to RLS issues');
-        
-        return {
-          id: authUser.id,
-          email: email,
-          name: authUser.user_metadata?.name || (email ? email.split('@')[0] : 'User'),
-          role: (authUser.user_metadata?.role as any) || 'student',
-          registration_approved: authUser.user_metadata?.registration_approved !== false,
-          created_at: authUser.created_at,
-          updated_at: authUser.updated_at
-        };
-      } else {
-        return null;
-      }
-    }
-    
-    console.log('User fetched after creation/check:', userData?.id);
-    return userData as DBUser;
-    
-  } catch (error) {
-    console.error('Unhandled error in createOrReturnUserFromAuth:', error);
-    
-    if (authUser) {
-      // Safely get email with fallback
-      const email = authUser.email || '';
-      
-      // Return basic user info from auth as fallback
-      return {
-        id: authUser.id,
-        email: email,
-        name: authUser.user_metadata?.name || (email ? email.split('@')[0] : 'User'),
-        role: (authUser.user_metadata?.role as any) || 'student',
-        registration_approved: authUser.user_metadata?.registration_approved !== false,
-        created_at: authUser.created_at,
-        updated_at: authUser.updated_at
-      };
-    }
-    
     return null;
   }
 }
 
-// Fallback function to get user data directly from Auth
-export async function getUserFromAuth(): Promise<DBUser | null> {
-  console.log('Getting user data directly from Auth');
-  
-  try {
-    const { data: { user: authUser } } = await supabase.auth.getUser();
-    if (authUser) {
-      const email = authUser.email || '';
-      
-      return {
-        id: authUser.id,
-        email: email,
-        name: authUser.user_metadata?.name || (email ? email.split('@')[0] : 'User'),
-        role: (authUser.user_metadata?.role as any) || 'student',
-        registration_approved: authUser.user_metadata?.registration_approved !== false,
-        created_at: authUser.created_at,
-        updated_at: authUser.updated_at
-      };
-    }
-    return null;
-  } catch (error) {
-    console.error('Error getting user from Auth:', error);
-    return null;
-  }
-}
-
+// Check user approval status
 export async function checkUserApprovalStatus(userId: string): Promise<boolean> {
   try {
+    console.log('Checking approval status for user ID:', userId);
+    
     const { data, error } = await supabase
       .from('users')
-      .select('registration_approved, role')
+      .select('role, registration_approved')
       .eq('id', userId)
       .single();
     
     if (error) {
-      console.error('Error checking approval status:', error);
-      
-      // Fallback to auth user data
-      const { data: { user } } = await supabase.auth.getUser();
-      if (user) {
-        // Students are auto-approved, otherwise check metadata
-        const role = user.user_metadata?.role || 'student';
-        return role === 'student' || user.user_metadata?.registration_approved === true;
-      }
+      console.error('Error checking user approval status:', error);
       return false;
     }
     
-    // Students are always considered approved
-    if (data.role === 'student') {
-      return true;
+    // Students are automatically approved, others need approval
+    return data.role === 'student' || data.registration_approved === true;
+  } catch (err) {
+    console.error('Unexpected error in checkUserApprovalStatus:', err);
+    return false;
+  }
+}
+
+// Check if email already exists
+export async function checkExistingEmail(email: string): Promise<boolean> {
+  try {
+    console.log('Checking if email already exists:', email);
+    
+    const { data, error } = await supabase
+      .from('users')
+      .select('id')
+      .eq('email', email)
+      .single();
+    
+    if (error && error.code !== 'PGRST116') {
+      // PGRST116 is "no rows returned" which is what we want
+      console.error('Error checking existing email:', error);
+      return false;
     }
     
-    return data.registration_approved === true;
-  } catch (error) {
-    console.error('Unexpected error checking approval:', error);
+    // If data exists, email is already in use
+    return !!data;
+  } catch (err) {
+    console.error('Unexpected error in checkExistingEmail:', err);
+    return false;
+  }
+}
+
+// Check if this is the first admin being created
+export async function checkFirstAdmin(): Promise<boolean> {
+  try {
+    console.log('Checking if this is the first admin registration');
+    
+    const { count, error } = await supabase
+      .from('users')
+      .select('id', { count: 'exact', head: true })
+      .eq('role', 'admin');
+    
+    if (error) {
+      console.error('Error checking for existing admins:', error);
+      return false;
+    }
+    
+    // Return true if no admins exist yet
+    return count === 0;
+  } catch (err) {
+    console.error('Unexpected error in checkFirstAdmin:', err);
     return false;
   }
 }
