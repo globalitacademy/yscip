@@ -413,6 +413,12 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      approve_first_admin: {
+        Args: {
+          admin_email: string
+        }
+        Returns: boolean
+      }
       create_notification: {
         Args: {
           p_user_id: string
@@ -421,6 +427,10 @@ export type Database = {
           p_type: string
         }
         Returns: undefined
+      }
+      get_first_admin_status: {
+        Args: Record<PropertyKey, never>
+        Returns: boolean
       }
     }
     Enums: {
