@@ -8,7 +8,7 @@ import { DBUser } from '@/types/database.types';
 import LoginForm from './LoginForm';
 import RegisterForm from './RegisterForm';
 import { RegisterUserData } from './types';
-import { checkFirstAdmin, isDesignatedAdmin } from '@/contexts/auth/utils/sessionHelpers';
+import { checkFirstAdmin, isDesignatedAdmin } from '@/contexts/auth/utils';
 import { supabase } from '@/integrations/supabase/client';
 import ResetAdminForm from './components/ResetAdminForm';
 
@@ -21,14 +21,12 @@ const Login: React.FC = () => {
   const [designatedAdminMessage, setDesignatedAdminMessage] = useState(false);
   const [showAdminReset, setShowAdminReset] = useState(false);
 
-  // Check if there are existing admins and check for designated admin in URL
   useEffect(() => {
     const checkExistingAdmins = async () => {
       const firstAdmin = await checkFirstAdmin();
       setIsFirstAdmin(firstAdmin);
     };
     
-    // Check if we're returning from a password reset or verification link
     const checkParams = async () => {
       const url = new URL(window.location.href);
       const params = new URLSearchParams(url.hash.substring(1));
@@ -37,7 +35,6 @@ const Login: React.FC = () => {
       
       console.log('URL params check:', { email, type });
       
-      // If URL contains admin reset parameter, show the admin reset form
       if (params.get('admin_reset') === 'true') {
         setShowAdminReset(true);
       }
@@ -46,10 +43,8 @@ const Login: React.FC = () => {
         setDesignatedAdminMessage(true);
         setShowAdminReset(true);
         
-        // If this is the designated admin, try to ensure their account is verified
         if (await isDesignatedAdmin(email)) {
           try {
-            // Update user metadata 
             const { data, error } = await supabase.auth.updateUser({
               data: { email_confirmed: true }
             });
@@ -70,7 +65,6 @@ const Login: React.FC = () => {
     checkParams();
   }, []);
 
-  // Redirect if already logged in
   useEffect(() => {
     if (isAuthenticated && user) {
       if (!isApproved && user.role !== 'student') {
@@ -110,11 +104,9 @@ const Login: React.FC = () => {
     setIsLoading(true);
 
     try {
-      // Check if this is the designated admin
       const isAdmin = await isDesignatedAdmin(email);
       
       if (isAdmin) {
-        // For the admin account, try to ensure their email is confirmed first
         try {
           await supabase.rpc('verify_designated_admin');
           console.log('Called verify_designated_admin before login');
@@ -123,7 +115,6 @@ const Login: React.FC = () => {
         }
       }
       
-      // Normal login process
       const success = await login(email, password);
       if (success) {
         if (isAdmin) {
@@ -135,9 +126,7 @@ const Login: React.FC = () => {
             description: 'Դուք հաջողությամբ մուտք եք գործել համակարգ',
           });
         }
-        // No need to navigate here as the useEffect will handle redirection
       } else {
-        // If this is the admin and login failed, suggest resetting
         if (isAdmin) {
           setShowAdminReset(true);
           toast.error('Ադմինի մուտքը չի հաջողվել', {
@@ -162,14 +151,12 @@ const Login: React.FC = () => {
     setIsLoading(true);
 
     try {
-      // Check if this is the designated admin
       const isAdmin = await isDesignatedAdmin(userData.email);
       
       if (isAdmin) {
         setDesignatedAdminMessage(true);
       }
       
-      // Check if employer has organization
       if (userData.role === 'employer' && !userData.organization) {
         toast.error('Սխալ', {
           description: 'Կազմակերպության անունը պարտադիր է գործատուի համար',
@@ -211,6 +198,13 @@ const Login: React.FC = () => {
     }
   };
 
+  const handleResetAdmin = () => {
+    setDesignatedAdminMessage(true);
+    toast.success('Ադմինիստրատորի հաշիվը վերակայվել է', {
+      description: 'Այժմ կարող եք մուտք գործել օգտագործելով gitedu@bk.ru և Qolej2025* գաղտնաբառը'
+    });
+  };
+
   return (
     <div className="min-h-screen flex items-center justify-center bg-background p-4">
       <div className="w-full max-w-md">
@@ -230,7 +224,7 @@ const Login: React.FC = () => {
                 Ադմինիստրատորի հաշիվը (gitedu@bk.ru) գրանցված է։ Մուտք գործեք Ձեր գաղտնաբառով։
               </div>
             )}
-            {showAdminReset && <ResetAdminForm />}
+            {showAdminReset && <ResetAdminForm onReset={handleResetAdmin} />}
           </CardHeader>
           <CardContent>
             <Tabs defaultValue="login" className="w-full">

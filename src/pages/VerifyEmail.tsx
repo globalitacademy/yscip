@@ -1,11 +1,10 @@
-
 import React, { useEffect, useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { CheckCircle, XCircle, AlertCircle, Loader2 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
-import { isDesignatedAdmin } from '@/contexts/auth/utils/sessionHelpers';
+import { isDesignatedAdmin } from '@/contexts/auth/utils';
 
 const VerifyEmail: React.FC = () => {
   const navigate = useNavigate();
@@ -15,11 +14,10 @@ const VerifyEmail: React.FC = () => {
   const [isAdmin, setIsAdmin] = useState(false);
 
   useEffect(() => {
-    // Get token from URL query params
     const params = new URLSearchParams(location.search);
     const token = params.get('token');
-    const email = params.get('email'); // Some email verification links include email
-    const type = params.get('type'); // Check if this is a recovery link
+    const email = params.get('email');
+    const type = params.get('type');
 
     console.log('Verification params:', { token, email, type });
 
@@ -30,21 +28,17 @@ const VerifyEmail: React.FC = () => {
         setIsAdmin(result);
         
         if (result) {
-          // If this is the designated admin, automatic success
           setVerificationStatus('success');
           
-          // Try to manually mark the admin's email as confirmed
           try {
-            // Update user metadata instead of trying to update confirmed_at
             await supabase.auth.updateUser({
               data: { email_confirmed: true }
             });
             console.log('Admin email manually confirmed via metadata');
             
-            // Try to sign in directly to trigger session refresh
             const { error: signInError } = await supabase.auth.signInWithPassword({
               email: 'gitedu@bk.ru',
-              password: '123456' // This won't work without the actual password
+              password: '123456'
             });
             
             if (signInError) {
@@ -66,7 +60,6 @@ const VerifyEmail: React.FC = () => {
       return;
     }
 
-    // Verify the token with Supabase
     const verifyToken = async () => {
       try {
         if (isAdmin) {
@@ -75,16 +68,13 @@ const VerifyEmail: React.FC = () => {
           return;
         }
         
-        // For normal users, need to verify the token
         if (token) {
           console.log('Verifying token');
           if (type === 'recovery') {
-            // This is a password reset link, don't try to verify it
             navigate('/login');
             return;
           }
           
-          // For email verification links
           const { error } = await supabase.auth.verifyOtp({
             token_hash: token,
             type: 'email'

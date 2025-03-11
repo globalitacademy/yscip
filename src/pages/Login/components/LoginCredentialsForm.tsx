@@ -1,142 +1,91 @@
-
-import React, { useState, useEffect } from 'react';
-import { Button } from '@/components/ui/button';
+import React, { useState } from 'react';
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { z } from 'zod';
 import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { toast } from 'sonner';
-import { useNavigate } from 'react-router-dom';
-import { useAuth } from '@/contexts/auth';
-import ForgotPasswordForm from './ForgotPasswordForm';
-import { isDesignatedAdmin } from '@/contexts/auth/utils/sessionHelpers';
-import { Loader2 } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
+import { Eye, EyeOff, Loader2 } from 'lucide-react';
+import { loginValidationSchema } from '../validation';
+import { isDesignatedAdmin } from '@/contexts/auth/utils';
 
 interface LoginCredentialsFormProps {
-  onResetEmailSent: () => void;
-  externalLoading: boolean;
+  onLogin: (email: string, password: string) => Promise<void>;
+  isLoading: boolean;
 }
 
-const LoginCredentialsForm: React.FC<LoginCredentialsFormProps> = ({ 
-  onResetEmailSent,
-  externalLoading
-}) => {
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [isLoggingIn, setIsLoggingIn] = useState(false);
-  const [isAdmin, setIsAdmin] = useState(false);
-  const navigate = useNavigate();
-  const { login } = useAuth();
+const LoginCredentialsForm: React.FC<LoginCredentialsFormProps> = ({ onLogin, isLoading }) => {
+  const [showPassword, setShowPassword] = useState(false);
 
-  // Check if entered email is admin
-  useEffect(() => {
-    const checkAdmin = async () => {
-      if (email) {
-        const admin = await isDesignatedAdmin(email);
-        setIsAdmin(admin);
-      } else {
-        setIsAdmin(false);
-      }
-    };
-    
-    checkAdmin();
-  }, [email]);
+  const form = useForm<z.infer<typeof loginValidationSchema>>({
+    resolver: zodResolver(loginValidationSchema),
+    defaultValues: {
+      email: '',
+      password: '',
+    },
+  });
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    
-    if (!email || !email.includes('@')) {
-      toast.error('Մուտքագրեք վավեր էլ․ հասցե');
-      return;
-    }
-
-    if (!password || password.length < 6) {
-      toast.error('Գաղտնաբառը պետք է պարունակի առնվազն 6 նիշ');
-      return;
-    }
-    
-    setIsLoggingIn(true);
-    
-    try {
-      console.log('Attempting login for:', email, 'Is admin:', isAdmin, 'Password:', password);
-      
-      const success = await login(email, password);
-      
-      if (success) {
-        console.log('Login successful, navigating to appropriate page based on role');
-        toast.success('Մուտքն հաջողվել է');
-        // We'll let App.tsx handle the navigation based on role
-      } else {
-        console.log('Login was not successful');
-        // If admin login failed, suggest account reset
-        if (isAdmin) {
-          toast.error('Ադմինի մուտքը չի հաջողվել', {
-            description: 'Փորձեք վերակայել ադմինի հաշիվը և նորից գրանցվել'
-          });
-          navigate('/?admin_reset=true#');
-        }
-        // Error messages are handled in authOperations.ts
-      }
-    } catch (err) {
-      console.error('Unexpected login error:', err);
-      toast.error('Տեղի ունեցավ անսպասելի սխալ');
-    } finally {
-      setIsLoggingIn(false);
-    }
+  const onSubmit = async (values: z.infer<typeof loginValidationSchema>) => {
+    await onLogin(values.email, values.password);
   };
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-4">
-      <div className="space-y-2">
-        <Label htmlFor="email">Էլ․ հասցե</Label>
-        <Input
-          id="email"
-          type="email"
-          placeholder="name@example.com"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-          required
-          disabled={isLoggingIn || externalLoading}
+    <Form {...form}>
+      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+        <FormField
+          control={form.control}
+          name="email"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Էլ․ հասցե</FormLabel>
+              <FormControl>
+                <Input placeholder="your@email.com" {...field} type="email" />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
         />
-        {isAdmin && (
-          <p className="text-sm text-blue-600 mt-1">
-            Ադմինիստրատորի հաշիվ - ավտոմատ հաստատված
-          </p>
-        )}
-      </div>
-      
-      <div className="space-y-2">
-        <Label htmlFor="password">Գաղտնաբառ</Label>
-        <Input
-          id="password"
-          type="password"
-          placeholder="••••••••"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-          required
-          disabled={isLoggingIn || externalLoading}
-          minLength={6}
+        <FormField
+          control={form.control}
+          name="password"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Գաղտնաբառ</FormLabel>
+              <FormControl>
+                <div className="relative">
+                  <Input
+                    placeholder="Մուտքագրեք գաղտնաբառը"
+                    {...field}
+                    type={showPassword ? 'text' : 'password'}
+                  />
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="icon"
+                    className="absolute right-2 top-1/2 -translate-y-1/2"
+                    onClick={() => setShowPassword(!showPassword)}
+                  >
+                    {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                    <span className="sr-only">Show password</span>
+                  </Button>
+                </div>
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
         />
-      </div>
-      
-      <div className="flex items-center justify-end">
-        <ForgotPasswordForm 
-          email={email} 
-          onReset={onResetEmailSent} 
-        />
-      </div>
-      
-      <Button 
-        type="submit" 
-        className="w-full" 
-        disabled={externalLoading || isLoggingIn}
-      >
-        {externalLoading || isLoggingIn ? (
-          <>
-            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-            Մուտք...
-          </>
-        ) : 'Մուտք գործել'}
-      </Button>
-    </form>
+        <Button disabled={isLoading} className="w-full" type="submit">
+          {isLoading ? (
+            <>
+              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+              Մուտք գործել...
+            </>
+          ) : (
+            'Մուտք գործել'
+          )}
+        </Button>
+      </form>
+    </Form>
   );
 };
 
