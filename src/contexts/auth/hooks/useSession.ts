@@ -39,6 +39,8 @@ export function useSession() {
   }, []);
 
   useEffect(() => {
+    let mounted = true;
+    
     const getInitialSession = async () => {
       try {
         console.log('Getting initial session...');
@@ -48,36 +50,40 @@ export function useSession() {
         
         if (error) {
           console.error('Error getting initial session:', error);
-          setUser(null);
+          if (mounted) setUser(null);
           return;
         }
         
-        console.log('Auth state changed: INITIAL_SESSION', session);
+        console.log('Initial session check result:', session ? 'Session found' : 'No session');
         
         if (session) {
           console.log('Initial session found, getting user data');
           const userData = await getUserBySession(session);
           
-          if (userData) {
+          if (userData && mounted) {
             console.log('Initial user data fetched successfully:', userData.id);
             setUser(userData);
-          } else {
+          } else if (mounted) {
             console.log('No user data found for initial session');
             setUser(null);
           }
-        } else {
+        } else if (mounted) {
           console.log('No session found');
           setUser(null);
         }
       } catch (error) {
         console.error('Unexpected error getting initial session:', error);
-        setUser(null);
+        if (mounted) setUser(null);
       } finally {
-        setLoading(false);
+        if (mounted) setLoading(false);
       }
     };
 
     getInitialSession();
+    
+    return () => {
+      mounted = false;
+    };
   }, []);
 
   return {

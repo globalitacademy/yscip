@@ -31,7 +31,12 @@ const ProtectedRoute = ({ children, allowedRoles }: { children: React.ReactNode,
   const { user, isAuthenticated, loading } = useAuth();
   
   if (loading) {
-    return <div className="flex items-center justify-center h-screen">Loading...</div>;
+    return (
+      <div className="flex items-center justify-center h-screen">
+        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary"></div>
+        <span className="ml-3">Բեռնում...</span>
+      </div>
+    );
   }
   
   if (!isAuthenticated || !user) {
@@ -46,6 +51,17 @@ const ProtectedRoute = ({ children, allowedRoles }: { children: React.ReactNode,
 };
 
 function AppRoutes() {
+  const { loading } = useAuth();
+  
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center h-screen">
+        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary"></div>
+        <span className="ml-3">Բեռնում...</span>
+      </div>
+    );
+  }
+  
   return (
     <Routes>
       <Route path="/" element={<Index />} />
