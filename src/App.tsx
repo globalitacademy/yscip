@@ -23,6 +23,7 @@ import PortfolioPage from '@/pages/PortfolioPage';
 import ProjectSubmissionPage from '@/pages/ProjectSubmissionPage';
 import PendingApprovals from '@/pages/PendingApprovals';
 import ApprovalPending from '@/components/ApprovalPending';
+import EmployerDashboard from '@/pages/EmployerDashboard';
 import { AuthProvider, useAuth } from '@/contexts/auth';
 import { NotificationProvider } from '@/contexts/NotificationContext';
 import './App.css';
@@ -210,7 +211,7 @@ function AppRoutes() {
       } />
       <Route path="/projects/my" element={
         <ProtectedRoute allowedRoles={['employer']}>
-          <div>My Projects (Coming Soon)</div>
+          <EmployerDashboard />
         </ProtectedRoute>
       } />
       

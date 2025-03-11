@@ -12,7 +12,7 @@ import { RegisterUserData } from './types';
 import { supabase } from '@/integrations/supabase/client';
 
 const Login: React.FC = () => {
-  const { login, registerUser } = useAuth();
+  const { login, registerUser, user, isAuthenticated, isApproved } = useAuth();
   const navigate = useNavigate();
   const [isLoading, setIsLoading] = useState(false);
   const [verificationSent, setVerificationSent] = useState(false);
@@ -35,6 +35,42 @@ const Login: React.FC = () => {
     checkExistingAdmins();
   }, []);
 
+  // Redirect if already logged in
+  useEffect(() => {
+    if (isAuthenticated && user) {
+      if (!isApproved && user.role !== 'student') {
+        navigate('/approval-pending');
+        return;
+      }
+      
+      redirectToDashboard(user.role);
+    }
+  }, [isAuthenticated, user, isApproved, navigate]);
+
+  const redirectToDashboard = (role: string) => {
+    switch (role) {
+      case 'admin':
+        navigate('/admin');
+        break;
+      case 'lecturer':
+      case 'instructor':
+        navigate('/courses');
+        break;
+      case 'project_manager':
+      case 'supervisor':
+        navigate('/projects/manage');
+        break;
+      case 'employer':
+        navigate('/projects/my');
+        break;
+      case 'student':
+        navigate('/projects');
+        break;
+      default:
+        navigate('/');
+    }
+  };
+
   const handleLogin = async (email: string, password: string) => {
     setIsLoading(true);
 
@@ -44,7 +80,7 @@ const Login: React.FC = () => {
         toast.success('Մուտքն հաջողվել է', {
           description: 'Դուք հաջողությամբ մուտք եք գործել համակարգ',
         });
-        navigate('/');
+        // No need to navigate here as the useEffect will handle redirection
       } else {
         toast.error('Մուտքը չի հաջողվել', {
           description: 'Էլ․ հասցեն կամ գաղտնաբառը սխալ է կամ Ձեր հաշիվը դեռ ակտիվացված չէ',
