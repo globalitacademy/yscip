@@ -74,7 +74,7 @@ export const verifyEmail = async (token: string): Promise<boolean> => {
 export const resetPassword = async (email: string): Promise<boolean> => {
   try {
     const { error } = await supabase.auth.resetPasswordForEmail(email, {
-      redirectTo: window.location.origin + '/login',
+      redirectTo: `${window.location.origin}/login#type=recovery&email=${encodeURIComponent(email)}`,
     });
     
     if (error) {
