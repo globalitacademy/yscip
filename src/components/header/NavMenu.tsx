@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { DBUser } from '@/types/database.types';
+import { DBUser, UserRole } from '@/types/database.types';
 import AdminNav from './nav/AdminNav';
 import TeacherNav from './nav/TeacherNav';
 import ProjectManagerNav from './nav/ProjectManagerNav';
