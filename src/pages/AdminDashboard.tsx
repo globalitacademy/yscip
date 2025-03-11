@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { useAuth } from '@/contexts/AuthContext';
+import { useAuth } from '@/contexts/auth';
 import AdminLayout from '@/components/AdminLayout';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -44,7 +44,7 @@ const AdminDashboard: React.FC = () => {
     { id: 2, user: 'Նարե Հարությունյան', action: 'ավելացրել է նոր նախագիծ', time: '32 րոպե առաջ', avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=nare' },
     { id: 3, user: 'Վահե Սարգսյան', action: 'թարմացրել է իր պրոֆիլը', time: '1 ժամ առաջ', avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=vahe' },
     { id: 4, user: 'Անի Մկրտչյան', action: 'միացել է «ՎԵԲ ծրագրավորում» կուրսին', time: '3 ժամ առաջ', avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=ani' },
-    { id: 5, user: 'Համլետ Պողոսյան', action: 'հաստատել է ուսանողի նախագիծը', time: '5 ժամ առաջ', avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=hamlet' }
+    { id: 5, user: 'Համլետ Պողոսյան', action: 'հաստատել է ուսանողի նախագծի հաստատման', time: '5 ժամ առաջ', avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=hamlet' }
   ];
 
   // Notifications mock data
@@ -199,7 +199,7 @@ const AdminDashboard: React.FC = () => {
                   <Briefcase className="h-5 w-5 text-green-500" />
                   Նախագծերն ըստ կարգավիճակի
                 </CardTitle>
-                <CardDescription>Նախագծերի բաշխումն ըստ կարգավիճակի</CardDescription>
+                <CardDescription>Նախագծերի բաշխումն ըստ կարգավիճա��ի</CardDescription>
               </CardHeader>
               <CardContent>
                 <div className="h-[250px] md:h-[300px]">

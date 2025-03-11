@@ -13,6 +13,8 @@ const Index: React.FC = () => {
   const { user, isAuthenticated, isApproved } = useAuth();
   const navigate = useNavigate();
   
+  console.log("Index page - Auth state:", { isAuthenticated, user, isApproved });
+  
   // Redirect to role-specific dashboard if authenticated
   useEffect(() => {
     if (isAuthenticated && user) {
