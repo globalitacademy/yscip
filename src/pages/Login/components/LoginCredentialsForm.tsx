@@ -27,6 +27,7 @@ const LoginCredentialsForm: React.FC<LoginCredentialsFormProps> = ({
   const [showForgotPassword, setShowForgotPassword] = useState(false);
   const [forgotEmail, setForgotEmail] = useState('');
   const [emailError, setEmailError] = useState('');
+  const [resendingVerification, setResendingVerification] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -46,20 +47,46 @@ const LoginCredentialsForm: React.FC<LoginCredentialsFormProps> = ({
     try {
       const emailToUse = forgotEmail || email;
       
-      const { error } = await supabase.auth.resetPasswordForEmail(emailToUse, {
-        redirectTo: `${window.location.origin}/login`,
-      });
+      // Check if this is the admin email first
+      const { data: isAdmin, error: adminCheckError } = await supabase.rpc(
+        'is_designated_admin',
+        { email_to_check: emailToUse }
+      );
       
-      if (error) {
-        console.error('Password reset error:', error);
-        toast.error('Սխալ', {
-          description: error.message
-        });
+      if (adminCheckError) {
+        console.error('Error checking if designated admin:', adminCheckError);
+      }
+      
+      if (isAdmin) {
+        // For admin account, call specific admin reset function
+        const { error } = await supabase.rpc('ensure_admin_login');
+        if (error) {
+          console.error('Error resetting admin password:', error);
+          toast.error('Սխալ', {
+            description: error.message
+          });
+        } else {
+          toast.success('Ադմինի հաշիվը հաստատված է', {
+            description: 'Հիմա Դուք կարող եք մուտք գործել համակարգ ստանդարտ գաղտնաբառով'
+          });
+        }
       } else {
-        onResetEmailSent();
-        toast.success('Հղումն ուղարկված է', {
-          description: 'Գաղտնաբառը վերականգնելու հղումը ուղարկվել է Ձեր էլ․ փոստին'
+        // For regular accounts, use regular password reset
+        const { error } = await supabase.auth.resetPasswordForEmail(emailToUse, {
+          redirectTo: `${window.location.origin}/login`,
         });
+        
+        if (error) {
+          console.error('Password reset error:', error);
+          toast.error('Սխալ', {
+            description: error.message
+          });
+        } else {
+          onResetEmailSent();
+          toast.success('Հղումն ուղարկված է', {
+            description: 'Գաղտնաբառը վերականգնելու հղումը ուղարկվել է Ձեր էլ․ փոստին'
+          });
+        }
       }
     } catch (error) {
       console.error('Error sending password reset:', error);
@@ -72,7 +99,12 @@ const LoginCredentialsForm: React.FC<LoginCredentialsFormProps> = ({
   };
 
   const handleResendVerification = async () => {
-    if (!email) return;
+    if (!email) {
+      toast.error('Սխալ', {
+        description: 'Մուտքագրեք էլ․ հասցեն նախքան հաստատման հղում պահանջելը'
+      });
+      return;
+    }
     
     const { isValid, errorMessage } = validateEmail(email);
     if (!isValid) {
@@ -80,7 +112,7 @@ const LoginCredentialsForm: React.FC<LoginCredentialsFormProps> = ({
       return;
     }
     
-    setIsLoading(true);
+    setResendingVerification(true);
     try {
       await sendVerificationEmail(email);
     } catch (error) {
@@ -89,7 +121,7 @@ const LoginCredentialsForm: React.FC<LoginCredentialsFormProps> = ({
         description: 'Տեղի ունեցավ անսպասելի սխալ'
       });
     } finally {
-      setIsLoading(false);
+      setResendingVerification(false);
     }
   };
 
@@ -168,9 +200,9 @@ const LoginCredentialsForm: React.FC<LoginCredentialsFormProps> = ({
           className="p-0 h-auto text-sm text-muted-foreground"
           onClick={handleResendVerification}
           type="button"
-          disabled={isLoading}
+          disabled={resendingVerification || !email}
         >
-          Չե՞ք ստացել հաստատման հղումը: Ուղարկել կրկին
+          {resendingVerification ? 'Ուղարկում...' : 'Չե՞ք ստացել հաստատման հղումը: Ուղարկել կրկին'}
         </Button>
       </div>
     </form>

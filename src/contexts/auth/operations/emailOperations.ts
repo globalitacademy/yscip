@@ -5,9 +5,26 @@ import { toast } from 'sonner';
 export const sendVerificationEmail = async (email: string): Promise<boolean> => {
   try {
     console.log('Sending verification email to:', email);
+    
+    // First check if this is an admin email that should be auto-verified
+    const { data: isAdmin } = await supabase.rpc('is_designated_admin', {
+      email_to_check: email
+    });
+    
+    if (isAdmin) {
+      console.log('Admin email detected, auto-verifying without sending email');
+      await supabase.rpc('ensure_admin_login');
+      toast.success('Ադմինիստրատորի հաշիվը հաստատված է։ Կարող եք մուտք գործել համակարգ։');
+      return true;
+    }
+    
+    // For non-admin users, send verification email
     const { error } = await supabase.auth.resend({
       type: 'signup',
-      email: email
+      email: email,
+      options: {
+        emailRedirectTo: `${window.location.origin}/verify-email`
+      }
     });
     
     if (error) {

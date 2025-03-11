@@ -34,18 +34,31 @@ const LoginForm: React.FC<LoginFormProps> = ({
         
         // Check if admin or first admin
         try {
-          const adminResult = await isDesignatedAdmin(emailParam);
-          setIsAdmin(adminResult);
+          const { data: adminResult, error: adminError } = await supabase.rpc(
+            'is_designated_admin',
+            { email_to_check: emailParam }
+          );
           
-          if (!adminResult) {
-            const firstAdminResult = await checkFirstAdmin();
-            setIsFirstAdmin(firstAdminResult);
+          if (adminError) {
+            console.error('Error checking if designated admin:', adminError);
+          } else {
+            setIsAdmin(!!adminResult);
             
-            if (firstAdminResult) {
-              console.log('First admin detected in URL params:', emailParam);
-              toast.info('Առաջին ադմինիստրատորի հաշիվ', {
-                description: 'Հաստատվելու դեպքում Ձեզ կտրվեն լիարժեք իրավունքներ'
-              });
+            if (!adminResult) {
+              const { data: firstAdminResult, error: firstAdminError } = await supabase.rpc('get_first_admin_status');
+              
+              if (firstAdminError) {
+                console.error('Error checking if first admin:', firstAdminError);
+              } else {
+                setIsFirstAdmin(!!firstAdminResult);
+                
+                if (firstAdminResult) {
+                  console.log('First admin detected in URL params:', emailParam);
+                  toast.info('Առաջին ադմինիստրատորի հաշիվ', {
+                    description: 'Հաստատվելու դեպքում Ձեզ կտրվեն լիարժեք իրավունքներ'
+                  });
+                }
+              }
             }
           }
           

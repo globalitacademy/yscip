@@ -5,7 +5,6 @@ import { toast } from 'sonner';
 import { LoginContainer } from './components/LoginContainer';
 import { RedirectHandler } from './components/RedirectHandler';
 import { RegisterUserData } from './types';
-import { isDesignatedAdmin } from '@/contexts/auth/utils';
 import { supabase } from '@/integrations/supabase/client';
 
 const Login = () => {
@@ -14,6 +13,7 @@ const Login = () => {
   const [verificationSent, setVerificationSent] = useState(false);
   const [showAdminReset, setShowAdminReset] = useState(false);
   const [email, setEmail] = useState<string | null>(null);
+  const [registeredRole, setRegisteredRole] = useState<string | null>(null);
 
   useEffect(() => {
     const checkParams = async () => {
@@ -29,10 +29,17 @@ const Login = () => {
         setEmail(emailParam);
         
         // If this is the admin email, verify the admin account
-        if (await isDesignatedAdmin(emailParam)) {
+        const { data: isAdmin, error: adminCheckError } = await supabase.rpc(
+          'is_designated_admin',
+          { email_to_check: emailParam }
+        );
+        
+        if (adminCheckError) {
+          console.error('Error checking if designated admin:', adminCheckError);
+        } else if (isAdmin) {
           console.log('Admin email detected in URL params, verifying account');
           try {
-            const { error } = await supabase.rpc('verify_designated_admin');
+            const { error } = await supabase.rpc('ensure_admin_login');
             if (error) {
               console.error('Error verifying admin from URL params:', error);
             } else {
@@ -73,13 +80,20 @@ const Login = () => {
   const handleLogin = async (email: string, password: string) => {
     setIsLoading(true);
     try {
-      const isAdmin = await isDesignatedAdmin(email);
+      const { data: isAdmin, error: adminCheckError } = await supabase.rpc(
+        'is_designated_admin',
+        { email_to_check: email }
+      );
+      
+      if (adminCheckError) {
+        console.error('Error checking if designated admin:', adminCheckError);
+      }
       
       // For admin, ensure the account is verified before attempting login
       if (isAdmin) {
         console.log('Verifying admin account before login attempt');
         try {
-          const { error } = await supabase.rpc('verify_designated_admin');
+          const { error } = await supabase.rpc('ensure_admin_login');
           if (error) {
             console.error('Error verifying admin before login:', error);
           } else {
@@ -126,12 +140,20 @@ const Login = () => {
   const handleRegister = async (userData: RegisterUserData) => {
     setIsLoading(true);
     try {
-      const isAdmin = await isDesignatedAdmin(userData.email);
+      const { data: isAdmin, error: adminCheckError } = await supabase.rpc(
+        'is_designated_admin',
+        { email_to_check: userData.email }
+      );
+      
+      if (adminCheckError) {
+        console.error('Error checking if designated admin:', adminCheckError);
+      }
       
       if (userData.role === 'employer' && !userData.organization) {
         toast.error('Սխալ', {
           description: 'Կազմակերպության անունը պարտադիր է գործատուի համար',
         });
+        setIsLoading(false);
         return;
       }
 
@@ -146,6 +168,7 @@ const Login = () => {
         ...(userData.role === 'employer' && { organization: userData.organization })
       };
 
+      setRegisteredRole(userData.role);
       const success = await registerUser(formattedUserData);
       
       if (success) {
@@ -153,7 +176,7 @@ const Login = () => {
         if (isAdmin) {
           // For admin, ensure the account is verified
           try {
-            const { error } = await supabase.rpc('verify_designated_admin');
+            const { error } = await supabase.rpc('ensure_admin_login');
             if (error) {
               console.error('Error verifying admin after registration:', error);
             } else {
@@ -193,6 +216,7 @@ const Login = () => {
         verificationSent={verificationSent}
         email={email}
         showAdminReset={showAdminReset}
+        registeredRole={registeredRole}
       />
     </>
   );

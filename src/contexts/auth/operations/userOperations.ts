@@ -15,13 +15,26 @@ export const registerUser = async (
     userData.email = cleanEmail;
     
     // Check if this is the designated admin account
-    const isAdmin = await isDesignatedAdmin(cleanEmail);
+    const { data: isAdmin, error: adminCheckError } = await supabase.rpc(
+      'is_designated_admin',
+      { email_to_check: cleanEmail }
+    );
+
+    if (adminCheckError) {
+      console.error('Error checking if designated admin:', adminCheckError);
+    }
     
     // Check if this is the first admin (if role is admin)
     let isFirstAdmin = false;
     if (userData.role === 'admin' && !isAdmin) {
-      isFirstAdmin = await checkFirstAdmin();
-      console.log('Checking if first admin:', isFirstAdmin);
+      const { data: firstAdminResult, error: firstAdminError } = await supabase.rpc('get_first_admin_status');
+      
+      if (firstAdminError) {
+        console.error('Error checking if first admin:', firstAdminError);
+      } else {
+        isFirstAdmin = !!firstAdminResult;
+        console.log('Checking if first admin:', isFirstAdmin);
+      }
     }
     
     // For admin account, verify it first
@@ -97,7 +110,7 @@ export const registerUser = async (
       if (isAdmin) {
         await supabase.rpc('ensure_admin_login');
       } else if (isFirstAdmin) {
-        await approveFirstAdmin(cleanEmail);
+        await supabase.rpc('approve_first_admin', { admin_email: cleanEmail });
       }
       
       // Auto sign-in after registration for admins
