@@ -148,49 +148,58 @@ const Header: React.FC<HeaderProps> = ({ className }) => {
   };
 
   return (
-    <header className={cn("border-b border-border sticky top-0 z-50 bg-background", className)}>
-      <div className="container mx-auto px-4 py-3 flex justify-between items-center">
-        <div className="flex items-center gap-6">
-          <Link to="/" className="flex items-center gap-2">
-            <GraduationCap size={28} className="text-primary" />
-            <div className="flex flex-col">
-              <span className="text-xl font-bold text-primary">Դիպլոմային</span>
-              <span className="text-sm text-muted-foreground -mt-1">Նախագծերի կառավարում</span>
-            </div>
-          </Link>
+    <header className={cn(
+      "sticky top-0 z-50 w-full border-b border-border/40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60",
+      className
+    )}>
+      <div className="container mx-auto px-4 py-3">
+        <div className="flex justify-between items-center">
+          <div className="flex items-center gap-6">
+            <Link to="/" className="flex items-center gap-2 transition-opacity hover:opacity-80">
+              <GraduationCap size={28} className="text-primary" />
+              <div className="flex flex-col">
+                <span className="text-xl font-bold text-primary">Դիպլոմային</span>
+                <span className="text-sm text-muted-foreground -mt-1">Նախագծերի կառավարում</span>
+              </div>
+            </Link>
+            
+            {getRoleNavigation()}
+          </div>
           
-          {getRoleNavigation()}
-        </div>
-        
-        <div className="flex items-center gap-2">
-          {isAuthenticated && (
-            <>
-              <Button 
-                variant="outline" 
-                size="sm" 
-                className="gap-1"
-                onClick={() => navigate('/dashboard')}
-              >
-                <LayoutDashboard size={16} />
-                <span className="hidden md:inline">Դաշբորդ</span>
-              </Button>
-              
-              <Link to="/notifications" className="relative">
-                <Button variant="ghost" size="icon">
-                  <Bell size={20} />
-                  {unreadCount > 0 && (
-                    <Badge 
-                      variant="destructive" 
-                      className="absolute -top-1 -right-1 h-5 w-5 flex items-center justify-center p-0 text-xs"
-                    >
-                      {unreadCount > 9 ? '9+' : unreadCount}
-                    </Badge>
-                  )}
+          <div className="flex items-center gap-2">
+            {isAuthenticated && (
+              <>
+                <Button 
+                  variant="ghost" 
+                  size="sm" 
+                  className="gap-1 hover:bg-accent"
+                  onClick={() => navigate('/dashboard')}
+                >
+                  <LayoutDashboard size={16} />
+                  <span className="hidden md:inline">Դաշբորդ</span>
                 </Button>
-              </Link>
-            </>
-          )}
-          <UserMenu />
+                
+                <Link to="/notifications" className="relative">
+                  <Button 
+                    variant="ghost" 
+                    size="icon"
+                    className="hover:bg-accent"
+                  >
+                    <Bell size={20} />
+                    {unreadCount > 0 && (
+                      <Badge 
+                        variant="destructive" 
+                        className="absolute -top-1 -right-1 h-5 w-5 flex items-center justify-center p-0 text-xs"
+                      >
+                        {unreadCount > 9 ? '9+' : unreadCount}
+                      </Badge>
+                    )}
+                  </Button>
+                </Link>
+              </>
+            )}
+            <UserMenu />
+          </div>
         </div>
       </div>
     </header>

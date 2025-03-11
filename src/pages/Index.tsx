@@ -1,14 +1,24 @@
+
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
-import { ArrowRight, BookOpen, Building, ClipboardList, FileText, GraduationCap, LayoutDashboard, LucideIcon, Users } from 'lucide-react';
+import { 
+  ArrowRight, 
+  BookOpen, 
+  Building, 
+  ClipboardList, 
+  FileText, 
+  GraduationCap, 
+  LayoutDashboard, 
+  Users 
+} from 'lucide-react';
 import ThemeGrid from '@/components/ThemeGrid';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import ProjectGrid from '@/components/project/ProjectGrid';
 import Hero from '@/components/Hero';
-import { FadeIn } from '@/components/LocalTransitions';
+import { FadeIn, SlideUp } from '@/components/LocalTransitions';
 import { useAuth } from '@/contexts/auth';
 
 interface ActionCardProps {
@@ -20,20 +30,23 @@ interface ActionCardProps {
 }
 
 const ActionCard: React.FC<ActionCardProps> = ({ title, description, icon, href, buttonText }) => (
-  <Card className="flex flex-col h-full">
+  <Card className="group hover:shadow-lg transition-all duration-300 hover:-translate-y-1">
     <CardHeader>
-      <div className="p-2 bg-primary/10 w-fit rounded-md mb-2">
+      <div className="rounded-lg p-3 bg-primary/10 w-fit mb-4 group-hover:bg-primary/20 transition-colors">
         {icon}
       </div>
-      <CardTitle>{title}</CardTitle>
-      <CardDescription>{description}</CardDescription>
+      <CardTitle className="text-xl mb-2">{title}</CardTitle>
+      <CardDescription className="text-base">{description}</CardDescription>
     </CardHeader>
-    <CardContent className="flex-grow">
-    </CardContent>
+    <CardContent className="flex-grow" />
     <CardFooter>
       <Link to={href} className="w-full">
-        <Button className="w-full">
-          {buttonText} <ArrowRight className="h-4 w-4 ml-2" />
+        <Button 
+          className="w-full group/button" 
+          variant="default"
+        >
+          <span className="flex-1">{buttonText}</span>
+          <ArrowRight className="h-4 w-4 ml-2 transition-transform group-hover/button:translate-x-1" />
         </Button>
       </Link>
     </CardFooter>
@@ -224,14 +237,26 @@ const Index: React.FC = () => {
           </div>
         </div>
         
-        <div className="container mx-auto px-4 py-8">
-          <FadeIn className="mb-12">
-            <h2 className="text-3xl font-bold mb-6">Ձեր դաշբորդը</h2>
+        <div className="container mx-auto px-4 py-12">
+          <SlideUp className="mb-16">
+            <div className="text-center max-w-2xl mx-auto mb-12">
+              <h2 className="text-4xl font-bold mb-4">Ձեր դաշբորդը</h2>
+              <p className="text-muted-foreground text-lg">
+                Կառավարեք Ձեր նախագծերը և հետևեք առաջընթացին
+              </p>
+            </div>
             {getRoleBasedActions()}
-          </FadeIn>
+          </SlideUp>
             
-          <h2 className="text-3xl font-bold mb-6">Նախագծեր</h2>
-          <ProjectGrid projects={[]} />
+          <FadeIn>
+            <div className="text-center max-w-2xl mx-auto mb-12">
+              <h2 className="text-4xl font-bold mb-4">Նախագծեր</h2>
+              <p className="text-muted-foreground text-lg">
+                Հետազոտեք մեր վերջին նախագծերը և միացեք դրանց
+              </p>
+            </div>
+            <ProjectGrid projects={[]} />
+          </FadeIn>
         </div>
       </main>
       <Footer />
