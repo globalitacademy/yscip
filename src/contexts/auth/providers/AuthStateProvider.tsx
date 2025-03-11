@@ -1,20 +1,18 @@
 
-import { useSession } from './hooks/useSession';
-import { 
-  login, 
-  logout, 
-  sendVerificationEmail, 
-  verifyEmail, 
-  resetPassword, 
-  updatePassword 
-} from './operations';
-import { registerUser } from './operations/userOperations';
-import { useEffect } from 'react';
+import React, { useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 
-export function useAuthProvider() {
-  const { user, isAuthenticated, isApproved, loading, error, setUser, refreshUser } = useSession();
+interface AuthStateProviderProps {
+  children: React.ReactNode;
+  refreshUser: (session: any) => Promise<void>;
+  setUser: (user: any) => void;
+}
 
+export const AuthStateProvider: React.FC<AuthStateProviderProps> = ({ 
+  children, 
+  refreshUser, 
+  setUser 
+}) => {
   // Listen for auth state changes
   useEffect(() => {
     console.log('Setting up auth state change listener');
@@ -45,22 +43,5 @@ export function useAuthProvider() {
     };
   }, [setUser, refreshUser]);
 
-  return {
-    user,
-    isAuthenticated,
-    isApproved,
-    loading,
-    error,
-    login,
-    logout: async () => {
-      console.log('Logging out user');
-      await logout();
-      setUser(null);
-    },
-    registerUser,
-    sendVerificationEmail,
-    verifyEmail,
-    resetPassword,
-    updatePassword
-  };
-}
+  return <>{children}</>;
+};

@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -7,15 +8,24 @@ import { Button } from '@/components/ui/button';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { Eye, EyeOff, Loader2 } from 'lucide-react';
 import { loginValidationSchema } from '../validation';
-import { isDesignatedAdmin } from '@/contexts/auth/utils';
+import ForgotPasswordForm from './ForgotPasswordForm';
 
 interface LoginCredentialsFormProps {
-  onLogin: (email: string, password: string) => Promise<void>;
-  isLoading: boolean;
+  onLogin?: (email: string, password: string) => Promise<void>;
+  onResetEmailSent?: () => void;
+  externalLoading?: boolean;
+  isLoading?: boolean;
 }
 
-const LoginCredentialsForm: React.FC<LoginCredentialsFormProps> = ({ onLogin, isLoading }) => {
+const LoginCredentialsForm: React.FC<LoginCredentialsFormProps> = ({ 
+  onLogin, 
+  onResetEmailSent,
+  externalLoading,
+  isLoading: propIsLoading
+}) => {
   const [showPassword, setShowPassword] = useState(false);
+  const [email, setEmail] = useState('');
+  const isLoading = propIsLoading || externalLoading || false;
 
   const form = useForm<z.infer<typeof loginValidationSchema>>({
     resolver: zodResolver(loginValidationSchema),
@@ -26,8 +36,20 @@ const LoginCredentialsForm: React.FC<LoginCredentialsFormProps> = ({ onLogin, is
   });
 
   const onSubmit = async (values: z.infer<typeof loginValidationSchema>) => {
-    await onLogin(values.email, values.password);
+    if (onLogin) {
+      await onLogin(values.email, values.password);
+    }
   };
+
+  // Update email state when form field changes
+  React.useEffect(() => {
+    const subscription = form.watch((value) => {
+      if (value.email) {
+        setEmail(value.email as string);
+      }
+    });
+    return () => subscription.unsubscribe();
+  }, [form.watch]);
 
   return (
     <Form {...form}>
@@ -74,6 +96,14 @@ const LoginCredentialsForm: React.FC<LoginCredentialsFormProps> = ({ onLogin, is
             </FormItem>
           )}
         />
+        
+        <div className="flex justify-end">
+          <ForgotPasswordForm 
+            email={email} 
+            onReset={onResetEmailSent || (() => {})} 
+          />
+        </div>
+        
         <Button disabled={isLoading} className="w-full" type="submit">
           {isLoading ? (
             <>

@@ -75,6 +75,7 @@ const LoginForm: React.FC<LoginFormProps> = ({
 
   return (
     <LoginCredentialsForm 
+      onLogin={onLogin}
       onResetEmailSent={handleResetEmailSent}
       externalLoading={externalLoading}
     />

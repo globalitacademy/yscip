@@ -1,7 +1,8 @@
 
 import React, { createContext } from 'react';
-import { useAuthProvider } from './useAuthProvider';
+import { useAuthProvider } from './hooks/useAuthProvider';
 import { AuthContextType } from './types';
+import { AuthStateProvider } from './providers/AuthStateProvider';
 
 export const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
@@ -10,7 +11,12 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   return (
     <AuthContext.Provider value={auth}>
-      {children}
+      <AuthStateProvider 
+        refreshUser={auth.refreshUser} 
+        setUser={auth.setUser}
+      >
+        {children}
+      </AuthStateProvider>
     </AuthContext.Provider>
   );
 };
