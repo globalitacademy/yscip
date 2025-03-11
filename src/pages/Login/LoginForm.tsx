@@ -17,19 +17,31 @@ const LoginForm: React.FC<LoginFormProps> = ({
   const location = useLocation();
 
   useEffect(() => {
+    // Handle password reset from URL
     const handlePasswordReset = async () => {
-      const hash = location.hash;
-      const type = new URLSearchParams(hash.substring(1)).get('type');
-      const emailParam = new URLSearchParams(hash.substring(1)).get('email');
-      
-      if (type === 'recovery') {
-        setIsResetting(true);
-        toast.info('Մուտքագրեք Ձեր նոր գաղտնաբառը');
+      try {
+        const hash = location.hash;
+        if (!hash) return;
+
+        console.log('Processing URL hash:', hash);
+        const params = new URLSearchParams(hash.substring(1));
+        const type = params.get('type');
+        const emailParam = params.get('email');
         
-        if (emailParam) {
-          console.log('Found email in URL:', emailParam);
-          setEmail(emailParam);
+        if (type === 'recovery') {
+          console.log('Recovery flow detected');
+          setIsResetting(true);
+          toast.info('Մուտքագրեք Ձեր նոր գաղտնաբառը');
+          
+          if (emailParam) {
+            console.log('Found email in URL:', emailParam);
+            setEmail(emailParam);
+          } else {
+            console.log('No email found in recovery URL');
+          }
         }
+      } catch (error) {
+        console.error('Error processing URL hash:', error);
       }
     };
 
@@ -37,14 +49,17 @@ const LoginForm: React.FC<LoginFormProps> = ({
   }, [location]);
 
   const handleResetComplete = () => {
+    console.log('Password reset completed');
     setIsResetting(false);
     setResetEmailSent(false);
   };
 
   const handleResetEmailSent = () => {
+    console.log('Password reset email sent notification shown');
     setResetEmailSent(true);
   };
 
+  // Decide which form to render
   if (isResetting) {
     return (
       <PasswordResetForm 

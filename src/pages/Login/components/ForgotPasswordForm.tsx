@@ -17,8 +17,8 @@ const ForgotPasswordForm: React.FC<ForgotPasswordFormProps> = ({
   const { resetPassword } = useAuth();
 
   const handleResetPassword = async () => {
-    if (!email) {
-      toast.error('Մուտքագրեք էլ․ հասցեն');
+    if (!email || !email.includes('@')) {
+      toast.error('Մուտքագրեք վավեր էլ․ հասցե');
       return;
     }
 
@@ -29,7 +29,12 @@ const ForgotPasswordForm: React.FC<ForgotPasswordFormProps> = ({
       const success = await resetPassword(email);
       
       if (success) {
+        console.log('Password reset email sent successfully');
         onReset();
+        toast.success('Վերականգնման հղումը ուղարկված է');
+      } else {
+        console.log('Password reset request was not successful');
+        toast.error('Հղումը չի ուղարկվել: Փորձեք կրկին');
       }
     } catch (err) {
       console.error('Password reset error:', err);

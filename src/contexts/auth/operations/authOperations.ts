@@ -14,6 +14,8 @@ export const login = async (email: string, password: string): Promise<boolean> =
       console.error('Login error:', error);
       if (error.message === 'Invalid login credentials') {
         toast.error('Սխալ էլ․ հասցե կամ գաղտնաբառ');
+      } else if (error.message.includes('Email not confirmed')) {
+        toast.error('Էլ․ հասցեն դեռ չի հաստատվել։ Խնդրում ենք ստուգել Ձեր փոստարկղը։');
       } else {
         toast.error('Մուտքը չի հաջողվել: ' + error.message);
       }
@@ -21,6 +23,7 @@ export const login = async (email: string, password: string): Promise<boolean> =
     }
     
     if (!data.session) {
+      console.error('Login failed: No session returned');
       toast.error('Մուտքը չի հաջողվել');
       return false;
     }
@@ -35,11 +38,28 @@ export const login = async (email: string, password: string): Promise<boolean> =
 };
 
 export const logout = async () => {
-  return await supabase.auth.signOut();
+  try {
+    console.log('Logging out...');
+    const { error } = await supabase.auth.signOut();
+    
+    if (error) {
+      console.error('Logout error:', error);
+      toast.error('Ելքի սխալ: ' + error.message);
+      return false;
+    }
+    
+    console.log('Logout successful');
+    return true;
+  } catch (error) {
+    console.error('Unexpected logout error:', error);
+    toast.error('Տեղի ունեցավ անսպասելի սխալ');
+    return false;
+  }
 };
 
 export const sendVerificationEmail = async (email: string): Promise<boolean> => {
   try {
+    console.log('Sending verification email to:', email);
     const { error } = await supabase.auth.resend({
       type: 'signup',
       email: email
@@ -51,6 +71,7 @@ export const sendVerificationEmail = async (email: string): Promise<boolean> => 
       return false;
     }
     
+    console.log('Verification email sent successfully');
     toast.success('Հաստատման հղումը կրկին ուղարկված է Ձեր էլ․ փոստին։');
     return true;
   } catch (error) {
@@ -62,6 +83,7 @@ export const sendVerificationEmail = async (email: string): Promise<boolean> => 
 
 export const verifyEmail = async (token: string): Promise<boolean> => {
   try {
+    console.log('Verifying email with token');
     // In a real implementation, this would verify the token with Supabase
     // For now, we'll just return true as Supabase handles email verification internally
     return true;
@@ -73,8 +95,12 @@ export const verifyEmail = async (token: string): Promise<boolean> => {
 
 export const resetPassword = async (email: string): Promise<boolean> => {
   try {
+    console.log('Requesting password reset for email:', email);
+    const redirectTo = `${window.location.origin}/login#type=recovery&email=${encodeURIComponent(email)}`;
+    console.log('Redirect URL for password reset:', redirectTo);
+    
     const { error } = await supabase.auth.resetPasswordForEmail(email, {
-      redirectTo: `${window.location.origin}/login#type=recovery&email=${encodeURIComponent(email)}`,
+      redirectTo: redirectTo,
     });
     
     if (error) {
@@ -83,6 +109,7 @@ export const resetPassword = async (email: string): Promise<boolean> => {
       return false;
     }
     
+    console.log('Password reset email sent successfully');
     toast.success('Գաղտնաբառը վերականգնելու հղումը ուղարկվել է Ձեր էլ․ փոստին։');
     return true;
   } catch (error) {
@@ -106,7 +133,6 @@ export const updatePassword = async (newPassword: string): Promise<boolean> => {
     }
     
     console.log('Password updated successfully');
-    toast.success('Գաղտնաբառը հաջողությամբ թարմացվել է։');
     return true;
   } catch (error) {
     console.error('Unexpected error updating password:', error);

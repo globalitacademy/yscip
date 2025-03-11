@@ -42,23 +42,37 @@ const PasswordResetForm: React.FC<PasswordResetFormProps> = ({
       const success = await updatePassword(newPassword);
 
       if (success) {
+        console.log('Password updated successfully');
         toast.success('Գաղտնաբառը հաջողությամբ թարմացվել է');
         
         if (email) {
-          console.log('Attempting auto-login with new password...');
-          const loginSuccess = await login(email, newPassword);
+          console.log('Attempting auto-login with new password for email:', email);
           
-          if (loginSuccess) {
-            toast.success('Մուտքն հաջողվել է');
-            navigate('/');
-          } else {
-            toast.error('Գաղտնաբառը թարմացված է, բայց ավտոմատ մուտքը չի հաջողվել: Խնդրում ենք փորձել մուտք գործել ձեռքով');
-            onComplete();
+          try {
+            const loginSuccess = await login(email, newPassword);
+            
+            if (loginSuccess) {
+              console.log('Auto-login successful');
+              toast.success('Մուտքն հաջողվել է');
+              navigate('/');
+              return; // Exit early to prevent onComplete() from being called
+            } else {
+              console.log('Auto-login failed');
+              toast.error('Գաղտնաբառը թարմացված է, բայց ավտոմատ մուտքը չի հաջողվել: Խնդրում ենք փորձել մուտք գործել ձեռքով');
+            }
+          } catch (loginErr) {
+            console.error('Auto-login error:', loginErr);
+            toast.error('Ավտոմատ մուտքի սխալ: Խնդրում ենք մուտք գործել ձեռքով');
           }
         } else {
+          console.log('No email found for auto-login');
           toast.error('Չհաջողվեց պարզել օգտատիրոջ էլ․ հասցեն: Խնդրում ենք ձեռքով մուտք գործել');
-          onComplete();
         }
+        
+        onComplete();
+      } else {
+        console.log('Password update was not successful');
+        toast.error('Գաղտնաբառի թարմացումը չի հաջողվել: Փորձեք կրկին');
       }
     } catch (err) {
       console.error('Password update error:', err);
@@ -71,8 +85,9 @@ const PasswordResetForm: React.FC<PasswordResetFormProps> = ({
 
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
-      <div className="bg-blue-50 border border-blue-200 rounded-md p-3 text-blue-700 mb-4">
-        Մուտքագրեք Ձեր նոր գաղտնաբառը
+      <div className="bg-blue-50 border border-blue-200 rounded-md p-4 text-blue-700 mb-4">
+        <h3 className="font-medium mb-2">Գաղտնաբառի վերականգնում</h3>
+        <p>Մուտքագրեք Ձեր նոր գաղտնաբառը</p>
       </div>
       
       <div className="space-y-2">
@@ -84,6 +99,7 @@ const PasswordResetForm: React.FC<PasswordResetFormProps> = ({
           value={newPassword}
           onChange={(e) => setNewPassword(e.target.value)}
           required
+          minLength={6}
         />
       </div>
       
@@ -96,6 +112,7 @@ const PasswordResetForm: React.FC<PasswordResetFormProps> = ({
           value={confirmPassword}
           onChange={(e) => setConfirmPassword(e.target.value)}
           required
+          minLength={6}
         />
       </div>
       

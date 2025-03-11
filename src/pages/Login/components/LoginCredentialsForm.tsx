@@ -25,6 +25,17 @@ const LoginCredentialsForm: React.FC<LoginCredentialsFormProps> = ({
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    if (!email || !email.includes('@')) {
+      toast.error('Մուտքագրեք վավեր էլ․ հասցե');
+      return;
+    }
+
+    if (!password || password.length < 6) {
+      toast.error('Գաղտնաբառը պետք է պարունակի առնվազն 6 նիշ');
+      return;
+    }
+    
     setIsLoggingIn(true);
     
     try {
@@ -35,6 +46,9 @@ const LoginCredentialsForm: React.FC<LoginCredentialsFormProps> = ({
         console.log('Login successful, navigating to home page');
         toast.success('Մուտքն հաջողվել է');
         navigate('/');
+      } else {
+        console.log('Login was not successful');
+        // Error messages are handled in authOperations.ts
       }
     } catch (err) {
       console.error('Unexpected login error:', err);
@@ -55,6 +69,7 @@ const LoginCredentialsForm: React.FC<LoginCredentialsFormProps> = ({
           value={email}
           onChange={(e) => setEmail(e.target.value)}
           required
+          disabled={isLoggingIn || externalLoading}
         />
       </div>
       
@@ -67,6 +82,8 @@ const LoginCredentialsForm: React.FC<LoginCredentialsFormProps> = ({
           value={password}
           onChange={(e) => setPassword(e.target.value)}
           required
+          disabled={isLoggingIn || externalLoading}
+          minLength={6}
         />
       </div>
       
@@ -77,7 +94,11 @@ const LoginCredentialsForm: React.FC<LoginCredentialsFormProps> = ({
         />
       </div>
       
-      <Button type="submit" className="w-full" disabled={externalLoading || isLoggingIn}>
+      <Button 
+        type="submit" 
+        className="w-full" 
+        disabled={externalLoading || isLoggingIn}
+      >
         {externalLoading || isLoggingIn ? 'Մուտք...' : 'Մուտք գործել'}
       </Button>
     </form>
