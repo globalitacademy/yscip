@@ -8,8 +8,8 @@ import {
   verifyEmail, 
   resetPassword, 
   updatePassword,
-  registerUser
 } from '../operations';
+import { registerUser } from '../operations/userOperations';
 
 export function useAuthProvider() {
   const { 
@@ -40,6 +40,8 @@ export function useAuthProvider() {
     sendVerificationEmail,
     verifyEmail,
     resetPassword,
-    updatePassword
+    updatePassword,
+    setUser,
+    refreshUser
   };
 }

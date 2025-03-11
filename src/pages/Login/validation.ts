@@ -17,3 +17,29 @@ export const registerValidationSchema = z.object({
   message: 'Գաղտնաբառերը չեն համընկնում',
   path: ['confirmPassword'],
 });
+
+// Helper validation functions for RegisterForm
+export const validateEmail = (email: string) => {
+  try {
+    z.string().email().parse(email);
+    return { isValid: true, errorMessage: '' };
+  } catch (error) {
+    return { isValid: false, errorMessage: 'Անվավեր էլ․ հասցե' };
+  }
+};
+
+export const validatePassword = (password: string) => {
+  try {
+    z.string().min(6).parse(password);
+    return { isValid: true, errorMessage: '' };
+  } catch (error) {
+    return { isValid: false, errorMessage: 'Գաղտնաբառը պետք է ունենա առնվազն 6 նիշ' };
+  }
+};
+
+export const validateConfirmPassword = (confirmPassword: string, password: string) => {
+  if (confirmPassword !== password) {
+    return { isValid: false, errorMessage: 'Գաղտնաբառերը չեն համընկնում' };
+  }
+  return { isValid: true, errorMessage: '' };
+};

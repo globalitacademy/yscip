@@ -14,4 +14,6 @@ export interface AuthContextType {
   verifyEmail: (token: string) => Promise<boolean>;
   resetPassword: (email: string) => Promise<boolean>;
   updatePassword: (newPassword: string) => Promise<boolean>;
+  setUser: (user: DBUser | null) => void;
+  refreshUser: (session: any) => Promise<void>;
 }
