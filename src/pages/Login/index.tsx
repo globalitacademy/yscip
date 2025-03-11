@@ -1,121 +1,43 @@
-import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+
+import { useState, useEffect } from 'react';
 import { useAuth } from '@/contexts/auth';
 import { toast } from 'sonner';
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { DBUser } from '@/types/database.types';
-import LoginForm from './LoginForm';
-import RegisterForm from './RegisterForm';
+import { LoginContainer } from './components/LoginContainer';
+import { RedirectHandler } from './components/RedirectHandler';
 import { RegisterUserData } from './types';
-import { checkFirstAdmin, isDesignatedAdmin } from '@/contexts/auth/utils';
-import { supabase } from '@/integrations/supabase/client';
-import ResetAdminForm from './components/ResetAdminForm';
+import { isDesignatedAdmin } from '@/contexts/auth/utils';
 
-const Login: React.FC = () => {
+const Login = () => {
   const { login, registerUser, user, isAuthenticated, isApproved } = useAuth();
-  const navigate = useNavigate();
   const [isLoading, setIsLoading] = useState(false);
   const [verificationSent, setVerificationSent] = useState(false);
-  const [isFirstAdmin, setIsFirstAdmin] = useState(false);
-  const [designatedAdminMessage, setDesignatedAdminMessage] = useState(false);
   const [showAdminReset, setShowAdminReset] = useState(false);
+  const [email, setEmail] = useState<string | null>(null);
 
   useEffect(() => {
-    const checkExistingAdmins = async () => {
-      const firstAdmin = await checkFirstAdmin();
-      setIsFirstAdmin(firstAdmin);
-    };
-    
     const checkParams = async () => {
       const url = new URL(window.location.href);
       const params = new URLSearchParams(url.hash.substring(1));
-      const email = params.get('email');
-      const type = params.get('type');
-      
-      console.log('URL params check:', { email, type });
+      const emailParam = params.get('email');
       
       if (params.get('admin_reset') === 'true') {
         setShowAdminReset(true);
       }
       
-      if (email && email === 'gitedu@bk.ru') {
-        setDesignatedAdminMessage(true);
-        setShowAdminReset(true);
-        
-        if (await isDesignatedAdmin(email)) {
-          try {
-            const { data, error } = await supabase.auth.updateUser({
-              data: { email_confirmed: true }
-            });
-            
-            if (error) {
-              console.error('Error updating admin metadata:', error);
-            } else {
-              console.log('Successfully updated admin metadata', data);
-            }
-          } catch (err) {
-            console.error('Unexpected error updating admin:', err);
-          }
-        }
+      if (emailParam) {
+        setEmail(emailParam);
       }
     };
 
-    checkExistingAdmins();
     checkParams();
   }, []);
 
-  useEffect(() => {
-    if (isAuthenticated && user) {
-      if (!isApproved && user.role !== 'student') {
-        navigate('/approval-pending');
-        return;
-      }
-      
-      redirectToDashboard(user.role);
-    }
-  }, [isAuthenticated, user, isApproved, navigate]);
-
-  const redirectToDashboard = (role: string) => {
-    switch (role) {
-      case 'admin':
-        navigate('/admin');
-        break;
-      case 'lecturer':
-      case 'instructor':
-        navigate('/courses');
-        break;
-      case 'project_manager':
-      case 'supervisor':
-        navigate('/projects/manage');
-        break;
-      case 'employer':
-        navigate('/projects/my');
-        break;
-      case 'student':
-        navigate('/projects');
-        break;
-      default:
-        navigate('/');
-    }
-  };
-
   const handleLogin = async (email: string, password: string) => {
     setIsLoading(true);
-
     try {
       const isAdmin = await isDesignatedAdmin(email);
-      
-      if (isAdmin) {
-        try {
-          await supabase.rpc('verify_designated_admin');
-          console.log('Called verify_designated_admin before login');
-        } catch (err) {
-          console.error('Error calling verify_designated_admin before login:', err);
-        }
-      }
-      
       const success = await login(email, password);
+      
       if (success) {
         if (isAdmin) {
           toast.success('Մուտքն հաջողվել է', {
@@ -149,25 +71,19 @@ const Login: React.FC = () => {
 
   const handleRegister = async (userData: RegisterUserData) => {
     setIsLoading(true);
-
     try {
       const isAdmin = await isDesignatedAdmin(userData.email);
-      
-      if (isAdmin) {
-        setDesignatedAdminMessage(true);
-      }
       
       if (userData.role === 'employer' && !userData.organization) {
         toast.error('Սխալ', {
           description: 'Կազմակերպության անունը պարտադիր է գործատուի համար',
         });
-        setIsLoading(false);
         return;
       }
 
-      const autoApprove = userData.role === 'student' || (userData.role === 'admin' && isFirstAdmin) || isAdmin;
+      const autoApprove = userData.role === 'student' || isAdmin;
       
-      const formattedUserData: Partial<DBUser> & { password: string } = {
+      const formattedUserData = {
         name: userData.name,
         email: userData.email,
         password: userData.password,
@@ -180,7 +96,6 @@ const Login: React.FC = () => {
       
       if (success) {
         setVerificationSent(true);
-        
         if (isAdmin) {
           setTimeout(() => {
             toast.info('Կարող եք մուտք գործել համակարգ', {
@@ -198,62 +113,22 @@ const Login: React.FC = () => {
     }
   };
 
-  const handleResetAdmin = () => {
-    setDesignatedAdminMessage(true);
-    toast.success('Ադմինիստրատորի հաշիվը վերակայվել է', {
-      description: 'Այժմ կարող եք մուտք գործել օգտագործելով gitedu@bk.ru և Qolej2025* գաղտնաբառը'
-    });
-  };
-
   return (
-    <div className="min-h-screen flex items-center justify-center bg-background p-4">
-      <div className="w-full max-w-md">
-        <Card className="shadow-lg">
-          <CardHeader className="space-y-1 text-center">
-            <CardTitle className="text-2xl font-bold">Մուտք / Գրանցում</CardTitle>
-            <CardDescription>
-              Մուտք գործեք համակարգ կամ ստեղծեք նոր հաշիվ
-            </CardDescription>
-            {isFirstAdmin && (
-              <div className="mt-2 p-2 bg-blue-50 text-blue-700 rounded-md">
-                Առաջին ադմինիստրատորի հաշիվը կհաստատվի ավտոմատ կերպով
-              </div>
-            )}
-            {designatedAdminMessage && (
-              <div className="mt-2 p-2 bg-green-50 text-green-700 rounded-md">
-                Ադմինիստրատորի հաշիվը (gitedu@bk.ru) գրանցված է։ Մուտք գործեք Ձեր գաղտնաբառով։
-              </div>
-            )}
-            {showAdminReset && <ResetAdminForm onReset={handleResetAdmin} />}
-          </CardHeader>
-          <CardContent>
-            <Tabs defaultValue="login" className="w-full">
-              <TabsList className="grid w-full grid-cols-2 mb-4">
-                <TabsTrigger value="login">Մուտք</TabsTrigger>
-                <TabsTrigger value="register">Գրանցում</TabsTrigger>
-              </TabsList>
-              
-              <TabsContent value="login">
-                <LoginForm onLogin={handleLogin} isLoading={isLoading} />
-              </TabsContent>
-              
-              <TabsContent value="register">
-                <RegisterForm 
-                  onRegister={handleRegister} 
-                  isLoading={isLoading} 
-                  verificationSent={verificationSent} 
-                />
-              </TabsContent>
-            </Tabs>
-          </CardContent>
-          <CardFooter className="flex justify-center">
-            <p className="text-sm text-muted-foreground">
-              Դարձեք մեր համայնքի անդամ հենց այսօր
-            </p>
-          </CardFooter>
-        </Card>
-      </div>
-    </div>
+    <>
+      <RedirectHandler
+        isAuthenticated={isAuthenticated}
+        user={user}
+        isApproved={isApproved}
+      />
+      <LoginContainer
+        onLogin={handleLogin}
+        onRegister={handleRegister}
+        isLoading={isLoading}
+        verificationSent={verificationSent}
+        email={email}
+        showAdminReset={showAdminReset}
+      />
+    </>
   );
 };
 
