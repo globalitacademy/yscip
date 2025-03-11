@@ -9,6 +9,7 @@ import RoleBasedActions from '@/components/RoleBasedActions';
 import ThemeProjectSection from '@/components/ThemeProjectSection';
 import { useAuth } from '@/contexts/auth';
 import { toast } from 'sonner';
+import { supabase } from '@/integrations/supabase/client';
 
 const Index: React.FC = () => {
   const { user, isAuthenticated, isApproved, loading, error } = useAuth();
@@ -26,7 +27,50 @@ const Index: React.FC = () => {
     }
   }, [error]);
   
-  // Redirect to role-specific dashboard if authenticated
+  // Redirect based on session if user data is not available yet
+  useEffect(() => {
+    const checkSessionAndRedirect = async () => {
+      if (isAuthenticated && !user) {
+        console.log("User authenticated but no user data, checking session");
+        
+        const { data: { session } } = await supabase.auth.getSession();
+        if (session?.user?.id) {
+          const { data } = await supabase.rpc('get_user_role', { user_id: session.user.id });
+          const role = data || 'student';
+          
+          console.log(`Session found for user ${session.user.id} with role ${role}, redirecting`);
+          
+          switch (role) {
+            case 'admin':
+              navigate('/admin');
+              break;
+            case 'lecturer':
+            case 'instructor':
+              navigate('/teacher-dashboard');
+              break;
+            case 'project_manager':
+            case 'supervisor':
+              navigate('/project-manager-dashboard');
+              break;
+            case 'employer':
+              navigate('/employer-dashboard');
+              break;
+            case 'student':
+              navigate('/student-dashboard');
+              break;
+            default:
+              // Stay on index if role is unknown
+          }
+        }
+      }
+    };
+    
+    if (isAuthenticated && !user && !loading) {
+      checkSessionAndRedirect();
+    }
+  }, [isAuthenticated, user, loading, navigate]);
+  
+  // Regular redirection based on user role
   useEffect(() => {
     if (isAuthenticated && user && !loading) {
       console.log("User authenticated, redirecting based on role:", user.role);

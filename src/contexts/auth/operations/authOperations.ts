@@ -3,6 +3,7 @@ import { toast } from 'sonner';
 
 export const login = async (email: string, password: string): Promise<boolean> => {
   try {
+    console.log('Attempting login for:', email);
     console.log('Attempting to login with email:', email);
     
     const { data, error } = await supabase.auth.signInWithPassword({
@@ -41,9 +42,8 @@ export const login = async (email: string, password: string): Promise<boolean> =
       return false;
     }
     
-    toast.success('Մուտքն հաջողվել է', {
-      description: 'Դուք հաջողությամբ մուտք եք գործել համակարգ'
-    });
+    // Add direct check for session user
+    console.log('Login successful, navigating to appropriate page based on role');
     
     return true;
   } catch (error) {
