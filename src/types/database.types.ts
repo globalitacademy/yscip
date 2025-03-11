@@ -1,4 +1,3 @@
-
 export type UserRole = 'admin' | 'lecturer' | 'project_manager' | 'employer' | 'student' | 'instructor' | 'supervisor';
 
 export interface DBUser {
@@ -15,6 +14,10 @@ export interface DBUser {
   registration_approved: boolean;
   created_at: string;
   updated_at: string;
+  bio?: string;
+  group?: string;
+  assignedProjects?: number[];
+  supervisedStudents?: string[];
 }
 
 export interface DBProject {
@@ -74,3 +77,12 @@ export interface DBTimelineEvent {
   created_at: string;
   updated_at: string;
 }
+
+export interface Task extends Omit<DBTask, 'id'> {
+  id: string;
+}
+
+export const convertDBTaskToTask = (dbTask: DBTask): Task => ({
+  ...dbTask,
+  id: dbTask.id.toString()
+});

@@ -1,8 +1,7 @@
-
 import { supabase } from '@/integrations/supabase/client';
-import { DBTask } from '@/types/database.types';
+import { DBTask, Task, convertDBTaskToTask } from '@/types/database.types';
 
-export const getTasksForProject = async (projectId: number): Promise<DBTask[]> => {
+export const getTasksForProject = async (projectId: number): Promise<Task[]> => {
   const { data, error } = await supabase
     .from('tasks')
     .select('*')
@@ -14,10 +13,10 @@ export const getTasksForProject = async (projectId: number): Promise<DBTask[]> =
     return [];
   }
   
-  return data as DBTask[];
+  return (data as DBTask[]).map(convertDBTaskToTask);
 };
 
-export const getTasksAssignedToUser = async (userId: string): Promise<DBTask[]> => {
+export const getTasksAssignedToUser = async (userId: string): Promise<Task[]> => {
   const { data, error } = await supabase
     .from('tasks')
     .select('*')
@@ -29,7 +28,7 @@ export const getTasksAssignedToUser = async (userId: string): Promise<DBTask[]> 
     return [];
   }
   
-  return data as DBTask[];
+  return (data as DBTask[]).map(convertDBTaskToTask);
 };
 
 export const createTask = async (task: Omit<DBTask, 'id' | 'created_at' | 'updated_at'>): Promise<DBTask | null> => {
