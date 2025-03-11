@@ -33,7 +33,6 @@ export const login = async (email: string, password: string): Promise<boolean> =
       }
     }
     
-    console.log('Signing in with email and password...');
     const { data, error } = await supabase.auth.signInWithPassword({
       email: cleanEmail,
       password: password
