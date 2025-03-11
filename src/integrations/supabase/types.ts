@@ -444,6 +444,10 @@ export type Database = {
         }
         Returns: boolean
       }
+      reset_admin_account: {
+        Args: Record<PropertyKey, never>
+        Returns: boolean
+      }
       verify_designated_admin: {
         Args: Record<PropertyKey, never>
         Returns: undefined
