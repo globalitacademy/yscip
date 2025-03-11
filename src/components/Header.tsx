@@ -1,9 +1,9 @@
 
 import React from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { cn } from '@/lib/utils';
 import UserMenu from '@/components/UserMenu';
-import { useAuth } from '@/contexts/AuthContext';
+import { useAuth } from '@/contexts/auth';
 import { useNotifications } from '@/contexts/NotificationContext';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -23,8 +23,9 @@ interface HeaderProps {
 }
 
 const Header: React.FC<HeaderProps> = ({ className }) => {
-  const { user } = useAuth();
+  const { user, isAuthenticated } = useAuth();
   const { unreadCount } = useNotifications();
+  const navigate = useNavigate();
   
   // Define role-based navigation
   const getRoleNavigation = () => {
@@ -56,24 +57,32 @@ const Header: React.FC<HeaderProps> = ({ className }) => {
         );
       
       case 'lecturer':
+      case 'instructor':
         return (
           <div className="flex items-center gap-2 md:gap-4">
-            <Link to="/tasks">
-              <Button variant="outline" size="sm" className="gap-1">
-                <ClipboardList size={16} />
-                <span className="hidden md:inline">Առաջադրանքներ</span>
-              </Button>
-            </Link>
             <Link to="/courses">
               <Button variant="outline" size="sm" className="gap-1">
                 <BookOpen size={16} />
                 <span className="hidden md:inline">Կուրսեր</span>
               </Button>
             </Link>
+            <Link to="/tasks">
+              <Button variant="outline" size="sm" className="gap-1">
+                <ClipboardList size={16} />
+                <span className="hidden md:inline">Առաջադրանքներ</span>
+              </Button>
+            </Link>
+            <Link to="/groups">
+              <Button variant="outline" size="sm" className="gap-1">
+                <Users size={16} />
+                <span className="hidden md:inline">Խմբեր</span>
+              </Button>
+            </Link>
           </div>
         );
       
       case 'project_manager':
+      case 'supervisor':
         return (
           <div className="flex items-center gap-2 md:gap-4">
             <Link to="/projects/manage">
@@ -82,9 +91,15 @@ const Header: React.FC<HeaderProps> = ({ className }) => {
                 <span className="hidden md:inline">Նախագծեր</span>
               </Button>
             </Link>
-            <Link to="/gantt">
+            <Link to="/tasks">
               <Button variant="outline" size="sm" className="gap-1">
                 <ClipboardList size={16} />
+                <span className="hidden md:inline">Առաջադրանքներ</span>
+              </Button>
+            </Link>
+            <Link to="/gantt">
+              <Button variant="outline" size="sm" className="gap-1">
+                <FileText size={16} />
                 <span className="hidden md:inline">Ժամանակացույց</span>
               </Button>
             </Link>
@@ -94,16 +109,16 @@ const Header: React.FC<HeaderProps> = ({ className }) => {
       case 'employer':
         return (
           <div className="flex items-center gap-2 md:gap-4">
-            <Link to="/projects/submit">
-              <Button variant="outline" size="sm" className="gap-1">
-                <FileText size={16} />
-                <span className="hidden md:inline">Նախագծի առաջարկ</span>
-              </Button>
-            </Link>
             <Link to="/projects/my">
               <Button variant="outline" size="sm" className="gap-1">
                 <ClipboardList size={16} />
                 <span className="hidden md:inline">Իմ նախագծերը</span>
+              </Button>
+            </Link>
+            <Link to="/projects/submit">
+              <Button variant="outline" size="sm" className="gap-1">
+                <FileText size={16} />
+                <span className="hidden md:inline">Նախագծի առաջարկ</span>
               </Button>
             </Link>
           </div>
@@ -148,20 +163,32 @@ const Header: React.FC<HeaderProps> = ({ className }) => {
         </div>
         
         <div className="flex items-center gap-2">
-          {user && (
-            <Link to="/notifications" className="relative">
-              <Button variant="ghost" size="icon">
-                <Bell size={20} />
-                {unreadCount > 0 && (
-                  <Badge 
-                    variant="destructive" 
-                    className="absolute -top-1 -right-1 h-5 w-5 flex items-center justify-center p-0 text-xs"
-                  >
-                    {unreadCount > 9 ? '9+' : unreadCount}
-                  </Badge>
-                )}
+          {isAuthenticated && (
+            <>
+              <Button 
+                variant="outline" 
+                size="sm" 
+                className="gap-1"
+                onClick={() => navigate('/dashboard')}
+              >
+                <LayoutDashboard size={16} />
+                <span className="hidden md:inline">Դաշբորդ</span>
               </Button>
-            </Link>
+              
+              <Link to="/notifications" className="relative">
+                <Button variant="ghost" size="icon">
+                  <Bell size={20} />
+                  {unreadCount > 0 && (
+                    <Badge 
+                      variant="destructive" 
+                      className="absolute -top-1 -right-1 h-5 w-5 flex items-center justify-center p-0 text-xs"
+                    >
+                      {unreadCount > 9 ? '9+' : unreadCount}
+                    </Badge>
+                  )}
+                </Button>
+              </Link>
+            </>
           )}
           <UserMenu />
         </div>

@@ -1,10 +1,10 @@
-
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 
 export const login = async (email: string, password: string): Promise<boolean> => {
   try {
-    console.log('Attempting login for:', email);
+    console.log('Attempting to login with email:', email);
+    
     const { data, error } = await supabase.auth.signInWithPassword({
       email,
       password
@@ -12,48 +12,70 @@ export const login = async (email: string, password: string): Promise<boolean> =
     
     if (error) {
       console.error('Login error:', error);
-      if (error.message === 'Invalid login credentials') {
-        toast.error('Սխալ էլ․ հասցե կամ գաղտնաբառ');
-      } else if (error.message.includes('Email not confirmed')) {
-        toast.error('Էլ․ հասցեն դեռ չի հաստատվել։ Խնդրում ենք ստուգել Ձեր փոստարկղը։');
+      
+      if (error.message.includes('Email not confirmed')) {
+        toast.error('Էլ․ հասցեն չի հաստատվել', {
+          description: 'Խնդրում ենք ստուգել Ձեր էլ․ փոստը հաստատման հղման համար'
+        });
+      } else if (error.message.includes('Invalid login credentials')) {
+        toast.error('Սխալ մուտքի տվյալներ', {
+          description: 'Խնդրում ենք ստուգել Ձեր էլ․ հասցեն և գաղտնաբառը'
+        });
       } else {
-        toast.error('Մուտքը չի հաջողվել: ' + error.message);
+        toast.error('Մուտքը չի հաջողվել', {
+          description: error.message
+        });
       }
+      
       return false;
     }
     
+    console.log('Login successful, got session:', data.session?.user.id);
+    
+    // If there's no session, something went wrong
     if (!data.session) {
-      console.error('Login failed: No session returned');
-      toast.error('Մուտքը չի հաջողվել');
+      console.error('No session returned after login');
+      toast.error('Մուտքը չի հաջողվել', {
+        description: 'Տեղի ունեցավ անսպասելի սխալ'
+      });
       return false;
     }
     
-    console.log('Login successful:', data.session.user.id);
+    toast.success('Մուտքն հաջողվել է', {
+      description: 'Դուք հաջողությամբ մուտք եք գործել համակարգ'
+    });
+    
     return true;
   } catch (error) {
     console.error('Unexpected login error:', error);
-    toast.error('Տեղի ունեցավ անսպասելի սխալ');
+    toast.error('Սխալ', {
+      description: 'Տեղի ունեցավ անսպասելի սխալ'
+    });
     return false;
   }
 };
 
-export const logout = async () => {
+export const logout = async (): Promise<void> => {
   try {
-    console.log('Logging out...');
+    console.log('Logging out user');
     const { error } = await supabase.auth.signOut();
     
     if (error) {
       console.error('Logout error:', error);
-      toast.error('Ելքի սխալ: ' + error.message);
-      return false;
+      toast.error('Ելքը չի հաջողվել', {
+        description: error.message
+      });
+      return;
     }
     
-    console.log('Logout successful');
-    return true;
+    toast.success('Ելքն հաջողվել է', {
+      description: 'Դուք հաջողությամբ դուրս եք եկել համակարգից'
+    });
   } catch (error) {
     console.error('Unexpected logout error:', error);
-    toast.error('Տեղի ունեցավ անսպասելի սխալ');
-    return false;
+    toast.error('Սխալ', {
+      description: 'Տեղի ունեցավ անսպասելի սխալ'
+    });
   }
 };
 

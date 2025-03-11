@@ -45,15 +45,64 @@ const ProtectedRoute = ({ children, allowedRoles }: { children: React.ReactNode,
   }
   
   // Check if user account is approved (except for students who are auto-approved)
-  if (!isApproved && user.role !== 'student') {
+  if (!isApproved) {
     return <ApprovalPending />;
   }
   
   if (!allowedRoles.includes(user.role)) {
+    // Redirect to appropriate dashboard based on role
+    if (user.role === 'admin') {
+      return <Navigate to="/admin" replace />;
+    } else if (user.role === 'lecturer' || user.role === 'instructor') {
+      return <Navigate to="/courses" replace />;
+    } else if (user.role === 'project_manager' || user.role === 'supervisor') {
+      return <Navigate to="/projects/manage" replace />;
+    } else if (user.role === 'employer') {
+      return <Navigate to="/projects/my" replace />;
+    } else if (user.role === 'student') {
+      return <Navigate to="/projects" replace />;
+    }
     return <Navigate to="/" replace />;
   }
   
   return <>{children}</>;
+};
+
+// Role-based dashboard redirect
+const RoleBasedRedirect = () => {
+  const { user, isAuthenticated, isApproved, loading } = useAuth();
+  
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center h-screen">
+        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary"></div>
+        <span className="ml-3">Բեռնում...</span>
+      </div>
+    );
+  }
+  
+  if (!isAuthenticated || !user) {
+    return <Navigate to="/login" replace />;
+  }
+  
+  if (!isApproved) {
+    return <ApprovalPending />;
+  }
+  
+  // Redirect based on role
+  if (user.role === 'admin') {
+    return <Navigate to="/admin" replace />;
+  } else if (user.role === 'lecturer' || user.role === 'instructor') {
+    return <Navigate to="/courses" replace />;
+  } else if (user.role === 'project_manager' || user.role === 'supervisor') {
+    return <Navigate to="/projects/manage" replace />;
+  } else if (user.role === 'employer') {
+    return <Navigate to="/projects/my" replace />;
+  } else if (user.role === 'student') {
+    return <Navigate to="/projects" replace />;
+  }
+  
+  return <Navigate to="/" replace />;
 };
 
 function AppRoutes() {
@@ -71,6 +120,7 @@ function AppRoutes() {
   return (
     <Routes>
       <Route path="/" element={<Index />} />
+      <Route path="/dashboard" element={<RoleBasedRedirect />} />
       <Route path="/project/:id" element={<ProjectDetails />} />
       <Route path="/login" element={<Login />} />
       <Route path="/verify-email" element={<VerifyEmail />} />

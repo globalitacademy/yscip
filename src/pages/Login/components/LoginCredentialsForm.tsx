@@ -43,9 +43,9 @@ const LoginCredentialsForm: React.FC<LoginCredentialsFormProps> = ({
       const success = await login(email, password);
       
       if (success) {
-        console.log('Login successful, navigating to home page');
+        console.log('Login successful, navigating to appropriate page based on role');
         toast.success('Մուտքն հաջողվել է');
-        navigate('/');
+        // We'll let App.tsx handle the navigation based on role
       } else {
         console.log('Login was not successful');
         // Error messages are handled in authOperations.ts
