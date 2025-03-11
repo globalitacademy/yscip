@@ -1,21 +1,82 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { LoginFormProps } from './types';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
+import { useNavigate, useLocation } from 'react-router-dom';
 
 const LoginForm: React.FC<LoginFormProps> = ({ onLogin, isLoading }) => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [newPassword, setNewPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
   const [resetEmailSent, setResetEmailSent] = useState(false);
   const [isSendingReset, setIsSendingReset] = useState(false);
+  const [isResetting, setIsResetting] = useState(false);
+  const [isUpdatingPassword, setIsUpdatingPassword] = useState(false);
+  
+  const navigate = useNavigate();
+  const location = useLocation();
+
+  // Check for password reset token in URL
+  useEffect(() => {
+    const handlePasswordReset = async () => {
+      const hash = location.hash;
+      const type = new URLSearchParams(hash.substring(1)).get('type');
+      
+      if (type === 'recovery') {
+        setIsResetting(true);
+        toast.info('Մուտքագրեք Ձեր նոր գաղտնաբառը');
+      }
+    };
+
+    handlePasswordReset();
+  }, [location]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    await onLogin(email, password);
+    
+    if (isResetting) {
+      await handlePasswordUpdate();
+    } else {
+      await onLogin(email, password);
+    }
+  };
+
+  const handlePasswordUpdate = async () => {
+    if (newPassword !== confirmPassword) {
+      toast.error('Գաղտնաբառերը չեն համընկնում');
+      return;
+    }
+
+    if (newPassword.length < 6) {
+      toast.error('Գաղտնաբառը պետք է պարունակի առնվազն 6 նիշ');
+      return;
+    }
+
+    setIsUpdatingPassword(true);
+
+    try {
+      const { error } = await supabase.auth.updateUser({
+        password: newPassword,
+      });
+
+      if (error) {
+        toast.error('Սխալ: ' + error.message);
+      } else {
+        toast.success('Գաղտնաբառը հաջողությամբ թարմացվել է');
+        setIsResetting(false);
+        navigate('/login');
+      }
+    } catch (err) {
+      console.error('Password update error:', err);
+      toast.error('Տեղի ունեցավ անսպասելի սխալ');
+    } finally {
+      setIsUpdatingPassword(false);
+    }
   };
 
   const handleResetPassword = async () => {
@@ -44,6 +105,44 @@ const LoginForm: React.FC<LoginFormProps> = ({ onLogin, isLoading }) => {
       setIsSendingReset(false);
     }
   };
+
+  if (isResetting) {
+    return (
+      <form onSubmit={handleSubmit} className="space-y-4">
+        <div className="bg-blue-50 border border-blue-200 rounded-md p-3 text-blue-700 mb-4">
+          Մուտքագրեք Ձեր նոր գաղտնաբառը
+        </div>
+        
+        <div className="space-y-2">
+          <Label htmlFor="newPassword">Նոր գաղտնաբառ</Label>
+          <Input
+            id="newPassword"
+            type="password"
+            placeholder="••••••••"
+            value={newPassword}
+            onChange={(e) => setNewPassword(e.target.value)}
+            required
+          />
+        </div>
+        
+        <div className="space-y-2">
+          <Label htmlFor="confirmPassword">Հաստատեք գաղտնաբառը</Label>
+          <Input
+            id="confirmPassword"
+            type="password"
+            placeholder="••••••••"
+            value={confirmPassword}
+            onChange={(e) => setConfirmPassword(e.target.value)}
+            required
+          />
+        </div>
+        
+        <Button type="submit" className="w-full" disabled={isUpdatingPassword}>
+          {isUpdatingPassword ? 'Թարմացվում է...' : 'Պահպանել գաղտնաբառը'}
+        </Button>
+      </form>
+    );
+  }
 
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
