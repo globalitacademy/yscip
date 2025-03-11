@@ -18,6 +18,7 @@ export const registerUser = async (userData: Partial<DBUser> & { password: strin
     let isFirstAdmin = false;
     if (userData.role === 'admin') {
       isFirstAdmin = await checkFirstAdmin();
+      console.log('Is first admin check result:', isFirstAdmin);
     }
     
     // Register with Supabase auth
@@ -40,6 +41,7 @@ export const registerUser = async (userData: Partial<DBUser> & { password: strin
 
     // If this is the first admin, automatically approve them using our secure function
     if (isFirstAdmin) {
+      console.log('Approving first admin:', userData.email);
       const approved = await approveFirstAdmin(userData.email!);
       
       if (!approved) {
@@ -57,6 +59,7 @@ export const registerUser = async (userData: Partial<DBUser> & { password: strin
           return true;
         }
       } else {
+        console.log('First admin approved successfully');
         toast.success('Դուք գրանցվել եք որպես առաջին ադմինիստրատոր և ձեր հաշիվը ավտոմատ հաստատվել է։');
         return true;
       }
