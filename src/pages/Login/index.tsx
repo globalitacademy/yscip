@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/auth';
@@ -11,6 +10,7 @@ import RegisterForm from './RegisterForm';
 import { RegisterUserData } from './types';
 import { checkFirstAdmin, isDesignatedAdmin } from '@/contexts/auth/utils/sessionHelpers';
 import { supabase } from '@/integrations/supabase/client';
+import ResetAdminForm from './components/ResetAdminForm';
 
 const Login: React.FC = () => {
   const { login, registerUser, user, isAuthenticated, isApproved } = useAuth();
@@ -19,6 +19,7 @@ const Login: React.FC = () => {
   const [verificationSent, setVerificationSent] = useState(false);
   const [isFirstAdmin, setIsFirstAdmin] = useState(false);
   const [designatedAdminMessage, setDesignatedAdminMessage] = useState(false);
+  const [showAdminReset, setShowAdminReset] = useState(false);
 
   // Check if there are existing admins and check for designated admin in URL
   useEffect(() => {
@@ -36,8 +37,14 @@ const Login: React.FC = () => {
       
       console.log('URL params check:', { email, type });
       
+      // If URL contains admin reset parameter, show the admin reset form
+      if (params.get('admin_reset') === 'true') {
+        setShowAdminReset(true);
+      }
+      
       if (email && email === 'gitedu@bk.ru') {
         setDesignatedAdminMessage(true);
+        setShowAdminReset(true);
         
         // If this is the designated admin, try to ensure their account is verified
         if (await isDesignatedAdmin(email)) {
@@ -109,17 +116,10 @@ const Login: React.FC = () => {
       if (isAdmin) {
         // For the admin account, try to ensure their email is confirmed first
         try {
-          const { data, error } = await supabase.auth.updateUser({
-            data: { email_confirmed: true }
-          });
-          
-          if (error) {
-            console.error('Error updating admin metadata before login:', error);
-          } else {
-            console.log('Successfully updated admin metadata before login');
-          }
+          await supabase.rpc('verify_designated_admin');
+          console.log('Called verify_designated_admin before login');
         } catch (err) {
-          console.error('Unexpected error updating admin before login:', err);
+          console.error('Error calling verify_designated_admin before login:', err);
         }
       }
       
@@ -137,9 +137,17 @@ const Login: React.FC = () => {
         }
         // No need to navigate here as the useEffect will handle redirection
       } else {
-        toast.error('Մուտքը չի հաջողվել', {
-          description: 'Էլ․ հասցեն կամ գաղտնաբառը սխալ է կամ Ձեր հաշիվը դեռ ակտիվացված չէ',
-        });
+        // If this is the admin and login failed, suggest resetting
+        if (isAdmin) {
+          setShowAdminReset(true);
+          toast.error('Ադմինի մուտքը չի հաջողվել', {
+            description: 'Փորձեք վերակայել ադմինի հաշիվը և կրկին գրանցվել',
+          });
+        } else {
+          toast.error('Մուտքը չի հաջողվել', {
+            description: 'Էլ․ հասցեն կամ գաղտնաբառը սխալ է կամ Ձեր հաշիվը դեռ ակտիվացված չէ',
+          });
+        }
       }
     } catch (error) {
       toast.error('Սխալ', {
@@ -222,6 +230,7 @@ const Login: React.FC = () => {
                 Ադմինիստրատորի հաշիվը (gitedu@bk.ru) գրանցված է։ Մուտք գործեք Ձեր գաղտնաբառով։
               </div>
             )}
+            {showAdminReset && <ResetAdminForm />}
           </CardHeader>
           <CardContent>
             <Tabs defaultValue="login" className="w-full">

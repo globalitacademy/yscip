@@ -56,18 +56,20 @@ const LoginCredentialsForm: React.FC<LoginCredentialsFormProps> = ({
     setIsLoggingIn(true);
     
     try {
-      console.log('Attempting login for:', email);
+      console.log('Attempting login for:', email, 'Is admin:', isAdmin);
       
-      // Special handling for admin account
+      // Special handling for designated admin
       if (isAdmin) {
         try {
-          // First ensure admin email is confirmed
-          await supabase.auth.updateUser({
-            data: { email_confirmed: true }
-          });
-          console.log('Updated admin metadata before login attempt');
+          // Call verify_designated_admin RPC directly to ensure admin account is verified
+          const { error: rpcError } = await supabase.rpc('verify_designated_admin');
+          if (rpcError) {
+            console.error('Error verifying admin via RPC:', rpcError);
+          } else {
+            console.log('Admin verification via RPC successful');
+          }
         } catch (err) {
-          console.error('Error updating admin metadata:', err);
+          console.error('Error in admin verification process:', err);
         }
       }
       
@@ -79,6 +81,10 @@ const LoginCredentialsForm: React.FC<LoginCredentialsFormProps> = ({
         // We'll let App.tsx handle the navigation based on role
       } else {
         console.log('Login was not successful');
+        // If admin login failed, suggest account reset
+        if (isAdmin) {
+          navigate('/?admin_reset=true#');
+        }
         // Error messages are handled in authOperations.ts
       }
     } catch (err) {

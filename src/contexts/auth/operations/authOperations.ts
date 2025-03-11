@@ -1,4 +1,3 @@
-
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { isDesignatedAdmin } from '../utils/sessionHelpers';
@@ -178,6 +177,39 @@ export const updatePassword = async (newPassword: string): Promise<boolean> => {
   } catch (error) {
     console.error('Unexpected error updating password:', error);
     toast.error('Տեղի ունեցավ անսպասելի սխալ');
+    return false;
+  }
+};
+
+export const resetAdminAccount = async (): Promise<boolean> => {
+  try {
+    console.log('Resetting admin account');
+    
+    // Call a specialized RPC function to reset the admin account
+    const { error } = await supabase.rpc('reset_admin_account');
+    
+    if (error) {
+      console.error('Error resetting admin account:', error);
+      toast.error('Հաշվի վերակայման սխալ', {
+        description: error.message
+      });
+      return false;
+    }
+    
+    console.log('Admin account reset successfully');
+    toast.success('Ադմինիստրատորի հաշիվը վերակայվել է', {
+      description: 'Այժմ կարող եք կրկին գրանցվել'
+    });
+    
+    // Sign out current session if any
+    await supabase.auth.signOut();
+    
+    return true;
+  } catch (error) {
+    console.error('Unexpected error resetting admin account:', error);
+    toast.error('Սխալ', {
+      description: 'Տեղի ունեցավ անսպասելի սխալ'
+    });
     return false;
   }
 };
