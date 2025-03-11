@@ -3,7 +3,6 @@ import React, { createContext, useContext, useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { DBUser, UserRole } from '@/types/database.types';
 import { toast } from 'sonner';
-import { mockUsers } from '@/data/userRoles';
 
 interface AuthContextType {
   user: DBUser | null;
@@ -11,7 +10,6 @@ interface AuthContextType {
   loading: boolean;
   login: (email: string, password: string) => Promise<boolean>;
   logout: () => void;
-  switchRole: (role: UserRole) => void;
   registerUser: (userData: Partial<DBUser>) => Promise<boolean>;
   sendVerificationEmail: (email: string) => Promise<boolean>;
   verifyEmail: (token: string) => Promise<boolean>;
@@ -21,8 +19,6 @@ interface PendingUser extends Partial<DBUser> {
   verificationToken: string;
   verified: boolean;
 }
-
-let pendingUsers: PendingUser[] = [];
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
@@ -98,45 +94,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     };
   }, []);
 
-  // DEMO MODE: For quick testing using mock users
-  const demoLogin = async (email: string, password: string): Promise<boolean> => {
-    const foundUser = mockUsers.find(u => u.email.toLowerCase() === email.toLowerCase());
-    
-    if (foundUser && foundUser.registrationApproved) {
-      // Convert mock user to DBUser format
-      const dbUser: DBUser = {
-        id: foundUser.id,
-        name: foundUser.name,
-        email: foundUser.email,
-        role: foundUser.role,
-        avatar: foundUser.avatar,
-        department: foundUser.department,
-        course: foundUser.course,
-        group_name: foundUser.group,
-        organization: foundUser.organization,
-        specialization: foundUser.specialization,
-        registration_approved: foundUser.registrationApproved || false,
-        created_at: new Date().toISOString(),
-        updated_at: new Date().toISOString()
-      };
-      
-      setUser(dbUser);
-      setIsAuthenticated(true);
-      localStorage.setItem('DEMO_USER', JSON.stringify(dbUser));
-      return true;
-    }
-    
-    return false;
-  };
-
   const login = async (email: string, password: string): Promise<boolean> => {
     try {
-      // For demo purposes, try mock login first
-      if (await demoLogin(email, password)) {
-        return true;
-      }
-      
-      // Real Supabase authentication
       const { data, error } = await supabase.auth.signInWithPassword({
         email,
         password
@@ -162,39 +121,36 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   const logout = async () => {
-    // Clear demo user if exists
-    localStorage.removeItem('DEMO_USER');
-    
-    // Real logout
     await supabase.auth.signOut();
-    
     setUser(null);
     setIsAuthenticated(false);
   };
 
-  const generateVerificationToken = () => {
-    return Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
-  };
-
   const registerUser = async (userData: Partial<DBUser>): Promise<boolean> => {
     try {
-      // For demo mode, store pending users in memory
-      const emailExists = mockUsers.some(user => user.email.toLowerCase() === userData.email?.toLowerCase());
-      if (emailExists) {
+      // Check if email already exists
+      const { data: existingUser, error: checkError } = await supabase
+        .from('users')
+        .select('email')
+        .eq('email', userData.email)
+        .single();
+      
+      if (existingUser) {
         toast.error(`Այս էլ․ հասցեն արդեն գրանցված է։`);
         return false;
       }
       
-      const pendingEmailExists = pendingUsers.some(user => user.email?.toLowerCase() === userData.email?.toLowerCase());
-      if (pendingEmailExists) {
-        toast.error(`Այս էլ․ հասցեով գրանցումն արդեն սպասման մեջ է։ Խնդրում ենք ստուգել Ձեր էլ․ փոստը։`);
+      if (checkError && checkError.code !== 'PGRST116') {
+        // PGRST116 means no rows returned, which is expected
+        console.error('Error checking email:', checkError);
+        toast.error('Տեղի ունեցավ սխալ օգտատիրոջ տվյալները ստուգելիս։');
         return false;
       }
       
-      // Real Supabase registration
+      // Register with Supabase auth
       const { data, error } = await supabase.auth.signUp({
         email: userData.email!,
-        password: 'password123', // In a real app, this would come from the form
+        password: userData.password || 'password123', // In a real app, password would come from form
         options: {
           data: {
             name: userData.name,
@@ -208,17 +164,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         toast.error('Գրանցումը չի հաջողվել: ' + error.message);
         return false;
       }
-      
-      // For demo, also add to pending users
-      const verificationToken = generateVerificationToken();
-      pendingUsers.push({
-        ...userData,
-        verificationToken,
-        verified: false
-      });
-      
-      console.log(`Verification email sent to ${userData.email} with token: ${verificationToken}`);
-      console.log(`Verification link: http://localhost:3000/verify-email?token=${verificationToken}`);
       
       const needsApproval = ['lecturer', 'employer', 'project_manager', 'supervisor'].includes(userData.role as string);
       
@@ -237,74 +182,35 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   const sendVerificationEmail = async (email: string): Promise<boolean> => {
-    // For demo mode
-    const pendingUser = pendingUsers.find(u => u.email?.toLowerCase() === email.toLowerCase());
-    
-    if (!pendingUser) {
+    try {
+      const { error } = await supabase.auth.resend({
+        type: 'signup',
+        email: email
+      });
+      
+      if (error) {
+        console.error('Error resending confirmation email:', error);
+        toast.error('Հաստատման հղումը չի ուղարկվել: ' + error.message);
+        return false;
+      }
+      
+      toast.success('Հաստատման հղումը կրկին ուղարկված է Ձեր էլ․ փոստին։');
+      return true;
+    } catch (error) {
+      console.error('Unexpected error sending verification email:', error);
+      toast.error('Տեղի ունեցավ անսպասելի սխալ');
       return false;
     }
-    
-    console.log(`Verification email resent to ${email} with token: ${pendingUser.verificationToken}`);
-    
-    toast.success(`Հաստատման հղումը կրկին ուղարկված է Ձեր էլ․ փոստին։`);
-    
-    return true;
   };
 
   const verifyEmail = async (token: string): Promise<boolean> => {
-    // For demo mode
-    const pendingUserIndex = pendingUsers.findIndex(u => u.verificationToken === token);
-    
-    if (pendingUserIndex === -1) {
+    try {
+      // In a real implementation, this would verify the token with Supabase
+      // For now, we'll just return true as Supabase handles email verification internally
+      return true;
+    } catch (error) {
+      console.error('Error verifying email:', error);
       return false;
-    }
-    
-    pendingUsers[pendingUserIndex].verified = true;
-    
-    if (pendingUsers[pendingUserIndex].role === 'student') {
-      const pendingUser = pendingUsers[pendingUserIndex];
-      
-      // In a real app, this would update a user's status in the database
-      // Here we just add them to mock users
-      const newUser = {
-        id: `user-${Date.now()}`,
-        name: pendingUser.name || 'New Student',
-        email: pendingUser.email || '',
-        role: 'student' as UserRole,
-        registrationApproved: true,
-        avatar: `https://api.dicebear.com/7.x/avataaars/svg?seed=${Date.now()}`
-      };
-      
-      mockUsers.push(newUser);
-    }
-    
-    return true;
-  };
-
-  const switchRole = async (role: UserRole) => {
-    // For demo mode
-    const userWithRole = mockUsers.find(u => u.role === role);
-    
-    if (userWithRole) {
-      // Convert mock user to DBUser format
-      const dbUser: DBUser = {
-        id: userWithRole.id,
-        name: userWithRole.name,
-        email: userWithRole.email,
-        role: userWithRole.role,
-        avatar: userWithRole.avatar,
-        department: userWithRole.department,
-        course: userWithRole.course,
-        group_name: userWithRole.group,
-        organization: userWithRole.organization,
-        specialization: userWithRole.specialization,
-        registration_approved: userWithRole.registrationApproved || false,
-        created_at: new Date().toISOString(),
-        updated_at: new Date().toISOString()
-      };
-      
-      setUser(dbUser);
-      localStorage.setItem('DEMO_USER', JSON.stringify(dbUser));
     }
   };
 
@@ -316,7 +222,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         loading,
         login,
         logout,
-        switchRole,
         registerUser,
         sendVerificationEmail,
         verifyEmail

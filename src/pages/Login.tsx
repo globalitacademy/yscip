@@ -7,9 +7,8 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { toast } from '@/components/ui/use-toast';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
-import { UserRole, mockUsers } from '@/data/userRoles';
+import { UserRole } from '@/types/database.types';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Checkbox } from '@/components/ui/checkbox';
 import {
   Select,
@@ -22,7 +21,7 @@ import { AlertCircle } from 'lucide-react';
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 
 const Login: React.FC = () => {
-  const { login, switchRole, registerUser } = useAuth();
+  const { login, registerUser } = useAuth();
   const navigate = useNavigate();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -136,8 +135,9 @@ const Login: React.FC = () => {
       const userData = {
         name,
         email,
+        password,
         role,
-        registrationApproved: role === 'student', // Students are auto-approved
+        registration_approved: role === 'student', // Students are auto-approved
         ...(role === 'employer' && { organization })
       };
 
@@ -163,14 +163,6 @@ const Login: React.FC = () => {
       });
     } finally {
       setIsLoading(false);
-    }
-  };
-
-  const handleQuickLogin = (role: UserRole) => {
-    const user = mockUsers.find(u => u.role === role);
-    if (user) {
-      setEmail(user.email);
-      setPassword('password'); // In a real app, we wouldn't do this
     }
   };
 
@@ -204,10 +196,9 @@ const Login: React.FC = () => {
           </CardHeader>
           <CardContent>
             <Tabs defaultValue="login" className="w-full">
-              <TabsList className="grid w-full grid-cols-3 mb-4">
+              <TabsList className="grid w-full grid-cols-2 mb-4">
                 <TabsTrigger value="login">Մուտք</TabsTrigger>
                 <TabsTrigger value="register">Գրանցում</TabsTrigger>
-                <TabsTrigger value="demo">Դեմո հաշիվներ</TabsTrigger>
               </TabsList>
               
               <TabsContent value="login">
@@ -387,38 +378,11 @@ const Login: React.FC = () => {
                   </form>
                 )}
               </TabsContent>
-              
-              <TabsContent value="demo">
-                <div className="space-y-3">
-                  <p className="text-sm text-muted-foreground mb-4">
-                    Ընտրեք ցանկացած դերակատարում՝ համակարգ մուտք գործելու համար:
-                  </p>
-                  
-                  {mockUsers
-                    .filter(user => user.registrationApproved)
-                    .map(user => (
-                    <div 
-                      key={user.id}
-                      className="flex items-center p-3 border rounded-lg hover:bg-accent cursor-pointer"
-                      onClick={() => handleQuickLogin(user.role)}
-                    >
-                      <Avatar className="h-10 w-10 mr-3">
-                        <AvatarImage src={user.avatar} alt={user.name} />
-                        <AvatarFallback>{user.name.substring(0, 2)}</AvatarFallback>
-                      </Avatar>
-                      <div>
-                        <p className="font-medium">{user.name}</p>
-                        <p className="text-sm text-muted-foreground">{user.email}</p>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </TabsContent>
             </Tabs>
           </CardContent>
           <CardFooter className="flex justify-center">
             <p className="text-sm text-muted-foreground">
-              Դեմո տարբերակ. Իրական մուտքի տվյալներ չեն պահանջվում
+              Դարձեք մեր համայնքի անդամ հենց այսօր
             </p>
           </CardFooter>
         </Card>
