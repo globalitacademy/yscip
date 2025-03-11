@@ -22,6 +22,59 @@ const PasswordResetForm: React.FC<PasswordResetFormProps> = ({
   const navigate = useNavigate();
   const { login, updatePassword } = useAuth();
 
+  // For admin quick setup - can be triggered internally
+  const handleAdminPasswordSetup = async () => {
+    if (email === 'gitedu@bk.ru') {
+      const adminPassword = 'Qolej2025*';
+      setIsUpdatingPassword(true);
+      
+      try {
+        console.log('Setting up admin password...');
+        const success = await updatePassword(adminPassword);
+        
+        if (success) {
+          console.log('Admin password set successfully');
+          toast.success('Ադմին գաղտնաբառը հաջողությամբ սահմանվել է');
+          
+          // Auto-login with new password
+          console.log('Attempting admin auto-login');
+          try {
+            const loginSuccess = await login(email, adminPassword);
+            
+            if (loginSuccess) {
+              console.log('Admin auto-login successful');
+              toast.success('Մուտքն հաջողվել է');
+              navigate('/admin');
+              return; // Exit early
+            } else {
+              console.log('Admin auto-login failed');
+              toast.error('Ադմինի գաղտնաբառը սահմանված է, սակայն ավտոմատ մուտքը չի հաջողվել');
+            }
+          } catch (loginErr) {
+            console.error('Admin auto-login error:', loginErr);
+            toast.error('Ավտոմատ մուտքի սխալ: Խնդրում ենք մուտք գործել ձեռքով');
+          }
+        } else {
+          console.log('Admin password setup failed');
+          toast.error('Ադմինի գաղտնաբառի սահմանումը չի հաջողվել');
+        }
+      } catch (err) {
+        console.error('Admin password setup error:', err);
+        toast.error('Տեղի ունեցավ անսպասելի սխալ');
+      } finally {
+        setIsUpdatingPassword(false);
+        onComplete();
+      }
+    }
+  };
+
+  // This is used to auto-setup admin password when component loads if needed
+  React.useEffect(() => {
+    if (email === 'gitedu@bk.ru') {
+      handleAdminPasswordSetup();
+    }
+  }, [email]);
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
@@ -82,6 +135,16 @@ const PasswordResetForm: React.FC<PasswordResetFormProps> = ({
       setIsUpdatingPassword(false);
     }
   };
+
+  // If the admin password is being auto-set, just show loading state
+  if (email === 'gitedu@bk.ru' && isUpdatingPassword) {
+    return (
+      <div className="text-center py-8">
+        <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-primary mb-4"></div>
+        <p>Ադմինի գաղտնաբառը սահմանվում է...</p>
+      </div>
+    );
+  }
 
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
