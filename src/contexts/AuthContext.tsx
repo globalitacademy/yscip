@@ -1,19 +1,23 @@
+
 import React, { createContext, useContext, useState, useEffect } from 'react';
-import { User, UserRole, mockUsers } from '@/data/userRoles';
+import { supabase } from '@/integrations/supabase/client';
+import { DBUser, UserRole } from '@/types/database.types';
 import { toast } from 'sonner';
+import { mockUsers } from '@/data/userRoles';
 
 interface AuthContextType {
-  user: User | null;
+  user: DBUser | null;
   isAuthenticated: boolean;
+  loading: boolean;
   login: (email: string, password: string) => Promise<boolean>;
   logout: () => void;
   switchRole: (role: UserRole) => void;
-  registerUser: (userData: Partial<User>) => Promise<boolean>;
+  registerUser: (userData: Partial<DBUser>) => Promise<boolean>;
   sendVerificationEmail: (email: string) => Promise<boolean>;
   verifyEmail: (token: string) => Promise<boolean>;
 }
 
-interface PendingUser extends Partial<User> {
+interface PendingUser extends Partial<DBUser> {
   verificationToken: string;
   verified: boolean;
 }
@@ -31,51 +35,150 @@ export const useAuth = () => {
 };
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const [user, setUser] = useState<User | null>(null);
+  const [user, setUser] = useState<DBUser | null>(null);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [loading, setLoading] = useState(true);
 
+  // Initial session check and user data fetch
   useEffect(() => {
-    const storedUser = localStorage.getItem('currentUser');
-    if (storedUser) {
-      setUser(JSON.parse(storedUser));
-      setIsAuthenticated(true);
-    }
+    const getInitialSession = async () => {
+      try {
+        const { data: { session } } = await supabase.auth.getSession();
+        
+        if (session) {
+          const { data: userData, error } = await supabase
+            .from('users')
+            .select('*')
+            .eq('id', session.user.id)
+            .single();
+          
+          if (error) {
+            console.error('Error fetching user data:', error);
+            setUser(null);
+            setIsAuthenticated(false);
+          } else {
+            setUser(userData as DBUser);
+            setIsAuthenticated(true);
+          }
+        }
+      } catch (error) {
+        console.error('Error getting session:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    getInitialSession();
+
+    // Listen for auth changes
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
+      if (event === 'SIGNED_IN' && session) {
+        const { data: userData, error } = await supabase
+          .from('users')
+          .select('*')
+          .eq('id', session.user.id)
+          .single();
+        
+        if (error) {
+          console.error('Error fetching user data:', error);
+          setUser(null);
+          setIsAuthenticated(false);
+        } else {
+          setUser(userData as DBUser);
+          setIsAuthenticated(true);
+        }
+      } else if (event === 'SIGNED_OUT') {
+        setUser(null);
+        setIsAuthenticated(false);
+      }
+    });
+
+    return () => {
+      subscription.unsubscribe();
+    };
   }, []);
 
-  const login = async (email: string, password: string): Promise<boolean> => {
+  // DEMO MODE: For quick testing using mock users
+  const demoLogin = async (email: string, password: string): Promise<boolean> => {
     const foundUser = mockUsers.find(u => u.email.toLowerCase() === email.toLowerCase());
     
     if (foundUser && foundUser.registrationApproved) {
-      setUser(foundUser);
+      // Convert mock user to DBUser format
+      const dbUser: DBUser = {
+        id: foundUser.id,
+        name: foundUser.name,
+        email: foundUser.email,
+        role: foundUser.role,
+        avatar: foundUser.avatar,
+        department: foundUser.department,
+        course: foundUser.course,
+        group_name: foundUser.group,
+        organization: foundUser.organization,
+        specialization: foundUser.specialization,
+        registration_approved: foundUser.registrationApproved || false,
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString()
+      };
+      
+      setUser(dbUser);
       setIsAuthenticated(true);
-      localStorage.setItem('currentUser', JSON.stringify(foundUser));
+      localStorage.setItem('DEMO_USER', JSON.stringify(dbUser));
       return true;
-    }
-    
-    const pendingUser = pendingUsers.find(u => 
-      u.email?.toLowerCase() === email.toLowerCase() && u.verified && !u.registrationApproved
-    );
-    
-    if (pendingUser) {
-      toast.error(`Ձեր հաշիվը ակտիվացված է, սակայն սպասում է ադմինիստրատորի հաստատման։`);
-      return false;
     }
     
     return false;
   };
 
-  const logout = () => {
+  const login = async (email: string, password: string): Promise<boolean> => {
+    try {
+      // For demo purposes, try mock login first
+      if (await demoLogin(email, password)) {
+        return true;
+      }
+      
+      // Real Supabase authentication
+      const { data, error } = await supabase.auth.signInWithPassword({
+        email,
+        password
+      });
+      
+      if (error) {
+        console.error('Login error:', error);
+        toast.error('Մուտքը չի հաջողվել: ' + error.message);
+        return false;
+      }
+      
+      if (!data.session) {
+        toast.error('Մուտքը չի հաջողվել');
+        return false;
+      }
+      
+      return true;
+    } catch (error) {
+      console.error('Unexpected login error:', error);
+      toast.error('Տեղի ունեցավ անսպասելի սխալ');
+      return false;
+    }
+  };
+
+  const logout = async () => {
+    // Clear demo user if exists
+    localStorage.removeItem('DEMO_USER');
+    
+    // Real logout
+    await supabase.auth.signOut();
+    
     setUser(null);
     setIsAuthenticated(false);
-    localStorage.removeItem('currentUser');
   };
 
   const generateVerificationToken = () => {
     return Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
   };
 
-  const registerUser = async (userData: Partial<User>): Promise<boolean> => {
+  const registerUser = async (userData: Partial<DBUser>): Promise<boolean> => {
     try {
+      // For demo mode, store pending users in memory
       const emailExists = mockUsers.some(user => user.email.toLowerCase() === userData.email?.toLowerCase());
       if (emailExists) {
         toast.error(`Այս էլ․ հասցեն արդեն գրանցված է։`);
@@ -88,8 +191,26 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         return false;
       }
       
-      const verificationToken = generateVerificationToken();
+      // Real Supabase registration
+      const { data, error } = await supabase.auth.signUp({
+        email: userData.email!,
+        password: 'password123', // In a real app, this would come from the form
+        options: {
+          data: {
+            name: userData.name,
+            role: userData.role
+          }
+        }
+      });
       
+      if (error) {
+        console.error('Registration error:', error);
+        toast.error('Գրանցումը չի հաջողվել: ' + error.message);
+        return false;
+      }
+      
+      // For demo, also add to pending users
+      const verificationToken = generateVerificationToken();
       pendingUsers.push({
         ...userData,
         verificationToken,
@@ -103,18 +224,20 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       
       toast.success(
         `Գրանցման հայտն ընդունված է։ Խնդրում ենք ստուգել Ձեր էլ․ փոստը՝ հաշիվը ակտիվացնելու համար։${
-          needsApproval ? ' Ակտիվացումից հետո Ձեր հաշիվը պետք �� հաստատվի ադմինիստրատորի կողմից։' : ''
+          needsApproval ? ' Ակտիվացումից հետո Ձեր հաշիվը պետք է հաստատվի ադմինիստրատորի կողմից։' : ''
         }`
       );
       
       return true;
     } catch (error) {
-      console.error('Registration error:', error);
+      console.error('Unexpected registration error:', error);
+      toast.error('Տեղի ունեցավ անսպասելի սխալ');
       return false;
     }
   };
 
   const sendVerificationEmail = async (email: string): Promise<boolean> => {
+    // For demo mode
     const pendingUser = pendingUsers.find(u => u.email?.toLowerCase() === email.toLowerCase());
     
     if (!pendingUser) {
@@ -129,6 +252,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   const verifyEmail = async (token: string): Promise<boolean> => {
+    // For demo mode
     const pendingUserIndex = pendingUsers.findIndex(u => u.verificationToken === token);
     
     if (pendingUserIndex === -1) {
@@ -138,11 +262,15 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     pendingUsers[pendingUserIndex].verified = true;
     
     if (pendingUsers[pendingUserIndex].role === 'student') {
-      const newUser: User = {
+      const pendingUser = pendingUsers[pendingUserIndex];
+      
+      // In a real app, this would update a user's status in the database
+      // Here we just add them to mock users
+      const newUser = {
         id: `user-${Date.now()}`,
-        name: pendingUsers[pendingUserIndex].name || 'New Student',
-        email: pendingUsers[pendingUserIndex].email || '',
-        role: 'student',
+        name: pendingUser.name || 'New Student',
+        email: pendingUser.email || '',
+        role: 'student' as UserRole,
         registrationApproved: true,
         avatar: `https://api.dicebear.com/7.x/avataaars/svg?seed=${Date.now()}`
       };
@@ -153,11 +281,30 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     return true;
   };
 
-  const switchRole = (role: UserRole) => {
+  const switchRole = async (role: UserRole) => {
+    // For demo mode
     const userWithRole = mockUsers.find(u => u.role === role);
+    
     if (userWithRole) {
-      setUser(userWithRole);
-      localStorage.setItem('currentUser', JSON.stringify(userWithRole));
+      // Convert mock user to DBUser format
+      const dbUser: DBUser = {
+        id: userWithRole.id,
+        name: userWithRole.name,
+        email: userWithRole.email,
+        role: userWithRole.role,
+        avatar: userWithRole.avatar,
+        department: userWithRole.department,
+        course: userWithRole.course,
+        group_name: userWithRole.group,
+        organization: userWithRole.organization,
+        specialization: userWithRole.specialization,
+        registration_approved: userWithRole.registrationApproved || false,
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString()
+      };
+      
+      setUser(dbUser);
+      localStorage.setItem('DEMO_USER', JSON.stringify(dbUser));
     }
   };
 
@@ -166,6 +313,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       value={{
         user,
         isAuthenticated,
+        loading,
         login,
         logout,
         switchRole,

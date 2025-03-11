@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import AdminLayout from '@/components/AdminLayout';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -8,88 +8,138 @@ import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { Bell, Check, Clock, Info, AlertTriangle, MessageSquare, Users, Calendar } from 'lucide-react';
 import { toast } from 'sonner';
-
-interface Notification {
-  id: string;
-  title: string;
-  message: string;
-  type: 'info' | 'warning' | 'success' | 'error';
-  date: string;
-  read: boolean;
-}
+import { useAuth } from '@/contexts/AuthContext';
+import { 
+  getUserNotifications, 
+  markNotificationAsRead, 
+  markAllNotificationsAsRead, 
+  deleteNotification, 
+  deleteAllNotifications 
+} from '@/services/notificationService';
+import { DBNotification } from '@/types/database.types';
+import { supabase } from '@/integrations/supabase/client';
 
 const NotificationsPage: React.FC = () => {
-  // Sample notifications data
-  const [notifications, setNotifications] = useState<Notification[]>([
-    {
-      id: '1',
-      title: 'Նոր նախագիծ',
-      message: 'Ավելացվել է նոր նախագիծ "Էլեկտրոնային առևտրի հարթակ"',
-      type: 'info',
-      date: '2024-05-18T10:30:00',
-      read: false
-    },
-    {
-      id: '2',
-      title: 'Ուշացող առաջադրանք',
-      message: 'Ուշանում է "Տվյալների բազայի սխեմայի ստեղծում" առաջադրանքը։',
-      type: 'warning',
-      date: '2024-05-17T16:45:00',
-      read: false
-    },
-    {
-      id: '3',
-      title: 'Ավարտված նախագիծ',
-      message: '"Մոբայլ հավելված" նախագիծը հաջողությամբ ավարտվել է։',
-      type: 'success',
-      date: '2024-05-15T14:20:00',
-      read: true
-    },
-    {
-      id: '4',
-      title: 'Նոր հաղորդագրություն',
-      message: 'Ունեք նոր հաղորդագրություն Անի Պետրոսյանից։',
-      type: 'info',
-      date: '2024-05-14T09:15:00',
-      read: true
-    },
-    {
-      id: '5',
-      title: 'Կարևոր հայտարարություն',
-      message: 'Այսօր ժամը 15:00-ին տեղի կունենա դասախոսների ժողով։',
-      type: 'info',
-      date: '2024-05-13T11:30:00',
-      read: true
-    },
-  ]);
+  const { user } = useAuth();
+  const [notifications, setNotifications] = useState<DBNotification[]>([]);
+  const [loading, setLoading] = useState(true);
 
-  const markAsRead = (id: string) => {
-    setNotifications(prev => 
-      prev.map(notification => 
-        notification.id === id ? {...notification, read: true} : notification
-      )
-    );
-    toast.success('Ծանուցումը նշվեց որպես կարդացված');
+  useEffect(() => {
+    if (!user) return;
+
+    const fetchNotifications = async () => {
+      setLoading(true);
+      try {
+        const data = await getUserNotifications(user.id);
+        setNotifications(data);
+      } catch (error) {
+        console.error('Error fetching notifications:', error);
+        toast.error('Չհաջողվեց ստանալ ծանուցումները');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchNotifications();
+
+    // Set up real-time subscription for notifications
+    const channel = supabase
+      .channel('public:notifications')
+      .on('postgres_changes', {
+        event: '*',
+        schema: 'public',
+        table: 'notifications',
+        filter: `user_id=eq.${user.id}`
+      }, (payload) => {
+        console.log('Notifications change received:', payload);
+        
+        // Refresh notifications when a change is detected
+        fetchNotifications();
+        
+        // Show toast for new notifications
+        if (payload.eventType === 'INSERT') {
+          const newNotification = payload.new as DBNotification;
+          toast.info(`Նոր ծանուցում: ${newNotification.title}`);
+        }
+      })
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [user]);
+
+  const markAsRead = async (id: number) => {
+    try {
+      const success = await markNotificationAsRead(id);
+      if (success) {
+        setNotifications(prev => 
+          prev.map(notification => 
+            notification.id === id ? {...notification, read: true} : notification
+          )
+        );
+        toast.success('Ծանուցումը նշվեց որպես կարդացված');
+      } else {
+        toast.error('Չհաջողվեց թարմացնել ծանուցումը');
+      }
+    } catch (error) {
+      console.error('Error marking notification as read:', error);
+      toast.error('Տեղի ունեցավ սխալ');
+    }
   };
 
-  const markAllAsRead = () => {
-    setNotifications(prev => 
-      prev.map(notification => ({...notification, read: true}))
-    );
-    toast.success('Բոլոր ծանուցումները նշվեցին որպես կարդացված');
+  const markAllAsRead = async () => {
+    if (!user) return;
+    
+    try {
+      const success = await markAllNotificationsAsRead(user.id);
+      if (success) {
+        setNotifications(prev => 
+          prev.map(notification => ({...notification, read: true}))
+        );
+        toast.success('Բոլոր ծանուցումները նշվեցին որպես կարդացված');
+      } else {
+        toast.error('Չհաջողվեց թարմացնել ծանուցումները');
+      }
+    } catch (error) {
+      console.error('Error marking all notifications as read:', error);
+      toast.error('Տեղի ունեցավ սխալ');
+    }
   };
 
-  const deleteNotification = (id: string) => {
-    setNotifications(prev => prev.filter(notification => notification.id !== id));
-    toast.success('Ծանուցումը հեռացվեց');
+  const deleteNotificationHandler = async (id: number) => {
+    try {
+      const success = await deleteNotification(id);
+      if (success) {
+        setNotifications(prev => prev.filter(notification => notification.id !== id));
+        toast.success('Ծանուցումը հեռացվեց');
+      } else {
+        toast.error('Չհաջողվեց հեռացնել ծանուցումը');
+      }
+    } catch (error) {
+      console.error('Error deleting notification:', error);
+      toast.error('Տեղի ունեցավ սխալ');
+    }
   };
 
-  const clearAllNotifications = () => {
-    setNotifications([]);
-    toast.success('Բոլոր ծանուցումները հեռացվեցին');
+  const clearAllNotifications = async () => {
+    if (!user) return;
+    
+    try {
+      const success = await deleteAllNotifications(user.id);
+      if (success) {
+        setNotifications([]);
+        toast.success('Բոլոր ծանուցումները հեռացվեցին');
+      } else {
+        toast.error('Չհաջողվեց հեռացնել ծանուցումները');
+      }
+    } catch (error) {
+      console.error('Error clearing all notifications:', error);
+      toast.error('Տեղի ունեցավ սխալ');
+    }
   };
 
-  const getIconByType = (type: Notification['type']) => {
+  const getIconByType = (type: DBNotification['type']) => {
     switch (type) {
       case 'info': return <Info className="h-5 w-5 text-blue-500" />;
       case 'warning': return <AlertTriangle className="h-5 w-5 text-amber-500" />;
@@ -111,6 +161,16 @@ const NotificationsPage: React.FC = () => {
   };
 
   const unreadCount = notifications.filter(n => !n.read).length;
+
+  if (loading) {
+    return (
+      <AdminLayout pageTitle="Ծանուցումներ">
+        <div className="flex justify-center items-center h-64">
+          <p className="text-muted-foreground">Ծանուցումների բեռնում...</p>
+        </div>
+      </AdminLayout>
+    );
+  }
 
   return (
     <AdminLayout pageTitle="Ծանուցումներ">
@@ -160,7 +220,7 @@ const NotificationsPage: React.FC = () => {
                             <div className="flex justify-between items-start mb-1">
                               <h4 className="font-medium">{notification.title}</h4>
                               <span className="text-xs text-muted-foreground">
-                                {formatDate(notification.date)}
+                                {formatDate(notification.created_at)}
                               </span>
                             </div>
                             <p className="text-sm text-muted-foreground mb-2">{notification.message}</p>
@@ -178,7 +238,7 @@ const NotificationsPage: React.FC = () => {
                               <Button 
                                 variant="ghost" 
                                 size="sm" 
-                                onClick={() => deleteNotification(notification.id)}
+                                onClick={() => deleteNotificationHandler(notification.id)}
                                 className="h-7 px-2 text-xs text-destructive hover:text-destructive"
                               >
                                 Հեռացնել
@@ -217,7 +277,7 @@ const NotificationsPage: React.FC = () => {
                             <div className="flex justify-between items-start mb-1">
                               <h4 className="font-medium">{notification.title}</h4>
                               <span className="text-xs text-muted-foreground">
-                                {formatDate(notification.date)}
+                                {formatDate(notification.created_at)}
                               </span>
                             </div>
                             <p className="text-sm text-muted-foreground mb-2">{notification.message}</p>
@@ -233,7 +293,7 @@ const NotificationsPage: React.FC = () => {
                               <Button 
                                 variant="ghost" 
                                 size="sm" 
-                                onClick={() => deleteNotification(notification.id)}
+                                onClick={() => deleteNotificationHandler(notification.id)}
                                 className="h-7 px-2 text-xs text-destructive hover:text-destructive"
                               >
                                 Հեռացնել

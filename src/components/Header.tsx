@@ -4,7 +4,9 @@ import { Link } from 'react-router-dom';
 import { cn } from '@/lib/utils';
 import UserMenu from '@/components/UserMenu';
 import { useAuth } from '@/contexts/AuthContext';
+import { useNotifications } from '@/contexts/NotificationContext';
 import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
 import { 
   LayoutDashboard, 
   GraduationCap, 
@@ -12,7 +14,8 @@ import {
   ClipboardList, 
   Users, 
   Building,
-  FileText
+  FileText,
+  Bell
 } from 'lucide-react';
 
 interface HeaderProps {
@@ -21,6 +24,7 @@ interface HeaderProps {
 
 const Header: React.FC<HeaderProps> = ({ className }) => {
   const { user } = useAuth();
+  const { unreadCount } = useNotifications();
   
   // Define role-based navigation
   const getRoleNavigation = () => {
@@ -143,7 +147,24 @@ const Header: React.FC<HeaderProps> = ({ className }) => {
           {getRoleNavigation()}
         </div>
         
-        <UserMenu />
+        <div className="flex items-center gap-2">
+          {user && (
+            <Link to="/notifications" className="relative">
+              <Button variant="ghost" size="icon">
+                <Bell size={20} />
+                {unreadCount > 0 && (
+                  <Badge 
+                    variant="destructive" 
+                    className="absolute -top-1 -right-1 h-5 w-5 flex items-center justify-center p-0 text-xs"
+                  >
+                    {unreadCount > 9 ? '9+' : unreadCount}
+                  </Badge>
+                )}
+              </Button>
+            </Link>
+          )}
+          <UserMenu />
+        </div>
       </div>
     </header>
   );

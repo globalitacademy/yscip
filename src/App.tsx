@@ -23,11 +23,16 @@ import PortfolioPage from '@/pages/PortfolioPage';
 import ProjectSubmissionPage from '@/pages/ProjectSubmissionPage';
 import PendingApprovals from '@/pages/PendingApprovals';
 import AuthProvider, { useAuth } from '@/contexts/AuthContext';
+import { NotificationProvider } from '@/contexts/NotificationContext';
 import './App.css';
 
 // Protected Route component
 const ProtectedRoute = ({ children, allowedRoles }: { children: React.ReactNode, allowedRoles: string[] }) => {
-  const { user, isAuthenticated } = useAuth();
+  const { user, isAuthenticated, loading } = useAuth();
+  
+  if (loading) {
+    return <div className="flex items-center justify-center h-screen">Loading...</div>;
+  }
   
   if (!isAuthenticated || !user) {
     return <Navigate to="/login" replace />;
@@ -90,7 +95,7 @@ function AppRoutes() {
         </ProtectedRoute>
       } />
       <Route path="/notifications" element={
-        <ProtectedRoute allowedRoles={['admin']}>
+        <ProtectedRoute allowedRoles={['admin', 'lecturer', 'instructor', 'project_manager', 'supervisor', 'employer', 'student']}>
           <NotificationsPage />
         </ProtectedRoute>
       } />
@@ -156,11 +161,13 @@ function AppRoutes() {
 function App() {
   return (
     <AuthProvider>
-      <Router>
-        <AppRoutes />
-        <Toaster />
-        <SonnerToaster position="top-right" />
-      </Router>
+      <NotificationProvider>
+        <Router>
+          <AppRoutes />
+          <Toaster />
+          <SonnerToaster position="top-right" />
+        </Router>
+      </NotificationProvider>
     </AuthProvider>
   );
 }
