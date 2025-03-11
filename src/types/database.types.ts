@@ -1,5 +1,4 @@
-
-export type UserRole = 'admin' | 'lecturer' | 'project_manager' | 'employer' | 'student' | 'instructor' | 'supervisor';
+export type UserRole = 'admin' | 'lecturer' | 'instructor' | 'project_manager' | 'supervisor' | 'employer' | 'student';
 
 export interface DBUser {
   id: string;
