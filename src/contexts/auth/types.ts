@@ -10,4 +10,6 @@ export interface AuthContextType {
   registerUser: (userData: Partial<DBUser> & { password: string }) => Promise<boolean>;
   sendVerificationEmail: (email: string) => Promise<boolean>;
   verifyEmail: (token: string) => Promise<boolean>;
+  resetPassword: (email: string) => Promise<boolean>;
+  updatePassword: (newPassword: string) => Promise<boolean>;
 }
