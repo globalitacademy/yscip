@@ -9,28 +9,41 @@ import { useAuth } from '@/contexts/auth';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 
+interface Project {
+  id: string;
+  title: string;
+  description: string;
+  techStack: string[];
+  category: string;
+  createdBy: string;
+  createdAt: string;
+  status?: string;
+}
+
 const EmployerDashboard: React.FC = () => {
   const { user } = useAuth();
-  const [createdProjects, setCreatedProjects] = useState<any[]>([]);
+  const [createdProjects, setCreatedProjects] = useState<Project[]>([]);
   const [completedProjects, setCompletedProjects] = useState<number>(0);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
   
-  // Fetch real data from Supabase
   useEffect(() => {
+    let isMounted = true;
+    
     const fetchProjects = async () => {
       if (!user) {
-        setLoading(false);
+        if (isMounted) setLoading(false);
         return;
       }
       
       try {
-        setLoading(true);
-        setError(null);
+        if (isMounted) {
+          setLoading(true);
+          setError(null);
+        }
         
         console.log('Fetching projects for user:', user.id);
         
-        // Query the employer_projects table
         const { data, error } = await supabase
           .from('employer_projects')
           .select('*')
@@ -43,7 +56,7 @@ const EmployerDashboard: React.FC = () => {
         
         console.log('Projects data received:', data);
         
-        if (data) {
+        if (isMounted && data) {
           // Convert database format to component format
           const formattedProjects = data.map(project => ({
             id: project.id,
@@ -52,30 +65,35 @@ const EmployerDashboard: React.FC = () => {
             techStack: project.tech_stack || [],
             category: project.category,
             createdBy: project.created_by,
-            createdAt: project.created_at
+            createdAt: project.created_at,
+            status: project.status
           }));
           
           setCreatedProjects(formattedProjects);
           
-          // Count completed projects (can be enhanced with a status field later)
+          // Since the status field might not exist yet, default to 0 completed projects
           const completed = data.filter(project => project.status === 'completed').length;
-          setCompletedProjects(completed || 0);
+          setCompletedProjects(completed);
         }
       } catch (error: any) {
         console.error('Error fetching projects:', error);
-        setError(error.message || 'Նախագծերը բեռնելիս սխալ առաջացավ։');
-        toast.error('Նախագծերը բեռնելիս սխալ առաջացավ։');
+        if (isMounted) {
+          setError(error.message || 'Նախագծերը բեռնելիս սխալ առաջացավ։');
+          toast.error('Նախագծերը բեռնելիս սխալ առաջացավ։');
+        }
       } finally {
-        setLoading(false);
+        if (isMounted) {
+          setLoading(false);
+        }
       }
     };
     
     fetchProjects();
+    
+    return () => {
+      isMounted = false;
+    };
   }, [user]);
-  
-  if (error) {
-    console.error('Rendering error state:', error);
-  }
   
   return (
     <div className="min-h-screen flex flex-col bg-background">

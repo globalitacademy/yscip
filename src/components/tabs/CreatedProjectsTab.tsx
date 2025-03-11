@@ -6,19 +6,31 @@ import { Badge } from '@/components/ui/badge';
 import { BookOpen } from 'lucide-react';
 import { DBUser } from '@/types/database.types';
 
+interface Project {
+  id: string;
+  title: string;
+  description: string;
+  techStack: string[];
+  category: string;
+  createdBy: string;
+  createdAt: string;
+  status?: string;
+}
+
 interface CreatedProjectsTabProps {
   user: DBUser | null;
-  createdProjects: any[];
+  createdProjects: Project[];
 }
 
 const CreatedProjectsTab: React.FC<CreatedProjectsTabProps> = ({ user, createdProjects }) => {
+  // Filter to only show projects created by the current user
   const userCreatedProjects = createdProjects.filter(p => p.createdBy === user?.id);
 
   if (userCreatedProjects.length === 0) {
     return (
       <div className="text-center p-10 bg-muted rounded-lg">
         <p className="text-muted-foreground">Դեռևս ստեղծված նախագծեր չկան</p>
-        <Link to="/admin" className="text-primary font-medium mt-2 inline-block">
+        <Link to="/employer/create-project" className="text-primary font-medium mt-2 inline-block">
           Ստեղծել նոր նախագիծ
         </Link>
       </div>

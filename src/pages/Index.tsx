@@ -16,28 +16,38 @@ const Index: React.FC = () => {
   // Redirect to role-specific dashboard if authenticated
   useEffect(() => {
     if (isAuthenticated && user) {
+      console.log("User authenticated, redirecting based on role:", user.role);
+      
       if (!isApproved && user.role !== 'student') {
+        console.log("User not approved, staying on index");
         return; // Stay on page for unapproved non-students
       }
       
       switch (user.role) {
         case 'admin':
+          console.log("Redirecting to admin dashboard");
           navigate('/admin');
           break;
         case 'lecturer':
         case 'instructor':
+          console.log("Redirecting to teacher dashboard");
           navigate('/teacher-dashboard');
           break;
         case 'project_manager':
         case 'supervisor':
+          console.log("Redirecting to project manager dashboard");
           navigate('/project-manager-dashboard');
           break;
         case 'employer':
+          console.log("Redirecting to employer dashboard");
           navigate('/employer-dashboard');
           break;
         case 'student':
+          console.log("Redirecting to student dashboard");
           navigate('/student-dashboard');
           break;
+        default:
+          console.log("Unknown role, staying on index");
       }
     }
   }, [isAuthenticated, user, isApproved, navigate]);
