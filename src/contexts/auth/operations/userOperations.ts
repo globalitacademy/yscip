@@ -53,11 +53,13 @@ export const registerUser = async (userData: Partial<DBUser> & { password: strin
       }
     }
     
-    const needsApproval = ['lecturer', 'employer', 'project_manager', 'supervisor', 'admin'].includes(userData.role as string);
+    // Students are auto-approved, other roles need admin approval
+    const isStudent = userData.role === 'student';
+    const needsApproval = !isStudent && !isFirstAdmin;
     
     toast.success(
       `Գրանցման հայտն ընդունված է։ Խնդրում ենք ստուգել Ձեր էլ․ փոստը՝ հաշիվը ակտիվացնելու համար։${
-        needsApproval && !isFirstAdmin ? ' Ակտիվացումից հետո Ձեր հաշիվը պետք է հաստատվի ադմինիստրատորի կողմից։' : ''
+        needsApproval ? ' Ակտիվացումից հետո Ձեր հաշիվը պետք է հաստատվի ադմինիստրատորի կողմից։' : ''
       }`
     );
     
@@ -65,6 +67,50 @@ export const registerUser = async (userData: Partial<DBUser> & { password: strin
   } catch (error) {
     console.error('Unexpected registration error:', error);
     toast.error('Տեղի ունեցավ անսպասելի սխալ');
+    return false;
+  }
+};
+
+// Get user by ID
+export const getUserById = async (userId: string): Promise<DBUser | null> => {
+  try {
+    const { data, error } = await supabase
+      .from('users')
+      .select('*')
+      .eq('id', userId)
+      .single();
+    
+    if (error) {
+      console.error('Error fetching user by ID:', error);
+      return null;
+    }
+    
+    return data as DBUser;
+  } catch (error) {
+    console.error('Unexpected error fetching user by ID:', error);
+    return null;
+  }
+};
+
+// Update user profile
+export const updateUserProfile = async (userId: string, updates: Partial<DBUser>): Promise<boolean> => {
+  try {
+    const { error } = await supabase
+      .from('users')
+      .update(updates)
+      .eq('id', userId);
+    
+    if (error) {
+      console.error('Error updating user profile:', error);
+      toast.error('Պրոֆիլի թարմացման սխալ');
+      return false;
+    }
+    
+    toast.success('Պրոֆիլը հաջողությամբ թարմացվել է');
+    return true;
+  } catch (error) {
+    console.error('Unexpected error updating user profile:', error);
+    toast.error('Անսպասելի սխալ պրոֆիլի թարմացման ժամանակ');
     return false;
   }
 };

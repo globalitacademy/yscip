@@ -4,6 +4,7 @@ import { DBUser } from '@/types/database.types';
 export interface AuthContextType {
   user: DBUser | null;
   isAuthenticated: boolean;
+  isApproved: boolean;
   loading: boolean;
   login: (email: string, password: string) => Promise<boolean>;
   logout: () => void;

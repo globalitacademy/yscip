@@ -31,6 +31,10 @@ export const getUserBySession = async (session: any): Promise<DBUser | null> => 
         if (authUser) {
           console.log('User found in auth, creating user record with metadata:', authUser.user_metadata);
           
+          // Determine if user should be auto-approved based on role
+          const role = authUser.user_metadata.role || 'student';
+          const isAutoApproved = role === 'student';
+          
           // Create user record based on auth data
           const { data: newUser, error: insertError } = await supabase
             .from('users')
@@ -38,8 +42,8 @@ export const getUserBySession = async (session: any): Promise<DBUser | null> => 
               id: authUser.id,
               email: authUser.email,
               name: authUser.user_metadata.name || authUser.email?.split('@')[0] || 'User',
-              role: authUser.user_metadata.role || 'student',
-              registration_approved: authUser.user_metadata.role === 'student' || false
+              role: role,
+              registration_approved: isAutoApproved
             })
             .select('*')
             .single();
@@ -63,6 +67,13 @@ export const getUserBySession = async (session: any): Promise<DBUser | null> => 
     }
     
     console.log('User data fetched successfully:', userData);
+    
+    // Check if user is approved before returning
+    if (!userData.registration_approved && userData.role !== 'student') {
+      console.log('User account is pending approval:', userData.id);
+      // Still return the user, but UI will show "pending approval" state
+    }
+    
     return userData as DBUser;
   } catch (error) {
     console.error('Unexpected error fetching user data:', error);
@@ -120,5 +131,24 @@ export const checkExistingEmail = async (email: string): Promise<boolean> => {
   } catch (error) {
     console.error('Unexpected error checking email:', error);
     throw error;
+  }
+};
+
+// New helper to check user approval status
+export const checkUserApprovalStatus = async (userId: string): Promise<boolean> => {
+  try {
+    const { data, error } = await supabase
+      .rpc('is_user_approved', { user_id: userId });
+    
+    if (error) {
+      console.error('Error checking user approval status:', error);
+      // Default to false if there's an error
+      return false;
+    }
+    
+    return !!data;
+  } catch (error) {
+    console.error('Unexpected error checking user approval status:', error);
+    return false;
   }
 };

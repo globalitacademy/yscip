@@ -22,13 +22,14 @@ import StudentProjectsPage from '@/pages/StudentProjectsPage';
 import PortfolioPage from '@/pages/PortfolioPage';
 import ProjectSubmissionPage from '@/pages/ProjectSubmissionPage';
 import PendingApprovals from '@/pages/PendingApprovals';
+import ApprovalPending from '@/components/ApprovalPending';
 import { AuthProvider, useAuth } from '@/contexts/auth';
 import { NotificationProvider } from '@/contexts/NotificationContext';
 import './App.css';
 
 // Protected Route component
 const ProtectedRoute = ({ children, allowedRoles }: { children: React.ReactNode, allowedRoles: string[] }) => {
-  const { user, isAuthenticated, loading } = useAuth();
+  const { user, isAuthenticated, isApproved, loading } = useAuth();
   
   if (loading) {
     return (
@@ -41,6 +42,11 @@ const ProtectedRoute = ({ children, allowedRoles }: { children: React.ReactNode,
   
   if (!isAuthenticated || !user) {
     return <Navigate to="/login" replace />;
+  }
+  
+  // Check if user account is approved (except for students who are auto-approved)
+  if (!isApproved && user.role !== 'student') {
+    return <ApprovalPending />;
   }
   
   if (!allowedRoles.includes(user.role)) {
@@ -68,6 +74,7 @@ function AppRoutes() {
       <Route path="/project/:id" element={<ProjectDetails />} />
       <Route path="/login" element={<Login />} />
       <Route path="/verify-email" element={<VerifyEmail />} />
+      <Route path="/approval-pending" element={<ApprovalPending />} />
       
       {/* Admin routes */}
       <Route path="/admin" element={
