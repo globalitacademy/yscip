@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -47,12 +46,9 @@ const LoginForm: React.FC<LoginFormProps> = ({ onLogin, isLoading: externalLoadi
       setIsLoggingIn(true);
       try {
         const success = await login(email, password);
-        
         if (success) {
           toast.success('Մուտքն հաջողվել է');
           navigate('/');
-        } else {
-          // Սխալի մասին արդեն ծանուցում է login ֆունկցիան
         }
       } catch (err) {
         console.error('Unexpected login error:', err);
@@ -87,10 +83,10 @@ const LoginForm: React.FC<LoginFormProps> = ({ onLogin, isLoading: externalLoadi
         toast.success('Գաղտնաբառը հաջողությամբ թարմացվել է');
         setIsResetting(false);
         
-        // Փորձենք մուտք գործել նոր գաղտնաբառով
         const currentEmail = email || (await supabase.auth.getSession()).data.session?.user?.email || '';
         
         if (currentEmail) {
+          setIsLoggingIn(true);
           const success = await login(currentEmail, newPassword);
           
           if (success) {
@@ -100,6 +96,7 @@ const LoginForm: React.FC<LoginFormProps> = ({ onLogin, isLoading: externalLoadi
             toast.error('Գաղտնաբառը թարմացված է, բայց ավտոմատ մուտքը չի հաջողվել: Խնդրում ենք փորձել մուտք գործել ձեռքով');
             navigate('/login');
           }
+          setIsLoggingIn(false);
         } else {
           toast.error('Չհաջողվեց պարզել օգտատիրոջ էլ․ հասցեն: Խնդրում ենք ձեռքով մուտք գործել');
           navigate('/login');

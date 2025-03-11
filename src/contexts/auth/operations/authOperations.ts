@@ -1,10 +1,10 @@
 
 import { supabase } from '@/integrations/supabase/client';
-import { DBUser } from '@/types/database.types';
 import { toast } from 'sonner';
 
 export const login = async (email: string, password: string): Promise<boolean> => {
   try {
+    console.log('Attempting login for:', email);
     const { data, error } = await supabase.auth.signInWithPassword({
       email,
       password
@@ -25,7 +25,7 @@ export const login = async (email: string, password: string): Promise<boolean> =
       return false;
     }
     
-    // Մուտքը հաջողված է
+    console.log('Login successful:', data.session.user.id);
     return true;
   } catch (error) {
     console.error('Unexpected login error:', error);
@@ -94,6 +94,7 @@ export const resetPassword = async (email: string): Promise<boolean> => {
 
 export const updatePassword = async (newPassword: string): Promise<boolean> => {
   try {
+    console.log('Updating password...');
     const { error } = await supabase.auth.updateUser({
       password: newPassword
     });
@@ -104,6 +105,7 @@ export const updatePassword = async (newPassword: string): Promise<boolean> => {
       return false;
     }
     
+    console.log('Password updated successfully');
     toast.success('Գաղտնաբառը հաջողությամբ թարմացվել է։');
     return true;
   } catch (error) {
