@@ -9,7 +9,7 @@ import { DBUser } from '@/types/database.types';
 import LoginForm from './LoginForm';
 import RegisterForm from './RegisterForm';
 import { RegisterUserData } from './types';
-import { supabase } from '@/integrations/supabase/client';
+import { checkFirstAdmin } from '@/contexts/auth/utils/sessionHelpers';
 
 const Login: React.FC = () => {
   const { login, registerUser, user, isAuthenticated, isApproved } = useAuth();
@@ -21,15 +21,8 @@ const Login: React.FC = () => {
   // Check if there are existing admins
   useEffect(() => {
     const checkExistingAdmins = async () => {
-      const { data, error } = await supabase
-        .from('users')
-        .select('id')
-        .eq('role', 'admin')
-        .limit(1);
-      
-      if (!error && (!data || data.length === 0)) {
-        setIsFirstAdmin(true);
-      }
+      const firstAdmin = await checkFirstAdmin();
+      setIsFirstAdmin(firstAdmin);
     };
 
     checkExistingAdmins();

@@ -108,23 +108,39 @@ export async function checkExistingEmail(email: string): Promise<boolean> {
   }
 }
 
-// Check if this is the first admin
+// Check if this is the first admin using the database function
 export async function checkFirstAdmin(): Promise<boolean> {
   try {
-    const { data, error } = await supabase
-      .from('users')
-      .select('id')
-      .eq('role', 'admin')
-      .single();
+    const { data, error } = await supabase.rpc('get_first_admin_status');
 
     if (error) {
-      return true; // If error, assume no admin exists
+      console.error('Error checking if first admin:', error);
+      return false;
     }
 
-    return !data; // Return true if no admin found
+    return !!data;
   } catch (err) {
     console.error('Unexpected error checking first admin:', err);
-    return true; // If error, assume no admin exists
+    return false;
   }
 }
 
+// Approve first admin
+export async function approveFirstAdmin(email: string): Promise<boolean> {
+  try {
+    const { data, error } = await supabase.rpc(
+      'approve_first_admin',
+      { admin_email: email }
+    );
+    
+    if (error) {
+      console.error('Error approving first admin:', error);
+      return false;
+    }
+    
+    return !!data;
+  } catch (err) {
+    console.error('Unexpected error approving first admin:', err);
+    return false;
+  }
+}

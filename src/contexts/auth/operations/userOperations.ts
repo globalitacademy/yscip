@@ -2,7 +2,7 @@
 import { supabase } from '@/integrations/supabase/client';
 import { DBUser } from '@/types/database.types';
 import { toast } from 'sonner';
-import { checkExistingEmail, checkFirstAdmin } from '../utils/sessionHelpers';
+import { checkExistingEmail, checkFirstAdmin, approveFirstAdmin } from '../utils/sessionHelpers';
 
 export const registerUser = async (userData: Partial<DBUser> & { password: string }): Promise<boolean> => {
   try {
@@ -38,15 +38,24 @@ export const registerUser = async (userData: Partial<DBUser> & { password: strin
       return false;
     }
 
-    // If this is the first admin, automatically approve them
+    // If this is the first admin, automatically approve them using our secure function
     if (isFirstAdmin) {
-      const { error: updateError } = await supabase
-        .from('users')
-        .update({ registration_approved: true })
-        .eq('email', userData.email!);
+      const approved = await approveFirstAdmin(userData.email!);
       
-      if (updateError) {
-        console.error('Error approving first admin:', updateError);
+      if (!approved) {
+        console.error('Error approving first admin through function');
+        // Fallback to direct update if function fails
+        const { error: updateError } = await supabase
+          .from('users')
+          .update({ registration_approved: true })
+          .eq('email', userData.email!);
+        
+        if (updateError) {
+          console.error('Error approving first admin:', updateError);
+        } else {
+          toast.success('Դուք գրանցվել եք որպես առաջին ադմինիստրատոր և ձեր հաշիվը ավտոմատ հաստատվել է։');
+          return true;
+        }
       } else {
         toast.success('Դուք գրանցվել եք որպես առաջին ադմինիստրատոր և ձեր հաշիվը ավտոմատ հաստատվել է։');
         return true;
