@@ -14,10 +14,11 @@ export const login = async (email: string, password: string): Promise<boolean> =
     const isAdmin = await isDesignatedAdmin(cleanEmail);
     
     if (isAdmin) {
-      console.log('Admin login attempt detected, ensuring account is verified');
+      console.log('Admin login attempt detected, verifying account');
       try {
-        // Verify designated admin account is properly set up
+        // Ensure the admin account is properly set up and verified
         const { error: rpcError } = await supabase.rpc('verify_designated_admin');
+        
         if (rpcError) {
           console.error('Error verifying admin via RPC:', rpcError);
           toast.error('Ադմինի հաշվի ստուգման սխալ', {

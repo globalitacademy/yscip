@@ -18,13 +18,17 @@ export const RedirectHandler: React.FC<RedirectHandlerProps> = ({
 
   useEffect(() => {
     if (isAuthenticated && user) {
-      if (!isApproved && user.role !== 'student') {
+      console.log('RedirectHandler: User authenticated, redirecting based on role:', user.role);
+      
+      if (!isApproved && user.role !== 'student' && user.role !== 'admin') {
+        console.log('RedirectHandler: User not approved, navigating to approval pending');
         navigate('/approval-pending');
         return;
       }
       
       switch (user.role) {
         case 'admin':
+          console.log('RedirectHandler: Redirecting to admin dashboard');
           navigate('/admin');
           break;
         case 'lecturer':
