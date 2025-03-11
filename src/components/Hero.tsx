@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { ChevronDown } from 'lucide-react';
+import { ChevronDown, ArrowRight } from 'lucide-react';
 import { FadeIn, SlideUp, SlideDown } from './LocalTransitions';
 import { Button } from './ui/button';
 
