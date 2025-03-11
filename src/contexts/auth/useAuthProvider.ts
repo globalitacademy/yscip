@@ -1,6 +1,13 @@
 
 import { useSession } from './hooks/useSession';
-import { login, logout, sendVerificationEmail, verifyEmail, resetPassword, updatePassword } from './operations/authOperations';
+import { 
+  login, 
+  logout, 
+  sendVerificationEmail, 
+  verifyEmail, 
+  resetPassword, 
+  updatePassword 
+} from './operations';
 import { registerUser } from './operations/userOperations';
 import { useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
