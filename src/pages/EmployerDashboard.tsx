@@ -14,14 +14,21 @@ const EmployerDashboard: React.FC = () => {
   const [createdProjects, setCreatedProjects] = useState<any[]>([]);
   const [completedProjects, setCompletedProjects] = useState<number>(0);
   const [loading, setLoading] = useState<boolean>(true);
+  const [error, setError] = useState<string | null>(null);
   
   // Fetch real data from Supabase
   useEffect(() => {
     const fetchProjects = async () => {
-      if (!user) return;
+      if (!user) {
+        setLoading(false);
+        return;
+      }
       
       try {
         setLoading(true);
+        setError(null);
+        
+        console.log('Fetching projects for user:', user.id);
         
         // Query the employer_projects table
         const { data, error } = await supabase
@@ -30,8 +37,11 @@ const EmployerDashboard: React.FC = () => {
           .eq('created_by', user.id);
         
         if (error) {
+          console.error('Supabase error:', error);
           throw error;
         }
+        
+        console.log('Projects data received:', data);
         
         if (data) {
           // Convert database format to component format
@@ -47,12 +57,13 @@ const EmployerDashboard: React.FC = () => {
           
           setCreatedProjects(formattedProjects);
           
-          // For now, just set a mock completed count
-          // In a real app, you might have a status field to count completed projects
-          setCompletedProjects(1);
+          // Count completed projects (can be enhanced with a status field later)
+          const completed = data.filter(project => project.status === 'completed').length;
+          setCompletedProjects(completed || 0);
         }
-      } catch (error) {
+      } catch (error: any) {
         console.error('Error fetching projects:', error);
+        setError(error.message || 'Նախագծերը բեռնելիս սխալ առաջացավ։');
         toast.error('Նախագծերը բեռնելիս սխալ առաջացավ։');
       } finally {
         setLoading(false);
@@ -61,6 +72,10 @@ const EmployerDashboard: React.FC = () => {
     
     fetchProjects();
   }, [user]);
+  
+  if (error) {
+    console.error('Rendering error state:', error);
+  }
   
   return (
     <div className="min-h-screen flex flex-col bg-background">
@@ -75,7 +90,13 @@ const EmployerDashboard: React.FC = () => {
             </CardHeader>
             <CardContent>
               <div className="flex items-center justify-between">
-                <span className="text-2xl font-bold">{loading ? '...' : createdProjects.length}</span>
+                <span className="text-2xl font-bold">
+                  {loading ? (
+                    <span className="inline-block w-6 h-6 rounded-full border-2 border-gray-300 border-t-primary animate-spin"></span>
+                  ) : (
+                    createdProjects.length
+                  )}
+                </span>
                 <FileText className="h-6 w-6 text-muted-foreground" />
               </div>
             </CardContent>
@@ -87,7 +108,13 @@ const EmployerDashboard: React.FC = () => {
             </CardHeader>
             <CardContent>
               <div className="flex items-center justify-between">
-                <span className="text-2xl font-bold">{loading ? '...' : completedProjects}</span>
+                <span className="text-2xl font-bold">
+                  {loading ? (
+                    <span className="inline-block w-6 h-6 rounded-full border-2 border-gray-300 border-t-primary animate-spin"></span>
+                  ) : (
+                    completedProjects
+                  )}
+                </span>
                 <CheckCircle className="h-6 w-6 text-muted-foreground" />
               </div>
             </CardContent>
@@ -122,7 +149,18 @@ const EmployerDashboard: React.FC = () => {
           <h2 className="text-2xl font-bold mb-4">Իմ նախագծերը</h2>
           {loading ? (
             <div className="flex justify-center items-center p-12">
-              <p>Բեռնում...</p>
+              <div className="h-12 w-12 rounded-full border-4 border-gray-300 border-t-primary animate-spin"></div>
+              <p className="ml-4 text-lg">Բեռնում...</p>
+            </div>
+          ) : error ? (
+            <div className="text-center p-12 bg-red-50 rounded-lg border border-red-200">
+              <p className="text-red-600">{error}</p>
+              <button 
+                onClick={() => window.location.reload()} 
+                className="mt-4 px-4 py-2 bg-primary text-white rounded hover:bg-primary/90"
+              >
+                Փորձել կրկին
+              </button>
             </div>
           ) : (
             <CreatedProjectsTab user={user} createdProjects={createdProjects} />
