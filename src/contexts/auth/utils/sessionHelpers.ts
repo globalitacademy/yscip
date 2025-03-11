@@ -41,8 +41,8 @@ export const getUserBySession = async (session: any): Promise<DBUser | null> => 
               .from('users')
               .insert({
                 id: authUser.id,
-                email: authUser.email,
-                name: authUser.user_metadata.name || authUser.email?.split('@')[0] || 'User',
+                email: authUser.email || '',
+                name: authUser.user_metadata.name || (authUser.email ? authUser.email.split('@')[0] : 'User'),
                 role: role,
                 registration_approved: isAutoApproved
               })
@@ -59,11 +59,14 @@ export const getUserBySession = async (session: any): Promise<DBUser | null> => 
           } catch (insertError) {
             console.error('Error creating user record:', insertError);
             
+            // Fix the issue with the email property
+            const email = authUser.email || '';
+            
             // If we failed to create a user record, use the auth data directly
             return {
               id: authUser.id,
-              email: authUser.email!,
-              name: authUser.user_metadata.name || authUser.email?.split('@')[0] || 'User',
+              email: email,
+              name: authUser.user_metadata.name || (email ? email.split('@')[0] : 'User'),
               role: role as any,
               registration_approved: isAutoApproved,
               created_at: new Date().toISOString(),
@@ -81,10 +84,12 @@ export const getUserBySession = async (session: any): Promise<DBUser | null> => 
         if (authUser) {
           // Return user data from auth system since we can't access the database
           console.log('Using auth data directly due to RLS issues');
+          const email = authUser.email || '';
+          
           return {
             id: authUser.id,
-            email: authUser.email!,
-            name: authUser.user_metadata.name || authUser.email?.split('@')[0] || 'User',
+            email: email,
+            name: authUser.user_metadata.name || (email ? email.split('@')[0] : 'User'),
             role: (authUser.user_metadata.role as any) || 'student',
             registration_approved: authUser.user_metadata.registration_approved !== false,
             created_at: authUser.created_at,
@@ -117,10 +122,12 @@ export const getUserBySession = async (session: any): Promise<DBUser | null> => 
     try {
       const { data: { user: authUser } } = await supabase.auth.getUser();
       if (authUser) {
+        const email = authUser.email || '';
+        
         return {
           id: authUser.id,
-          email: authUser.email!,
-          name: authUser.user_metadata.name || authUser.email?.split('@')[0] || 'User',
+          email: email,
+          name: authUser.user_metadata.name || (email ? email.split('@')[0] : 'User'),
           role: (authUser.user_metadata.role as any) || 'student',
           registration_approved: authUser.user_metadata.registration_approved !== false,
           created_at: authUser.created_at,

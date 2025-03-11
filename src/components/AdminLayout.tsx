@@ -57,14 +57,9 @@ const AdminLayout: React.FC<AdminLayoutProps> = ({ children, pageTitle }) => {
     return <Navigate to="/login" replace />;
   }
   
-  // Check for appropriate role
-  if (
-    user.role !== 'admin' && 
-    user.role !== 'lecturer' && 
-    user.role !== 'instructor' && 
-    user.role !== 'project_manager' && 
-    user.role !== 'supervisor'
-  ) {
+  // Check for appropriate role - Fix the TypeScript error by comparing correctly
+  const adminRoles = ['admin', 'lecturer', 'instructor', 'project_manager', 'supervisor'];
+  if (!adminRoles.includes(user.role)) {
     console.log("User doesn't have appropriate role, redirecting to dashboard");
     toast.error("Մուտքը արգելափակված է", {
       description: "Ձեզ չունեք բավարար իրավունք այս էջը դիտելու համար"
