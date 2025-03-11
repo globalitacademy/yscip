@@ -14,7 +14,7 @@ export const login = async (email: string, password: string): Promise<boolean> =
     const isAdmin = await isDesignatedAdmin(cleanEmail);
     
     if (isAdmin) {
-      console.log('Admin login attempt detected, verifying account');
+      console.log('Admin login attempt detected, ensuring account is verified');
       try {
         // Ensure the admin account is properly set up and verified
         const { error: rpcError } = await supabase.rpc('verify_designated_admin');
@@ -70,6 +70,19 @@ export const login = async (email: string, password: string): Promise<boolean> =
         description: 'Տեղի ունեցավ անսպասելի սխալ'
       });
       return false;
+    }
+
+    // For admin, double-check and make sure we have a proper user record
+    if (isAdmin) {
+      console.log('Admin login successful, ensuring proper admin profile');
+      try {
+        const { error: verifyError } = await supabase.rpc('verify_designated_admin');
+        if (verifyError) {
+          console.error('Post-login admin verification error:', verifyError);
+        }
+      } catch (err) {
+        console.error('Error in post-login admin verification:', err);
+      }
     }
 
     console.log('Login successful, session established');

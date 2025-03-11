@@ -31,9 +31,13 @@ export const AdminSetup: React.FC<AdminSetupProps> = ({ email }) => {
           
           // Ensure admin is verified
           try {
+            console.log('Verifying designated admin account from AdminSetup');
             const { error } = await supabase.rpc('verify_designated_admin');
             if (error) {
               console.error('Error verifying designated admin:', error);
+              toast.error('Ադմինի հաշվի ստուգման սխալ', {
+                description: 'Փորձեք վերակայել ադմինի հաշիվը ստորև'
+              });
             } else {
               console.log('Successfully verified designated admin');
             }
@@ -50,7 +54,9 @@ export const AdminSetup: React.FC<AdminSetupProps> = ({ email }) => {
 
   const handleResetAdmin = async () => {
     try {
+      console.log('Attempting to reset admin account from AdminSetup');
       const success = await resetAdminAccount();
+      
       if (success) {
         setDesignatedAdminMessage(true);
         toast.success('Ադմինիստրատորի հաշիվը վերակայվել է', {

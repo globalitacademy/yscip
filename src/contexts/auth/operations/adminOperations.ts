@@ -6,7 +6,7 @@ export const resetAdminAccount = async (): Promise<boolean> => {
   try {
     console.log('Resetting admin account');
     
-    // Call a specialized RPC function to reset the admin account
+    // Call the improved database function to reset the admin account
     const { data, error } = await supabase.rpc('reset_admin_account');
     
     if (error) {
@@ -19,7 +19,7 @@ export const resetAdminAccount = async (): Promise<boolean> => {
     
     console.log('Admin account reset successful, result:', data);
     
-    // Now we need to sign up the admin with the predefined password
+    // Admin account has been reset, we can now try to sign up with it again
     const adminEmail = 'gitedu@bk.ru';
     const adminPassword = 'Qolej2025*';
     
@@ -42,10 +42,12 @@ export const resetAdminAccount = async (): Promise<boolean> => {
       return false;
     }
     
-    // Call verify_designated_admin to ensure admin is verified
+    // Verify the admin account to ensure it's properly set up
     const { error: verifyError } = await supabase.rpc('verify_designated_admin');
     if (verifyError) {
       console.error('Error verifying admin after reset:', verifyError);
+    } else {
+      console.log('Admin account successfully verified after reset');
     }
     
     toast.success('Ադմինիստրատորի հաշիվը վերակայվել է', {

@@ -30,19 +30,23 @@ const VerifyEmail: React.FC = () => {
 
     const checkIfAdmin = async () => {
       if (emailParam) {
-        const result = await isDesignatedAdmin(emailParam);
-        console.log('Is designated admin check result:', result);
-        setIsAdmin(result);
-        
-        if (result) {
-          setVerificationStatus('success');
+        try {
+          const result = await isDesignatedAdmin(emailParam);
+          console.log('Is designated admin check result:', result);
+          setIsAdmin(result);
           
-          try {
+          if (result) {
+            setVerificationStatus('success');
+            
             // Ensure admin verification and create proper profile
+            console.log('Admin email detected, verifying account');
             const { error } = await supabase.rpc('verify_designated_admin');
             
             if (error) {
               console.error('Error verifying admin via RPC:', error);
+              toast.error('Ադմինի հաշվի ստուգման սխալ', {
+                description: 'Փորձեք վերակայել ադմինի հաշիվը'
+              });
             } else {
               console.log('Admin verified successfully via RPC');
               
@@ -55,6 +59,9 @@ const VerifyEmail: React.FC = () => {
                 
                 if (signInError) {
                   console.log('Admin auto-login attempt failed:', signInError.message);
+                  toast.error('Ավտոմատ մուտքը չի հաջողվել', {
+                    description: 'Խնդրում ենք մուտք գործել ձեռքով՝ օգտագործելով մուտքի ձևը'
+                  });
                 } else {
                   console.log('Admin auto-login successful');
                   setTimeout(() => {
@@ -69,10 +76,10 @@ const VerifyEmail: React.FC = () => {
                 console.error('Error in admin auto-login:', err);
               }
             }
-          } catch (err) {
-            console.error('Error manually confirming admin email:', err);
+            return;
           }
-          return;
+        } catch (err) {
+          console.error('Error checking if admin:', err);
         }
       }
     };

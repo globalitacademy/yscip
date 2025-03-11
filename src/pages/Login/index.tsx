@@ -6,6 +6,7 @@ import { LoginContainer } from './components/LoginContainer';
 import { RedirectHandler } from './components/RedirectHandler';
 import { RegisterUserData } from './types';
 import { isDesignatedAdmin } from '@/contexts/auth/utils';
+import { supabase } from '@/integrations/supabase/client';
 
 const Login = () => {
   const { login, registerUser, user, isAuthenticated, isApproved } = useAuth();
@@ -26,6 +27,21 @@ const Login = () => {
       
       if (emailParam) {
         setEmail(emailParam);
+        
+        // If this is the admin email, verify the admin account
+        if (await isDesignatedAdmin(emailParam)) {
+          console.log('Admin email detected in URL params, verifying account');
+          try {
+            const { error } = await supabase.rpc('verify_designated_admin');
+            if (error) {
+              console.error('Error verifying admin from URL params:', error);
+            } else {
+              console.log('Admin verified successfully from URL params');
+            }
+          } catch (err) {
+            console.error('Unexpected error verifying admin from URL:', err);
+          }
+        }
       }
     };
 
@@ -36,6 +52,22 @@ const Login = () => {
     setIsLoading(true);
     try {
       const isAdmin = await isDesignatedAdmin(email);
+      
+      // For admin, ensure the account is verified before attempting login
+      if (isAdmin) {
+        console.log('Verifying admin account before login attempt');
+        try {
+          const { error } = await supabase.rpc('verify_designated_admin');
+          if (error) {
+            console.error('Error verifying admin before login:', error);
+          } else {
+            console.log('Admin verified successfully before login');
+          }
+        } catch (err) {
+          console.error('Unexpected error verifying admin before login:', err);
+        }
+      }
+      
       const success = await login(email, password);
       
       if (success) {
@@ -97,11 +129,23 @@ const Login = () => {
       if (success) {
         setVerificationSent(true);
         if (isAdmin) {
-          setTimeout(() => {
-            toast.info('Կարող եք մուտք գործել համակարգ', {
-              description: 'Ձեր ադմինիստրատորի հաշիվը ակտիվ է։ Օգտագործեք մուտքի ձևը հիմա։'
-            });
-          }, 1500);
+          // For admin, ensure the account is verified
+          try {
+            const { error } = await supabase.rpc('verify_designated_admin');
+            if (error) {
+              console.error('Error verifying admin after registration:', error);
+            } else {
+              console.log('Admin account verified after registration');
+              
+              setTimeout(() => {
+                toast.info('Կարող եք մուտք գործել համակարգ', {
+                  description: 'Ձեր ադմինիստրատորի հաշիվը ակտիվ է։ Օգտագործեք մուտքի ձևը հիմա։'
+                });
+              }, 1500);
+            }
+          } catch (err) {
+            console.error('Unexpected error verifying admin after registration:', err);
+          }
         }
       }
     } catch (error) {

@@ -438,6 +438,10 @@ export type Database = {
         Args: Record<PropertyKey, never>
         Returns: boolean
       }
+      is_admin: {
+        Args: Record<PropertyKey, never>
+        Returns: boolean
+      }
       is_designated_admin: {
         Args: {
           email_to_check: string
