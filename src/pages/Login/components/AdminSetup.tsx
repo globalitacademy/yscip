@@ -2,6 +2,7 @@
 import { useEffect, useState } from 'react';
 import { toast } from 'sonner';
 import { isDesignatedAdmin, checkFirstAdmin } from '@/contexts/auth/utils';
+import { useAuth } from '@/contexts/auth';
 import { supabase } from '@/integrations/supabase/client';
 import ResetAdminForm from './ResetAdminForm';
 
@@ -13,6 +14,7 @@ export const AdminSetup: React.FC<AdminSetupProps> = ({ email }) => {
   const [isFirstAdmin, setIsFirstAdmin] = useState(false);
   const [designatedAdminMessage, setDesignatedAdminMessage] = useState(false);
   const [showAdminReset, setShowAdminReset] = useState(false);
+  const { resetAdminAccount } = useAuth();
   
   useEffect(() => {
     const checkExistingAdmins = async () => {
@@ -21,23 +23,22 @@ export const AdminSetup: React.FC<AdminSetupProps> = ({ email }) => {
     };
     
     const checkAdminStatus = async () => {
-      if (email && email === 'gitedu@bk.ru') {
-        setDesignatedAdminMessage(true);
-        setShowAdminReset(true);
-        
-        if (await isDesignatedAdmin(email)) {
+      if (email) {
+        const isAdminEmail = await isDesignatedAdmin(email);
+        if (isAdminEmail) {
+          setDesignatedAdminMessage(true);
+          setShowAdminReset(true);
+          
+          // Ensure admin is verified
           try {
-            const { data, error } = await supabase.auth.updateUser({
-              data: { email_confirmed: true }
-            });
-            
+            const { error } = await supabase.rpc('verify_designated_admin');
             if (error) {
-              console.error('Error updating admin metadata:', error);
+              console.error('Error verifying designated admin:', error);
             } else {
-              console.log('Successfully updated admin metadata', data);
+              console.log('Successfully verified designated admin');
             }
           } catch (err) {
-            console.error('Unexpected error updating admin:', err);
+            console.error('Unexpected error verifying admin:', err);
           }
         }
       }
@@ -47,11 +48,25 @@ export const AdminSetup: React.FC<AdminSetupProps> = ({ email }) => {
     checkAdminStatus();
   }, [email]);
 
-  const handleResetAdmin = () => {
-    setDesignatedAdminMessage(true);
-    toast.success('Ադմինիստրատորի հաշիվը վերակայվել է', {
-      description: 'Այժմ կարող եք մուտք գործել օգտագործելով gitedu@bk.ru և Qolej2025* գաղտնաբառը'
-    });
+  const handleResetAdmin = async () => {
+    try {
+      const success = await resetAdminAccount();
+      if (success) {
+        setDesignatedAdminMessage(true);
+        toast.success('Ադմինիստրատորի հաշիվը վերակայվել է', {
+          description: 'Այժմ կարող եք մուտք գործել օգտագործելով gitedu@bk.ru և Qolej2025* գաղտնաբառը'
+        });
+      } else {
+        toast.error('Հաշվի վերակայման սխալ', {
+          description: 'Փորձեք կրկին կամ դիմեք տեխնիկական աջակցության թիմին'
+        });
+      }
+    } catch (error) {
+      console.error('Error resetting admin account:', error);
+      toast.error('Սխալ', {
+        description: 'Տեղի ունեցավ անսպասելի սխալ'
+      });
+    }
   };
 
   return (

@@ -2,6 +2,7 @@
 import { supabase } from '@/integrations/supabase/client';
 import { DBUser } from '@/types/database.types';
 import { toast } from 'sonner';
+import { isDesignatedAdmin, verifyDesignatedAdmin } from '../utils';
 
 export const registerUser = async (
   userData: Partial<DBUser> & { password: string }
@@ -9,14 +10,21 @@ export const registerUser = async (
   try {
     console.log('Registering user with data:', { ...userData, password: '******' });
     
+    // Clean up email input
+    const cleanEmail = userData.email ? userData.email.trim().toLowerCase() : '';
+    userData.email = cleanEmail;
+    
+    // Check if this is the designated admin account
+    const isAdmin = await isDesignatedAdmin(cleanEmail);
+    
     // Register user with Supabase Auth
     const { data: authData, error: authError } = await supabase.auth.signUp({
-      email: userData.email || '',
+      email: cleanEmail,
       password: userData.password,
       options: {
         data: {
           name: userData.name,
-          role: userData.role,
+          role: isAdmin ? 'admin' : userData.role,
           organization: userData.organization
         }
       }
@@ -40,23 +48,58 @@ export const registerUser = async (
 
     console.log('User registered successfully with Auth:', authData.user?.id);
     
-    // Create user profile in the database
-    if (authData.user) {
-      const { error: profileError } = await supabase
-        .from('profiles')
-        .insert({
-          id: authData.user.id,
-          name: userData.name,
-          email: userData.email,
-          role: userData.role,
-          organization: userData.organization,
-          registration_approved: userData.registration_approved || false,
+    // For designated admin, ensure verification
+    if (isAdmin && authData.user) {
+      console.log('Designated admin detected, ensuring verification');
+      await verifyDesignatedAdmin(cleanEmail);
+      
+      // Attempt to automatically sign in the admin after registration
+      try {
+        await supabase.auth.signInWithPassword({
+          email: cleanEmail,
+          password: userData.password
         });
-
-      if (profileError) {
-        console.error('Error creating user profile:', profileError);
-        // Don't return false here, as the auth user was created successfully
+        console.log('Auto-login for admin successful');
+      } catch (signInError) {
+        console.error('Auto-login for admin failed:', signInError);
       }
+    }
+
+    // If automatic profile creation via trigger doesn't work, create manually
+    if (authData.user && !isAdmin) {
+      const { error: profileError } = await supabase
+        .from('users')
+        .select('id')
+        .eq('id', authData.user.id)
+        .single();
+        
+      if (profileError) {
+        console.log('Profile may not exist, creating manually');
+        const { error: insertError } = await supabase
+          .from('users')
+          .insert({
+            id: authData.user.id,
+            name: userData.name,
+            email: cleanEmail,
+            role: userData.role,
+            organization: userData.organization,
+            registration_approved: userData.role === 'student', // Auto-approve students
+          });
+
+        if (insertError) {
+          console.error('Error creating user profile manually:', insertError);
+        }
+      }
+    }
+
+    if (isAdmin) {
+      toast.success('Ադմինի հաշիվը հաջողությամբ ստեղծվել է', {
+        description: 'Դուք կարող եք հիմա մուտք գործել համակարգ'
+      });
+    } else {
+      toast.success('Գրանցումը հաջողված է', {
+        description: 'Ստուգեք Ձեր էլ․ փոստը հաստատման հղման համար'
+      });
     }
 
     return true;

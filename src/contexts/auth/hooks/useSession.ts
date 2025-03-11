@@ -7,7 +7,7 @@ import { getUserBySession, checkUserApprovalStatus } from '../utils';
 export function useSession() {
   const [user, setUser] = useState<DBUser | null>(null);
   const [loading, setLoading] = useState(true);
-  const [isApproved, setIsApproved] = useState(true); // Default to true for students
+  const [isApproved, setIsApproved] = useState(false);
   const [error, setError] = useState<Error | null>(null);
 
   console.log('useSession hook initialized');
@@ -109,10 +109,21 @@ export function useSession() {
 
     getInitialSession();
     
+    // Set up auth state change listener
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange((_event, session) => {
+      console.log('Auth state changed, event:', _event);
+      if (mounted) {
+        refreshUser(session);
+      }
+    });
+    
     return () => {
       mounted = false;
+      subscription.unsubscribe();
     };
-  }, []);
+  }, [refreshUser]);
 
   return {
     user,

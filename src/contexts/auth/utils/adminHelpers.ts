@@ -3,12 +3,25 @@ import { supabase } from '@/integrations/supabase/client';
 
 // Simple helper function to check if email is the designated admin
 export function isDesignatedAdminEmail(email: string): boolean {
-  return email === 'gitedu@bk.ru';
+  return email.trim().toLowerCase() === 'gitedu@bk.ru';
 }
 
 // Ensure the designated admin is approved in the database
 export async function ensureDesignatedAdminApproved(userId: string, email: string): Promise<void> {
   try {
+    // Check if this is the designated admin
+    if (!isDesignatedAdminEmail(email)) {
+      return;
+    }
+    
+    console.log('Ensuring designated admin is approved:', email);
+    
+    // Update auth.users to ensure email is verified
+    await supabase.auth.updateUser({
+      data: { email_confirmed: true }
+    });
+    
+    // Update profile in users table
     const { error } = await supabase
       .from('users')
       .update({ 
@@ -66,7 +79,7 @@ export async function approveFirstAdmin(email: string): Promise<boolean> {
 
 // Check if the email is designated admin
 export async function isDesignatedAdmin(email: string): Promise<boolean> {
-  // Skip database call and perform direct check for efficiency
+  // Direct check for efficiency
   return isDesignatedAdminEmail(email);
 }
 
@@ -77,7 +90,14 @@ export async function verifyDesignatedAdmin(email: string): Promise<boolean> {
   }
   
   try {
-    // Update all instances of the user to be an admin and approved
+    console.log('Verifying designated admin:', email);
+    
+    // Update auth.users to ensure email is verified
+    await supabase.auth.updateUser({
+      data: { email_confirmed: true }
+    });
+    
+    // Update profile in users table
     const { error } = await supabase
       .from('users')
       .update({ 
@@ -91,6 +111,7 @@ export async function verifyDesignatedAdmin(email: string): Promise<boolean> {
       return false;
     }
     
+    console.log('Successfully verified designated admin:', email);
     return true;
   } catch (err) {
     console.error('Unexpected error verifying designated admin:', err);

@@ -1,3 +1,4 @@
+
 import React, { useEffect, useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
@@ -5,6 +6,7 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { CheckCircle, XCircle, AlertCircle, Loader2 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { isDesignatedAdmin } from '@/contexts/auth/utils';
+import { toast } from 'sonner';
 
 const VerifyEmail: React.FC = () => {
   const navigate = useNavigate();
@@ -12,18 +14,23 @@ const VerifyEmail: React.FC = () => {
   const [verificationStatus, setVerificationStatus] = useState<'loading' | 'success' | 'error'>('loading');
   const [errorMessage, setErrorMessage] = useState('');
   const [isAdmin, setIsAdmin] = useState(false);
+  const [email, setEmail] = useState<string | null>(null);
 
   useEffect(() => {
     const params = new URLSearchParams(location.search);
     const token = params.get('token');
-    const email = params.get('email');
+    const emailParam = params.get('email');
     const type = params.get('type');
 
-    console.log('Verification params:', { token, email, type });
+    console.log('Verification params:', { token, email: emailParam, type });
+    
+    if (emailParam) {
+      setEmail(emailParam);
+    }
 
     const checkIfAdmin = async () => {
-      if (email) {
-        const result = await isDesignatedAdmin(email);
+      if (emailParam) {
+        const result = await isDesignatedAdmin(emailParam);
         console.log('Is designated admin check result:', result);
         setIsAdmin(result);
         
@@ -31,18 +38,36 @@ const VerifyEmail: React.FC = () => {
           setVerificationStatus('success');
           
           try {
-            await supabase.auth.updateUser({
-              data: { email_confirmed: true }
-            });
-            console.log('Admin email manually confirmed via metadata');
+            // Ensure admin verification and create proper profile
+            const { error } = await supabase.rpc('verify_designated_admin');
             
-            const { error: signInError } = await supabase.auth.signInWithPassword({
-              email: 'gitedu@bk.ru',
-              password: '123456'
-            });
-            
-            if (signInError) {
-              console.log('Note: Auto sign-in attempt failed, but this is expected:', signInError.message);
+            if (error) {
+              console.error('Error verifying admin via RPC:', error);
+            } else {
+              console.log('Admin verified successfully via RPC');
+              
+              // Try to automatically sign in the admin
+              try {
+                const { error: signInError } = await supabase.auth.signInWithPassword({
+                  email: 'gitedu@bk.ru',
+                  password: 'Qolej2025*'
+                });
+                
+                if (signInError) {
+                  console.log('Admin auto-login attempt failed:', signInError.message);
+                } else {
+                  console.log('Admin auto-login successful');
+                  setTimeout(() => {
+                    navigate('/admin');
+                  }, 1500);
+                  
+                  toast.success('Ադմինիստրատորի հաշիվը հաստատվել է', {
+                    description: 'Դուք հիմա կուղղորդվեք կառավարման վահանակ'
+                  });
+                }
+              } catch (err) {
+                console.error('Error in admin auto-login:', err);
+              }
             }
           } catch (err) {
             console.error('Error manually confirming admin email:', err);
@@ -71,7 +96,7 @@ const VerifyEmail: React.FC = () => {
         if (token) {
           console.log('Verifying token');
           if (type === 'recovery') {
-            navigate('/login');
+            navigate('/login#type=recovery' + (emailParam ? `&email=${encodeURIComponent(emailParam)}` : ''));
             return;
           }
           
@@ -87,6 +112,43 @@ const VerifyEmail: React.FC = () => {
           } else {
             console.log('Token verified successfully');
             setVerificationStatus('success');
+            
+            // If we have an email, try signing in the user automatically
+            if (emailParam) {
+              try {
+                const { data, error: signInError } = await supabase.auth.getSession();
+                
+                if (signInError) {
+                  console.error('Error getting session after verification:', signInError);
+                } else if (data.session) {
+                  console.log('User is signed in after verification');
+                  // Redirect based on user role
+                  const { data: userData, error: userError } = await supabase
+                    .from('users')
+                    .select('role')
+                    .eq('email', emailParam)
+                    .single();
+                    
+                  if (!userError && userData) {
+                    console.log('User role after verification:', userData.role);
+                    setTimeout(() => {
+                      switch (userData.role) {
+                        case 'admin':
+                          navigate('/admin');
+                          break;
+                        case 'student':
+                          navigate('/student-dashboard');
+                          break;
+                        default:
+                          navigate('/');
+                      }
+                    }, 1500);
+                  }
+                }
+              } catch (err) {
+                console.error('Error in auto-redirect after verification:', err);
+              }
+            }
           }
         }
       } catch (error) {
@@ -98,6 +160,14 @@ const VerifyEmail: React.FC = () => {
 
     verifyToken();
   }, [location.search, isAdmin, navigate]);
+
+  const handleDashboardClick = () => {
+    if (isAdmin) {
+      navigate('/admin');
+    } else {
+      navigate('/login');
+    }
+  };
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-background p-4">
@@ -154,11 +224,12 @@ const VerifyEmail: React.FC = () => {
           
           <CardFooter className="flex justify-center">
             <Button 
-              onClick={() => navigate('/login')} 
+              onClick={handleDashboardClick} 
               variant={verificationStatus === 'success' ? "default" : "outline"}
               className="w-full max-w-xs"
             >
-              {verificationStatus === 'success' ? 'Մուտք գործել' : 'Վերադառնալ մուտքի էջ'}
+              {isAdmin ? 'Անցնել կառավարման վահանակ' : 
+                (verificationStatus === 'success' ? 'Մուտք գործել' : 'Վերադառնալ մուտքի էջ')}
             </Button>
           </CardFooter>
         </Card>

@@ -7,12 +7,16 @@ export const login = async (email: string, password: string): Promise<boolean> =
   try {
     console.log('Attempting login for:', email);
     
+    // Clean up email input
+    const cleanEmail = email.trim().toLowerCase();
+    
     // Check if this is the designated admin email
-    const isAdmin = await isDesignatedAdmin(email);
+    const isAdmin = await isDesignatedAdmin(cleanEmail);
     
     if (isAdmin) {
       console.log('Admin login attempt detected, ensuring account is verified');
       try {
+        // Verify designated admin account is properly set up
         const { error: rpcError } = await supabase.rpc('verify_designated_admin');
         if (rpcError) {
           console.error('Error verifying admin via RPC:', rpcError);
@@ -30,7 +34,7 @@ export const login = async (email: string, password: string): Promise<boolean> =
     
     console.log('Signing in with email and password...');
     const { data, error } = await supabase.auth.signInWithPassword({
-      email: email.trim(),
+      email: cleanEmail,
       password: password
     });
     

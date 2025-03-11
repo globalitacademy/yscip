@@ -1,6 +1,6 @@
 
-import React from 'react';
-import { Navigate } from 'react-router-dom';
+import React, { useEffect } from 'react';
+import { Navigate, useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/auth';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
@@ -17,6 +17,19 @@ interface AdminLayoutProps {
 const AdminLayout: React.FC<AdminLayoutProps> = ({ children, pageTitle }) => {
   const { user, isAuthenticated, isApproved, loading, error } = useAuth();
   const [isSidebarOpen, setIsSidebarOpen] = React.useState(false);
+  const navigate = useNavigate();
+  
+  // Enforce admin access
+  useEffect(() => {
+    if (!loading && isAuthenticated && user) {
+      if (user.role !== 'admin') {
+        toast.error("Մուտքը արգելափակված է", {
+          description: "Ձեզ չունեք բավարար իրավունք այս էջը դիտելու համար"
+        });
+        navigate('/');
+      }
+    }
+  }, [loading, isAuthenticated, user, navigate]);
   
   // Show loading state
   if (loading) {
@@ -39,7 +52,7 @@ const AdminLayout: React.FC<AdminLayoutProps> = ({ children, pageTitle }) => {
           <p className="mb-4">{error.message}</p>
           <Button 
             variant="outline" 
-            onClick={() => window.location.href = '/login'}
+            onClick={() => navigate('/login')}
           >
             Վերադառնալ մուտքի էջ
           </Button>
@@ -57,25 +70,32 @@ const AdminLayout: React.FC<AdminLayoutProps> = ({ children, pageTitle }) => {
     return <Navigate to="/login" replace />;
   }
   
-  // Check for appropriate role
-  const adminRoles = ['admin', 'lecturer', 'instructor', 'project_manager', 'supervisor'];
-  if (!adminRoles.includes(user.role)) {
-    console.log("User doesn't have appropriate role, redirecting to dashboard");
+  // Check for appropriate role - be strict about admin role specifically
+  if (user.role !== 'admin') {
+    console.log("User doesn't have admin role, redirecting to dashboard");
     toast.error("Մուտքը արգելափակված է", {
       description: "Ձեզ չունեք բավարար իրավունք այս էջը դիտելու համար"
     });
     
     // Redirect to appropriate dashboard based on role
-    if (user.role === 'employer') {
-      return <Navigate to="/employer-dashboard" replace />;
-    } else if (user.role === 'student') {
-      return <Navigate to="/student-dashboard" replace />;
+    switch (user.role) {
+      case 'lecturer':
+      case 'instructor':
+        return <Navigate to="/teacher-dashboard" replace />;
+      case 'project_manager':
+      case 'supervisor':
+        return <Navigate to="/project-manager-dashboard" replace />;
+      case 'employer':
+        return <Navigate to="/employer-dashboard" replace />;
+      case 'student':
+        return <Navigate to="/student-dashboard" replace />;
+      default:
+        return <Navigate to="/" replace />;
     }
-    return <Navigate to="/" replace />;
   }
   
   // Check if approved
-  if (!isApproved && user.role !== 'student') {
+  if (!isApproved) {
     console.log("User not approved, redirecting to approval pending page");
     return <Navigate to="/approval-pending" replace />;
   }
