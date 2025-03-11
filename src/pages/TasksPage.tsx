@@ -1,122 +1,102 @@
-
 import React, { useState, useEffect } from 'react';
-import AdminLayout from '@/components/AdminLayout';
+import { useParams } from 'react-router-dom';
+import { getTasksForProject, getTasksAssignedToUser } from '@/services/taskService';
+import { Task } from '@/types/database.types';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Card, CardContent } from "@/components/ui/card";
 import TaskManager from '@/components/TaskManager';
 import { useAuth } from '@/contexts/AuthContext';
-import { createTask, getTasksAssignedToUser, updateTaskStatus } from '@/services/taskService';
-import { DBTask } from '@/types/database.types';
-import { toast } from 'sonner';
-import { supabase } from '@/integrations/supabase/client';
+import Header from '@/components/Header';
+import Footer from '@/components/Footer';
 
-const TasksPage: React.FC = () => {
+const TasksPage = () => {
+  const { id } = useParams<{ id: string }>();
+  const [tasks, setTasks] = useState<Task[]>([]);
+  const [isLoading, setIsLoading] = useState<boolean>(true);
+  const [error, setError] = useState<string | null>(null);
   const { user } = useAuth();
-  const [tasks, setTasks] = useState<DBTask[]>([]);
-  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    if (!user) return;
-
     const fetchTasks = async () => {
-      setLoading(true);
+      setIsLoading(true);
       try {
-        const data = await getTasksAssignedToUser(user.id);
-        setTasks(data);
-      } catch (error) {
-        console.error('Error fetching tasks:', error);
-        toast.error('Չհաջողվեց ստանալ առաջադրանքները');
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchTasks();
-
-    // Set up real-time subscription for tasks
-    const channel = supabase
-      .channel('public:tasks')
-      .on('postgres_changes', {
-        event: '*',
-        schema: 'public',
-        table: 'tasks',
-        filter: `assigned_to=eq.${user.id}`
-      }, (payload) => {
-        console.log('Tasks change received:', payload);
+        let fetchedTasks: Task[] = [];
         
-        // Refresh tasks when a change is detected
-        fetchTasks();
-        
-        // Show toast for new tasks
-        if (payload.eventType === 'INSERT') {
-          const newTask = payload.new as DBTask;
-          toast.info(`Նոր առաջադրանք: ${newTask.title}`);
+        if (id) {
+          fetchedTasks = await getTasksForProject(Number(id));
+        } else if (user) {
+          fetchedTasks = await getTasksAssignedToUser(user.id);
         }
-      })
-      .subscribe();
-
-    return () => {
-      supabase.removeChannel(channel);
+        
+        setTasks(fetchedTasks);
+      } catch (err) {
+        console.error('Error fetching tasks:', err);
+        setError('Խնդիր առաջացավ առաջադրանքների բեռնման ընթացքում։');
+      } finally {
+        setIsLoading(false);
+      }
     };
-  }, [user]);
-
-  const handleAddTask = async (task: Omit<DBTask, 'id' | 'created_at' | 'updated_at'>) => {
-    if (!user) return;
     
-    try {
-      const result = await createTask({
-        ...task,
-        created_by: user.id
-      });
-      
-      if (result) {
-        setTasks(prev => [result, ...prev]);
-        toast.success('Առաջադրանքը հաջողությամբ ավելացվեց');
-      } else {
-        toast.error('Չհաջողվեց ավելացնել առաջադրանքը');
-      }
-    } catch (error) {
-      console.error('Error adding task:', error);
-      toast.error('Տեղի ունեցավ սխալ');
-    }
-  };
+    fetchTasks();
+  }, [id, user]);
 
-  const handleUpdateTaskStatus = async (taskId: string, status: DBTask['status']) => {
-    try {
-      const success = await updateTaskStatus(Number(taskId), status);
-      
-      if (success) {
-        setTasks(prev => 
-          prev.map(task => 
-            task.id.toString() === taskId ? {...task, status} : task
-          )
-        );
-        toast.success('Առաջադրանքի կարգավիճակը թարմացվեց');
-      } else {
-        toast.error('Չհաջողվեց թարմացնել առաջադրանքի կարգավիճակը');
-      }
-    } catch (error) {
-      console.error('Error updating task status:', error);
-      toast.error('Տեղի ունեցավ սխալ');
-    }
-  };
-
-  if (loading) {
-    return (
-      <AdminLayout pageTitle="Առաջադրանքների կառավարում">
-        <div className="flex justify-center items-center h-64">
-          <p className="text-muted-foreground">Առաջադրանքների բեռնում...</p>
-        </div>
-      </AdminLayout>
-    );
-  }
+  const todoTasks = tasks.filter(task => task.status === 'todo');
+  const inProgressTasks = tasks.filter(task => task.status === 'in-progress');
+  const reviewTasks = tasks.filter(task => task.status === 'review');
+  const doneTasks = tasks.filter(task => task.status === 'done');
 
   return (
-    <AdminLayout pageTitle="Առաջադրանքների կառավարում">
-      <TaskManager 
-        tasks={tasks} 
-        onAddTask={handleAddTask}
-        onUpdateTaskStatus={handleUpdateTaskStatus}
-      />
-    </AdminLayout>
+    <div className="min-h-screen flex flex-col">
+      <Header />
+      <main className="container mx-auto px-4 py-8 flex-grow">
+        <h1 className="text-3xl font-semibold mb-6">Առաջադրանքներ</h1>
+        
+        {isLoading && <p>Բեռնում...</p>}
+        {error && <p className="text-red-500">{error}</p>}
+
+        <Tabs defaultValue="todo" className="w-full">
+          <TabsList>
+            <TabsTrigger value="todo">Անելիք ({todoTasks.length})</TabsTrigger>
+            <TabsTrigger value="in-progress">Ընթացքում ({inProgressTasks.length})</TabsTrigger>
+            <TabsTrigger value="review">Ստուգման Կարիք Ունեցող ({reviewTasks.length})</TabsTrigger>
+            <TabsTrigger value="done">Ավարտված ({doneTasks.length})</TabsTrigger>
+          </TabsList>
+          
+          <TabsContent value="todo">
+            <Card>
+              <CardContent className="p-4">
+                <TaskManager tasks={todoTasks} setTasks={setTasks} />
+              </CardContent>
+            </Card>
+          </TabsContent>
+          
+          <TabsContent value="in-progress">
+            <Card>
+              <CardContent className="p-4">
+                <TaskManager tasks={inProgressTasks} setTasks={setTasks} />
+              </CardContent>
+            </Card>
+          </TabsContent>
+          
+          <TabsContent value="review">
+            <Card>
+              <CardContent className="p-4">
+                <TaskManager tasks={reviewTasks} setTasks={setTasks} />
+              </CardContent>
+            </Card>
+          </TabsContent>
+          
+          <TabsContent value="done">
+            <Card>
+              <CardContent className="p-4">
+                <TaskManager tasks={doneTasks} setTasks={setTasks} />
+              </CardContent>
+            </Card>
+          </TabsContent>
+        </Tabs>
+      </main>
+      <Footer />
+    </div>
   );
 };
 
