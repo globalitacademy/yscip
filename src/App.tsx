@@ -22,7 +22,7 @@ import StudentProjectsPage from '@/pages/StudentProjectsPage';
 import PortfolioPage from '@/pages/PortfolioPage';
 import ProjectSubmissionPage from '@/pages/ProjectSubmissionPage';
 import PendingApprovals from '@/pages/PendingApprovals';
-import AuthProvider, { useAuth } from '@/contexts/AuthContext';
+import { AuthProvider, useAuth } from '@/contexts/auth';
 import { NotificationProvider } from '@/contexts/NotificationContext';
 import './App.css';
 
