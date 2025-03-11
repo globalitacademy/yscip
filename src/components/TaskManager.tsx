@@ -1,6 +1,5 @@
-
-import React, { useState } from 'react';
-import { Task } from '@/data/projectThemes';
+import React from 'react';
+import { Task } from '@/types/database.types';
 import { User, UserRole, getCurrentUser, getUsersByRole, rolePermissions } from '@/data/userRoles';
 import { 
   CheckCircle, 
@@ -46,12 +45,14 @@ import { toast } from "@/components/ui/use-toast";
 
 interface TaskManagerProps {
   tasks: Task[];
+  setTasks?: React.Dispatch<React.SetStateAction<Task[]>>;
   onAddTask?: (task: Omit<Task, 'id'>) => void;
   onUpdateTaskStatus?: (taskId: string, status: Task['status']) => void;
 }
 
 const TaskManager: React.FC<TaskManagerProps> = ({ 
   tasks = [],
+  setTasks,
   onAddTask,
   onUpdateTaskStatus
 }) => {
