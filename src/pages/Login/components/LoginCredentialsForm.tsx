@@ -25,6 +25,7 @@ const LoginCredentialsForm: React.FC<LoginCredentialsFormProps> = ({
 }) => {
   const [showPassword, setShowPassword] = useState(false);
   const [email, setEmail] = useState('');
+  const [formError, setFormError] = useState<string | null>(null);
   const isLoading = propIsLoading || externalLoading || false;
 
   const form = useForm<z.infer<typeof loginValidationSchema>>({
@@ -36,12 +37,16 @@ const LoginCredentialsForm: React.FC<LoginCredentialsFormProps> = ({
   });
 
   const onSubmit = async (values: z.infer<typeof loginValidationSchema>) => {
-    if (onLogin) {
-      await onLogin(values.email, values.password);
+    try {
+      setFormError(null);
+      if (onLogin) {
+        await onLogin(values.email, values.password);
+      }
+    } catch (error) {
+      setFormError(error instanceof Error ? error.message : 'Մուտքի սխալ');
     }
   };
 
-  // Update email state when form field changes
   React.useEffect(() => {
     const subscription = form.watch((value) => {
       if (value.email) {
@@ -96,6 +101,10 @@ const LoginCredentialsForm: React.FC<LoginCredentialsFormProps> = ({
             </FormItem>
           )}
         />
+        
+        {formError && (
+          <div className="text-sm text-red-500">{formError}</div>
+        )}
         
         <div className="flex justify-end">
           <ForgotPasswordForm 

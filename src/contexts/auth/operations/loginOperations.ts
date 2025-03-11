@@ -12,9 +12,7 @@ export const login = async (email: string, password: string): Promise<boolean> =
     
     if (isAdmin) {
       console.log('Admin login attempt detected, ensuring account is verified');
-      
       try {
-        // Call the RPC function to verify the admin before login
         const { error: rpcError } = await supabase.rpc('verify_designated_admin');
         if (rpcError) {
           console.error('Error verifying admin via RPC:', rpcError);
@@ -22,23 +20,18 @@ export const login = async (email: string, password: string): Promise<boolean> =
             description: 'Փորձեք վերակայել ադմինի հաշիվը և նորից գրանցվել'
           });
           return false;
-        } else {
-          console.log('Admin verification via RPC successful');
         }
+        console.log('Admin verification via RPC successful');
       } catch (err) {
         console.error('Error in admin verification process:', err);
-        toast.error('Ադմինի հաշվի ստուգման սխալ', {
-          description: 'Փորձեք վերակայել ադմինի հաշիվը և նորից գրանցվել'
-        });
         return false;
       }
     }
     
-    // Proceed with login
     console.log('Signing in with email and password...');
     const { data, error } = await supabase.auth.signInWithPassword({
-      email,
-      password
+      email: email.trim(),
+      password: password
     });
     
     if (error) {
@@ -63,13 +56,9 @@ export const login = async (email: string, password: string): Promise<boolean> =
           description: error.message
         });
       }
-      
       return false;
     }
-    
-    console.log('Login successful, got session:', data.session?.user.id);
-    
-    // If there's no session, something went wrong
+
     if (!data.session) {
       console.error('No session returned after login');
       toast.error('Մուտքը չի հաջողվել', {
@@ -77,10 +66,7 @@ export const login = async (email: string, password: string): Promise<boolean> =
       });
       return false;
     }
-    
-    // Add direct check for session user
-    console.log('Login successful, navigating to appropriate page based on role');
-    
+
     return true;
   } catch (error) {
     console.error('Unexpected login error:', error);
