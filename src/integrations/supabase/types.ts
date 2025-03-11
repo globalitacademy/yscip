@@ -9,6 +9,33 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
+      auth_logs: {
+        Row: {
+          error_message: string | null
+          event_type: string
+          id: string
+          ip_address: string | null
+          timestamp: string | null
+          user_id: string | null
+        }
+        Insert: {
+          error_message?: string | null
+          event_type: string
+          id?: string
+          ip_address?: string | null
+          timestamp?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          error_message?: string | null
+          event_type?: string
+          id?: string
+          ip_address?: string | null
+          timestamp?: string | null
+          user_id?: string | null
+        }
+        Relationships: []
+      }
       notifications: {
         Row: {
           created_at: string
