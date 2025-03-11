@@ -1,6 +1,6 @@
 
-import React from 'react';
-import { Link } from 'react-router-dom';
+import React, { useEffect } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { 
@@ -30,7 +30,7 @@ interface ActionCardProps {
 }
 
 const ActionCard: React.FC<ActionCardProps> = ({ title, description, icon, href, buttonText }) => (
-  <Card className="group hover:shadow-lg transition-all duration-300 hover:-translate-y-1">
+  <Card className="group hover:shadow-lg transition-all duration-300 hover:-translate-y-1 h-full">
     <CardHeader>
       <div className="rounded-lg p-3 bg-primary/10 w-fit mb-4 group-hover:bg-primary/20 transition-colors">
         {icon}
@@ -55,11 +55,41 @@ const ActionCard: React.FC<ActionCardProps> = ({ title, description, icon, href,
 
 const Index: React.FC = () => {
   const { user, isAuthenticated, isApproved } = useAuth();
+  const navigate = useNavigate();
+  
+  // Redirect to role-specific dashboard if authenticated
+  useEffect(() => {
+    if (isAuthenticated && user) {
+      if (!isApproved && user.role !== 'student') {
+        return; // Stay on page for unapproved non-students
+      }
+      
+      switch (user.role) {
+        case 'admin':
+          navigate('/admin');
+          break;
+        case 'lecturer':
+        case 'instructor':
+          navigate('/courses');
+          break;
+        case 'project_manager':
+        case 'supervisor':
+          navigate('/projects/manage');
+          break;
+        case 'employer':
+          navigate('/projects/my');
+          break;
+        case 'student':
+          navigate('/projects');
+          break;
+      }
+    }
+  }, [isAuthenticated, user, isApproved, navigate]);
   
   const getRoleBasedActions = () => {
     if (!isAuthenticated || !user) {
       return (
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-10">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-10">
           <ActionCard 
             title="Մուտք գործել"
             description="Մուտք գործեք Ձեր հաշիվ"
@@ -89,7 +119,7 @@ const Index: React.FC = () => {
       return (
         <div className="mb-10">
           <Card className="bg-amber-50 border-amber-200 text-amber-800">
-            <CardContent className="pt-6">
+            <CardContent className="py-6">
               <p className="text-center">Ձեր հաշիվը դեռ սպասում է հաստատման: Դուք կստանաք ծանուցում, երբ այն հաստատվի ադմինիստրատորի կողմից:</p>
             </CardContent>
           </Card>
@@ -100,7 +130,7 @@ const Index: React.FC = () => {
     switch (user.role) {
       case 'admin':
         return (
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-10">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-10">
             <ActionCard 
               title="Կառավարման վահանակ"
               description="Կառավարել համակարգը"
@@ -128,7 +158,7 @@ const Index: React.FC = () => {
       case 'lecturer':
       case 'instructor':
         return (
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-10">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-10">
             <ActionCard 
               title="Կուրսեր"
               description="Կառավարել կուրսերը"
@@ -156,7 +186,7 @@ const Index: React.FC = () => {
       case 'project_manager':
       case 'supervisor':
         return (
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-10">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-10">
             <ActionCard 
               title="Նախագծեր"
               description="Կառավարել նախագծերը"
@@ -183,7 +213,7 @@ const Index: React.FC = () => {
       
       case 'employer':
         return (
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-10">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-10">
             <ActionCard 
               title="Իմ նախագծերը"
               description="Դիտել իմ նախագծերը"
@@ -203,7 +233,7 @@ const Index: React.FC = () => {
       
       case 'student':
         return (
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-10">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-10">
             <ActionCard 
               title="Նախագծեր"
               description="Դիտել հասանելի նախագծերը"
@@ -230,33 +260,40 @@ const Index: React.FC = () => {
     <div className="min-h-screen flex flex-col bg-background">
       <Header />
       <main className="flex-grow">
-        <div className="relative">
-          <Hero />
-          <div className="w-full absolute bottom-0 left-0">
-            <ThemeGrid />
-          </div>
-        </div>
+        <Hero />
         
         <div className="container mx-auto px-4 py-12">
           <SlideUp className="mb-16">
             <div className="text-center max-w-2xl mx-auto mb-12">
-              <h2 className="text-4xl font-bold mb-4">Ձեր դաշբորդը</h2>
+              <h2 className="text-3xl md:text-4xl font-bold mb-4">Ձեր դաշբորդը</h2>
               <p className="text-muted-foreground text-lg">
                 Կառավարեք Ձեր նախագծերը և հետևեք առաջընթացին
               </p>
             </div>
             {getRoleBasedActions()}
           </SlideUp>
-            
-          <FadeIn>
-            <div className="text-center max-w-2xl mx-auto mb-12">
-              <h2 className="text-4xl font-bold mb-4">Նախագծեր</h2>
-              <p className="text-muted-foreground text-lg">
-                Հետազոտեք մեր վերջին նախագծերը և միացեք դրանց
-              </p>
-            </div>
-            <ProjectGrid projects={[]} />
-          </FadeIn>
+          
+          <div id="themes-section" className="pt-8">
+            <FadeIn>
+              <div className="text-center max-w-2xl mx-auto mb-12">
+                <h2 className="text-3xl md:text-4xl font-bold mb-4">Նախագծերի թեմաներ</h2>
+                <p className="text-muted-foreground text-lg">
+                  Հետազոտեք մեր վերջին նախագծերի թեմաները
+                </p>
+              </div>
+              <ThemeGrid limit={6} />
+            </FadeIn>
+
+            <FadeIn>
+              <div className="text-center max-w-2xl mx-auto mb-12 mt-24">
+                <h2 className="text-3xl md:text-4xl font-bold mb-4">Նախագծեր</h2>
+                <p className="text-muted-foreground text-lg">
+                  Հետազոտեք մեր վերջին նախագծերը և միացեք դրանց
+                </p>
+              </div>
+              <ProjectGrid projects={[]} />
+            </FadeIn>
+          </div>
         </div>
       </main>
       <Footer />
