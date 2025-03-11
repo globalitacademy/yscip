@@ -87,6 +87,12 @@ const VerifyEmail: React.FC = () => {
     checkIfAdmin();
 
     if (!token && !isAdmin) {
+      if (type === 'recovery') {
+        // This is a password reset link, redirect to login with recovery parameters
+        navigate(`/login#type=recovery${emailParam ? `&email=${encodeURIComponent(emailParam)}` : ''}`);
+        return;
+      }
+      
       setVerificationStatus('error');
       setErrorMessage('Հաստատման գործընթացի սխալ: Նշանը (token) բացակայում է։');
       return;

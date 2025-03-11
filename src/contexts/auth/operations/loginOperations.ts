@@ -33,6 +33,7 @@ export const login = async (email: string, password: string): Promise<boolean> =
       }
     }
     
+    // Attempt to sign in
     const { data, error } = await supabase.auth.signInWithPassword({
       email: cleanEmail,
       password: password
@@ -42,9 +43,45 @@ export const login = async (email: string, password: string): Promise<boolean> =
       console.error('Login error:', error);
       
       if (error.message.includes('Email not confirmed')) {
-        toast.error('Էլ․ հասցեն չի հաստատվել', {
-          description: 'Խնդրում ենք ստուգել Ձեր էլ․ փոստը հաստատման հղման համար'
-        });
+        // For admin emails, try to verify directly instead of showing error
+        if (isAdmin) {
+          console.log('Admin email not confirmed, attempting verification');
+          try {
+            const { error: verifyError } = await supabase.rpc('verify_designated_admin');
+            if (verifyError) {
+              console.error('Error verifying admin during login:', verifyError);
+              toast.error('Ադմինի հաստատման սխալ', {
+                description: 'Փորձեք վերակայել ադմինի հաշիվը և նորից գրանցվել'
+              });
+            } else {
+              // Try login again after verification
+              console.log('Admin verified, retrying login');
+              const { data: retryData, error: retryError } = await supabase.auth.signInWithPassword({
+                email: cleanEmail,
+                password: password
+              });
+              
+              if (retryError) {
+                console.error('Login retry error:', retryError);
+                toast.error('Ադմինի մուտքը չի հաջողվել', {
+                  description: 'Փորձեք վերակայել ադմինի հաշիվը և նորից գրանցվել'
+                });
+                return false;
+              }
+              
+              if (retryData.session) {
+                console.log('Admin login retry successful');
+                return true;
+              }
+            }
+          } catch (verifyErr) {
+            console.error('Error in admin verification during login:', verifyErr);
+          }
+        } else {
+          toast.error('Էլ․ հասցեն չի հաստատվել', {
+            description: 'Խնդրում ենք ստուգել Ձեր էլ․ փոստը հաստատման հղման համար'
+          });
+        }
       } else if (error.message.includes('Invalid login credentials')) {
         if (isAdmin) {
           toast.error('Ադմինի մուտքը չի հաջողվել', {
@@ -85,6 +122,9 @@ export const login = async (email: string, password: string): Promise<boolean> =
     }
 
     console.log('Login successful, session established');
+    toast.success('Մուտքը հաջողվել է', {
+      description: isAdmin ? 'Դուք մուտք եք գործել որպես ադմինիստրատոր' : 'Դուք հաջողությամբ մուտք եք գործել համակարգ'
+    });
     return true;
   } catch (error) {
     console.error('Unexpected login error:', error);

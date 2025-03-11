@@ -37,6 +37,28 @@ const Login = () => {
               console.error('Error verifying admin from URL params:', error);
             } else {
               console.log('Admin verified successfully from URL params');
+              
+              // If this is a password recovery, we don't want to auto-login
+              if (params.get('type') !== 'recovery') {
+                // Try to auto-login
+                try {
+                  const { error: signInError } = await supabase.auth.signInWithPassword({
+                    email: emailParam,
+                    password: 'Qolej2025*'
+                  });
+                  
+                  if (signInError) {
+                    console.log('Admin auto-login attempt failed:', signInError.message);
+                  } else {
+                    console.log('Admin auto-login successful');
+                    setTimeout(() => {
+                      window.location.href = '/admin';
+                    }, 1000);
+                  }
+                } catch (autoLoginErr) {
+                  console.error('Error in admin auto-login attempt:', autoLoginErr);
+                }
+              }
             }
           } catch (err) {
             console.error('Unexpected error verifying admin from URL:', err);

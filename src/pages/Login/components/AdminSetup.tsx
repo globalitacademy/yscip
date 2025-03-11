@@ -40,6 +40,33 @@ export const AdminSetup: React.FC<AdminSetupProps> = ({ email }) => {
               });
             } else {
               console.log('Successfully verified designated admin');
+              
+              // Try to auto-login if this is the admin email
+              try {
+                const { data: sessionData, error: sessionError } = await supabase.auth.getSession();
+                
+                if (sessionError) {
+                  console.error('Error getting session for admin auto-login:', sessionError);
+                } else if (!sessionData.session) {
+                  console.log('No active session, trying admin auto-login');
+                  
+                  const { error: signInError } = await supabase.auth.signInWithPassword({
+                    email: 'gitedu@bk.ru',
+                    password: 'Qolej2025*'
+                  });
+                  
+                  if (signInError) {
+                    console.log('Admin auto-login attempt failed:', signInError.message);
+                  } else {
+                    console.log('Admin auto-login successful');
+                    setTimeout(() => {
+                      window.location.href = '/admin';
+                    }, 1000);
+                  }
+                }
+              } catch (autoLoginErr) {
+                console.error('Error in admin auto-login attempt:', autoLoginErr);
+              }
             }
           } catch (err) {
             console.error('Unexpected error verifying admin:', err);

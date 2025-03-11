@@ -5,6 +5,22 @@ import { toast } from 'sonner';
 export const resetPassword = async (email: string): Promise<boolean> => {
   try {
     console.log('Requesting password reset for email:', email);
+    
+    // For admin account, verify it first
+    if (email.trim().toLowerCase() === 'gitedu@bk.ru') {
+      console.log('Admin account password reset requested, verifying account first');
+      try {
+        const { error: verifyError } = await supabase.rpc('verify_designated_admin');
+        if (verifyError) {
+          console.error('Error verifying admin before password reset:', verifyError);
+        } else {
+          console.log('Admin verified successfully before password reset');
+        }
+      } catch (err) {
+        console.error('Error in admin verification before password reset:', err);
+      }
+    }
+    
     // Use the full URL of the application for password reset
     // Add type=recovery and email parameters to help with auto-login after reset
     const redirectTo = `${window.location.origin}/login#type=recovery&email=${encodeURIComponent(email)}`;

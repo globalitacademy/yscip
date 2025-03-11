@@ -23,6 +23,15 @@ export const resetAdminAccount = async (): Promise<boolean> => {
     const adminEmail = 'gitedu@bk.ru';
     const adminPassword = 'Qolej2025*';
     
+    // First verify the admin account to ensure it's properly set up
+    const { error: verifyError } = await supabase.rpc('verify_designated_admin');
+    if (verifyError) {
+      console.error('Error verifying admin after reset:', verifyError);
+    } else {
+      console.log('Admin account verified after reset');
+    }
+    
+    // Then try to sign up with the admin credentials
     const { error: signupError } = await supabase.auth.signUp({
       email: adminEmail,
       password: adminPassword,
@@ -36,18 +45,24 @@ export const resetAdminAccount = async (): Promise<boolean> => {
     
     if (signupError) {
       console.error('Error creating admin account after reset:', signupError);
-      toast.error('Ադմինի հաշվի ստեղծման սխալ', {
-        description: signupError.message
-      });
-      return false;
+      
+      // If it's because the account already exists, that's fine
+      if (signupError.message.includes('already registered')) {
+        console.log('Admin account already exists, this is expected');
+      } else {
+        toast.error('Ադմինի հաշվի ստեղծման սխալ', {
+          description: signupError.message
+        });
+        return false;
+      }
     }
     
-    // Verify the admin account to ensure it's properly set up
-    const { error: verifyError } = await supabase.rpc('verify_designated_admin');
-    if (verifyError) {
-      console.error('Error verifying admin after reset:', verifyError);
+    // Verify the admin account again to ensure it's properly set up
+    const { error: finalVerifyError } = await supabase.rpc('verify_designated_admin');
+    if (finalVerifyError) {
+      console.error('Error verifying admin after signup:', finalVerifyError);
     } else {
-      console.log('Admin account successfully verified after reset');
+      console.log('Admin account successfully verified after signup');
     }
     
     toast.success('Ադմինիստրատորի հաշիվը վերակայվել է', {

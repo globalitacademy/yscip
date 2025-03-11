@@ -17,6 +17,21 @@ export const registerUser = async (
     // Check if this is the designated admin account
     const isAdmin = await isDesignatedAdmin(cleanEmail);
     
+    // For admin account, verify it first
+    if (isAdmin) {
+      console.log('Admin registration detected, ensuring admin verification first');
+      try {
+        const { error: verifyError } = await supabase.rpc('verify_designated_admin');
+        if (verifyError) {
+          console.error('Error verifying admin before registration:', verifyError);
+        } else {
+          console.log('Admin verified successfully before registration');
+        }
+      } catch (err) {
+        console.error('Error in admin verification before registration:', err);
+      }
+    }
+    
     // Register user with Supabase Auth
     const { data: authData, error: authError } = await supabase.auth.signUp({
       email: cleanEmail,
@@ -26,7 +41,8 @@ export const registerUser = async (
           name: userData.name,
           role: isAdmin ? 'admin' : userData.role,
           organization: userData.organization
-        }
+        },
+        emailRedirectTo: `${window.location.origin}/verify-email`
       }
     });
 
@@ -34,6 +50,20 @@ export const registerUser = async (
       console.error('Error registering user with Supabase Auth:', authError);
       
       if (authError.message.includes('already registered')) {
+        // For admin account, try to verify and continue
+        if (isAdmin) {
+          console.log('Admin account already exists, verifying it');
+          try {
+            await verifyDesignatedAdmin(cleanEmail);
+            toast.success('Ադմինի հաշիվը հաջողությամբ հաստատվել է', {
+              description: 'Դուք կարող եք հիմա մուտք գործել համակարգ'
+            });
+            return true;
+          } catch (verifyErr) {
+            console.error('Error verifying existing admin account:', verifyErr);
+          }
+        }
+        
         toast.error('Օգտատերը արդեն գրանցված է', {
           description: 'Այս էլ․ հասցեով օգտատեր արդեն գոյություն ունի: Փորձեք մուտք գործել կամ վերականգնել գաղտնաբառը'
         });
