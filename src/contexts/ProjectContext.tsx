@@ -1,7 +1,8 @@
 
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { v4 as uuidv4 } from 'uuid';
-import { ProjectTheme, Task, TimelineEvent } from '@/data/projectThemes';
+import { ProjectTheme, TimelineEvent } from '@/data/projectThemes';
+import { Task } from '@/types/database.types';
 import { useAuth } from '@/contexts/AuthContext';
 import { rolePermissions } from '@/data/userRoles';
 import { toast } from '@/components/ui/use-toast';
@@ -141,18 +142,24 @@ export const ProjectProvider: React.FC<ProjectProviderProps> = ({
           title: 'Պահանջների վերլուծություն',
           description: 'Հավաքել և վերլուծել նախագծի բոլոր պահանջները',
           status: 'done',
-          assignedTo: user.id,
-          dueDate: now.toISOString().split('T')[0],
-          createdBy: 'instructor1'
+          assigned_to: user.id,
+          due_date: now.toISOString().split('T')[0],
+          created_by: 'instructor1',
+          project_id: project.id,
+          created_at: now.toISOString(),
+          updated_at: now.toISOString()
         },
         {
           id: uuidv4(),
           title: 'Նախագծի կառուցվածքի մշակում',
           description: 'Ստեղծել նախագծի հիմնական կառուցվածքը և ճարտարապետությունը',
           status: 'in-progress',
-          assignedTo: user.id,
-          dueDate: dueDate.toISOString().split('T')[0],
-          createdBy: 'instructor1'
+          assigned_to: user.id,
+          due_date: dueDate.toISOString().split('T')[0],
+          created_by: 'instructor1',
+          project_id: project.id,
+          created_at: now.toISOString(),
+          updated_at: now.toISOString()
         }
       ];
       
@@ -176,9 +183,15 @@ export const ProjectProvider: React.FC<ProjectProviderProps> = ({
   };
 
   const addTask = (task: Omit<Task, 'id'>) => {
-    if (!permissions.canAddTasks) return;
+    if (!permissions.canAddTasks || !project) return;
     
-    const newTask = { ...task, id: uuidv4() };
+    const newTask: Task = { 
+      ...task, 
+      id: uuidv4(),
+      project_id: project.id,
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString()
+    };
     setTasks(prev => [...prev, newTask]);
   };
 

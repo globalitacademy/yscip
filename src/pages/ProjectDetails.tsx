@@ -27,6 +27,7 @@ import ProjectApproval from '@/components/ProjectApproval';
 import { ProjectProvider, useProject } from '@/contexts/ProjectContext';
 import { v4 as uuidv4 } from 'uuid';
 import { getProjectImage } from '@/lib/getProjectImage';
+import { Task } from '@/types/database.types';
 
 const ProjectDetailsContent: React.FC = () => {
   const { project, timeline, tasks, projectStatus, addTimelineEvent, completeTimelineEvent, addTask, updateTaskStatus, submitProject, approveProject, rejectProject, reserveProject, isReserved } = useProject();
@@ -273,7 +274,7 @@ const ProjectDetailsContent: React.FC = () => {
             <TabsContent value="tasks" className="mt-6">
               <SlideUp>
                 <TaskManager 
-                  tasks={tasks}
+                  tasks={tasks as Task[]}
                   onAddTask={addTask}
                   onUpdateTaskStatus={updateTaskStatus}
                 />
