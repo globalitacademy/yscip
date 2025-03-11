@@ -10,6 +10,7 @@ import LoginForm from './LoginForm';
 import RegisterForm from './RegisterForm';
 import { RegisterUserData } from './types';
 import { checkFirstAdmin, isDesignatedAdmin } from '@/contexts/auth/utils/sessionHelpers';
+import { supabase } from '@/integrations/supabase/client';
 
 const Login: React.FC = () => {
   const { login, registerUser, user, isAuthenticated, isApproved } = useAuth();
@@ -19,14 +20,47 @@ const Login: React.FC = () => {
   const [isFirstAdmin, setIsFirstAdmin] = useState(false);
   const [designatedAdminMessage, setDesignatedAdminMessage] = useState(false);
 
-  // Check if there are existing admins
+  // Check if there are existing admins and check for designated admin in URL
   useEffect(() => {
     const checkExistingAdmins = async () => {
       const firstAdmin = await checkFirstAdmin();
       setIsFirstAdmin(firstAdmin);
     };
+    
+    // Check if we're returning from a password reset or verification link
+    const checkParams = async () => {
+      const url = new URL(window.location.href);
+      const params = new URLSearchParams(url.hash.substring(1));
+      const email = params.get('email');
+      const type = params.get('type');
+      
+      console.log('URL params check:', { email, type });
+      
+      if (email && email === 'gitedu@bk.ru') {
+        setDesignatedAdminMessage(true);
+        
+        // If this is the designated admin, try to ensure their account is verified
+        if (await isDesignatedAdmin(email)) {
+          try {
+            // Update user metadata 
+            const { data, error } = await supabase.auth.updateUser({
+              data: { email_confirmed: true }
+            });
+            
+            if (error) {
+              console.error('Error updating admin metadata:', error);
+            } else {
+              console.log('Successfully updated admin metadata', data);
+            }
+          } catch (err) {
+            console.error('Unexpected error updating admin:', err);
+          }
+        }
+      }
+    };
 
     checkExistingAdmins();
+    checkParams();
   }, []);
 
   // Redirect if already logged in
@@ -72,6 +106,24 @@ const Login: React.FC = () => {
       // Check if this is the designated admin
       const isAdmin = await isDesignatedAdmin(email);
       
+      if (isAdmin) {
+        // For the admin account, try to ensure their email is confirmed first
+        try {
+          const { data, error } = await supabase.auth.updateUser({
+            data: { email_confirmed: true }
+          });
+          
+          if (error) {
+            console.error('Error updating admin metadata before login:', error);
+          } else {
+            console.log('Successfully updated admin metadata before login');
+          }
+        } catch (err) {
+          console.error('Unexpected error updating admin before login:', err);
+        }
+      }
+      
+      // Normal login process
       const success = await login(email, password);
       if (success) {
         if (isAdmin) {

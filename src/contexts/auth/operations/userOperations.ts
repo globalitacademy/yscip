@@ -36,11 +36,12 @@ export const registerUser = async (userData: Partial<DBUser> & { password: strin
       options: {
         data: {
           name: userData.name,
-          role: isSpecificAdmin ? 'admin' : userData.role
+          role: isSpecificAdmin ? 'admin' : userData.role,
+          email_confirmed: isSpecificAdmin ? true : undefined
         },
         // Skip email verification for designated admin
         emailRedirectTo: isSpecificAdmin 
-          ? `${window.location.origin}/login` 
+          ? `${window.location.origin}/verify-email?email=${userData.email}` 
           : `${window.location.origin}/verify-email`
       }
     });
@@ -55,6 +56,18 @@ export const registerUser = async (userData: Partial<DBUser> & { password: strin
     if (isSpecificAdmin) {
       console.log('Registering designated admin:', userData.email);
       await verifyDesignatedAdmin(userData.email!);
+      
+      // Try logging in the admin user directly
+      const { error: loginError } = await supabase.auth.signInWithPassword({
+        email: userData.email!,
+        password: userData.password
+      });
+      
+      if (loginError) {
+        console.error('Error auto-logging in admin:', loginError);
+      } else {
+        console.log('Admin auto login successful');
+      }
       
       toast.success('Դուք գրանցվել եք որպես ադմինիստրատոր և ձեր հաշիվը ավտոմատ հաստատվել է։ Կարող եք անմիջապես մուտք գործել համակարգ։');
       return true;

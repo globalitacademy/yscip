@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -7,6 +7,8 @@ import { toast } from 'sonner';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/auth';
 import ForgotPasswordForm from './ForgotPasswordForm';
+import { isDesignatedAdmin } from '@/contexts/auth/utils/sessionHelpers';
+import { supabase } from '@/integrations/supabase/client';
 
 interface LoginCredentialsFormProps {
   onResetEmailSent: () => void;
@@ -20,8 +22,23 @@ const LoginCredentialsForm: React.FC<LoginCredentialsFormProps> = ({
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [isLoggingIn, setIsLoggingIn] = useState(false);
+  const [isAdmin, setIsAdmin] = useState(false);
   const navigate = useNavigate();
   const { login } = useAuth();
+
+  // Check if entered email is admin
+  useEffect(() => {
+    const checkAdmin = async () => {
+      if (email) {
+        const admin = await isDesignatedAdmin(email);
+        setIsAdmin(admin);
+      } else {
+        setIsAdmin(false);
+      }
+    };
+    
+    checkAdmin();
+  }, [email]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -40,6 +57,20 @@ const LoginCredentialsForm: React.FC<LoginCredentialsFormProps> = ({
     
     try {
       console.log('Attempting login for:', email);
+      
+      // Special handling for admin account
+      if (isAdmin) {
+        try {
+          // First ensure admin email is confirmed
+          await supabase.auth.updateUser({
+            data: { email_confirmed: true }
+          });
+          console.log('Updated admin metadata before login attempt');
+        } catch (err) {
+          console.error('Error updating admin metadata:', err);
+        }
+      }
+      
       const success = await login(email, password);
       
       if (success) {
@@ -71,6 +102,11 @@ const LoginCredentialsForm: React.FC<LoginCredentialsFormProps> = ({
           required
           disabled={isLoggingIn || externalLoading}
         />
+        {isAdmin && (
+          <p className="text-sm text-blue-600 mt-1">
+            Ադմինիստրատորի հաշիվ - ավտոմատ հաստատված
+          </p>
+        )}
       </div>
       
       <div className="space-y-2">
