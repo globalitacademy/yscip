@@ -96,6 +96,8 @@ export const verifyEmail = async (token: string): Promise<boolean> => {
 export const resetPassword = async (email: string): Promise<boolean> => {
   try {
     console.log('Requesting password reset for email:', email);
+    // Use the full URL of the application for password reset
+    // Add type=recovery and email parameters to help with auto-login after reset
     const redirectTo = `${window.location.origin}/login#type=recovery&email=${encodeURIComponent(email)}`;
     console.log('Redirect URL for password reset:', redirectTo);
     

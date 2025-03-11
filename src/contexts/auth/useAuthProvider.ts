@@ -25,7 +25,10 @@ export function useAuthProvider() {
         } else if (event === 'USER_UPDATED') {
           console.log('User data updated, refreshing user data');
           await refreshUser(session);
-        } 
+        } else if (event === 'PASSWORD_RECOVERY') {
+          console.log('Password recovery event detected');
+          // Handle password recovery if needed
+        }
       }
     );
 
