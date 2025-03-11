@@ -32,18 +32,43 @@ export const resetPassword = async (email: string): Promise<boolean> => {
 
 export const updatePassword = async (newPassword: string): Promise<boolean> => {
   try {
-    console.log('Updating password...');
-    const { error } = await supabase.auth.updateUser({
-      password: newPassword
-    });
+    console.log('Starting password update process...');
     
-    if (error) {
-      console.error('Password update error:', error);
-      toast.error('Գաղտնաբառի թարմացման սխալ: ' + error.message);
+    if (!newPassword || newPassword.length < 6) {
+      toast.error('Անվավեր գաղտնաբառ', {
+        description: 'Գաղտնաբառը պետք է պարունակի առնվազն 6 նիշ'
+      });
       return false;
     }
     
+    const { data, error } = await supabase.auth.updateUser({
+      password: newPassword
+    });
+
+    if (error) {
+      console.error('Password update error:', error);
+      if (error.message.includes('Auth session missing')) {
+        toast.error('Սեսիան ավարտվել է', {
+          description: 'Խնդրում ենք նորից մուտք գործել համակարգ'
+        });
+      } else {
+        toast.error('Գաղտնաբառի թարմացման սխալ', {
+          description: error.message
+        });
+      }
+      return false;
+    }
+
+    if (!data.user) {
+      console.error('No user data returned after password update');
+      toast.error('Գաղտնաբառի թարմացման սխալ', {
+        description: 'Օգտատերը չի գտնվել'
+      });
+      return false;
+    }
+
     console.log('Password updated successfully');
+    toast.success('Գաղտնաբառը հաջողությամբ թարմացվել է');
     return true;
   } catch (error) {
     console.error('Unexpected error updating password:', error);
