@@ -1,4 +1,3 @@
-
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { v4 as uuidv4 } from 'uuid';
 import { ProjectTheme, TimelineEvent } from '@/data/projectThemes';
@@ -62,17 +61,13 @@ export const ProjectProvider: React.FC<ProjectProviderProps> = ({
   const [isReserved, setIsReserved] = useState(false);
   const [projectReservations, setProjectReservations] = useState<ProjectReservation[]>([]);
 
-  // Get permissions based on user role
   const permissions = user ? rolePermissions[user.role] : rolePermissions.student;
   
-  // Role-based permissions
   const canStudentSubmit = permissions.canSubmitProject && isReserved;
   const canInstructorCreate = permissions.canCreateProjects;
-  // Fix the canInstructorAssign property by providing a fallback
   const canInstructorAssign = 'canAssignProjects' in permissions ? permissions.canAssignProjects : false;
   const canSupervisorApprove = permissions.canApproveProject;
 
-  // Load project reservations from localStorage
   useEffect(() => {
     const reservedProjects = localStorage.getItem('reservedProjects');
     if (reservedProjects) {
@@ -80,7 +75,6 @@ export const ProjectProvider: React.FC<ProjectProviderProps> = ({
         const reservations = JSON.parse(reservedProjects);
         setProjectReservations(reservations);
         
-        // Check if current project is reserved by current user
         if (projectId && user) {
           const isAlreadyReserved = reservations.some((res: ProjectReservation) => 
             res.projectId === projectId && res.userId === user.id
@@ -101,7 +95,6 @@ export const ProjectProvider: React.FC<ProjectProviderProps> = ({
     }
   }, [initialProject]);
 
-  // Add sample timeline events for demo
   useEffect(() => {
     if (timeline.length === 0 && project) {
       const now = new Date();
@@ -129,7 +122,6 @@ export const ProjectProvider: React.FC<ProjectProviderProps> = ({
     }
   }, [timeline.length, project]);
 
-  // Add sample tasks for demo
   useEffect(() => {
     if (tasks.length === 0 && project && user) {
       const now = new Date();
@@ -196,10 +188,9 @@ export const ProjectProvider: React.FC<ProjectProviderProps> = ({
   };
 
   const updateTaskStatus = (taskId: string, status: Task['status']) => {
-    // Student can only update their assigned tasks
     if (user?.role === 'student') {
       const task = tasks.find(t => t.id === taskId);
-      if (!task || task.assignedTo !== user.id) return;
+      if (!task || task.assigned_to !== user.id) return;
     }
     
     setTasks(prev => prev.map(task => 
@@ -229,10 +220,8 @@ export const ProjectProvider: React.FC<ProjectProviderProps> = ({
   };
 
   const reserveProject = (supervisorId?: string, instructorId?: string) => {
-    // Only students can reserve projects
     if (!user || user.role !== 'student' || !project) return;
     
-    // Save reservation in localStorage
     const reservedProjects = localStorage.getItem('reservedProjects');
     let reservations: ProjectReservation[] = [];
     
@@ -244,7 +233,6 @@ export const ProjectProvider: React.FC<ProjectProviderProps> = ({
       }
     }
     
-    // Add new reservation
     const newReservation: ProjectReservation = {
       projectId: project.id,
       userId: user.id,
@@ -367,3 +355,4 @@ export const useProject = () => {
   }
   return context;
 };
+

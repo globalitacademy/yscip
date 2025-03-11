@@ -66,7 +66,10 @@ const TaskManager: React.FC<TaskManagerProps> = ({
     status: 'todo' as const,
     assigned_to: '',
     due_date: '',
-    project_id: 0
+    project_id: 0,
+    created_by: '',
+    created_at: '',
+    updated_at: ''
   });
 
   const students = getUsersByRole('student');
@@ -86,7 +89,10 @@ const TaskManager: React.FC<TaskManagerProps> = ({
         status: 'todo',
         assigned_to: '',
         due_date: '',
-        project_id: 0
+        project_id: 0,
+        created_by: '',
+        created_at: '',
+        updated_at: ''
       });
       setOpen(false);
       toast({
