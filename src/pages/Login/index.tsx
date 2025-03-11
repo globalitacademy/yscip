@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/auth';
 import { toast } from '@/components/ui/use-toast';
@@ -9,12 +9,31 @@ import { DBUser } from '@/types/database.types';
 import LoginForm from './LoginForm';
 import RegisterForm from './RegisterForm';
 import { RegisterUserData } from './types';
+import { supabase } from '@/integrations/supabase/client';
 
 const Login: React.FC = () => {
   const { login, registerUser } = useAuth();
   const navigate = useNavigate();
   const [isLoading, setIsLoading] = useState(false);
   const [verificationSent, setVerificationSent] = useState(false);
+  const [isFirstAdmin, setIsFirstAdmin] = useState(false);
+
+  // Check if there are existing admins
+  useEffect(() => {
+    const checkExistingAdmins = async () => {
+      const { data, error } = await supabase
+        .from('users')
+        .select('id')
+        .eq('role', 'admin')
+        .limit(1);
+      
+      if (!error && (!data || data.length === 0)) {
+        setIsFirstAdmin(true);
+      }
+    };
+
+    checkExistingAdmins();
+  }, []);
 
   const handleLogin = async (email: string, password: string) => {
     setIsLoading(true);
@@ -60,12 +79,14 @@ const Login: React.FC = () => {
         return;
       }
 
+      const autoApprove = userData.role === 'student' || (userData.role === 'admin' && isFirstAdmin);
+      
       const formattedUserData: Partial<DBUser> & { password: string } = {
         name: userData.name,
         email: userData.email,
         password: userData.password,
         role: userData.role,
-        registration_approved: userData.role === 'student', // Students are auto-approved
+        registration_approved: autoApprove, // Students and first admin are auto-approved
         ...(userData.role === 'employer' && { organization: userData.organization })
       };
 
@@ -94,6 +115,11 @@ const Login: React.FC = () => {
             <CardDescription>
               Մուտք գործեք համակարգ կամ ստեղծեք նոր հաշիվ
             </CardDescription>
+            {isFirstAdmin && (
+              <div className="mt-2 p-2 bg-blue-50 text-blue-700 rounded-md">
+                Առաջին ադմինիստրատորի հաշիվը կհաստատվի ավտոմատ կերպով
+              </div>
+            )}
           </CardHeader>
           <CardContent>
             <Tabs defaultValue="login" className="w-full">

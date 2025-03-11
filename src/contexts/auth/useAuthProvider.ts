@@ -120,6 +120,20 @@ export function useAuthProvider() {
         toast.error('Տեղի ունեցավ սխալ օգտատիրոջ տվյալները ստուգելիս։');
         return false;
       }
+
+      // Check if this is the first admin account
+      let isFirstAdmin = false;
+      if (userData.role === 'admin') {
+        const { data: existingAdmins, error: adminCheckError } = await supabase
+          .from('users')
+          .select('id')
+          .eq('role', 'admin')
+          .limit(1);
+        
+        if (!adminCheckError && (!existingAdmins || existingAdmins.length === 0)) {
+          isFirstAdmin = true;
+        }
+      }
       
       // Register with Supabase auth
       const { data, error } = await supabase.auth.signUp({
@@ -138,12 +152,27 @@ export function useAuthProvider() {
         toast.error('Գրանցումը չի հաջողվել: ' + error.message);
         return false;
       }
+
+      // If this is the first admin, automatically approve them
+      if (isFirstAdmin) {
+        const { error: updateError } = await supabase
+          .from('users')
+          .update({ registration_approved: true })
+          .eq('email', userData.email!);
+        
+        if (updateError) {
+          console.error('Error approving first admin:', updateError);
+        } else {
+          toast.success('Դուք գրանցվել եք որպես առաջին ադմինիստրատոր և ձեր հաշիվը ավտոմատ հաստատվել է։');
+          return true;
+        }
+      }
       
-      const needsApproval = ['lecturer', 'employer', 'project_manager', 'supervisor'].includes(userData.role as string);
+      const needsApproval = ['lecturer', 'employer', 'project_manager', 'supervisor', 'admin'].includes(userData.role as string);
       
       toast.success(
         `Գրանցման հայտն ընդունված է։ Խնդրում ենք ստուգել Ձեր էլ․ փոստը՝ հաշիվը ակտիվացնելու համար։${
-          needsApproval ? ' Ակտիվացումից հետո Ձեր հաշիվը պետք է հաստատվի ադմինիստրատորի կողմից։' : ''
+          needsApproval && !isFirstAdmin ? ' Ակտիվացումից հետո Ձեր հաշիվը պետք է հաստատվի ադմինիստրատորի կողմից։' : ''
         }`
       );
       
