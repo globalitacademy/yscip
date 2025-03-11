@@ -1,15 +1,14 @@
-
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { ArrowRight, BookOpen, Building, ClipboardList, FileText, GraduationCap, LayoutDashboard, LucideIcon, Users } from 'lucide-react';
-import { ThemeGrid } from '@/components/ThemeGrid';
+import ThemeGrid from '@/components/ThemeGrid';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
-import { ProjectGrid } from '@/components/project/ProjectGrid';
+import ProjectGrid from '@/components/project/ProjectGrid';
 import Hero from '@/components/Hero';
-import { LocalTransitions } from '@/components/LocalTransitions';
+import { FadeIn } from '@/components/LocalTransitions';
 import { useAuth } from '@/contexts/auth';
 
 interface ActionCardProps {
@@ -44,7 +43,6 @@ const ActionCard: React.FC<ActionCardProps> = ({ title, description, icon, href,
 const Index: React.FC = () => {
   const { user, isAuthenticated, isApproved } = useAuth();
   
-  // Get role-based actions based on user role
   const getRoleBasedActions = () => {
     if (!isAuthenticated || !user) {
       return (
@@ -227,15 +225,13 @@ const Index: React.FC = () => {
         </div>
         
         <div className="container mx-auto px-4 py-8">
-          <LocalTransitions>
-            <div className="mb-12">
-              <h2 className="text-3xl font-bold mb-6">Ձեր դաշբորդը</h2>
-              {getRoleBasedActions()}
-            </div>
+          <FadeIn className="mb-12">
+            <h2 className="text-3xl font-bold mb-6">Ձեր դաշբորդը</h2>
+            {getRoleBasedActions()}
+          </FadeIn>
             
-            <h2 className="text-3xl font-bold mb-6">Նախագծեր</h2>
-            <ProjectGrid />
-          </LocalTransitions>
+          <h2 className="text-3xl font-bold mb-6">Նախագծեր</h2>
+          <ProjectGrid projects={[]} />
         </div>
       </main>
       <Footer />
