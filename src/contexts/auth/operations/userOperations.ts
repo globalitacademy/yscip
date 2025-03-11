@@ -160,4 +160,3 @@ export const updateUserProfile = async (userId: string, updates: Partial<DBUser>
     return false;
   }
 };
-
