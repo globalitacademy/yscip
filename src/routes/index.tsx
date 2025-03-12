@@ -1,199 +1,294 @@
 
-import { Routes, Route, Navigate } from 'react-router-dom';
-import { useAuth } from '@/contexts/auth';
-import Index from '@/pages/Index';
-import ProjectDetails from '@/pages/ProjectDetails';
-import NotFound from '@/pages/NotFound';
-import Login from '@/pages/Login';
-import VerifyEmail from '@/pages/VerifyEmail';
-import AdminDashboard from '@/pages/AdminDashboard';
-import TeacherDashboard from '@/pages/TeacherDashboard';
-import ProjectManagerDashboard from '@/pages/ProjectManagerDashboard';
-import StudentDashboard from '@/pages/StudentDashboard';
-import EmployerDashboard from '@/pages/EmployerDashboard';
-import UserManagementPage from '@/pages/UserManagementPage';
-import OrganizationsPage from '@/pages/OrganizationsPage';
-import CoursesPage from '@/pages/CoursesPage';
-import SpecializationsPage from '@/pages/SpecializationsPage';
-import GroupsPage from '@/pages/GroupsPage';
-import TasksPage from '@/pages/TasksPage';
-import ReportsPage from '@/pages/ReportsPage';
-import NotificationsPage from '@/pages/NotificationsPage';
-import SettingsPage from '@/pages/SettingsPage';
-import ProjectManagementPage from '@/pages/ProjectManagementPage';
-import StudentProjectsPage from '@/pages/StudentProjectsPage';
-import PortfolioPage from '@/pages/PortfolioPage';
-import ProjectSubmissionPage from '@/pages/ProjectSubmissionPage';
-import PendingApprovals from '@/pages/PendingApprovals';
-import ApprovalPending from '@/components/ApprovalPending';
-import GanttPage from '@/pages/GanttPage';
+import { lazy, Suspense } from 'react';
+import { Navigate } from 'react-router-dom';
+import { ProtectedRoute } from '@/components/ui/protected-route';
 
-import { ProtectedRoute } from './ProtectedRoute';
-import { RoleBasedRedirect } from './RoleBasedRedirect';
+// Lazy load pages for better performance
+const Login = lazy(() => import('@/pages/Login'));
+const Index = lazy(() => import('@/pages/Index'));
+const NotFound = lazy(() => import('@/pages/NotFound'));
+const ProjectDetails = lazy(() => import('@/pages/ProjectDetails'));
+const AdminDashboard = lazy(() => import('@/pages/AdminDashboard'));
+const TeacherDashboard = lazy(() => import('@/pages/TeacherDashboard'));
+const ProjectManagerDashboard = lazy(() => import('@/pages/ProjectManagerDashboard'));
+const StudentDashboard = lazy(() => import('@/pages/StudentDashboard'));
+const EmployerDashboard = lazy(() => import('@/pages/EmployerDashboard'));
+const UserManagementPage = lazy(() => import('@/pages/UserManagementPage'));
+const OrganizationsPage = lazy(() => import('@/pages/OrganizationsPage'));
+const CoursesPage = lazy(() => import('@/pages/CoursesPage'));
+const SpecializationsPage = lazy(() => import('@/pages/SpecializationsPage'));
+const GroupsPage = lazy(() => import('@/pages/GroupsPage'));
+const TasksPage = lazy(() => import('@/pages/TasksPage'));
+const ReportsPage = lazy(() => import('@/pages/ReportsPage'));
+const NotificationsPage = lazy(() => import('@/pages/NotificationsPage'));
+const SettingsPage = lazy(() => import('@/pages/SettingsPage'));
+const ProjectManagementPage = lazy(() => import('@/pages/ProjectManagementPage'));
+const StudentProjectsPage = lazy(() => import('@/pages/StudentProjectsPage'));
+const PortfolioPage = lazy(() => import('@/pages/PortfolioPage'));
+const ProjectSubmissionPage = lazy(() => import('@/pages/ProjectSubmissionPage'));
+const PendingApprovals = lazy(() => import('@/pages/PendingApprovals'));
+const GanttPage = lazy(() => import('@/pages/GanttPage'));
 
-const AppRoutes = () => {
-  const { loading, error } = useAuth();
-  
-  if (loading) {
-    return (
-      <div className="flex items-center justify-center h-screen">
-        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary"></div>
-        <span className="ml-3">Բեռնում...</span>
-      </div>
-    );
-  }
-  
-  if (error) {
-    return (
-      <div className="flex flex-col items-center justify-center h-screen p-4">
-        <div className="bg-destructive/10 p-6 rounded-lg text-center max-w-md">
-          <h2 className="text-xl font-bold text-destructive mb-2">Նույնականացման սխալ</h2>
-          <p className="mb-4">{error.message}</p>
-          <button 
-            className="px-4 py-2 bg-primary text-primary-foreground rounded-md"
-            onClick={() => window.location.href = '/login'}
-          >
-            Վերադառնալ մուտքի էջ
-          </button>
-        </div>
-      </div>
-    );
-  }
-  
-  return (
-    <Routes>
-      <Route path="/" element={<Index />} />
-      <Route path="/dashboard" element={<RoleBasedRedirect />} />
-      <Route path="/project/:id" element={<ProjectDetails />} />
-      <Route path="/login" element={<Login />} />
-      <Route path="/verify-email" element={<VerifyEmail />} />
-      <Route path="/approval-pending" element={<ApprovalPending />} />
-      
-      {/* Role-specific dashboards */}
-      <Route path="/teacher-dashboard" element={
-        <ProtectedRoute allowedRoles={['lecturer', 'instructor']}>
-          <TeacherDashboard />
-        </ProtectedRoute>
-      } />
-      <Route path="/project-manager-dashboard" element={
-        <ProtectedRoute allowedRoles={['project_manager', 'supervisor']}>
-          <ProjectManagerDashboard />
-        </ProtectedRoute>
-      } />
-      <Route path="/student-dashboard" element={
-        <ProtectedRoute allowedRoles={['student']}>
-          <StudentDashboard />
-        </ProtectedRoute>
-      } />
-      <Route path="/employer-dashboard" element={
-        <ProtectedRoute allowedRoles={['employer']}>
-          <EmployerDashboard />
-        </ProtectedRoute>
-      } />
-      
-      {/* Admin routes */}
-      <Route path="/admin" element={
+// Loading component for Suspense
+const LoadingFallback = () => (
+  <div className="flex items-center justify-center h-screen">
+    <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary"></div>
+    <span className="ml-3">Բեռնում...</span>
+  </div>
+);
+
+const AppRoutes = [
+  {
+    path: '/',
+    element: <Suspense fallback={<LoadingFallback />}><Index /></Suspense>,
+  },
+  {
+    path: '/login',
+    element: <Suspense fallback={<LoadingFallback />}><Login /></Suspense>,
+  },
+  {
+    path: '/project/:id',
+    element: <Suspense fallback={<LoadingFallback />}><ProjectDetails /></Suspense>,
+  },
+  // Admin routes
+  {
+    path: '/admin',
+    element: (
+      <Suspense fallback={<LoadingFallback />}>
         <ProtectedRoute allowedRoles={['admin']}>
           <AdminDashboard />
         </ProtectedRoute>
-      } />
-      <Route path="/users" element={
+      </Suspense>
+    ),
+  },
+  {
+    path: '/users',
+    element: (
+      <Suspense fallback={<LoadingFallback />}>
         <ProtectedRoute allowedRoles={['admin']}>
           <UserManagementPage />
         </ProtectedRoute>
-      } />
-      <Route path="/pending-approvals" element={
+      </Suspense>
+    ),
+  },
+  {
+    path: '/pending-approvals',
+    element: (
+      <Suspense fallback={<LoadingFallback />}>
         <ProtectedRoute allowedRoles={['admin']}>
           <PendingApprovals />
         </ProtectedRoute>
-      } />
-      <Route path="/organizations" element={
+      </Suspense>
+    ),
+  },
+  {
+    path: '/organizations',
+    element: (
+      <Suspense fallback={<LoadingFallback />}>
         <ProtectedRoute allowedRoles={['admin']}>
           <OrganizationsPage />
         </ProtectedRoute>
-      } />
-      <Route path="/specializations" element={
+      </Suspense>
+    ),
+  },
+  {
+    path: '/specializations',
+    element: (
+      <Suspense fallback={<LoadingFallback />}>
         <ProtectedRoute allowedRoles={['admin']}>
           <SpecializationsPage />
         </ProtectedRoute>
-      } />
-      <Route path="/courses/manage" element={
-        <ProtectedRoute allowedRoles={['admin', 'lecturer', 'instructor']}>
-          <CoursesPage />
+      </Suspense>
+    ),
+  },
+  // Teacher routes
+  {
+    path: '/teacher-dashboard',
+    element: (
+      <Suspense fallback={<LoadingFallback />}>
+        <ProtectedRoute allowedRoles={['lecturer', 'instructor']}>
+          <TeacherDashboard />
         </ProtectedRoute>
-      } />
-      <Route path="/groups" element={
-        <ProtectedRoute allowedRoles={['admin', 'lecturer', 'instructor']}>
-          <GroupsPage />
-        </ProtectedRoute>
-      } />
-      <Route path="/reports" element={
-        <ProtectedRoute allowedRoles={['admin']}>
-          <ReportsPage />
-        </ProtectedRoute>
-      } />
-      <Route path="/notifications" element={
-        <ProtectedRoute allowedRoles={['admin', 'lecturer', 'instructor', 'project_manager', 'supervisor', 'employer', 'student']}>
-          <NotificationsPage />
-        </ProtectedRoute>
-      } />
-      <Route path="/settings" element={
-        <ProtectedRoute allowedRoles={['admin']}>
-          <SettingsPage />
-        </ProtectedRoute>
-      } />
-      
-      {/* Lecturer routes */}
-      <Route path="/tasks" element={
-        <ProtectedRoute allowedRoles={['admin', 'lecturer', 'instructor', 'project_manager', 'supervisor']}>
-          <TasksPage />
-        </ProtectedRoute>
-      } />
-      <Route path="/courses" element={
+      </Suspense>
+    ),
+  },
+  {
+    path: '/courses',
+    element: (
+      <Suspense fallback={<LoadingFallback />}>
         <ProtectedRoute allowedRoles={['lecturer', 'instructor']}>
           <CoursesPage />
         </ProtectedRoute>
-      } />
-      
-      {/* Project Manager routes */}
-      <Route path="/projects/manage" element={
+      </Suspense>
+    ),
+  },
+  {
+    path: '/courses/manage',
+    element: (
+      <Suspense fallback={<LoadingFallback />}>
+        <ProtectedRoute allowedRoles={['admin', 'lecturer', 'instructor']}>
+          <CoursesPage />
+        </ProtectedRoute>
+      </Suspense>
+    ),
+  },
+  {
+    path: '/groups',
+    element: (
+      <Suspense fallback={<LoadingFallback />}>
+        <ProtectedRoute allowedRoles={['admin', 'lecturer', 'instructor']}>
+          <GroupsPage />
+        </ProtectedRoute>
+      </Suspense>
+    ),
+  },
+  // Project Manager routes
+  {
+    path: '/project-manager-dashboard',
+    element: (
+      <Suspense fallback={<LoadingFallback />}>
+        <ProtectedRoute allowedRoles={['project_manager', 'supervisor']}>
+          <ProjectManagerDashboard />
+        </ProtectedRoute>
+      </Suspense>
+    ),
+  },
+  {
+    path: '/projects/manage',
+    element: (
+      <Suspense fallback={<LoadingFallback />}>
         <ProtectedRoute allowedRoles={['admin', 'project_manager', 'supervisor']}>
           <ProjectManagementPage />
         </ProtectedRoute>
-      } />
-      <Route path="/gantt" element={
+      </Suspense>
+    ),
+  },
+  {
+    path: '/gantt',
+    element: (
+      <Suspense fallback={<LoadingFallback />}>
         <ProtectedRoute allowedRoles={['project_manager', 'supervisor']}>
           <GanttPage />
         </ProtectedRoute>
-      } />
-      
-      {/* Employer routes */}
-      <Route path="/projects/submit" element={
-        <ProtectedRoute allowedRoles={['employer']}>
-          <ProjectSubmissionPage />
+      </Suspense>
+    ),
+  },
+  // Student routes
+  {
+    path: '/student-dashboard',
+    element: (
+      <Suspense fallback={<LoadingFallback />}>
+        <ProtectedRoute allowedRoles={['student']}>
+          <StudentDashboard />
         </ProtectedRoute>
-      } />
-      <Route path="/projects/my" element={
-        <ProtectedRoute allowedRoles={['employer']}>
-          <EmployerDashboard />
-        </ProtectedRoute>
-      } />
-      
-      {/* Student routes */}
-      <Route path="/projects" element={
+      </Suspense>
+    ),
+  },
+  {
+    path: '/projects',
+    element: (
+      <Suspense fallback={<LoadingFallback />}>
         <ProtectedRoute allowedRoles={['student']}>
           <StudentProjectsPage />
         </ProtectedRoute>
-      } />
-      <Route path="/portfolio" element={
+      </Suspense>
+    ),
+  },
+  {
+    path: '/portfolio',
+    element: (
+      <Suspense fallback={<LoadingFallback />}>
         <ProtectedRoute allowedRoles={['student']}>
           <PortfolioPage />
         </ProtectedRoute>
-      } />
-      
-      <Route path="*" element={<NotFound />} />
-    </Routes>
-  );
-};
+      </Suspense>
+    ),
+  },
+  // Employer routes
+  {
+    path: '/employer-dashboard',
+    element: (
+      <Suspense fallback={<LoadingFallback />}>
+        <ProtectedRoute allowedRoles={['employer']}>
+          <EmployerDashboard />
+        </ProtectedRoute>
+      </Suspense>
+    ),
+  },
+  {
+    path: '/projects/submit',
+    element: (
+      <Suspense fallback={<LoadingFallback />}>
+        <ProtectedRoute allowedRoles={['employer']}>
+          <ProjectSubmissionPage />
+        </ProtectedRoute>
+      </Suspense>
+    ),
+  },
+  {
+    path: '/projects/my',
+    element: (
+      <Suspense fallback={<LoadingFallback />}>
+        <ProtectedRoute allowedRoles={['employer']}>
+          <EmployerDashboard />
+        </ProtectedRoute>
+      </Suspense>
+    ),
+  },
+  // Common routes for all authenticated users
+  {
+    path: '/tasks',
+    element: (
+      <Suspense fallback={<LoadingFallback />}>
+        <ProtectedRoute allowedRoles={['admin', 'lecturer', 'instructor', 'project_manager', 'supervisor']}>
+          <TasksPage />
+        </ProtectedRoute>
+      </Suspense>
+    ),
+  },
+  {
+    path: '/reports',
+    element: (
+      <Suspense fallback={<LoadingFallback />}>
+        <ProtectedRoute allowedRoles={['admin']}>
+          <ReportsPage />
+        </ProtectedRoute>
+      </Suspense>
+    ),
+  },
+  {
+    path: '/notifications',
+    element: (
+      <Suspense fallback={<LoadingFallback />}>
+        <ProtectedRoute>
+          <NotificationsPage />
+        </ProtectedRoute>
+      </Suspense>
+    ),
+  },
+  {
+    path: '/settings',
+    element: (
+      <Suspense fallback={<LoadingFallback />}>
+        <ProtectedRoute allowedRoles={['admin']}>
+          <SettingsPage />
+        </ProtectedRoute>
+      </Suspense>
+    ),
+  },
+  // Redirect /dashboard to role-specific dashboard
+  {
+    path: '/dashboard',
+    element: (
+      <ProtectedRoute>
+        <Navigate to="/" replace />
+      </ProtectedRoute>
+    ),
+  },
+  {
+    path: '*',
+    element: <Suspense fallback={<LoadingFallback />}><NotFound /></Suspense>,
+  }
+];
 
 export default AppRoutes;

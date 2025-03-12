@@ -1,23 +1,14 @@
 
-import { BrowserRouter as Router } from 'react-router-dom';
-import { Toaster } from '@/components/ui/toaster';
-import { Toaster as SonnerToaster } from "sonner";
-import { AuthProvider } from '@/contexts/auth';
-import { NotificationProvider } from '@/contexts/NotificationContext';
+import { useRoutes } from 'react-router-dom';
 import AppRoutes from './routes';
-import './App.css';
 
 function App() {
+  const content = useRoutes(AppRoutes);
+
   return (
-    <AuthProvider>
-      <NotificationProvider>
-        <Router>
-          <AppRoutes />
-          <Toaster />
-          <SonnerToaster position="top-right" />
-        </Router>
-      </NotificationProvider>
-    </AuthProvider>
+    <main>
+      {content}
+    </main>
   );
 }
 
