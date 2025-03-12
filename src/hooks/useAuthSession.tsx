@@ -19,6 +19,7 @@ export const useAuthSession = (): UseAuthSessionResult => {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [pendingUsers, setPendingUsers] = useState<PendingUser[]>([]);
   const [sessionChecked, setSessionChecked] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
 
   // Function to map database user to application user model
   const mapDatabaseUserToUserModel = (userData: any): User => {
@@ -39,6 +40,7 @@ export const useAuthSession = (): UseAuthSessionResult => {
     const initSession = async () => {
       try {
         console.log('Checking initial session...');
+        setIsLoading(true);
         
         // First, check localStorage for a stored user (for compatibility with previous approach)
         const storedUser = localStorage.getItem('currentUser');
@@ -46,12 +48,13 @@ export const useAuthSession = (): UseAuthSessionResult => {
           console.log('Found stored user');
           const parsedUser = JSON.parse(storedUser);
           
-          // Check if this is the admin user first
+          // Check if this is the admin user first - handle admin separately
           if (parsedUser.email === 'gitedu@bk.ru') {
             console.log('Admin user found in localStorage');
             setUser(parsedUser);
             setIsAuthenticated(true);
             setSessionChecked(true);
+            setIsLoading(false);
             return;
           }
           
@@ -67,6 +70,7 @@ export const useAuthSession = (): UseAuthSessionResult => {
               setUser(parsedUser);
               setIsAuthenticated(true);
               setSessionChecked(true);
+              setIsLoading(false);
               return;
             }
           } catch (error) {
@@ -74,6 +78,7 @@ export const useAuthSession = (): UseAuthSessionResult => {
             setUser(parsedUser);
             setIsAuthenticated(true);
             setSessionChecked(true);
+            setIsLoading(false);
             return;
           }
         }
@@ -93,6 +98,7 @@ export const useAuthSession = (): UseAuthSessionResult => {
             if (error) {
               console.error('Error fetching user data:', error);
               setSessionChecked(true);
+              setIsLoading(false);
               return;
             }
             
@@ -104,6 +110,7 @@ export const useAuthSession = (): UseAuthSessionResult => {
                 toast.error('Ձեր հաշիվը սպասում է ադմինիստրատորի հաստատման։');
                 await supabase.auth.signOut();
                 setSessionChecked(true);
+                setIsLoading(false);
                 return;
               }
               
@@ -118,9 +125,11 @@ export const useAuthSession = (): UseAuthSessionResult => {
         }
         
         setSessionChecked(true);
+        setIsLoading(false);
       } catch (error) {
         console.error('Error in initSession:', error);
         setSessionChecked(true);
+        setIsLoading(false);
       }
     };
 
@@ -129,6 +138,16 @@ export const useAuthSession = (): UseAuthSessionResult => {
     // Set up real-time auth state changes
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
       console.log('Auth state changed:', event, session);
+      
+      // Handle direct admin login specially - don't disrupt it
+      const storedUser = localStorage.getItem('currentUser');
+      if (storedUser) {
+        const parsedUser = JSON.parse(storedUser);
+        if (parsedUser.email === 'gitedu@bk.ru' && isAuthenticated) {
+          console.log('Admin already logged in, ignoring auth state change');
+          return;
+        }
+      }
       
       if (event === 'SIGNED_IN' && session) {
         try {
@@ -160,6 +179,16 @@ export const useAuthSession = (): UseAuthSessionResult => {
           toast.error('Սխալ է տեղի ունեցել օգտատիրոջ տվյալները բեռնելիս');
         }
       } else if (event === 'SIGNED_OUT') {
+        // Don't sign out admin user if this is just a Supabase session timeout
+        const storedUser = localStorage.getItem('currentUser');
+        if (storedUser) {
+          const parsedUser = JSON.parse(storedUser);
+          if (parsedUser.email === 'gitedu@bk.ru') {
+            console.log('Admin user sign out prevented - keeping admin session active');
+            return;
+          }
+        }
+        
         console.log('User signed out');
         setUser(null);
         setIsAuthenticated(false);
@@ -176,7 +205,7 @@ export const useAuthSession = (): UseAuthSessionResult => {
     return () => {
       subscription.unsubscribe();
     };
-  }, []);
+  }, [isAuthenticated]); // Added isAuthenticated as a dependency to trigger session checks when auth state changes
 
   // Save pendingUsers to localStorage when it changes
   useEffect(() => {

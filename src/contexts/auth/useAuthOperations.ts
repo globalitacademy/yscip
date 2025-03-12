@@ -28,7 +28,13 @@ export const useAuthOperations = (
         // Direct login for main admin
         setUser(mainAdminUser);
         setIsAuthenticated(true);
-        localStorage.setItem('currentUser', JSON.stringify(mainAdminUser));
+        
+        // Make sure admin data is stored with additional persistence indicator
+        const adminData = {
+          ...mainAdminUser,
+          isPersistentAdmin: true  // Add a flag to identify this as a persistent admin session
+        };
+        localStorage.setItem('currentUser', JSON.stringify(adminData));
         
         // Try to activate admin account in background, but don't wait for it
         try {
