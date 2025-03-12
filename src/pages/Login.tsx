@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
@@ -310,7 +311,7 @@ const Login: React.FC = () => {
                           <div><strong>Գաղտնաբառ:</strong> Qolej2025*</div>
                         </div>
                         <p className="mt-2 text-sm text-muted-foreground">
-                          Այս հաշիվն ունի բոլոր թույլտվությո��նները և կարող է հաստատել նոր օգտատերերի
+                          Այս հաշիվն ունի բոլոր թույլտվությունները և կարող է հաստատել նոր օգտատերերի
                         </p>
                       </AlertDescription>
                     </Alert>
@@ -439,6 +440,149 @@ const Login: React.FC = () => {
                       <p className="text-sm text-muted-foreground mt-1">
                         {getRoleDescription(role)}
                       </p>
+                    </div>
                       
-                      {
+                    {role === 'employer' && (
+                      <div className="space-y-2">
+                        <Label htmlFor="organization">Կազմակերպության անունը</Label>
+                        <Input
+                          id="organization"
+                          type="text"
+                          placeholder="Կազմակերպության անունը"
+                          value={organization}
+                          onChange={(e) => setOrganization(e.target.value)}
+                          required
+                        />
+                      </div>
+                    )}
+                    
+                    <div className="flex items-center space-x-2 mt-4">
+                      <Checkbox 
+                        id="terms" 
+                        checked={acceptTerms}
+                        onCheckedChange={(checked) => {
+                          if (typeof checked === 'boolean') {
+                            setAcceptTerms(checked);
+                          }
+                        }} 
+                      />
+                      <label
+                        htmlFor="terms"
+                        className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+                      >
+                        Համաձայն եմ համակարգի{" "}
+                        <Button variant="link" className="p-0 h-auto text-xs" type="button">
+                          կանոններին
+                        </Button>
+                      </label>
+                    </div>
+                    
+                    <Button type="submit" className="w-full" disabled={isLoading}>
+                      {isLoading ? 'Գրանցում...' : 'Գրանցվել'}
+                    </Button>
+                  </form>
+                )}
+              </TabsContent>
+              
+              <TabsContent value="demo">
+                <div className="space-y-4">
+                  <Alert>
+                    <Info className="h-4 w-4" />
+                    <AlertTitle>Դեմո հաշիվներ</AlertTitle>
+                    <AlertDescription>
+                      Ուսումնական նպատակներով կարող եք օգտագործել հետևյալ հաշիվները
+                    </AlertDescription>
+                  </Alert>
+                  
+                  <div className="grid grid-cols-1 gap-3">
+                    <Card className="overflow-hidden">
+                      <CardHeader className="p-4 pb-2">
+                        <div className="flex justify-between items-center">
+                          <CardTitle className="text-base font-medium">Ադմինիստրատոր</CardTitle>
+                          <Button variant="outline" size="sm" onClick={() => handleQuickLogin('admin')}>
+                            Արագ մուտք
+                          </Button>
+                        </div>
+                      </CardHeader>
+                      <CardContent className="p-4 pt-0">
+                        <div className="text-sm text-muted-foreground">
+                          admin@example.com / password
+                        </div>
+                      </CardContent>
+                    </Card>
+                    
+                    <Card className="overflow-hidden">
+                      <CardHeader className="p-4 pb-2">
+                        <div className="flex justify-between items-center">
+                          <CardTitle className="text-base font-medium">Դասախոս</CardTitle>
+                          <Button variant="outline" size="sm" onClick={() => handleQuickLogin('lecturer')}>
+                            Արագ մուտք
+                          </Button>
+                        </div>
+                      </CardHeader>
+                      <CardContent className="p-4 pt-0">
+                        <div className="text-sm text-muted-foreground">
+                          lecturer@example.com / password
+                        </div>
+                      </CardContent>
+                    </Card>
+                    
+                    <Card className="overflow-hidden">
+                      <CardHeader className="p-4 pb-2">
+                        <div className="flex justify-between items-center">
+                          <CardTitle className="text-base font-medium">Ուսանող</CardTitle>
+                          <Button variant="outline" size="sm" onClick={() => handleQuickLogin('student')}>
+                            Արագ մուտք
+                          </Button>
+                        </div>
+                      </CardHeader>
+                      <CardContent className="p-4 pt-0">
+                        <div className="text-sm text-muted-foreground">
+                          student@example.com / password
+                        </div>
+                      </CardContent>
+                    </Card>
+                    
+                    <Card className="overflow-hidden">
+                      <CardHeader className="p-4 pb-2">
+                        <div className="flex justify-between items-center">
+                          <CardTitle className="text-base font-medium">Նախագծի ղեկավար</CardTitle>
+                          <Button variant="outline" size="sm" onClick={() => handleQuickLogin('project_manager')}>
+                            Արագ մուտք
+                          </Button>
+                        </div>
+                      </CardHeader>
+                      <CardContent className="p-4 pt-0">
+                        <div className="text-sm text-muted-foreground">
+                          manager@example.com / password
+                        </div>
+                      </CardContent>
+                    </Card>
+                    
+                    <Card className="overflow-hidden">
+                      <CardHeader className="p-4 pb-2">
+                        <div className="flex justify-between items-center">
+                          <CardTitle className="text-base font-medium">Գործատու</CardTitle>
+                          <Button variant="outline" size="sm" onClick={() => handleQuickLogin('employer')}>
+                            Արագ մուտք
+                          </Button>
+                        </div>
+                      </CardHeader>
+                      <CardContent className="p-4 pt-0">
+                        <div className="text-sm text-muted-foreground">
+                          employer@example.com / password
+                        </div>
+                      </CardContent>
+                    </Card>
+                  </div>
+                </div>
+              </TabsContent>
+            </Tabs>
+          </CardContent>
+        </Card>
+      </div>
+    </div>
+  );
+};
 
+export default Login;
