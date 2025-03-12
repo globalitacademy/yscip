@@ -25,7 +25,7 @@ interface ProfileEditorProps {
 }
 
 const ProfileEditor: React.FC<ProfileEditorProps> = ({ isOpen, onClose }) => {
-  const { user, setUser } = useAuth();
+  const { user } = useAuth();
   const [profileData, setProfileData] = useState<Partial<User>>({
     name: '',
     email: '',
@@ -91,7 +91,7 @@ const ProfileEditor: React.FC<ProfileEditorProps> = ({ isOpen, onClose }) => {
         toast.error('Սխալ է տեղի ունեցել պրոֆիլը թարմացնելիս։');
       } else {
         // Update local user state
-        if (setUser) {
+        if (user) {
           const updatedUser = {
             ...user,
             name: profileData.name || user.name,
@@ -108,8 +108,6 @@ const ProfileEditor: React.FC<ProfileEditorProps> = ({ isOpen, onClose }) => {
               data: { bio: profileData.bio }
             });
           }
-          
-          setUser(updatedUser);
           
           // Also update localStorage to persist changes
           localStorage.setItem('currentUser', JSON.stringify(updatedUser));

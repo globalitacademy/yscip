@@ -1,6 +1,6 @@
 
 import React from 'react';
-import UserManagement from '@/components/UserManagement';
+import UserManagement from '@/components/user-management/UserManagement';
 import AdminLayout from '@/components/AdminLayout';
 
 const UserManagementPage: React.FC = () => {
