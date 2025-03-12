@@ -1,7 +1,7 @@
 
 import React from 'react';
 import { Button } from '@/components/ui/button';
-import { User } from '@/data/userRoles';
+import { User } from '@/types/user';
 import {
   Dialog,
   DialogContent,

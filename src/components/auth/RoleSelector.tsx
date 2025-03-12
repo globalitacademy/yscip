@@ -1,7 +1,7 @@
 
 import React from 'react';
 import { Label } from '@/components/ui/label';
-import { UserRole } from '@/data/userRoles';
+import { UserRole } from '@/types/user';
 import {
   Select,
   SelectContent,

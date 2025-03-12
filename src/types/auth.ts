@@ -1,5 +1,4 @@
-
-import { User, UserRole } from '@/data/userRoles';
+import { User, UserRole } from '@/types/user';
 
 export interface PendingUser extends Partial<User> {
   verificationToken: string;

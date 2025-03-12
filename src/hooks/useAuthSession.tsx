@@ -1,6 +1,6 @@
 
 import { useState, useEffect } from 'react';
-import { User, UserRole } from '@/data/userRoles';
+import { User, UserRole } from '@/types/user';
 import { supabase } from '@/integrations/supabase/client';
 import { PendingUser } from '@/types/auth';
 import { toast } from 'sonner';

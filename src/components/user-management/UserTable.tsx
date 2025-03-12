@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { User, UserRole } from '@/data/userRoles';
+import { User, UserRole } from '@/types/user';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from '@/components/ui/button';

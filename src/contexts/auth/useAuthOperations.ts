@@ -1,6 +1,7 @@
 
 import { useState } from 'react';
-import { User, UserRole, mockUsers } from '@/data/userRoles';
+import { User, UserRole } from '@/types/user';
+import { mockUsers } from '@/data/mockUsers';
 import { PendingUser } from '@/types/auth';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';

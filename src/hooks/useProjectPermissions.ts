@@ -1,5 +1,4 @@
-
-import { rolePermissions } from '@/data/userRoles';
+import { rolePermissions } from '@/data/rolePermissions';
 
 export interface UserPermissions {
   canAddTimeline: boolean;

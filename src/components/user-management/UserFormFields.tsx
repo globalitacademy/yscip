@@ -1,6 +1,7 @@
 
 import React from 'react';
-import { User, UserRole, getCourses, getGroups } from '@/data/userRoles';
+import { User, UserRole } from '@/types/user';
+import { getCourses, getGroups } from '@/utils/userUtils';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import {

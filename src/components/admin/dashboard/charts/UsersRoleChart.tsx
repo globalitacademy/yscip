@@ -1,9 +1,8 @@
-
 import React from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { User } from 'lucide-react';
 import { PieChart, Pie, Cell, Tooltip, Legend, ResponsiveContainer } from 'recharts';
-import { getUsersByRole } from '@/data/userRoles';
+import { getUsersByRole } from '@/utils/userUtils';
 
 const UsersRoleChart: React.FC = () => {
   const userRoleData = [

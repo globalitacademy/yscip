@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useNavigate } from 'react-router-dom';
@@ -13,7 +12,7 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { LogOut, User, UserCog, GraduationCap, ChevronDown, Building, School } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { mockUsers } from '@/data/userRoles';
+import { mockUsers } from '@/data/mockUsers';
 
 const UserMenu: React.FC = () => {
   const { user, isAuthenticated, logout, switchRole } = useAuth();

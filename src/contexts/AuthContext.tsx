@@ -1,6 +1,6 @@
-
 import React, { createContext, useContext } from 'react';
-import { User, UserRole, mockUsers } from '@/data/userRoles';
+import { User, UserRole } from '@/types/user';
+import { mockUsers } from '@/data/mockUsers';
 import { AuthContextType, PendingUser } from '@/types/auth';
 import { useAuthSession } from '@/hooks/useAuthSession';
 import { ensureAdminUsersExist } from './auth/mockAdminUsers';

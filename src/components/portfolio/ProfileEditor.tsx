@@ -16,7 +16,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
-import { User } from '@/data/userRoles';
+import { User } from '@/types/user';
 import { supabase } from '@/integrations/supabase/client';
 
 interface ProfileEditorProps {

@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { User } from '@/data/userRoles';
+import { User } from '@/types/user';
 import { Button } from '@/components/ui/button';
 import { Users } from 'lucide-react';
 import {
