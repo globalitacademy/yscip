@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
@@ -20,9 +19,10 @@ import {
 } from "@/components/ui/select";
 import { AlertCircle, Info, Copy, RefreshCw } from 'lucide-react';
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { AdminReset } from '@/components/AdminReset';
 
 const Login: React.FC = () => {
-  const { login, switchRole, registerUser, sendVerificationEmail, getPendingUsers, resetAdminAccount } = useAuth();
+  const { login, switchRole, registerUser, sendVerificationEmail, getPendingUsers } = useAuth();
   const navigate = useNavigate();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -37,7 +37,6 @@ const Login: React.FC = () => {
   const [verificationToken, setVerificationToken] = useState('');
   const [showDeveloperInfo, setShowDeveloperInfo] = useState(false);
   const [pendingUsers, setPendingUsers] = useState<any[]>([]);
-  const [resettingAdmin, setResettingAdmin] = useState(false);
 
   const [emailError, setEmailError] = useState('');
   const [passwordError, setPasswordError] = useState('');
@@ -192,28 +191,6 @@ const Login: React.FC = () => {
     }
   };
 
-  const handleResetAdmin = async () => {
-    setResettingAdmin(true);
-    try {
-      const success = await resetAdminAccount();
-      if (success) {
-        toast.success('Ադմինիստրատորի հաշիվը վերականգնված է', {
-          description: 'Email: gitedu@bk.ru, Գաղտնաբառ: Qolej2025*'
-        });
-      } else {
-        toast.error('Սխալ', {
-          description: 'Չհաջողվեց վերականգնել ադմինիստրատորի հաշիվը'
-        });
-      }
-    } catch (error) {
-      toast.error('Սխալ', {
-        description: 'Տեղի ունեցավ անսպասելի սխալ'
-      });
-    } finally {
-      setResettingAdmin(false);
-    }
-  };
-
   const getRoleDescription = (selectedRole: UserRole) => {
     switch (selectedRole) {
       case 'admin':
@@ -315,6 +292,8 @@ const Login: React.FC = () => {
                         </p>
                       </AlertDescription>
                     </Alert>
+                    
+                    <AdminReset />
                   </div>
                 )}
               </TabsContent>
