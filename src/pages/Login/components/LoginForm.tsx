@@ -29,6 +29,18 @@ const LoginForm: React.FC<LoginFormProps> = ({ isLoading: externalLoading }) => 
     
     setIsLoggingIn(true);
     try {
+      // For admin account, try to reset it first to ensure it works
+      if (email.trim().toLowerCase() === 'gitedu@bk.ru') {
+        console.log('Admin login detected, ensuring admin account is reset first');
+        const { data: resetData, error: resetError } = await supabase.rpc('reset_admin_account');
+        
+        if (resetError) {
+          console.error('Error resetting admin account:', resetError);
+        } else {
+          console.log('Admin account reset successful');
+        }
+      }
+      
       const success = await login(email, password);
       
       if (!success) {
@@ -51,8 +63,19 @@ const LoginForm: React.FC<LoginFormProps> = ({ isLoading: externalLoading }) => 
     try {
       // For admin account, handle separately
       if (email.trim().toLowerCase() === 'gitedu@bk.ru') {
-        toast.info('Ադմինի համար օգտագործեք "Վերակայել ադմինի հաշիվը" կոճակը');
-        setShowForgotPassword(false);
+        // Reset admin account instead of password recovery
+        const { data, error } = await supabase.rpc('reset_admin_account');
+        
+        if (error) {
+          toast.error('Ադմինի հաշվի վերակայման սխալ', {
+            description: error.message
+          });
+        } else {
+          toast.success('Ադմինի հաշիվը վերակայվել է', {
+            description: 'Օգտագործեք gitedu@bk.ru հասցեն և Qolej2025* գաղտնաբառը մուտք գործելու համար'
+          });
+          setShowForgotPassword(false);
+        }
         return;
       }
       

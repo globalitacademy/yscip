@@ -146,7 +146,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           });
         }
         
-        toast.success('Մուտքը հաջողվել է');
+        toast.success('Մուտքը հաջողվել է', {
+          description: email.trim().toLowerCase() === 'gitedu@bk.ru' 
+            ? 'Դուք մուտք եք գործել որպես ադմինիստրատոր' 
+            : 'Դուք հաջողությամբ մուտք եք գործել համակարգ'
+        });
         return true;
       }
       

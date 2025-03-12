@@ -4,26 +4,30 @@ import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
 import { Loader2 } from 'lucide-react';
 import { useAuth } from '@/contexts/auth/AuthContext';
+import { supabase } from '@/integrations/supabase/client';
 
 export const AdminReset: React.FC = () => {
-  const { resetAdmin, login } = useAuth();
+  const { login } = useAuth();
   const [isResetting, setIsResetting] = React.useState(false);
   const [isLoggingIn, setIsLoggingIn] = React.useState(false);
 
   const handleResetAdmin = async () => {
     setIsResetting(true);
     try {
-      const success = await resetAdmin();
+      const { data, error } = await supabase.rpc('reset_admin_account');
       
-      if (success) {
+      if (error) {
+        console.error('Error resetting admin account:', error);
+        toast.error('Սխալ ադմինի հաշվի վերակայման ժամանակ', {
+          description: error.message
+        });
+      } else {
         toast.success('Ադմինիստրատորի հաշիվը վերակայվել է', {
           description: 'Այժմ կարող եք մուտք գործել օգտագործելով gitedu@bk.ru և Qolej2025* գաղտնաբառը'
         });
-      } else {
-        toast.error('Սխալ ադմինի հաշվի վերակայման ժամանակ');
       }
     } catch (error) {
-      console.error('Error resetting admin account:', error);
+      console.error('Unexpected error resetting admin account:', error);
       toast.error('Սխալ ադմինի հաշվի վերակայման ժամանակ');
     } finally {
       setIsResetting(false);
@@ -34,7 +38,15 @@ export const AdminReset: React.FC = () => {
     setIsLoggingIn(true);
     try {
       // Reset admin first to ensure it exists
-      await resetAdmin();
+      const { data, error: resetError } = await supabase.rpc('reset_admin_account');
+      
+      if (resetError) {
+        console.error('Error resetting admin account:', resetError);
+        toast.error('Սխալ ադմինի հաշվի վերակայման ժամանակ', {
+          description: resetError.message
+        });
+        return;
+      }
       
       // Try to login with admin credentials
       const success = await login('gitedu@bk.ru', 'Qolej2025*');
