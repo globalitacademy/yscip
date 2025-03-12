@@ -1,4 +1,3 @@
-
 import { User, UserRole, mockUsers } from '@/data/userRoles';
 import { PendingUser } from '@/types/auth';
 import { toast } from 'sonner';
@@ -130,51 +129,53 @@ export const useUserOperations = (
   const resetAdminAccount = async (): Promise<boolean> => {
     try {
       console.log('Resetting admin account');
-      // First try with Supabase
-      const { data, error } = await supabase.rpc('reset_admin_account');
+      
+      // First try direct admin activation through edge function
+      const { data, error } = await supabase.functions.invoke('ensure-admin-activation');
       
       if (error) {
-        console.error('Error resetting admin account:', error);
-        
-        // Add fallback for when RPC fails
-        // Add main admin to mock data if not exists
-        const adminExists = mockUsers.some(user => user.email === 'gitedu@bk.ru');
-        
-        if (!adminExists) {
-          const newAdmin: User = {
-            id: `admin-${Date.now()}`,
-            name: 'Ադմինիստրատոր',
-            email: 'gitedu@bk.ru',
-            role: 'admin',
-            avatar: `https://api.dicebear.com/7.x/avataaars/svg?seed=giteduadmin`,
-            department: 'Ադմինիստրացիա',
-            registrationApproved: true
-          };
-          
-          mockUsers.push(newAdmin);
-        }
-        
-        // Also ensure this admin is not in pending users (or is approved if there)
-        const pendingAdminIndex = pendingUsers.findIndex(
-          u => u.email?.toLowerCase() === 'gitedu@bk.ru'
-        );
-        
-        if (pendingAdminIndex >= 0) {
-          const updatedPendingUsers = [...pendingUsers];
-          updatedPendingUsers[pendingAdminIndex].verified = true;
-          updatedPendingUsers[pendingAdminIndex].registrationApproved = true;
-          setPendingUsers(updatedPendingUsers);
-        }
-        
-        toast.success('Ադմինիստրատորի հաշիվը վերականգնված է։');
-        return true;
+        console.error('Error calling admin activation function:', error);
+      } else {
+        console.log('Admin activation function response:', data);
       }
       
-      console.log('Admin account reset successful');
+      // Whether or not the edge function succeeds, we'll also do the client-side reset
+      // to ensure the admin account is available locally
+      
+      // Add main admin to mock data if not exists
+      const adminExists = mockUsers.some(user => user.email === 'gitedu@bk.ru');
+      
+      if (!adminExists) {
+        const newAdmin: User = {
+          id: `admin-${Date.now()}`,
+          name: 'Ադմինիստրատոր',
+          email: 'gitedu@bk.ru',
+          role: 'admin',
+          avatar: `https://api.dicebear.com/7.x/avataaars/svg?seed=giteduadmin`,
+          department: 'Ադմինիստրացիա',
+          registrationApproved: true
+        };
+        
+        mockUsers.push(newAdmin);
+      }
+      
+      // Also ensure this admin is not in pending users (or is approved if there)
+      const pendingAdminIndex = pendingUsers.findIndex(
+        u => u.email?.toLowerCase() === 'gitedu@bk.ru'
+      );
+      
+      if (pendingAdminIndex >= 0) {
+        const updatedPendingUsers = [...pendingUsers];
+        updatedPendingUsers[pendingAdminIndex].verified = true;
+        updatedPendingUsers[pendingAdminIndex].registrationApproved = true;
+        setPendingUsers(updatedPendingUsers);
+      }
+      
       toast.success('Ադմինիստրատորի հաշիվը վերականգնված է։');
       return true;
     } catch (error) {
       console.error('Error resetting admin account:', error);
+      toast.error('Սխալ ադմինիստրատորի հաշիվը վերականգնելիս։');
       return false;
     }
   };

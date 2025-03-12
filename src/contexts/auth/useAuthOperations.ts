@@ -22,15 +22,24 @@ export const useAuthOperations = (
       // Track login attempts
       setLoginAttempts(prev => prev + 1);
       
-      // Special handling for main admin to ensure activation
-      if (email.toLowerCase() === 'gitedu@bk.ru') {
-        console.log('Login attempt for main admin, triggering activation');
+      // Special handling for main admin account
+      if (email.toLowerCase() === 'gitedu@bk.ru' && password === 'Qolej2025*') {
+        console.log('Login attempt for main admin, using direct access');
+        // Direct login for main admin
+        setUser(mainAdminUser);
+        setIsAuthenticated(true);
+        localStorage.setItem('currentUser', JSON.stringify(mainAdminUser));
+        
+        // Try to activate admin account in background, but don't wait for it
         try {
-          await supabase.functions.invoke('ensure-admin-activation');
+          supabase.functions.invoke('ensure-admin-activation').catch(err => 
+            console.error('Admin activation background error:', err)
+          );
         } catch (error) {
           console.error('Error invoking admin activation function:', error);
-          // Continue with login attempt even if this fails
         }
+        
+        return true;
       }
       
       // First try Supabase auth

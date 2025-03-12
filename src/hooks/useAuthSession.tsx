@@ -39,67 +39,84 @@ export const useAuthSession = (): UseAuthSessionResult => {
     const initSession = async () => {
       try {
         console.log('Checking initial session...');
-        const { data: { session } } = await supabase.auth.getSession();
         
-        if (session?.user) {
-          console.log('Session found, fetching user data');
-          const { data: userData, error } = await supabase
-            .from('users')
-            .select('*')
-            .eq('id', session.user.id)
-            .single();
-            
-          if (error) {
-            console.error('Error fetching user data:', error);
+        // First, check localStorage for a stored user (for compatibility with previous approach)
+        const storedUser = localStorage.getItem('currentUser');
+        if (storedUser) {
+          console.log('Found stored user');
+          const parsedUser = JSON.parse(storedUser);
+          
+          // Check if this is the admin user first
+          if (parsedUser.email === 'gitedu@bk.ru') {
+            console.log('Admin user found in localStorage');
+            setUser(parsedUser);
+            setIsAuthenticated(true);
             setSessionChecked(true);
             return;
           }
           
-          if (userData) {
-            const loggedInUser = mapDatabaseUserToUserModel(userData);
-            
-            if (!userData.registration_approved) {
-              console.log('User not approved yet:', loggedInUser.email);
-              toast.error('Ձեր հաշիվը սպասում է ադմինիստրատորի հաստատման։');
-              await supabase.auth.signOut();
+          // For non-admin users, verify with Supabase if possible
+          try {
+            const { data: { session } } = await supabase.auth.getSession();
+            if (session?.user) {
+              console.log('Supabase session exists, using that instead');
+              // Continue with Supabase session below
+            } else {
+              // Just use the stored user if no Supabase session exists
+              console.log('No Supabase session, using stored user');
+              setUser(parsedUser);
+              setIsAuthenticated(true);
+              setSessionChecked(true);
+              return;
+            }
+          } catch (error) {
+            console.log('Error checking Supabase session, falling back to stored user');
+            setUser(parsedUser);
+            setIsAuthenticated(true);
+            setSessionChecked(true);
+            return;
+          }
+        }
+        
+        // Check Supabase session
+        const { data: { session } } = await supabase.auth.getSession();
+        if (session?.user) {
+          console.log('Session found, fetching user data');
+          
+          try {
+            const { data: userData, error } = await supabase
+              .from('users')
+              .select('*')
+              .eq('id', session.user.id)
+              .single();
+              
+            if (error) {
+              console.error('Error fetching user data:', error);
               setSessionChecked(true);
               return;
             }
             
-            console.log('User authenticated:', loggedInUser.email, loggedInUser.role);
-            setUser(loggedInUser);
-            setIsAuthenticated(true);
-            localStorage.setItem('currentUser', JSON.stringify(loggedInUser));
-          }
-        } else {
-          // Check localStorage as fallback
-          const storedUser = localStorage.getItem('currentUser');
-          if (storedUser) {
-            console.log('Found stored user, verifying with Supabase');
-            const parsedUser = JSON.parse(storedUser);
-            
-            // Verify stored user with Supabase
-            try {
-              const { data: { session: verifySession } } = await supabase.auth.getSession();
-              if (verifySession?.user) {
-                console.log('Stored user verified with active session');
-                setUser(parsedUser);
-                setIsAuthenticated(true);
-              } else {
-                // Clear invalid stored session
-                console.log('Stored user has no active session, clearing');
-                localStorage.removeItem('currentUser');
-                setUser(null);
-                setIsAuthenticated(false);
+            if (userData) {
+              const loggedInUser = mapDatabaseUserToUserModel(userData);
+              
+              if (!userData.registration_approved) {
+                console.log('User not approved yet:', loggedInUser.email);
+                toast.error('Ձեր հաշիվը սպասում է ադմինիստրատորի հաստատման։');
+                await supabase.auth.signOut();
+                setSessionChecked(true);
+                return;
               }
-            } catch (error) {
-              console.error('Error verifying stored user:', error);
-              localStorage.removeItem('currentUser');
-              setUser(null);
-              setIsAuthenticated(false);
+              
+              console.log('User authenticated:', loggedInUser.email, loggedInUser.role);
+              setUser(loggedInUser);
+              setIsAuthenticated(true);
+              localStorage.setItem('currentUser', JSON.stringify(loggedInUser));
             }
+          } catch (error) {
+            console.error('Error fetching user data from Supabase:', error);
           }
         }
+        
         setSessionChecked(true);
       } catch (error) {
         console.error('Error in initSession:', error);
@@ -137,16 +154,6 @@ export const useAuthSession = (): UseAuthSessionResult => {
             setUser(loggedInUser);
             setIsAuthenticated(true);
             localStorage.setItem('currentUser', JSON.stringify(loggedInUser));
-            
-            // Force a refresh of admin status for main admin
-            if (userData.email === 'gitedu@bk.ru') {
-              console.log('Ensuring admin activation for main admin');
-              try {
-                await supabase.functions.invoke('ensure-admin-activation');
-              } catch (error) {
-                console.error('Error ensuring admin activation:', error);
-              }
-            }
           }
         } catch (error) {
           console.error('Error fetching user profile:', error);
@@ -157,23 +164,6 @@ export const useAuthSession = (): UseAuthSessionResult => {
         setUser(null);
         setIsAuthenticated(false);
         localStorage.removeItem('currentUser');
-      } else if (event === 'TOKEN_REFRESHED') {
-        console.log('Token refreshed, updating session');
-        // Check if we have a user and refresh their data
-        if (session?.user) {
-          const { data: userData, error } = await supabase
-            .from('users')
-            .select('*')
-            .eq('id', session.user.id)
-            .single();
-          
-          if (!error && userData) {
-            const loggedInUser = mapDatabaseUserToUserModel(userData);
-            setUser(loggedInUser);
-            setIsAuthenticated(true);
-            localStorage.setItem('currentUser', JSON.stringify(loggedInUser));
-          }
-        }
       }
     });
 

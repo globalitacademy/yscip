@@ -20,19 +20,19 @@ serve(async (req) => {
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') || '',
     )
 
-    // Run ensure_admin_login function
-    const { data, error } = await supabaseAdmin.rpc('ensure_admin_login')
+    // First verify that the admin account exists and is properly set up
+    await supabaseAdmin.rpc('verify_designated_admin')
+    
+    // Now ensure login is enabled for the admin account
+    const { data, error } = await supabaseAdmin.rpc('reset_admin_account')
 
     if (error) {
-      console.error('Error ensuring admin login:', error)
+      console.error('Error resetting admin account:', error)
       return new Response(
         JSON.stringify({ success: false, error: error.message }),
         { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 500 }
       )
     }
-
-    // Also perform more direct verification
-    await supabaseAdmin.rpc('verify_designated_admin')
     
     console.log('Admin activation successful')
     
