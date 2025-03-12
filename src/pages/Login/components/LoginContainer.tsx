@@ -12,6 +12,7 @@ interface LoginContainerProps {
   verificationSent: boolean;
   email?: string | null;
   showAdminReset: boolean;
+  registeredRole?: string | null;
 }
 
 export const LoginContainer: React.FC<LoginContainerProps> = ({
@@ -20,7 +21,8 @@ export const LoginContainer: React.FC<LoginContainerProps> = ({
   isLoading,
   verificationSent,
   email,
-  showAdminReset
+  showAdminReset,
+  registeredRole
 }) => {
   return (
     <div className="min-h-screen flex items-center justify-center bg-background p-4">
