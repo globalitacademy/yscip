@@ -2,13 +2,14 @@
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { RefreshCw } from 'lucide-react';
+import { RefreshCw, CheckCircle } from 'lucide-react';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { useAuth } from '@/contexts/AuthContext';
 import { toast } from 'sonner';
 
 const AdminReset: React.FC = () => {
   const [isResetting, setIsResetting] = useState(false);
+  const [resetSuccess, setResetSuccess] = useState(false);
   const { resetAdminAccount } = useAuth();
   
   const handleResetAdmin = async () => {
@@ -16,6 +17,7 @@ const AdminReset: React.FC = () => {
     try {
       const success = await resetAdminAccount();
       if (success) {
+        setResetSuccess(true);
         toast.success('Ադմինիստրատորի հաշիվը վերականգնված է', {
           description: 'Email: gitedu@bk.ru, Գաղտնաբառ: Qolej2025*'
         });
@@ -51,6 +53,13 @@ const AdminReset: React.FC = () => {
             </div>
           </AlertDescription>
         </Alert>
+        
+        {resetSuccess && (
+          <div className="bg-green-50 p-3 rounded-md flex items-center text-green-700 mb-3">
+            <CheckCircle className="h-5 w-5 mr-2" />
+            <span>Ադմինիստրատորի հաշիվը հաջողությամբ վերականգնված է</span>
+          </div>
+        )}
         
         <Button 
           onClick={handleResetAdmin} 
