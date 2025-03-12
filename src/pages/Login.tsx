@@ -19,7 +19,7 @@ import {
 } from "@/components/ui/select";
 import { AlertCircle, Info, Copy, RefreshCw } from 'lucide-react';
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { AdminReset } from '@/components/AdminReset';
+import AdminReset from '@/components/AdminReset';
 
 const Login: React.FC = () => {
   const { login, switchRole, registerUser, sendVerificationEmail, getPendingUsers } = useAuth();
