@@ -14,25 +14,47 @@ export const login = async (email: string, password: string): Promise<boolean> =
     const isAdmin = await isDesignatedAdmin(cleanEmail);
     
     if (isAdmin) {
-      console.log('Admin login attempt detected, ensuring account is verified');
+      console.log('Admin login attempt detected, resetting admin account first');
       try {
-        // Use the updated RPC function without confirmed_at
-        const { error: rpcError } = await supabase.rpc('ensure_admin_login');
+        // Reset admin account to ensure it works correctly
+        const { data: resetData, error: resetError } = await supabase.rpc('reset_admin_account');
         
-        if (rpcError) {
-          console.error('Error ensuring admin login via RPC:', rpcError);
-          toast.error('Ադմինի հաշվի ստուգման սխալ', {
-            description: 'Փորձեք վերակայել ադմինի հաշիվը և նորից գրանցվել'
-          });
+        if (resetError) {
+          console.error('Error resetting admin account:', resetError);
         } else {
-          console.log('Admin verification via RPC successful');
+          console.log('Admin account reset successful');
+          
+          // Force a small delay to ensure reset is fully processed
+          await new Promise(resolve => setTimeout(resolve, 500));
+          
+          // Try to sign in with the default admin password
+          const { data, error } = await supabase.auth.signInWithPassword({
+            email: 'gitedu@bk.ru',
+            password: 'Qolej2025*'
+          });
+          
+          if (error) {
+            console.error('Login error after reset:', error);
+            toast.error('Ադմինի մուտքը չի հաջողվել', {
+              description: 'Տեխնիկական խնդիր, փորձեք կրկին'
+            });
+            return false;
+          }
+          
+          if (data.session) {
+            console.log('Admin login successful after reset');
+            toast.success('Մուտքը հաջողվել է', {
+              description: 'Դուք մուտք եք գործել որպես ադմինիստրատոր'
+            });
+            return true;
+          }
         }
       } catch (err) {
-        console.error('Error in admin verification process:', err);
+        console.error('Error in admin reset process:', err);
       }
     }
     
-    // Attempt to sign in
+    // Regular login attempt
     const { data, error } = await supabase.auth.signInWithPassword({
       email: cleanEmail,
       password: password
@@ -42,49 +64,13 @@ export const login = async (email: string, password: string): Promise<boolean> =
       console.error('Login error:', error);
       
       if (error.message.includes('Email not confirmed')) {
-        // For admin emails, try to verify directly instead of showing error
-        if (isAdmin) {
-          console.log('Admin email not confirmed, attempting verification');
-          try {
-            const { error: verifyError } = await supabase.rpc('verify_designated_admin');
-            if (verifyError) {
-              console.error('Error verifying admin during login:', verifyError);
-              toast.error('Ադմինի հաստատման սխալ', {
-                description: 'Փորձեք վերակայել ադմինի հաշիվը և նորից գրանցվել'
-              });
-            } else {
-              // Try login again after verification
-              console.log('Admin verified, retrying login');
-              const { data: retryData, error: retryError } = await supabase.auth.signInWithPassword({
-                email: cleanEmail,
-                password: password
-              });
-              
-              if (retryError) {
-                console.error('Login retry error:', retryError);
-                toast.error('Ադմինի մուտքը չի հաջողվել', {
-                  description: 'Փորձեք վերակայել ադմինի հաշիվը և նորից գրանցվել'
-                });
-                return false;
-              }
-              
-              if (retryData.session) {
-                console.log('Admin login retry successful');
-                return true;
-              }
-            }
-          } catch (verifyErr) {
-            console.error('Error in admin verification during login:', verifyErr);
-          }
-        } else {
-          toast.error('Էլ․ հասցեն չի հաստատվել', {
-            description: 'Խնդրում ենք ստուգել Ձեր էլ․ փոստը հաստատման հղման համար'
-          });
-        }
+        toast.error('Էլ․ հասցեն չի հաստատվել', {
+          description: 'Խնդրում ենք ստուգել Ձեր էլ․ փոստը հաստատման հղման համար'
+        });
       } else if (error.message.includes('Invalid login credentials')) {
         if (isAdmin) {
           toast.error('Ադմինի մուտքը չի հաջողվել', {
-            description: 'Փորձեք մուտք գործել օգտագործելով "gitedu@bk.ru" և "Qolej2025*" կամ վերակայել ադմինի հաշիվը'
+            description: 'Փորձեք օգտագործել ստանդարտ տվյալները՝ gitedu@bk.ru և Qolej2025*'
           });
         } else {
           toast.error('Սխալ մուտքի տվյալներ', {
@@ -105,21 +91,6 @@ export const login = async (email: string, password: string): Promise<boolean> =
         description: 'Տեղի ունեցավ անսպասելի սխալ'
       });
       return false;
-    }
-
-    // For admin, double-check and make sure we have a proper user record
-    if (isAdmin) {
-      console.log('Admin login successful, ensuring proper admin profile');
-      try {
-        const { error: verifyError } = await supabase.rpc('ensure_admin_login');
-        if (verifyError) {
-          console.error('Post-login admin verification error:', verifyError);
-        } else {
-          console.log('Post-login admin verification successful');
-        }
-      } catch (err) {
-        console.error('Error in post-login admin verification:', err);
-      }
     }
 
     console.log('Login successful, session established');

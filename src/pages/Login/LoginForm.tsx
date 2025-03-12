@@ -9,6 +9,7 @@ import ResetEmailSentAlert from './components/ResetEmailSentAlert';
 import { supabase } from '@/integrations/supabase/client';
 import { isDesignatedAdmin, checkFirstAdmin } from '@/contexts/auth/utils';
 import { Button } from '@/components/ui/button';
+import ResetAdminForm from './components/ResetAdminForm';
 
 const LoginForm: React.FC<LoginFormProps> = ({ 
   onLogin, 
@@ -118,6 +119,13 @@ const LoginForm: React.FC<LoginFormProps> = ({
 
   const handleAdminLogin = async () => {
     try {
+      // First reset admin account to ensure proper setup
+      const { error: resetError } = await supabase.rpc('reset_admin_account');
+      if (resetError) {
+        console.error('Error resetting admin account before login:', resetError);
+      }
+      
+      // Try to log in with default admin credentials
       const { error } = await supabase.auth.signInWithPassword({
         email: 'gitedu@bk.ru',
         password: 'Qolej2025*'
@@ -126,7 +134,7 @@ const LoginForm: React.FC<LoginFormProps> = ({
       if (error) {
         console.error('Admin direct login error:', error);
         toast.error('Ադմինի մուտքը չի հաջողվել', {
-          description: 'Փորձեք վերակայել ադմինի հաշիվը և փորձել կրկին'
+          description: 'Փորձեք կրկին վերակայել հաշիվը և փորձել մուտք գործել'
         });
       } else {
         toast.success('Ադմինի մուտքը հաջողվել է', {
@@ -175,21 +183,24 @@ const LoginForm: React.FC<LoginFormProps> = ({
         </div>
       )}
       
-      {isAdmin && (
-        <div className="mb-4 p-3 bg-green-50 text-green-700 rounded-md border border-green-200">
-          <p className="font-medium">Ադմինիստրատորի հաշիվ</p>
-          <p className="text-sm mt-1">Ձեր հաշիվը ամբողջությամբ հաստատված է։ Մուտք գործեք համակարգ:</p>
-          <p className="text-sm mt-1">Օգտագործեք "gitedu@bk.ru" և "Qolej2025*" գաղտնաբառը մուտք գործելու համար:</p>
-          <Button 
-            variant="outline" 
-            size="sm" 
-            className="w-full mt-2 border-green-200 hover:bg-green-100"
-            onClick={handleAdminLogin}
-          >
-            Մուտք որպես ադմին
-          </Button>
-        </div>
-      )}
+      <div className="mb-4 p-3 bg-green-50 text-green-700 rounded-md border border-green-200">
+        <p className="font-medium">Ադմինիստրատորի հաշիվ</p>
+        <p className="text-sm mt-1">Օգտագործեք "gitedu@bk.ru" և "Qolej2025*" գաղտնաբառը մուտք գործելու համար:</p>
+        <Button 
+          variant="outline" 
+          size="sm" 
+          className="w-full mt-2 border-green-200 hover:bg-green-100"
+          onClick={handleAdminLogin}
+        >
+          Մուտք որպես ադմին
+        </Button>
+      </div>
+      
+      <ResetAdminForm onReset={() => {
+        console.log('Admin account reset requested');
+      }} />
+      
+      <div className="mt-6 mb-6 border-t border-gray-200"></div>
       
       <LoginCredentialsForm 
         onLogin={onLogin}

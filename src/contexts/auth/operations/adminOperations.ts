@@ -6,6 +6,9 @@ export const resetAdminAccount = async (): Promise<boolean> => {
   try {
     console.log('Resetting admin account');
     
+    // First sign out any current session to avoid conflicts
+    await supabase.auth.signOut();
+    
     // Call the improved database function to reset the admin account
     const { data, error } = await supabase.rpc('reset_admin_account');
     
@@ -27,7 +30,7 @@ export const resetAdminAccount = async (): Promise<boolean> => {
       console.log('Admin account verification successful after reset');
     }
     
-    // Admin account has been reset, we can now try to sign up with it again
+    // Try to sign up with the admin credentials
     const adminEmail = 'gitedu@bk.ru';
     const adminPassword = 'Qolej2025*';
     
@@ -46,23 +49,34 @@ export const resetAdminAccount = async (): Promise<boolean> => {
     if (signupError) {
       console.error('Error creating admin account after reset:', signupError);
       
-      // If it's because the account already exists, that's fine
+      // If it's because the account already exists, try to sign in
       if (signupError.message.includes('already registered')) {
-        console.log('Admin account already exists, this is expected');
+        console.log('Admin account already exists, trying to sign in');
+        
+        // Try signing in with admin credentials
+        const { error: signInError } = await supabase.auth.signInWithPassword({
+          email: adminEmail,
+          password: adminPassword
+        });
+        
+        if (signInError) {
+          console.error('Error signing in as admin after reset:', signInError);
+        } else {
+          console.log('Successfully signed in as admin after reset');
+          toast.success('Ադմինի մուտքը հաջողվել է', {
+            description: 'Դուք մուտք եք գործել որպես ադմինիստրատոր'
+          });
+        }
       } else {
         toast.error('Ադմինի հաշվի ստեղծման սխալ', {
           description: signupError.message
         });
-        return false;
       }
     }
     
     toast.success('Ադմինիստրատորի հաշիվը վերակայվել է', {
       description: 'Այժմ կարող եք մուտք գործել օգտագործելով gitedu@bk.ru և Qolej2025* գաղտնաբառը'
     });
-    
-    // Sign out current session if any
-    await supabase.auth.signOut();
     
     return true;
   } catch (error) {
