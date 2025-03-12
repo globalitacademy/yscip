@@ -1,140 +1,98 @@
 
 import React, { useEffect, useState } from 'react';
-import { useNavigate, useLocation } from 'react-router-dom';
-import { useAuth } from '@/contexts/AuthContext';
+import { useNavigate, useSearchParams } from 'react-router-dom';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
-import { CheckCircle, XCircle, AlertCircle, Loader2 } from 'lucide-react';
+import { useAuth } from '@/contexts/AuthContext';
+import { Loader2, CheckCircle, XCircle, Home } from 'lucide-react';
 
 const VerifyEmail: React.FC = () => {
+  const [searchParams] = useSearchParams();
+  const token = searchParams.get('token');
   const navigate = useNavigate();
-  const location = useLocation();
   const { verifyEmail } = useAuth();
-  const [verificationStatus, setVerificationStatus] = useState<'loading' | 'success' | 'error'>('loading');
-  const [errorMessage, setErrorMessage] = useState('');
-  const [isRoleWithApproval, setIsRoleWithApproval] = useState(false);
-
+  
+  const [status, setStatus] = useState<'loading' | 'success' | 'error'>('loading');
+  const [message, setMessage] = useState('Հաստատում...');
+  
   useEffect(() => {
-    // Get token from URL query params
-    const params = new URLSearchParams(location.search);
-    const token = params.get('token');
-
-    if (!token) {
-      setVerificationStatus('error');
-      setErrorMessage('Հաստատման գործընթացի սխալ: Նշանը (token) բացակայում է։');
-      return;
-    }
-
-    // Call the verifyEmail function from AuthContext
     const verifyToken = async () => {
+      if (!token) {
+        setStatus('error');
+        setMessage('Անվավեր հաստատման հղում');
+        return;
+      }
+      
       try {
-        // Simulate network delay
-        await new Promise(resolve => setTimeout(resolve, 1000));
-        
-        // Verify the token
         const success = await verifyEmail(token);
         
         if (success) {
-          setVerificationStatus('success');
-          
-          // Check in localStorage if this is a role that needs approval
-          const pendingUsers = JSON.parse(localStorage.getItem('pendingUsers') || '[]');
-          const user = pendingUsers.find((u: any) => u.verificationToken === token);
-          
-          if (user && ['lecturer', 'employer', 'project_manager', 'supervisor'].includes(user.role)) {
-            setIsRoleWithApproval(true);
-          }
+          setStatus('success');
+          setMessage('Էլ․ հասցեն հաստատված է');
         } else {
-          setVerificationStatus('error');
-          setErrorMessage('Հաստատման գործընթացի սխալ: Հղումն անվավեր է կամ արդեն օգտագործվել է։');
+          setStatus('error');
+          setMessage('Անվավեր կամ ժամկետանց հաստատման հղում');
         }
       } catch (error) {
-        setVerificationStatus('error');
-        setErrorMessage('Հաստատման գործընթացի սխալ: Խնդրում ենք փորձել կրկին։');
+        setStatus('error');
+        setMessage('Տեղի է ունեցել անսպասելի սխալ');
       }
     };
-
+    
     verifyToken();
-  }, [location.search, verifyEmail]);
-
+  }, [token, verifyEmail]);
+  
   return (
     <div className="min-h-screen flex items-center justify-center bg-background p-4">
-      <div className="w-full max-w-md">
-        <Card className="shadow-lg">
-          <CardHeader className="space-y-1 text-center">
-            <CardTitle className="text-2xl font-bold">Էլ․ հասցեի հաստատում</CardTitle>
-            <CardDescription>
-              Ձեր էլ․ հասցեի հաստատման կարգավիճակը
-            </CardDescription>
-          </CardHeader>
+      <Card className="w-full max-w-md">
+        <CardHeader className="text-center">
+          <CardTitle>Էլ․ հասցեի հաստատում</CardTitle>
+          <CardDescription>
+            {status === 'loading' ? 'Հաստատում ենք Ձեր էլ․ հասցեն' : ''}
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="flex flex-col items-center justify-center p-6">
+          {status === 'loading' && (
+            <div className="text-center py-6">
+              <Loader2 className="h-12 w-12 text-primary mx-auto animate-spin mb-4" />
+              <p>{message}</p>
+            </div>
+          )}
           
-          <CardContent className="flex flex-col items-center justify-center py-8">
-            {verificationStatus === 'loading' && (
-              <div className="text-center">
-                <Loader2 className="h-16 w-16 animate-spin text-primary mx-auto mb-4" />
-                <p className="text-lg font-medium">Հաստատման գործընթացը ընթանում է...</p>
-              </div>
-            )}
-            
-            {verificationStatus === 'success' && (
-              <div className="text-center">
-                <CheckCircle className="h-16 w-16 text-green-500 mx-auto mb-4" />
-                <p className="text-lg font-medium">Ձեր էլ․ հասցեն հաջողությամբ հաստատվել է</p>
+          {status === 'success' && (
+            <div className="text-center py-6">
+              <CheckCircle className="h-12 w-12 text-green-500 mx-auto mb-4" />
+              <h3 className="text-lg font-medium mb-2">Շնորհակալություն հաստատման համար</h3>
+              <p className="text-gray-500 mb-6">{message}</p>
+              
+              <div className="space-y-4">
+                <Button onClick={() => navigate('/login')}>
+                  Մուտք գործել
+                </Button>
                 
-                {isRoleWithApproval ? (
-                  <div className="mt-4 p-4 bg-amber-50 border border-amber-200 rounded-md text-left">
-                    <div className="flex items-start">
-                      <AlertCircle className="h-5 w-5 text-amber-500 mr-2 mt-0.5" />
-                      <div>
-                        <p className="font-medium text-amber-900">Անհրաժեշտ է ադմինիստրատորի հաստատում</p>
-                        <p className="text-sm text-amber-800 mt-1">
-                          Ձեր հաշիվը հաստատվել է, սակայն այն պետք է հաստատվի նաև ադմինիստրատորի կողմից: 
-                          Հաստատումից հետո Դուք կկարողանաք մուտք գործել համակարգ:
-                        </p>
-                      </div>
-                    </div>
-                  </div>
-                ) : (
-                  <p className="text-muted-foreground mt-2">
-                    Այժմ Դուք կարող եք մուտք գործել համակարգ Ձեր հաշվի տվյալներով:
-                  </p>
-                )}
+                <Button variant="outline" onClick={() => navigate('/')}>
+                  <Home className="mr-2 h-4 w-4" />
+                  Վերադառնալ գլխավոր էջ
+                </Button>
               </div>
-            )}
-            
-            {verificationStatus === 'error' && (
-              <div className="text-center">
-                <XCircle className="h-16 w-16 text-red-500 mx-auto mb-4" />
-                <p className="text-lg font-medium">Հաստատման սխալ</p>
-                <p className="text-muted-foreground mt-2">{errorMessage}</p>
-                <div className="mt-4 p-4 bg-amber-50 border border-amber-200 rounded-md text-left">
-                  <div className="flex items-start">
-                    <AlertCircle className="h-5 w-5 text-amber-500 mr-2 mt-0.5" />
-                    <div>
-                      <p className="font-medium text-amber-900">Հնարավոր պատճառներ</p>
-                      <ul className="list-disc list-inside text-sm text-amber-800 mt-1">
-                        <li>Հաստատման հղումը սխալ է կամ ժամկետանց</li>
-                        <li>Հղումն արդեն օգտագործվել է</li>
-                        <li>Ձեր հաշիվն արդեն ակտիվացված է</li>
-                      </ul>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            )}
-          </CardContent>
+            </div>
+          )}
           
-          <CardFooter className="flex justify-center">
-            <Button 
-              onClick={() => navigate('/login')} 
-              variant={verificationStatus === 'success' ? "default" : "outline"}
-              className="w-full max-w-xs"
-            >
-              {verificationStatus === 'success' ? 'Մուտք գործել' : 'Վերադառնալ մուտքի էջ'}
-            </Button>
-          </CardFooter>
-        </Card>
-      </div>
+          {status === 'error' && (
+            <div className="text-center py-6">
+              <XCircle className="h-12 w-12 text-red-500 mx-auto mb-4" />
+              <h3 className="text-lg font-medium mb-2">Սխալ է տեղի ունեցել</h3>
+              <p className="text-gray-500 mb-6">{message}</p>
+              
+              <div className="space-y-4">
+                <Button variant="outline" onClick={() => navigate('/login')}>
+                  Վերադառնալ մուտքի էջ
+                </Button>
+              </div>
+            </div>
+          )}
+        </CardContent>
+      </Card>
     </div>
   );
 };

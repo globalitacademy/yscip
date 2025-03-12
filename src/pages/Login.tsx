@@ -18,11 +18,11 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { AlertCircle, Info, Copy } from 'lucide-react';
+import { AlertCircle, Info, Copy, RefreshCw } from 'lucide-react';
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 
 const Login: React.FC = () => {
-  const { login, switchRole, registerUser, sendVerificationEmail, getPendingUsers } = useAuth();
+  const { login, switchRole, registerUser, sendVerificationEmail, getPendingUsers, resetAdminAccount } = useAuth();
   const navigate = useNavigate();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -37,6 +37,7 @@ const Login: React.FC = () => {
   const [verificationToken, setVerificationToken] = useState('');
   const [showDeveloperInfo, setShowDeveloperInfo] = useState(false);
   const [pendingUsers, setPendingUsers] = useState<any[]>([]);
+  const [resettingAdmin, setResettingAdmin] = useState(false);
 
   // Validation states
   const [emailError, setEmailError] = useState('');
@@ -197,6 +198,28 @@ const Login: React.FC = () => {
       setPassword('password'); // In a real app, we wouldn't do this
     }
   };
+  
+  const handleResetAdmin = async () => {
+    setResettingAdmin(true);
+    try {
+      const success = await resetAdminAccount();
+      if (success) {
+        toast.success('Ադմինիստրատորի հաշիվը վերականգնված է', {
+          description: 'Email: gitedu@bk.ru, Գաղտնաբառ: Qolej2025*'
+        });
+      } else {
+        toast.error('Սխալ', {
+          description: 'Չհաջողվեց վերականգնել ադմինիստրատորի հաշիվը'
+        });
+      }
+    } catch (error) {
+      toast.error('Սխալ', {
+        description: 'Տեղի ունեցավ անսպասելի սխալ'
+      });
+    } finally {
+      setResettingAdmin(false);
+    }
+  };
 
   // Role descriptions for registration form
   const getRoleDescription = (selectedRole: UserRole) => {
@@ -290,6 +313,22 @@ const Login: React.FC = () => {
                     <div className="text-sm bg-muted p-2 rounded-md mb-3">
                       <div><strong>Էլ․ հասցե:</strong> superadmin@example.com</div>
                       <div><strong>Գաղտնաբառ:</strong> SuperAdmin123</div>
+                    </div>
+                    
+                    <p className="text-sm text-muted-foreground mb-2">Իրական ադմինի հաշիվ՝</p>
+                    <div className="text-sm bg-muted p-2 rounded-md mb-3">
+                      <div><strong>Էլ․ հասցե:</strong> gitedu@bk.ru</div>
+                      <div><strong>Գաղտնաբառ:</strong> Qolej2025*</div>
+                      <Button 
+                        variant="outline" 
+                        size="sm" 
+                        className="mt-2 h-7" 
+                        onClick={handleResetAdmin}
+                        disabled={resettingAdmin}
+                      >
+                        <RefreshCw size={14} className={`mr-1 ${resettingAdmin ? 'animate-spin' : ''}`} />
+                        {resettingAdmin ? 'Վերականգնում...' : 'Վերականգնել ադմինի հաշիվը'}
+                      </Button>
                     </div>
 
                     <p className="text-sm text-muted-foreground mb-2">Սպասման մեջ գտնվող օգտատերեր՝</p>

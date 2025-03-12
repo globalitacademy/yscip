@@ -2,6 +2,7 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { User, UserRole, mockUsers } from '@/data/userRoles';
 import { toast } from 'sonner';
+import { supabase } from '@/integrations/supabase/client';
 
 interface AuthContextType {
   user: User | null;
@@ -14,6 +15,7 @@ interface AuthContextType {
   verifyEmail: (token: string) => Promise<boolean>;
   approveRegistration: (userId: string) => Promise<boolean>;
   getPendingUsers: () => any[];
+  resetAdminAccount: () => Promise<boolean>;
 }
 
 interface PendingUser extends Partial<User> {
@@ -54,18 +56,106 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [pendingUsers, setPendingUsers] = useState<PendingUser[]>([]);
 
-  // Load users from localStorage on init
+  // Check for Supabase session on init
   useEffect(() => {
-    const storedUser = localStorage.getItem('currentUser');
-    if (storedUser) {
-      setUser(JSON.parse(storedUser));
-      setIsAuthenticated(true);
-    }
-
+    const checkSession = async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      
+      if (session) {
+        // User is authenticated with Supabase
+        try {
+          // Fetch user profile from the database
+          const { data: userData, error } = await supabase
+            .from('users')
+            .select('*')
+            .eq('id', session.user.id)
+            .single();
+          
+          if (error) throw error;
+          
+          if (userData) {
+            // Convert to our User type
+            const loggedInUser: User = {
+              id: userData.id,
+              name: userData.name,
+              email: userData.email,
+              role: userData.role as UserRole,
+              avatar: userData.avatar,
+              department: userData.department,
+              registrationApproved: userData.registration_approved,
+              // Additional fields if needed
+            };
+            
+            setUser(loggedInUser);
+            setIsAuthenticated(true);
+            localStorage.setItem('currentUser', JSON.stringify(loggedInUser));
+          }
+        } catch (error) {
+          console.error('Error fetching user profile:', error);
+        }
+      } else {
+        // Check for stored user (for demo mode)
+        const storedUser = localStorage.getItem('currentUser');
+        if (storedUser) {
+          setUser(JSON.parse(storedUser));
+          setIsAuthenticated(true);
+        }
+      }
+    };
+    
+    checkSession();
+    
+    // Set up auth state change listener
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(
+      async (event, session) => {
+        if (event === 'SIGNED_IN' && session) {
+          try {
+            // Fetch user profile
+            const { data: userData, error } = await supabase
+              .from('users')
+              .select('*')
+              .eq('id', session.user.id)
+              .single();
+            
+            if (error) throw error;
+            
+            if (userData) {
+              // Convert to our User type
+              const loggedInUser: User = {
+                id: userData.id,
+                name: userData.name,
+                email: userData.email,
+                role: userData.role as UserRole,
+                avatar: userData.avatar,
+                department: userData.department,
+                registrationApproved: userData.registration_approved,
+                // Additional fields if needed
+              };
+              
+              setUser(loggedInUser);
+              setIsAuthenticated(true);
+              localStorage.setItem('currentUser', JSON.stringify(loggedInUser));
+            }
+          } catch (error) {
+            console.error('Error fetching user profile:', error);
+          }
+        } else if (event === 'SIGNED_OUT') {
+          setUser(null);
+          setIsAuthenticated(false);
+          localStorage.removeItem('currentUser');
+        }
+      }
+    );
+    
+    // Load pending users from localStorage on init
     const storedPendingUsers = localStorage.getItem('pendingUsers');
     if (storedPendingUsers) {
       setPendingUsers(JSON.parse(storedPendingUsers));
     }
+    
+    return () => {
+      subscription.unsubscribe();
+    };
   }, []);
 
   // Save pendingUsers to localStorage when it changes
@@ -84,6 +174,52 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       return true;
     }
     
+    // Try Supabase authentication first
+    try {
+      const { data, error } = await supabase.auth.signInWithPassword({
+        email,
+        password
+      });
+      
+      if (error) {
+        console.error('Supabase login error:', error);
+        
+        // If Supabase auth fails, try fallback authentication
+        return fallbackLogin(email, password);
+      }
+      
+      if (data.user) {
+        // Auth successful, but we need to check if user is approved
+        const { data: userData, error: userError } = await supabase
+          .from('users')
+          .select('*')
+          .eq('id', data.user.id)
+          .single();
+        
+        if (userError) {
+          console.error('Error fetching user data:', userError);
+          return false;
+        }
+        
+        if (!userData.registration_approved) {
+          toast.error(`Ձեր հաշիվը սպասում է ադմինիստրատորի հաստատման։`);
+          await supabase.auth.signOut();
+          return false;
+        }
+        
+        // User authenticated and approved
+        return true;
+      }
+      
+      return false;
+    } catch (error) {
+      console.error('Login error:', error);
+      return fallbackLogin(email, password);
+    }
+  };
+  
+  // Fallback login for demo users
+  const fallbackLogin = (email: string, password: string): boolean => {
     // First, check real registered users (from pendingUsers that are verified)
     const pendingUser = pendingUsers.find(
       u => u.email?.toLowerCase() === email.toLowerCase() && 
@@ -130,7 +266,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     return false;
   };
 
-  const logout = () => {
+  const logout = async () => {
+    // Log out from Supabase
+    await supabase.auth.signOut();
+    
+    // Also handle local state cleanup
     setUser(null);
     setIsAuthenticated(false);
     localStorage.removeItem('currentUser');
@@ -156,38 +296,75 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         return { success: false };
       }
       
-      const verificationToken = generateVerificationToken();
-      const password = userData.password; // Store password temporarily
-      delete userData.password; // Remove password from userData to not store it directly
+      const password = userData.password;
+      if (!password) {
+        toast.error(`Գաղտնաբառը պարտադիր է։`);
+        return { success: false };
+      }
       
-      const newPendingUser: PendingUser = {
-        ...userData,
-        id: `user-${Date.now()}`,
-        verificationToken,
-        verified: false,
-        registrationApproved: userData.role === 'student', // Students are auto-approved
-        password, // Store password for later login
-        avatar: `https://api.dicebear.com/7.x/avataaars/svg?seed=${Date.now()}`
-      };
-      
-      setPendingUsers(prev => [...prev, newPendingUser]);
-      
-      console.log(`Verification email sent to ${userData.email} with token: ${verificationToken}`);
-      console.log(`Verification link: http://localhost:3000/verify-email?token=${verificationToken}`);
-      
-      const needsApproval = ['lecturer', 'employer', 'project_manager', 'supervisor'].includes(userData.role as string);
-      
-      toast.success(
-        `Գրանցման հայտն ընդունված է։ Խնդրում ենք ստուգել Ձեր էլ․ փոստը՝ հաշիվը ակտիվացնելու համար։${
-          needsApproval ? ' Ակտիվացումից հետո Ձեր հաշիվը պետք է հաստատվի ադմինիստրատորի կողմից։' : ''
-        }`
-      );
-      
-      return { success: true, token: verificationToken };
+      // Try to register with Supabase
+      try {
+        const { data, error } = await supabase.auth.signUp({
+          email: userData.email || '',
+          password: password,
+          options: {
+            data: {
+              name: userData.name,
+              role: userData.role,
+              organization: userData.organization
+            }
+          }
+        });
+        
+        if (error) {
+          console.error('Supabase registration error:', error);
+          // If Supabase registration fails, fall back to the mock system
+          return fallbackRegister(userData, password);
+        }
+        
+        toast.success(
+          `Գրանցման հայտն ընդունված է։ Խնդրում ենք ստուգել Ձեր էլ․ փոստը՝ հաշիվը ակտիվացնելու համար։${
+            userData.role !== 'student' ? ' Ակտիվացումից հետո Ձեր հաշիվը պետք է հաստատվի ադմինիստրատորի կողմից։' : ''
+          }`
+        );
+        
+        return { success: true };
+      } catch (supaError) {
+        console.error('Supabase registration error:', supaError);
+        return fallbackRegister(userData, password);
+      }
     } catch (error) {
       console.error('Registration error:', error);
       return { success: false };
     }
+  };
+  
+  // Fallback registration for the mock system
+  const fallbackRegister = (userData: Partial<User>, password?: string): Promise<{success: boolean, token?: string}> => {
+    const verificationToken = generateVerificationToken();
+    
+    const newPendingUser: PendingUser = {
+      ...userData,
+      id: `user-${Date.now()}`,
+      verificationToken,
+      verified: false,
+      registrationApproved: userData.role === 'student', // Students are auto-approved
+      password, // Store password for later login
+      avatar: `https://api.dicebear.com/7.x/avataaars/svg?seed=${Date.now()}`
+    };
+    
+    setPendingUsers(prev => [...prev, newPendingUser]);
+    
+    console.log(`Verification email sent to ${userData.email} with token: ${verificationToken}`);
+    console.log(`Verification link: http://localhost:3000/verify-email?token=${verificationToken}`);
+    
+    toast.success(
+      `Գրանցման հայտն ընդունված է։ Խնդրում ենք ստուգել Ձեր էլ․ փոստը՝ հաշիվը ակտիվացնելու համար։${
+        userData.role !== 'student' ? ' Ակտիվացումից հետո Ձեր հաշիվը պետք է հաստատվի ադմինիստրատորի կողմից։' : ''
+      }`
+    );
+    
+    return Promise.resolve({ success: true, token: verificationToken });
   };
 
   const sendVerificationEmail = async (email: string): Promise<{success: boolean, token?: string}> => {
@@ -253,6 +430,24 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const getPendingUsers = () => {
     return pendingUsers;
   };
+  
+  const resetAdminAccount = async (): Promise<boolean> => {
+    try {
+      // Call Supabase function to reset admin account
+      const { data, error } = await supabase.rpc('reset_admin_account');
+      
+      if (error) {
+        console.error('Error resetting admin account:', error);
+        return false;
+      }
+      
+      toast.success('Ադմինիստրատորի հաշիվը վերականգնված է։');
+      return true;
+    } catch (error) {
+      console.error('Error resetting admin account:', error);
+      return false;
+    }
+  };
 
   return (
     <AuthContext.Provider
@@ -266,7 +461,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         sendVerificationEmail,
         verifyEmail,
         approveRegistration,
-        getPendingUsers
+        getPendingUsers,
+        resetAdminAccount
       }}
     >
       {children}
