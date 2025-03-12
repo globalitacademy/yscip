@@ -1,5 +1,5 @@
 
-import { User, UserRole } from '@/types/user';
+import type { User, UserRole } from '@/types/user';
 import { mockUsers } from '@/data/mockUsers';
 import { rolePermissions } from '@/data/rolePermissions';
 import { 
@@ -14,10 +14,11 @@ import {
   getStudentsForProject 
 } from '@/utils/projectAssignments';
 
-// Re-export everything for backward compatibility
+// Re-export types with explicit 'export type'
+export type { User, UserRole };
+
+// Re-export values
 export { 
-  User, 
-  UserRole, 
   mockUsers, 
   rolePermissions,
   getCurrentUser,
@@ -28,3 +29,4 @@ export {
   getProjectAssignmentsForUser,
   getStudentsForProject
 };
+
