@@ -23,6 +23,8 @@ export const resetAdminAccount = async (): Promise<boolean> => {
     const { error: ensureError } = await supabase.rpc('ensure_admin_login');
     if (ensureError) {
       console.error('Error ensuring admin setup after reset:', ensureError);
+    } else {
+      console.log('Admin account verification successful after reset');
     }
     
     // Admin account has been reset, we can now try to sign up with it again

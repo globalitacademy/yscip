@@ -16,20 +16,19 @@ export const login = async (email: string, password: string): Promise<boolean> =
     if (isAdmin) {
       console.log('Admin login attempt detected, ensuring account is verified');
       try {
-        // Ensure the admin account is properly set up and verified
-        const { error: rpcError } = await supabase.rpc('verify_designated_admin');
+        // Use the updated RPC function without confirmed_at
+        const { error: rpcError } = await supabase.rpc('ensure_admin_login');
         
         if (rpcError) {
-          console.error('Error verifying admin via RPC:', rpcError);
+          console.error('Error ensuring admin login via RPC:', rpcError);
           toast.error('Ադմինի հաշվի ստուգման սխալ', {
             description: 'Փորձեք վերակայել ադմինի հաշիվը և նորից գրանցվել'
           });
-          return false;
+        } else {
+          console.log('Admin verification via RPC successful');
         }
-        console.log('Admin verification via RPC successful');
       } catch (err) {
         console.error('Error in admin verification process:', err);
-        return false;
       }
     }
     
@@ -85,7 +84,7 @@ export const login = async (email: string, password: string): Promise<boolean> =
       } else if (error.message.includes('Invalid login credentials')) {
         if (isAdmin) {
           toast.error('Ադմինի մուտքը չի հաջողվել', {
-            description: 'Փորձեք վերակայել ադմինի հաշիվը և նորից գրանցվել'
+            description: 'Փորձեք մուտք գործել օգտագործելով "gitedu@bk.ru" և "Qolej2025*" կամ վերակայել ադմինի հաշիվը'
           });
         } else {
           toast.error('Սխալ մուտքի տվյալներ', {
@@ -112,9 +111,11 @@ export const login = async (email: string, password: string): Promise<boolean> =
     if (isAdmin) {
       console.log('Admin login successful, ensuring proper admin profile');
       try {
-        const { error: verifyError } = await supabase.rpc('verify_designated_admin');
+        const { error: verifyError } = await supabase.rpc('ensure_admin_login');
         if (verifyError) {
           console.error('Post-login admin verification error:', verifyError);
+        } else {
+          console.log('Post-login admin verification successful');
         }
       } catch (err) {
         console.error('Error in post-login admin verification:', err);

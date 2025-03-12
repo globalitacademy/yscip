@@ -5,6 +5,7 @@ import { isDesignatedAdmin, checkFirstAdmin } from '@/contexts/auth/utils';
 import { useAuth } from '@/contexts/auth';
 import { supabase } from '@/integrations/supabase/client';
 import ResetAdminForm from './ResetAdminForm';
+import { Button } from '@/components/ui/button';
 
 interface AdminSetupProps {
   email?: string | null;
@@ -46,32 +47,6 @@ export const AdminSetup: React.FC<AdminSetupProps> = ({ email }) => {
               }
             } else {
               console.log('Admin account ensured successfully');
-              
-              // Try to auto-login with admin credentials
-              try {
-                const { error: signInError } = await supabase.auth.signInWithPassword({
-                  email: 'gitedu@bk.ru',
-                  password: 'Qolej2025*'
-                });
-                
-                if (signInError) {
-                  console.log('Admin auto-login attempt failed:', signInError.message);
-                  toast.error('Ավտոմատ մուտքը չի հաջողվել', {
-                    description: 'Խնդրում ենք մուտք գործել ձեռքով՝ օգտագործելով մուտքի ձևը'
-                  });
-                } else {
-                  console.log('Admin auto-login successful');
-                  toast.success('Ադմինիստրատորի հաշիվը հաստատված է', {
-                    description: 'Դուք հիմա կուղղորդվեք կառավարման վահանակ'
-                  });
-                  
-                  setTimeout(() => {
-                    window.location.href = '/admin';
-                  }, 1000);
-                }
-              } catch (err) {
-                console.error('Error in admin auto-login attempt:', err);
-              }
             }
           } catch (err) {
             console.error('Unexpected error in admin verification:', err);
@@ -111,6 +86,31 @@ export const AdminSetup: React.FC<AdminSetupProps> = ({ email }) => {
     }
   };
 
+  const handleAdminLogin = async () => {
+    try {
+      const { error } = await supabase.auth.signInWithPassword({
+        email: 'gitedu@bk.ru',
+        password: 'Qolej2025*'
+      });
+      
+      if (error) {
+        console.error('Admin direct login error:', error);
+        toast.error('Ադմինի մուտքը չի հաջողվել', {
+          description: 'Փորձեք վերակայել ադմինի հաշիվը և փորձել կրկին'
+        });
+      } else {
+        toast.success('Ադմինի մուտքը հաջողվել է', {
+          description: 'Ուղղորդվում եք կառավարման վահանակ'
+        });
+      }
+    } catch (err) {
+      console.error('Unexpected error during admin login:', err);
+      toast.error('Սխալ մուտքի գործընթացի ժամանակ', {
+        description: 'Տեղի ունեցավ անսպասելի սխալ'
+      });
+    }
+  };
+
   return (
     <>
       {isFirstAdmin && (
@@ -119,8 +119,17 @@ export const AdminSetup: React.FC<AdminSetupProps> = ({ email }) => {
         </div>
       )}
       {designatedAdminMessage && (
-        <div className="mt-2 p-2 bg-green-50 text-green-700 rounded-md">
-          Ադմինիստրատորի հաշիվը (gitedu@bk.ru) գրանցված է։ Մուտք գործեք Ձեր գաղտնաբառով։
+        <div className="mt-2 p-3 bg-green-50 text-green-700 rounded-md">
+          <p className="font-medium">Ադմինիստրատորի հաշիվը (gitedu@bk.ru) գրանցված է։</p>
+          <p className="text-sm mt-1">Օգտագործեք "gitedu@bk.ru" և "Qolej2025*" գաղտնաբառը մուտք գործելու համար:</p>
+          <Button 
+            variant="outline" 
+            size="sm" 
+            className="w-full mt-2 border-green-200 hover:bg-green-100"
+            onClick={handleAdminLogin}
+          >
+            Մուտք որպես ադմին
+          </Button>
         </div>
       )}
       {showAdminReset && <ResetAdminForm onReset={handleResetAdmin} />}

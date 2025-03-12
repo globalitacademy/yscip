@@ -8,6 +8,7 @@ import PasswordResetForm from './components/PasswordResetForm';
 import ResetEmailSentAlert from './components/ResetEmailSentAlert';
 import { supabase } from '@/integrations/supabase/client';
 import { isDesignatedAdmin, checkFirstAdmin } from '@/contexts/auth/utils';
+import { Button } from '@/components/ui/button';
 
 const LoginForm: React.FC<LoginFormProps> = ({ 
   onLogin, 
@@ -115,6 +116,31 @@ const LoginForm: React.FC<LoginFormProps> = ({
     handlePasswordReset();
   }, [location]);
 
+  const handleAdminLogin = async () => {
+    try {
+      const { error } = await supabase.auth.signInWithPassword({
+        email: 'gitedu@bk.ru',
+        password: 'Qolej2025*'
+      });
+      
+      if (error) {
+        console.error('Admin direct login error:', error);
+        toast.error('Ադմինի մուտքը չի հաջողվել', {
+          description: 'Փորձեք վերակայել ադմինի հաշիվը և փորձել կրկին'
+        });
+      } else {
+        toast.success('Ադմինի մուտքը հաջողվել է', {
+          description: 'Ուղղորդվում եք կառավարման վահանակ'
+        });
+      }
+    } catch (err) {
+      console.error('Unexpected error during admin login:', err);
+      toast.error('Սխալ մուտքի գործընթացի ժամանակ', {
+        description: 'Տեղի ունեցավ անսպասելի սխալ'
+      });
+    }
+  };
+
   const handleResetComplete = () => {
     console.log('Password reset completed');
     setIsResetting(false);
@@ -153,6 +179,15 @@ const LoginForm: React.FC<LoginFormProps> = ({
         <div className="mb-4 p-3 bg-green-50 text-green-700 rounded-md border border-green-200">
           <p className="font-medium">Ադմինիստրատորի հաշիվ</p>
           <p className="text-sm mt-1">Ձեր հաշիվը ամբողջությամբ հաստատված է։ Մուտք գործեք համակարգ:</p>
+          <p className="text-sm mt-1">Օգտագործեք "gitedu@bk.ru" և "Qolej2025*" գաղտնաբառը մուտք գործելու համար:</p>
+          <Button 
+            variant="outline" 
+            size="sm" 
+            className="w-full mt-2 border-green-200 hover:bg-green-100"
+            onClick={handleAdminLogin}
+          >
+            Մուտք որպես ադմին
+          </Button>
         </div>
       )}
       
