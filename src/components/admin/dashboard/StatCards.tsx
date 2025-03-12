@@ -2,9 +2,30 @@
 import React from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Users, BookOpen, Briefcase } from 'lucide-react';
-import { mockUsers } from '@/data/userRoles';
+import { useDashboardStats } from '@/hooks/useDashboardStats';
 
 const StatCards: React.FC = () => {
+  const { stats, loading } = useDashboardStats();
+
+  if (loading) {
+    return (
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-3 md:gap-6 mb-6">
+        {[1, 2, 3].map((i) => (
+          <Card key={i} className="animate-pulse">
+            <CardHeader className="pb-2">
+              <div className="h-6 w-24 bg-gray-200 rounded"></div>
+              <div className="h-4 w-36 bg-gray-200 rounded mt-1"></div>
+            </CardHeader>
+            <CardContent>
+              <div className="h-8 w-12 bg-gray-200 rounded"></div>
+              <div className="h-3 w-24 bg-gray-200 rounded mt-2"></div>
+            </CardContent>
+          </Card>
+        ))}
+      </div>
+    );
+  }
+
   return (
     <div className="grid grid-cols-1 md:grid-cols-3 gap-3 md:gap-6 mb-6">
       <Card>
@@ -16,9 +37,9 @@ const StatCards: React.FC = () => {
           <CardDescription>Ընդհանուր օգտատերերի քանակ</CardDescription>
         </CardHeader>
         <CardContent>
-          <div className="text-3xl font-bold">{mockUsers.length}</div>
+          <div className="text-3xl font-bold">{stats.userCount}</div>
           <div className="text-xs text-muted-foreground mt-1">
-            +5 վերջին շաբաթում
+            +{stats.newUsersLastWeek} վերջին շաբաթում
           </div>
         </CardContent>
       </Card>
@@ -31,9 +52,9 @@ const StatCards: React.FC = () => {
           <CardDescription>Ընդհանուր կուրսերի քանակ</CardDescription>
         </CardHeader>
         <CardContent>
-          <div className="text-3xl font-bold">12</div>
+          <div className="text-3xl font-bold">{stats.courseCount}</div>
           <div className="text-xs text-muted-foreground mt-1">
-            +2 վերջին ամսում
+            +{stats.newCoursesLastMonth} վերջին ամսում
           </div>
         </CardContent>
       </Card>
@@ -46,9 +67,9 @@ const StatCards: React.FC = () => {
           <CardDescription>Ընդհանուր նախագծերի քանակ</CardDescription>
         </CardHeader>
         <CardContent>
-          <div className="text-3xl font-bold">44</div>
+          <div className="text-3xl font-bold">{stats.projectCount}</div>
           <div className="text-xs text-muted-foreground mt-1">
-            +8 վերջին ամսում
+            +{stats.newProjectsLastMonth} վերջին ամսում
           </div>
         </CardContent>
       </Card>

@@ -6,6 +6,7 @@ import { UserPlus } from 'lucide-react';
 import { UserTable } from './UserTable';
 import { UserDialog } from './UserDialog';
 import { useUserManagement } from './useUserManagement';
+import ConfirmDatabaseAction from '@/components/ConfirmDatabaseAction';
 
 interface UserManagementProps {
   // Props can be added if needed
@@ -19,13 +20,20 @@ const UserManagement: React.FC<UserManagementProps> = () => {
     openEditUser,
     newUser,
     supervisors,
+    students,
+    showConfirmDialog,
+    confirmTitle,
+    confirmDescription,
+    confirmAction,
+    isConfirming,
     setOpenNewUser,
     setNewUser,
     handleCreateUser,
     handleEditUser,
     handleUpdateUser,
     handleAssignSupervisor,
-    handleDeleteUser
+    handleDeleteUser,
+    setShowConfirmDialog
   } = useUserManagement();
 
   if (loading) {
@@ -84,6 +92,16 @@ const UserManagement: React.FC<UserManagementProps> = () => {
         isEditMode={true}
         title="Խմբագրել օգտատիրոջը"
         description={`Փոփոխեք ${newUser.name} օգտատիրոջ տվյալները։`}
+      />
+
+      {/* Confirmation Dialog */}
+      <ConfirmDatabaseAction
+        isOpen={showConfirmDialog}
+        onClose={() => setShowConfirmDialog(false)}
+        onConfirm={confirmAction}
+        title={confirmTitle}
+        description={confirmDescription}
+        isLoading={isConfirming}
       />
     </div>
   );
