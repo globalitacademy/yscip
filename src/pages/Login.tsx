@@ -2,12 +2,13 @@
 import React, { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Alert, AlertCircle, AlertDescription, AlertTitle } from '@/components/ui/alert';
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Info, Copy } from 'lucide-react';
+import { Info, Copy, AlertCircle } from 'lucide-react';
 import { UserRole } from '@/data/userRoles';
 import { useAuth } from '@/contexts/AuthContext';
+import { toast } from 'sonner';
 import LoginForm from '@/components/auth/LoginForm';
 import RegistrationForm from '@/components/auth/RegistrationForm';
 import DemoAccounts from '@/components/auth/DemoAccounts';
@@ -18,6 +19,8 @@ const Login: React.FC = () => {
   const [verificationSent, setVerificationSent] = useState(false);
   const [resendEmail, setResendEmail] = useState('');
   const [verificationToken, setVerificationToken] = useState('');
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
   const { sendVerificationEmail } = useAuth();
 
   const handleResendVerification = async () => {

@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -14,8 +13,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Alert, AlertCircle, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { Info, Copy } from 'lucide-react';
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { Info, Copy, AlertCircle } from 'lucide-react';
 
 interface RegistrationFormProps {
   onSuccess: (email: string, token: string) => void;
