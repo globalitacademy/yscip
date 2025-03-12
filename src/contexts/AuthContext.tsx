@@ -3,26 +3,8 @@ import React, { createContext, useContext, useState, useEffect } from 'react';
 import { User, UserRole, mockUsers } from '@/data/userRoles';
 import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
-
-interface AuthContextType {
-  user: User | null;
-  isAuthenticated: boolean;
-  login: (email: string, password: string) => Promise<boolean>;
-  logout: () => void;
-  switchRole: (role: UserRole) => void;
-  registerUser: (userData: Partial<User>) => Promise<{success: boolean, token?: string}>;
-  sendVerificationEmail: (email: string) => Promise<{success: boolean, token?: string}>;
-  verifyEmail: (token: string) => Promise<boolean>;
-  approveRegistration: (userId: string) => Promise<boolean>;
-  getPendingUsers: () => any[];
-  resetAdminAccount: () => Promise<boolean>;
-}
-
-interface PendingUser extends Partial<User> {
-  verificationToken: string;
-  verified: boolean;
-  password?: string; // Store password for real login after verification
-}
+import { AuthContextType, PendingUser } from '@/types/auth';
+import { handleFallbackLogin, handleSignUpUser } from '@/utils/authUtils';
 
 // Add superadmin to mockUsers
 const superAdminUser: User = {
@@ -40,7 +22,6 @@ if (!mockUsers.some(user => user.email === superAdminUser.email)) {
   mockUsers.push(superAdminUser);
 }
 
-// In a real app, this would be stored in a database
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export const useAuth = () => {
@@ -56,15 +37,13 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [pendingUsers, setPendingUsers] = useState<PendingUser[]>([]);
 
-  // Check for Supabase session on init
+  // Load initial session
   useEffect(() => {
     const checkSession = async () => {
       const { data: { session } } = await supabase.auth.getSession();
       
       if (session) {
-        // User is authenticated with Supabase
         try {
-          // Fetch user profile from the database
           const { data: userData, error } = await supabase
             .from('users')
             .select('*')
@@ -74,7 +53,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           if (error) throw error;
           
           if (userData) {
-            // Convert to our User type
             const loggedInUser: User = {
               id: userData.id,
               name: userData.name,
@@ -83,7 +61,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
               avatar: userData.avatar,
               department: userData.department,
               registrationApproved: userData.registration_approved,
-              // Additional fields if needed
             };
             
             setUser(loggedInUser);
@@ -94,7 +71,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           console.error('Error fetching user profile:', error);
         }
       } else {
-        // Check for stored user (for demo mode)
         const storedUser = localStorage.getItem('currentUser');
         if (storedUser) {
           setUser(JSON.parse(storedUser));
@@ -105,12 +81,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     
     checkSession();
     
-    // Set up auth state change listener
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, session) => {
         if (event === 'SIGNED_IN' && session) {
           try {
-            // Fetch user profile
             const { data: userData, error } = await supabase
               .from('users')
               .select('*')
@@ -120,7 +94,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
             if (error) throw error;
             
             if (userData) {
-              // Convert to our User type
               const loggedInUser: User = {
                 id: userData.id,
                 name: userData.name,
@@ -129,7 +102,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
                 avatar: userData.avatar,
                 department: userData.department,
                 registrationApproved: userData.registration_approved,
-                // Additional fields if needed
               };
               
               setUser(loggedInUser);
@@ -147,7 +119,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       }
     );
     
-    // Load pending users from localStorage on init
     const storedPendingUsers = localStorage.getItem('pendingUsers');
     if (storedPendingUsers) {
       setPendingUsers(JSON.parse(storedPendingUsers));
@@ -166,7 +137,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   }, [pendingUsers]);
 
   const login = async (email: string, password: string): Promise<boolean> => {
-    // Special case for superadmin
     if (email === 'superadmin@example.com' && password === 'SuperAdmin123') {
       setUser(superAdminUser);
       setIsAuthenticated(true);
@@ -174,7 +144,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       return true;
     }
     
-    // Try Supabase authentication first
     try {
       const { data, error } = await supabase.auth.signInWithPassword({
         email,
@@ -183,13 +152,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       
       if (error) {
         console.error('Supabase login error:', error);
-        
-        // If Supabase auth fails, try fallback authentication
-        return fallbackLogin(email, password);
+        return handleFallbackLogin(email, password, pendingUsers, mockUsers, setUser, setIsAuthenticated);
       }
       
       if (data.user) {
-        // Auth successful, but we need to check if user is approved
         const { data: userData, error: userError } = await supabase
           .from('users')
           .select('*')
@@ -207,89 +173,31 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           return false;
         }
         
-        // User authenticated and approved
         return true;
       }
       
       return false;
     } catch (error) {
       console.error('Login error:', error);
-      return fallbackLogin(email, password);
+      return handleFallbackLogin(email, password, pendingUsers, mockUsers, setUser, setIsAuthenticated);
     }
-  };
-  
-  // Fallback login for demo users
-  const fallbackLogin = (email: string, password: string): boolean => {
-    // First, check real registered users (from pendingUsers that are verified)
-    const pendingUser = pendingUsers.find(
-      u => u.email?.toLowerCase() === email.toLowerCase() && 
-      u.verified && 
-      u.password === password
-    );
-
-    if (pendingUser && pendingUser.registrationApproved) {
-      const newUser: User = {
-        id: pendingUser.id || `user-${Date.now()}`,
-        name: pendingUser.name || 'User',
-        email: pendingUser.email || '',
-        role: pendingUser.role as UserRole || 'student',
-        registrationApproved: true,
-        avatar: pendingUser.avatar || `https://api.dicebear.com/7.x/avataaars/svg?seed=${Date.now()}`
-      };
-      
-      setUser(newUser);
-      setIsAuthenticated(true);
-      localStorage.setItem('currentUser', JSON.stringify(newUser));
-      return true;
-    }
-    
-    // If not found in pendingUsers, check mockUsers for demo accounts
-    const foundUser = mockUsers.find(u => u.email.toLowerCase() === email.toLowerCase());
-    
-    if (foundUser && foundUser.registrationApproved) {
-      setUser(foundUser);
-      setIsAuthenticated(true);
-      localStorage.setItem('currentUser', JSON.stringify(foundUser));
-      return true;
-    }
-    
-    // Check if user exists but is waiting for approval
-    const awaitingApprovalUser = pendingUsers.find(u => 
-      u.email?.toLowerCase() === email.toLowerCase() && u.verified && !u.registrationApproved
-    );
-    
-    if (awaitingApprovalUser) {
-      toast.error(`Ձեր հաշիվը ակտիվացված է, սակայն սպասում է ադմինիստրատորի հաստատման։`);
-      return false;
-    }
-    
-    return false;
   };
 
   const logout = async () => {
-    // Log out from Supabase
     await supabase.auth.signOut();
-    
-    // Also handle local state cleanup
     setUser(null);
     setIsAuthenticated(false);
     localStorage.removeItem('currentUser');
   };
 
-  const generateVerificationToken = () => {
-    return Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
-  };
-
-  const registerUser = async (userData: Partial<User> & { password?: string }): Promise<{success: boolean, token?: string}> => {
+  const registerUser = async (userData: Partial<User>): Promise<{success: boolean, token?: string}> => {
     try {
-      // Check if email already exists in mockUsers
       const emailExists = mockUsers.some(user => user.email.toLowerCase() === userData.email?.toLowerCase());
       if (emailExists) {
         toast.error(`Այս էլ․ հասցեն արդեն գրանցված է։`);
         return { success: false };
       }
       
-      // Check if email already exists in pendingUsers
       const pendingEmailExists = pendingUsers.some(user => user.email?.toLowerCase() === userData.email?.toLowerCase());
       if (pendingEmailExists) {
         toast.error(`Այս էլ․ հասցեով գրանցումն արդեն սպասման մեջ է։ Խնդրում ենք ստուգել Ձեր էլ․ փոստը։`);
@@ -302,7 +210,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         return { success: false };
       }
       
-      // Try to register with Supabase
       try {
         const { data, error } = await supabase.auth.signUp({
           email: userData.email || '',
@@ -318,8 +225,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         
         if (error) {
           console.error('Supabase registration error:', error);
-          // If Supabase registration fails, fall back to the mock system
-          return fallbackRegister(userData, password);
+          return handleSignUpUser(userData, password, pendingUsers, setPendingUsers);
         }
         
         toast.success(
@@ -331,40 +237,12 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         return { success: true };
       } catch (supaError) {
         console.error('Supabase registration error:', supaError);
-        return fallbackRegister(userData, password);
+        return handleSignUpUser(userData, password, pendingUsers, setPendingUsers);
       }
     } catch (error) {
       console.error('Registration error:', error);
       return { success: false };
     }
-  };
-  
-  // Fallback registration for the mock system
-  const fallbackRegister = (userData: Partial<User>, password?: string): Promise<{success: boolean, token?: string}> => {
-    const verificationToken = generateVerificationToken();
-    
-    const newPendingUser: PendingUser = {
-      ...userData,
-      id: `user-${Date.now()}`,
-      verificationToken,
-      verified: false,
-      registrationApproved: userData.role === 'student', // Students are auto-approved
-      password, // Store password for later login
-      avatar: `https://api.dicebear.com/7.x/avataaars/svg?seed=${Date.now()}`
-    };
-    
-    setPendingUsers(prev => [...prev, newPendingUser]);
-    
-    console.log(`Verification email sent to ${userData.email} with token: ${verificationToken}`);
-    console.log(`Verification link: http://localhost:3000/verify-email?token=${verificationToken}`);
-    
-    toast.success(
-      `Գրանցման հայտն ընդունված է։ Խնդրում ենք ստուգել Ձեր էլ․ փոստը՝ հաշիվը ակտիվացնելու համար։${
-        userData.role !== 'student' ? ' Ակտիվացումից հետո Ձեր հաշիվը պետք է հաստատվի ադմինիստրատորի կողմից։' : ''
-      }`
-    );
-    
-    return Promise.resolve({ success: true, token: verificationToken });
   };
 
   const sendVerificationEmail = async (email: string): Promise<{success: boolean, token?: string}> => {
@@ -390,16 +268,14 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       return false;
     }
     
-    // Update the pending user as verified
     const updatedPendingUsers = [...pendingUsers];
     updatedPendingUsers[pendingUserIndex].verified = true;
-    setPendingUsers(updatedPendingUsers);
     
-    // For students, auto-approve and add to real accounts
     if (updatedPendingUsers[pendingUserIndex].role === 'student') {
       updatedPendingUsers[pendingUserIndex].registrationApproved = true;
     }
     
+    setPendingUsers(updatedPendingUsers);
     return true;
   };
 
@@ -410,7 +286,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       return false;
     }
     
-    // Approve the registration
     const updatedPendingUsers = [...pendingUsers];
     updatedPendingUsers[pendingUserIndex].registrationApproved = true;
     setPendingUsers(updatedPendingUsers);
@@ -419,7 +294,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   const switchRole = (role: UserRole) => {
-    // For demo purposes, allow switching between mockUsers
     const userWithRole = mockUsers.find(u => u.role === role);
     if (userWithRole) {
       setUser(userWithRole);
@@ -433,7 +307,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   
   const resetAdminAccount = async (): Promise<boolean> => {
     try {
-      // Call Supabase function to reset admin account
       const { data, error } = await supabase.rpc('reset_admin_account');
       
       if (error) {
