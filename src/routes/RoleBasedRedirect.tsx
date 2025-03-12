@@ -1,10 +1,9 @@
 
 import { Navigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/auth';
-import ApprovalPending from '@/components/ApprovalPending';
 
 export const RoleBasedRedirect = () => {
-  const { user, isAuthenticated, isApproved, loading, error } = useAuth();
+  const { user, isAuthenticated, loading, error } = useAuth();
   
   if (loading) {
     return (
@@ -36,9 +35,8 @@ export const RoleBasedRedirect = () => {
     return <Navigate to="/login" replace />;
   }
   
-  if (!isApproved) {
-    return <ApprovalPending />;
-  }
+  // Հեռացնենք հաստատման ստուգումը
+  // Ուղղակի ստուգենք դերը
   
   // Redirect based on role
   if (user.role === 'admin') {

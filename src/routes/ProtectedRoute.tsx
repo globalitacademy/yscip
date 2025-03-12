@@ -2,10 +2,9 @@
 import React from 'react';
 import { Navigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/auth';
-import ApprovalPending from '@/components/ApprovalPending';
 
 export const ProtectedRoute = ({ children, allowedRoles }: { children: React.ReactNode, allowedRoles: string[] }) => {
-  const { user, isAuthenticated, isApproved, loading, error } = useAuth();
+  const { user, isAuthenticated, loading, error } = useAuth();
   
   if (loading) {
     return (
@@ -37,10 +36,8 @@ export const ProtectedRoute = ({ children, allowedRoles }: { children: React.Rea
     return <Navigate to="/login" replace />;
   }
   
-  // Check if user account is approved (except for students who are auto-approved)
-  if (!isApproved) {
-    return <ApprovalPending />;
-  }
+  // Հեռացնենք հաստատման ստուգումը
+  // Ուղղակի ստուգենք դերը (role)
   
   if (!allowedRoles.includes(user.role)) {
     // Redirect to appropriate dashboard based on role

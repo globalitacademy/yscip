@@ -11,8 +11,7 @@ interface RedirectHandlerProps {
 
 export const RedirectHandler: React.FC<RedirectHandlerProps> = ({ 
   isAuthenticated, 
-  user, 
-  isApproved 
+  user
 }) => {
   const navigate = useNavigate();
 
@@ -20,22 +19,12 @@ export const RedirectHandler: React.FC<RedirectHandlerProps> = ({
     if (isAuthenticated && user) {
       console.log('RedirectHandler: User authenticated, redirecting based on role:', user.role);
       
-      // Admin users always redirect to admin dashboard regardless of approval status
-      if (user.role === 'admin') {
-        console.log('RedirectHandler: Admin user detected, redirecting to admin dashboard');
-        navigate('/admin');
-        return;
-      }
-      
-      // Handle approval check for non-admin, non-student roles
-      if (!isApproved && user.role !== 'student') {
-        console.log('RedirectHandler: User not approved, navigating to approval pending');
-        navigate('/approval-pending');
-        return;
-      }
-      
-      // Role-based redirects for approved users
+      // Redirect based on role without checking approval status
       switch (user.role) {
+        case 'admin':
+          console.log('RedirectHandler: Admin user detected, redirecting to admin dashboard');
+          navigate('/admin');
+          break;
         case 'lecturer':
         case 'instructor':
           console.log('RedirectHandler: Redirecting to courses page');
@@ -59,7 +48,7 @@ export const RedirectHandler: React.FC<RedirectHandlerProps> = ({
           navigate('/');
       }
     }
-  }, [isAuthenticated, user, isApproved, navigate]);
+  }, [isAuthenticated, user, navigate]);
 
   return null;
 };

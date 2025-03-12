@@ -15,7 +15,7 @@ interface AdminLayoutProps {
 }
 
 const AdminLayout: React.FC<AdminLayoutProps> = ({ children, pageTitle }) => {
-  const { user, isAuthenticated, isApproved, loading, error } = useAuth();
+  const { user, isAuthenticated, loading, error } = useAuth();
   const [isSidebarOpen, setIsSidebarOpen] = React.useState(false);
   const navigate = useNavigate();
   
@@ -94,11 +94,7 @@ const AdminLayout: React.FC<AdminLayoutProps> = ({ children, pageTitle }) => {
     }
   }
   
-  // Check if approved
-  if (!isApproved) {
-    console.log("User not approved, redirecting to approval pending page");
-    return <Navigate to="/approval-pending" replace />;
-  }
+  // Հեռացնենք հաստատման ստուգումը
   
   const toggleSidebar = () => {
     setIsSidebarOpen(!isSidebarOpen);

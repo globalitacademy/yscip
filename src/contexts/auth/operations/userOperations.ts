@@ -61,7 +61,7 @@ export const registerUser = async (
           name: userData.name,
           role: isAdmin ? 'admin' : userData.role,
           organization: userData.organization,
-          email_confirmed: isAdmin || isFirstAdmin // Pre-confirm email for admins
+          email_confirmed: true // Ավտոմատ հաստատել բոլոր էլ․ հասցեները
         },
         emailRedirectTo: `${window.location.origin}/verify-email`
       }
@@ -143,11 +143,23 @@ export const registerUser = async (
             email: cleanEmail,
             role: isFirstAdmin ? 'admin' : (isAdmin ? 'admin' : userData.role),
             organization: userData.organization,
-            registration_approved: userData.role === 'student' || isAdmin || isFirstAdmin, // Auto-approve students and admins
+            registration_approved: true, // Ավտոմատ հաստատել բոլորին
           });
 
         if (insertError) {
           console.error('Error creating user profile manually:', insertError);
+        }
+      } else {
+        // Ensure registration_approved is set to true for existing profile
+        const { error: updateError } = await supabase
+          .from('users')
+          .update({
+            registration_approved: true
+          })
+          .eq('id', authData.user.id);
+          
+        if (updateError) {
+          console.error('Error updating registration_approved status:', updateError);
         }
       }
     }
@@ -162,7 +174,7 @@ export const registerUser = async (
       });
     } else {
       toast.success('Գրանցումը հաջողված է', {
-        description: 'Ստուգեք Ձեր էլ․ փոստը հաստատման հղման համար'
+        description: 'Դուք կարող եք հիմա մուտք գործել համակարգ'
       });
     }
 

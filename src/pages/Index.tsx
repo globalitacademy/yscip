@@ -75,11 +75,8 @@ const Index: React.FC = () => {
     if (isAuthenticated && user && !loading) {
       console.log("User authenticated, redirecting based on role:", user.role);
       
-      if (!isApproved && user.role !== 'student') {
-        console.log("User not approved, navigating to approval pending page");
-        navigate('/approval-pending');
-        return;
-      }
+      // Հեռացնենք հաստատման ստուգումը
+      // Ուղղակի ստուգենք դերը
       
       switch (user.role) {
         case 'admin':
@@ -108,7 +105,7 @@ const Index: React.FC = () => {
           console.log("Unknown role, staying on index");
       }
     }
-  }, [isAuthenticated, user, isApproved, loading, navigate]);
+  }, [isAuthenticated, user, loading, navigate]);
 
   if (loading) {
     return (
@@ -138,7 +135,7 @@ const Index: React.FC = () => {
             <RoleBasedActions 
               isAuthenticated={isAuthenticated} 
               user={user} 
-              isApproved={isApproved} 
+              isApproved={true} // Միշտ օգտագործել true
             />
           </SlideUp>
           

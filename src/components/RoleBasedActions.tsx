@@ -1,14 +1,14 @@
 
 import React from 'react';
 import { Card, CardContent } from '@/components/ui/card';
-import { UserDataError, PendingApproval } from './role-actions/ErrorStates';
+import { UserDataError } from './role-actions/ErrorStates';
 import AdminActions from './role-actions/AdminActions';
 import TeacherActions from './role-actions/TeacherActions';
 import ProjectManagerActions from './role-actions/ProjectManagerActions';
 import EmployerActions from './role-actions/EmployerActions';
 import StudentActions from './role-actions/StudentActions';
 import GuestActions from './role-actions/GuestActions';
-import { DBUser, UserRole } from '@/types/database.types';
+import { DBUser } from '@/types/database.types';
 
 interface RoleBasedActionsProps {
   isAuthenticated: boolean;
@@ -18,8 +18,7 @@ interface RoleBasedActionsProps {
 
 const RoleBasedActions: React.FC<RoleBasedActionsProps> = ({ 
   isAuthenticated, 
-  user, 
-  isApproved 
+  user
 }) => {
   if (isAuthenticated && !user) {
     return <UserDataError />;
@@ -29,9 +28,8 @@ const RoleBasedActions: React.FC<RoleBasedActionsProps> = ({
     return <GuestActions />;
   }
   
-  if (!isApproved && user.role !== 'student') {
-    return <PendingApproval />;
-  }
+  // Հեռացնենք հաստատման ստուգումը
+  // Միայն ստուգենք դերը
   
   switch (user.role) {
     case 'admin':
