@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
@@ -39,20 +38,17 @@ const Login: React.FC = () => {
   const [pendingUsers, setPendingUsers] = useState<any[]>([]);
   const [resettingAdmin, setResettingAdmin] = useState(false);
 
-  // Validation states
   const [emailError, setEmailError] = useState('');
   const [passwordError, setPasswordError] = useState('');
   const [confirmPasswordError, setConfirmPasswordError] = useState('');
-  
+
   useEffect(() => {
-    // Load pending users for developer info panel
     if (showDeveloperInfo) {
       const users = getPendingUsers();
       setPendingUsers(users);
     }
   }, [showDeveloperInfo, getPendingUsers]);
 
-  // Validation functions
   const validateEmail = (email: string): boolean => {
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     const isValid = emailRegex.test(email);
@@ -61,7 +57,6 @@ const Login: React.FC = () => {
   };
 
   const validatePassword = (password: string): boolean => {
-    // Password must be at least 8 characters and contain uppercase, lowercase and numbers
     const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{8,}$/;
     const isValid = passwordRegex.test(password);
     setPasswordError(isValid ? '' : 'Գաղտնաբառը պետք է պարունակի առնվազն 8 նիշ, մեծատառ, փոքրատառ և թվանշան');
@@ -104,7 +99,6 @@ const Login: React.FC = () => {
     setIsLoading(true);
 
     try {
-      // Validate all fields
       const isEmailValid = validateEmail(email);
       const isPasswordValid = validatePassword(password);
       const isConfirmPasswordValid = validateConfirmPassword(confirmPassword);
@@ -126,7 +120,6 @@ const Login: React.FC = () => {
         return;
       }
 
-      // Check if employer has organization
       if (role === 'employer' && !organization) {
         toast.error('Սխալ', {
           description: 'Կազմակերպության անունը պարտադիր է գործատուի համար',
@@ -139,8 +132,8 @@ const Login: React.FC = () => {
         name,
         email,
         role,
-        password, // Pass password to the registerUser function
-        registrationApproved: role === 'student', // Students are auto-approved
+        password,
+        registrationApproved: role === 'student',
         ...(role === 'employer' && { organization })
       };
 
@@ -151,7 +144,6 @@ const Login: React.FC = () => {
         setResendEmail(email);
         setVerificationToken(result.token || '');
         
-        // Clear the form
         setName('');
         setEmail('');
         setPassword('');
@@ -195,10 +187,10 @@ const Login: React.FC = () => {
     const user = mockUsers.find(u => u.role === role);
     if (user) {
       setEmail(user.email);
-      setPassword('password'); // In a real app, we wouldn't do this
+      setPassword('password');
     }
   };
-  
+
   const handleResetAdmin = async () => {
     setResettingAdmin(true);
     try {
@@ -221,7 +213,6 @@ const Login: React.FC = () => {
     }
   };
 
-  // Role descriptions for registration form
   const getRoleDescription = (selectedRole: UserRole) => {
     switch (selectedRole) {
       case 'admin':
@@ -309,61 +300,20 @@ const Login: React.FC = () => {
                       <Info size={16} />
                       Մշակողի գործիքակազմ
                     </h3>
-                    <p className="text-sm text-muted-foreground mb-2">Սուպերադմինի հաշիվ՝</p>
-                    <div className="text-sm bg-muted p-2 rounded-md mb-3">
-                      <div><strong>Էլ․ հասցե:</strong> superadmin@example.com</div>
-                      <div><strong>Գաղտնաբառ:</strong> SuperAdmin123</div>
-                    </div>
                     
-                    <p className="text-sm text-muted-foreground mb-2">Իրական ադմինի հաշիվ՝</p>
-                    <div className="text-sm bg-muted p-2 rounded-md mb-3">
-                      <div><strong>Էլ․ հասցե:</strong> gitedu@bk.ru</div>
-                      <div><strong>Գաղտնաբառ:</strong> Qolej2025*</div>
-                      <Button 
-                        variant="outline" 
-                        size="sm" 
-                        className="mt-2 h-7" 
-                        onClick={handleResetAdmin}
-                        disabled={resettingAdmin}
-                      >
-                        <RefreshCw size={14} className={`mr-1 ${resettingAdmin ? 'animate-spin' : ''}`} />
-                        {resettingAdmin ? 'Վերականգնում...' : 'Վերականգնել ադմինի հաշիվը'}
-                      </Button>
-                    </div>
-
-                    <p className="text-sm text-muted-foreground mb-2">Սպասման մեջ գտնվող օգտատերեր՝</p>
-                    <div className="max-h-40 overflow-auto text-xs">
-                      {pendingUsers.length === 0 ? (
-                        <p className="text-muted-foreground">Չկան սպասման մեջ գտնվող օգտատերեր</p>
-                      ) : (
-                        <ul className="space-y-2">
-                          {pendingUsers.map((user, index) => (
-                            <li key={index} className="p-2 bg-muted rounded-md">
-                              <div><strong>Անուն:</strong> {user.name}</div>
-                              <div><strong>Էլ․ հասցե:</strong> {user.email}</div>
-                              <div><strong>Դերակատարում:</strong> {user.role}</div>
-                              <div><strong>Հաստատված:</strong> {user.verified ? 'Այո' : 'Ոչ'}</div>
-                              <div><strong>Թույլատրված:</strong> {user.registrationApproved ? 'Այո' : 'Ոչ'}</div>
-                              <div className="flex items-center">
-                                <strong>Հաստատման հղում:</strong>
-                                <Button 
-                                  variant="ghost" 
-                                  size="sm" 
-                                  className="h-5 px-2 ml-1"
-                                  onClick={() => {
-                                    const link = `${window.location.origin}/verify-email?token=${user.verificationToken}`;
-                                    navigator.clipboard.writeText(link);
-                                    toast.success('Հաստատման հղումը պատճենված է');
-                                  }}
-                                >
-                                  <Copy size={12} />
-                                </Button>
-                              </div>
-                            </li>
-                          ))}
-                        </ul>
-                      )}
-                    </div>
+                    <Alert className="mb-3">
+                      <AlertCircle className="h-4 w-4" />
+                      <AlertTitle>Հիմնական ադմինիստրատորի հաշիվ</AlertTitle>
+                      <AlertDescription>
+                        <div className="mt-2 font-medium">
+                          <div><strong>Էլ․ հասցե:</strong> gitedu@bk.ru</div>
+                          <div><strong>Գաղտնաբառ:</strong> Qolej2025*</div>
+                        </div>
+                        <p className="mt-2 text-sm text-muted-foreground">
+                          Այս հաշիվն ունի բոլոր թույլտվությո��նները և կարող է հաստատել նոր օգտատերերի
+                        </p>
+                      </AlertDescription>
+                    </Alert>
                   </div>
                 )}
               </TabsContent>
@@ -386,7 +336,6 @@ const Login: React.FC = () => {
                         </Button>
                       </div>
 
-                      {/* Verification Link Display */}
                       <div className="mt-4 bg-muted p-3 rounded-md">
                         <p className="font-medium text-sm flex items-center mb-2">
                           <Info size={14} className="mr-1" />
@@ -491,84 +440,5 @@ const Login: React.FC = () => {
                         {getRoleDescription(role)}
                       </p>
                       
-                      {/* Show warning for roles that need approval */}
-                      {role !== 'student' && (
-                        <p className="text-sm text-amber-600 mt-2">
-                          Նշում: {role === 'employer' ? 'Գործատուի' : role === 'lecturer' ? 'Դասախոսի' : 'Ղեկավարի'} հաշիվը պետք է հաստատվի ադմինիստրատորի կողմից:
-                        </p>
-                      )}
-                    </div>
-                    
-                    {/* Show organization field only for employers */}
-                    {role === 'employer' && (
-                      <div className="space-y-2">
-                        <Label htmlFor="organization">Կազմակերպություն</Label>
-                        <Input
-                          id="organization"
-                          type="text"
-                          placeholder="Կազմակերպության անունը"
-                          value={organization}
-                          onChange={(e) => setOrganization(e.target.value)}
-                          required
-                        />
-                      </div>
-                    )}
-                    
-                    <div className="flex items-center space-x-2 mt-4">
-                      <Checkbox 
-                        id="terms" 
-                        checked={acceptTerms} 
-                        onCheckedChange={(checked) => setAcceptTerms(checked as boolean)}
-                      />
-                      <Label htmlFor="terms" className="text-sm">
-                        Ես համաձայն եմ <Button variant="link" className="p-0 h-auto text-sm">գաղտնիության քաղաքականության</Button> պայմաններին
-                      </Label>
-                    </div>
-                    
-                    <Button type="submit" className="w-full" disabled={isLoading}>
-                      {isLoading ? 'Գրանցում...' : 'Գրանցվել'}
-                    </Button>
-                  </form>
-                )}
-              </TabsContent>
-              
-              <TabsContent value="demo">
-                <div className="space-y-3">
-                  <p className="text-sm text-muted-foreground mb-4">
-                    Ընտրեք ցանկացած դերակատարում՝ համակարգ մուտք գործելու համար:
-                  </p>
-                  
-                  {mockUsers
-                    .filter(user => user.registrationApproved)
-                    .map(user => (
-                    <div 
-                      key={user.id}
-                      className="flex items-center p-3 border rounded-lg hover:bg-accent cursor-pointer"
-                      onClick={() => handleQuickLogin(user.role)}
-                    >
-                      <Avatar className="h-10 w-10 mr-3">
-                        <AvatarImage src={user.avatar} alt={user.name} />
-                        <AvatarFallback>{user.name.substring(0, 2)}</AvatarFallback>
-                      </Avatar>
-                      <div>
-                        <p className="font-medium">{user.name}</p>
-                        <p className="text-sm text-muted-foreground">{user.email}</p>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </TabsContent>
-            </Tabs>
-          </CardContent>
-          <CardFooter className="flex justify-center">
-            <p className="text-sm text-muted-foreground">
-              {/* Removed "Demo version" text since we now have real accounts */}
-            </p>
-          </CardFooter>
-        </Card>
-      </div>
-    </div>
-  );
-};
+                      {
 
-export default Login;
