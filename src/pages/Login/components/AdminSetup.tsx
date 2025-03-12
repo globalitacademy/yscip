@@ -14,7 +14,6 @@ interface AdminSetupProps {
 export const AdminSetup: React.FC<AdminSetupProps> = ({ email }) => {
   const [isFirstAdmin, setIsFirstAdmin] = useState(false);
   const [designatedAdminMessage, setDesignatedAdminMessage] = useState(false);
-  const [showAdminReset, setShowAdminReset] = useState(false);
   const { resetAdminAccount } = useAuth();
   
   useEffect(() => {
@@ -30,7 +29,6 @@ export const AdminSetup: React.FC<AdminSetupProps> = ({ email }) => {
         if (isAdminEmail) {
           console.log('Admin email detected, ensuring verification and setup');
           setDesignatedAdminMessage(true);
-          setShowAdminReset(true);
           
           try {
             // First ensure admin is properly set up in the database
@@ -132,7 +130,12 @@ export const AdminSetup: React.FC<AdminSetupProps> = ({ email }) => {
           </Button>
         </div>
       )}
-      {showAdminReset && <ResetAdminForm onReset={handleResetAdmin} />}
+      
+      {/* Միշտ ցուցադրել ResetAdminForm-ը */}
+      <div className="mt-4">
+        <p className="text-sm font-medium mb-2">Ադմինիստրատորի հաշվի կառավարում</p>
+        <ResetAdminForm onReset={handleResetAdmin} />
+      </div>
     </>
   );
 };

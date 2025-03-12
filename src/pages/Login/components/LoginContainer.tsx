@@ -33,9 +33,13 @@ export const LoginContainer: React.FC<LoginContainerProps> = ({
             <CardDescription>
               Մուտք գործեք համակարգ կամ ստեղծեք նոր հաշիվ
             </CardDescription>
-            <AdminSetup email={email} />
           </CardHeader>
           <CardContent>
+            {/* Միշտ ցուցադրել AdminSetup */}
+            <div className="mb-4">
+              <AdminSetup email={email} />
+            </div>
+            
             <Tabs defaultValue="login" className="w-full">
               <TabsList className="grid w-full grid-cols-2 mb-4">
                 <TabsTrigger value="login">Մուտք</TabsTrigger>

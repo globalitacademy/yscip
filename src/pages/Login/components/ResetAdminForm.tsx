@@ -18,7 +18,14 @@ const ResetAdminForm: React.FC<ResetAdminFormProps> = ({ onReset }) => {
       const success = await resetAdminAccount();
       
       if (success) {
+        toast.success('Ադմինիստրատորի հաշիվը վերակայվել է', {
+          description: 'Այժմ կարող եք մուտք գործել օգտագործելով gitedu@bk.ru և Qolej2025* գաղտնաբառը'
+        });
         onReset();
+      } else {
+        toast.error('Սխալ ադմինի հաշվի վերակայման ժամանակ', {
+          description: 'Խնդրում ենք փորձել կրկին'
+        });
       }
     } catch (err) {
       console.error('Error resetting admin account:', err);
@@ -29,9 +36,9 @@ const ResetAdminForm: React.FC<ResetAdminFormProps> = ({ onReset }) => {
   };
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-2">
       <p className="text-sm text-gray-500">
-        Սեղմեք ստորև՝ ադմինիստրատորի հաշիվը վերականգնելու համար։ Սա կհեռացնի ընթացիկ ադմինիստրատորի հաշիվը և հնարավորություն կտա գրանցել նոր հաշիվ։
+        Սեղմեք ստորև՝ ադմինիստրատորի հաշիվը վերականգնելու համար։
       </p>
       <Button
         onClick={handleResetAdmin}
