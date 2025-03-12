@@ -6,6 +6,7 @@ import { Label } from '@/components/ui/label';
 import { Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
 import { useAuth } from '@/contexts/auth/AuthContext';
+import { supabase } from '@/integrations/supabase/client';
 
 interface LoginFormProps {
   isLoading?: boolean;
