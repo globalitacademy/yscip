@@ -17,6 +17,7 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog';
 import { User } from '@/data/userRoles';
+import { supabase } from '@/integrations/supabase/client';
 
 interface ProfileEditorProps {
   isOpen: boolean;
@@ -24,7 +25,7 @@ interface ProfileEditorProps {
 }
 
 const ProfileEditor: React.FC<ProfileEditorProps> = ({ isOpen, onClose }) => {
-  const { user } = useAuth();
+  const { user, setUser } = useAuth();
   const [profileData, setProfileData] = useState<Partial<User>>({
     name: '',
     email: '',
@@ -34,6 +35,7 @@ const ProfileEditor: React.FC<ProfileEditorProps> = ({ isOpen, onClose }) => {
     avatar: '',
     bio: ''
   });
+  const [loading, setLoading] = useState(false);
   
   useEffect(() => {
     if (user) {
@@ -65,11 +67,63 @@ const ProfileEditor: React.FC<ProfileEditorProps> = ({ isOpen, onClose }) => {
     }));
   };
   
-  const handleSave = () => {
-    // In a real application, this would save to the backend
-    // For now, we'll just show a toast message
-    toast.success("Պրոֆիլը հաջողությամբ թարմացվել է");
-    onClose();
+  const handleSave = async () => {
+    if (!user) return;
+    
+    setLoading(true);
+    try {
+      // Update user in Supabase database
+      const { error } = await supabase
+        .from('users')
+        .update({
+          name: profileData.name,
+          department: profileData.department,
+          course: profileData.course,
+          group_name: profileData.group,
+          avatar: profileData.avatar,
+          // Store bio in user metadata
+          updated_at: new Date().toISOString()
+        })
+        .eq('id', user.id);
+
+      if (error) {
+        console.error('Error updating user profile:', error);
+        toast.error('Սխալ է տեղի ունեցել պրոֆիլը թարմացնելիս։');
+      } else {
+        // Update local user state
+        if (setUser) {
+          const updatedUser = {
+            ...user,
+            name: profileData.name || user.name,
+            department: profileData.department || user.department,
+            course: profileData.course || user.course,
+            group: profileData.group || user.group,
+            avatar: profileData.avatar || user.avatar,
+            bio: profileData.bio
+          };
+          
+          // Update auth user metadata for bio
+          if (profileData.bio) {
+            await supabase.auth.updateUser({
+              data: { bio: profileData.bio }
+            });
+          }
+          
+          setUser(updatedUser);
+          
+          // Also update localStorage to persist changes
+          localStorage.setItem('currentUser', JSON.stringify(updatedUser));
+          
+          toast.success("Պրոֆիլը հաջողությամբ թարմացվել է");
+          onClose();
+        }
+      }
+    } catch (error) {
+      console.error('Error saving profile:', error);
+      toast.error('Սխալ է տեղի ունեցել պրոֆիլը թարմացնելիս։');
+    } finally {
+      setLoading(false);
+    }
   };
   
   return (
@@ -169,8 +223,16 @@ const ProfileEditor: React.FC<ProfileEditorProps> = ({ isOpen, onClose }) => {
         </div>
         
         <DialogFooter>
-          <Button variant="outline" onClick={onClose}>Չեղարկել</Button>
-          <Button onClick={handleSave}>Պահպանել</Button>
+          <Button variant="outline" onClick={onClose} disabled={loading}>Չեղարկել</Button>
+          <Button onClick={handleSave} disabled={loading}>
+            {loading ? 
+              <span className="flex items-center gap-2">
+                <span className="animate-spin h-4 w-4 border-2 border-b-transparent rounded-full"></span>
+                Պահպանում...
+              </span> : 
+              'Պահպանել'
+            }
+          </Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>
