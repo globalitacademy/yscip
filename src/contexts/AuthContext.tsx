@@ -1,10 +1,11 @@
 
-import React, { createContext, useContext, useState, useEffect } from 'react';
+import React, { createContext, useContext } from 'react';
 import { User, UserRole, mockUsers } from '@/data/userRoles';
 import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
-import { AuthContextType, PendingUser } from '@/types/auth';
+import { AuthContextType } from '@/types/auth';
 import { handleFallbackLogin, handleSignUpUser } from '@/utils/authUtils';
+import { useAuthSession } from '@/hooks/useAuthSession';
 
 // Add superadmin to mockUsers
 const superAdminUser: User = {
@@ -33,108 +34,14 @@ export const useAuth = () => {
 };
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const [user, setUser] = useState<User | null>(null);
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
-  const [pendingUsers, setPendingUsers] = useState<PendingUser[]>([]);
-
-  // Load initial session
-  useEffect(() => {
-    const checkSession = async () => {
-      const { data: { session } } = await supabase.auth.getSession();
-      
-      if (session) {
-        try {
-          const { data: userData, error } = await supabase
-            .from('users')
-            .select('*')
-            .eq('id', session.user.id)
-            .single();
-          
-          if (error) throw error;
-          
-          if (userData) {
-            const loggedInUser: User = {
-              id: userData.id,
-              name: userData.name,
-              email: userData.email,
-              role: userData.role as UserRole,
-              avatar: userData.avatar,
-              department: userData.department,
-              registrationApproved: userData.registration_approved,
-            };
-            
-            setUser(loggedInUser);
-            setIsAuthenticated(true);
-            localStorage.setItem('currentUser', JSON.stringify(loggedInUser));
-          }
-        } catch (error) {
-          console.error('Error fetching user profile:', error);
-        }
-      } else {
-        const storedUser = localStorage.getItem('currentUser');
-        if (storedUser) {
-          setUser(JSON.parse(storedUser));
-          setIsAuthenticated(true);
-        }
-      }
-    };
-    
-    checkSession();
-    
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      async (event, session) => {
-        if (event === 'SIGNED_IN' && session) {
-          try {
-            const { data: userData, error } = await supabase
-              .from('users')
-              .select('*')
-              .eq('id', session.user.id)
-              .single();
-            
-            if (error) throw error;
-            
-            if (userData) {
-              const loggedInUser: User = {
-                id: userData.id,
-                name: userData.name,
-                email: userData.email,
-                role: userData.role as UserRole,
-                avatar: userData.avatar,
-                department: userData.department,
-                registrationApproved: userData.registration_approved,
-              };
-              
-              setUser(loggedInUser);
-              setIsAuthenticated(true);
-              localStorage.setItem('currentUser', JSON.stringify(loggedInUser));
-            }
-          } catch (error) {
-            console.error('Error fetching user profile:', error);
-          }
-        } else if (event === 'SIGNED_OUT') {
-          setUser(null);
-          setIsAuthenticated(false);
-          localStorage.removeItem('currentUser');
-        }
-      }
-    );
-    
-    const storedPendingUsers = localStorage.getItem('pendingUsers');
-    if (storedPendingUsers) {
-      setPendingUsers(JSON.parse(storedPendingUsers));
-    }
-    
-    return () => {
-      subscription.unsubscribe();
-    };
-  }, []);
-
-  // Save pendingUsers to localStorage when it changes
-  useEffect(() => {
-    if (pendingUsers.length > 0) {
-      localStorage.setItem('pendingUsers', JSON.stringify(pendingUsers));
-    }
-  }, [pendingUsers]);
+  const { 
+    user, 
+    isAuthenticated, 
+    pendingUsers, 
+    setUser, 
+    setIsAuthenticated, 
+    setPendingUsers 
+  } = useAuthSession();
 
   const login = async (email: string, password: string): Promise<boolean> => {
     if (email === 'superadmin@example.com' && password === 'SuperAdmin123') {
@@ -190,7 +97,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     localStorage.removeItem('currentUser');
   };
 
-  const registerUser = async (userData: Partial<User>): Promise<{success: boolean, token?: string}> => {
+  const registerUser = async (userData: Partial<User> & { password: string }): Promise<{success: boolean, token?: string}> => {
     try {
       const emailExists = mockUsers.some(user => user.email.toLowerCase() === userData.email?.toLowerCase());
       if (emailExists) {
@@ -204,16 +111,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         return { success: false };
       }
       
-      const password = userData.password;
-      if (!password) {
-        toast.error(`Գաղտնաբառը պարտադիր է։`);
-        return { success: false };
-      }
-      
       try {
         const { data, error } = await supabase.auth.signUp({
           email: userData.email || '',
-          password: password,
+          password: userData.password,
           options: {
             data: {
               name: userData.name,
@@ -225,7 +126,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         
         if (error) {
           console.error('Supabase registration error:', error);
-          return handleSignUpUser(userData, password, pendingUsers, setPendingUsers);
+          return handleSignUpUser(userData, pendingUsers, setPendingUsers);
         }
         
         toast.success(
@@ -237,7 +138,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         return { success: true };
       } catch (supaError) {
         console.error('Supabase registration error:', supaError);
-        return handleSignUpUser(userData, password, pendingUsers, setPendingUsers);
+        return handleSignUpUser(userData, pendingUsers, setPendingUsers);
       }
     } catch (error) {
       console.error('Registration error:', error);
@@ -301,9 +202,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   };
 
-  const getPendingUsers = () => {
-    return pendingUsers;
-  };
+  const getPendingUsers = () => pendingUsers;
   
   const resetAdminAccount = async (): Promise<boolean> => {
     try {

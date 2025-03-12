@@ -63,10 +63,9 @@ export const handleFallbackLogin = (
 };
 
 export const handleSignUpUser = async (
-  userData: Partial<User>,
-  password: string,
+  userData: Partial<User> & { password: string },
   pendingUsers: PendingUser[],
-  setPendingUsers: (users: PendingUser[]) => void,
+  setPendingUsers: React.Dispatch<React.SetStateAction<PendingUser[]>>,
 ) => {
   const verificationToken = generateVerificationToken();
     
@@ -76,11 +75,11 @@ export const handleSignUpUser = async (
     verificationToken,
     verified: false,
     registrationApproved: userData.role === 'student',
-    password,
+    password: userData.password,
     avatar: `https://api.dicebear.com/7.x/avataaars/svg?seed=${Date.now()}`
   };
   
-  setPendingUsers(prev => [...prev, newPendingUser]);
+  setPendingUsers(prevUsers => [...prevUsers, newPendingUser]);
   
   console.log(`Verification email sent to ${userData.email} with token: ${verificationToken}`);
   console.log(`Verification link: http://localhost:3000/verify-email?token=${verificationToken}`);
