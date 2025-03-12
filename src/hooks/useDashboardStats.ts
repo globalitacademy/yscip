@@ -83,9 +83,8 @@ export const useDashboardStats = () => {
         // Fetch users by role
         const { data: usersByRoleData, error: usersByRoleError } = await supabase
           .from('users')
-          .select('role, count')
           .select('role')
-          .not('role', 'is', null);
+          .is('role', 'not.null');  // Fixed: changed .not('role', 'is', null) to .is('role', 'not.null')
 
         if (usersByRoleError) throw usersByRoleError;
 
@@ -123,7 +122,7 @@ export const useDashboardStats = () => {
         const { data: coursesData, error: coursesError } = await supabase
           .from('users')
           .select('course')
-          .not('course', 'is', null);
+          .is('course', 'not.null');  // Fixed: changed .not('course', 'is', null) to .is('course', 'not.null')
 
         if (coursesError) throw coursesError;
 
