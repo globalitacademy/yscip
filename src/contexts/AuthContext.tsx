@@ -3,7 +3,7 @@ import React, { createContext, useContext } from 'react';
 import { User, UserRole, mockUsers } from '@/data/userRoles';
 import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
-import { AuthContextType } from '@/types/auth';
+import { AuthContextType, PendingUser } from '@/types/auth';
 import { handleFallbackLogin, handleSignUpUser } from '@/utils/authUtils';
 import { useAuthSession } from '@/hooks/useAuthSession';
 
