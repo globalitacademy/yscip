@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -6,15 +7,8 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { toast } from 'sonner';
 import { useAuth } from '@/contexts/AuthContext';
 import { UserRole } from '@/data/userRoles';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { Info, Copy, AlertCircle } from 'lucide-react';
+import RoleSelector from './RoleSelector';
+import { validateEmail, validatePassword, validateConfirmPassword } from '@/utils/validation';
 
 interface RegistrationFormProps {
   onSuccess: (email: string, token: string) => void;
@@ -23,36 +17,44 @@ interface RegistrationFormProps {
 const RegistrationForm: React.FC<RegistrationFormProps> = ({ onSuccess }) => {
   const { registerUser } = useAuth();
   const [isLoading, setIsLoading] = useState(false);
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [confirmPassword, setConfirmPassword] = useState('');
-  const [name, setName] = useState('');
-  const [role, setRole] = useState<UserRole>('student');
-  const [organization, setOrganization] = useState('');
-  const [acceptTerms, setAcceptTerms] = useState(false);
+  const [formData, setFormData] = useState({
+    email: '',
+    password: '',
+    confirmPassword: '',
+    name: '',
+    role: 'student' as UserRole,
+    organization: '',
+    acceptTerms: false
+  });
   
-  const [emailError, setEmailError] = useState('');
-  const [passwordError, setPasswordError] = useState('');
-  const [confirmPasswordError, setConfirmPasswordError] = useState('');
+  const [errors, setErrors] = useState({
+    email: '',
+    password: '',
+    confirmPassword: ''
+  });
 
-  const validateEmail = (email: string): boolean => {
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    const isValid = emailRegex.test(email);
-    setEmailError(isValid ? '' : 'Մուտքագրեք վավեր էլ․ հասցե');
-    return isValid;
-  };
-
-  const validatePassword = (password: string): boolean => {
-    const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{8,}$/;
-    const isValid = passwordRegex.test(password);
-    setPasswordError(isValid ? '' : 'Գաղտնաբառը պետք է պարունակի առնվազն 8 նիշ, մեծատառ, փոքրատառ և թվանշան');
-    return isValid;
-  };
-
-  const validateConfirmPassword = (confirmPass: string): boolean => {
-    const isValid = confirmPass === password;
-    setConfirmPasswordError(isValid ? '' : 'Գաղտնաբառերը չեն համընկնում');
-    return isValid;
+  const handleInputChange = (field: string, value: string | boolean) => {
+    setFormData(prev => ({ ...prev, [field]: value }));
+    
+    if (field === 'email') {
+      const { error } = validateEmail(value as string);
+      setErrors(prev => ({ ...prev, email: error }));
+    }
+    
+    if (field === 'password') {
+      const { error } = validatePassword(value as string);
+      setErrors(prev => ({ ...prev, password: error }));
+      
+      if (formData.confirmPassword) {
+        const { error: confirmError } = validateConfirmPassword(value as string, formData.confirmPassword);
+        setErrors(prev => ({ ...prev, confirmPassword: confirmError }));
+      }
+    }
+    
+    if (field === 'confirmPassword') {
+      const { error } = validateConfirmPassword(formData.password, value as string);
+      setErrors(prev => ({ ...prev, confirmPassword: error }));
+    }
   };
 
   const handleRegister = async (e: React.FormEvent) => {
@@ -60,18 +62,19 @@ const RegistrationForm: React.FC<RegistrationFormProps> = ({ onSuccess }) => {
     setIsLoading(true);
 
     try {
-      const isEmailValid = validateEmail(email);
-      const isPasswordValid = validatePassword(password);
-      const isConfirmPasswordValid = validateConfirmPassword(confirmPassword);
+      const emailValidation = validateEmail(formData.email);
+      const passwordValidation = validatePassword(formData.password);
+      const confirmPasswordValidation = validateConfirmPassword(formData.password, formData.confirmPassword);
       
-      if (!name || !isEmailValid || !isPasswordValid || !isConfirmPasswordValid || !acceptTerms) {
-        if (!name) {
+      if (!formData.name || !emailValidation.isValid || !passwordValidation.isValid || 
+          !confirmPasswordValidation.isValid || !formData.acceptTerms) {
+        if (!formData.name) {
           toast.error('Սխալ', {
             description: 'Անուն Ազգանունը պարտադիր է',
           });
         }
         
-        if (!acceptTerms) {
+        if (!formData.acceptTerms) {
           toast.error('Սխալ', {
             description: 'Պետք է համաձայնեք գաղտնիության քաղաքականությանը',
           });
@@ -81,7 +84,7 @@ const RegistrationForm: React.FC<RegistrationFormProps> = ({ onSuccess }) => {
         return;
       }
 
-      if (role === 'employer' && !organization) {
+      if (formData.role === 'employer' && !formData.organization) {
         toast.error('Սխալ', {
           description: 'Կազմակերպության անունը պարտադիր է գործատուի համար',
         });
@@ -90,18 +93,18 @@ const RegistrationForm: React.FC<RegistrationFormProps> = ({ onSuccess }) => {
       }
 
       const userData = {
-        name,
-        email,
-        role,
-        password,
-        registrationApproved: role === 'student',
-        ...(role === 'employer' && { organization })
+        name: formData.name,
+        email: formData.email,
+        role: formData.role,
+        password: formData.password,
+        registrationApproved: formData.role === 'student',
+        ...(formData.role === 'employer' && { organization: formData.organization })
       };
 
       const result = await registerUser(userData);
       
       if (result.success) {
-        onSuccess(email, result.token || '');
+        onSuccess(formData.email, result.token || '');
       }
     } catch (error) {
       toast.error('Սխալ', {
@@ -109,23 +112,6 @@ const RegistrationForm: React.FC<RegistrationFormProps> = ({ onSuccess }) => {
       });
     } finally {
       setIsLoading(false);
-    }
-  };
-
-  const getRoleDescription = (selectedRole: UserRole) => {
-    switch (selectedRole) {
-      case 'admin':
-        return 'Կառավարել օգտատերերին, նախագծերը և համակարգը';
-      case 'lecturer':
-        return 'Ստեղծել առաջադրանքներ, գնահատել ուսանողներին';
-      case 'project_manager':
-        return 'Կառավարել նախագծերը, հետևել առաջընթացին';
-      case 'employer':
-        return 'Հայտարարել նոր նախագծեր, համագործակցել ուսանողների հետ';
-      case 'student':
-        return 'Ընտրել և կատարել նախագծեր, զարգացնել հմտություններ';
-      default:
-        return '';
     }
   };
 
@@ -137,8 +123,8 @@ const RegistrationForm: React.FC<RegistrationFormProps> = ({ onSuccess }) => {
           id="name"
           type="text"
           placeholder="Անուն Ազգանուն"
-          value={name}
-          onChange={(e) => setName(e.target.value)}
+          value={formData.name}
+          onChange={(e) => handleInputChange('name', e.target.value)}
           required
         />
       </div>
@@ -149,15 +135,12 @@ const RegistrationForm: React.FC<RegistrationFormProps> = ({ onSuccess }) => {
           id="register-email"
           type="email"
           placeholder="name@example.com"
-          value={email}
-          onChange={(e) => {
-            setEmail(e.target.value);
-            if (e.target.value) validateEmail(e.target.value);
-          }}
+          value={formData.email}
+          onChange={(e) => handleInputChange('email', e.target.value)}
           required
-          className={emailError ? "border-red-500" : ""}
+          className={errors.email ? "border-red-500" : ""}
         />
-        {emailError && <p className="text-sm text-red-500 mt-1">{emailError}</p>}
+        {errors.email && <p className="text-sm text-red-500 mt-1">{errors.email}</p>}
       </div>
       
       <div className="space-y-2">
@@ -166,16 +149,12 @@ const RegistrationForm: React.FC<RegistrationFormProps> = ({ onSuccess }) => {
           id="register-password"
           type="password"
           placeholder="••••••••"
-          value={password}
-          onChange={(e) => {
-            setPassword(e.target.value);
-            if (e.target.value) validatePassword(e.target.value);
-            if (confirmPassword) validateConfirmPassword(confirmPassword);
-          }}
+          value={formData.password}
+          onChange={(e) => handleInputChange('password', e.target.value)}
           required
-          className={passwordError ? "border-red-500" : ""}
+          className={errors.password ? "border-red-500" : ""}
         />
-        {passwordError && <p className="text-sm text-red-500 mt-1">{passwordError}</p>}
+        {errors.password && <p className="text-sm text-red-500 mt-1">{errors.password}</p>}
       </div>
       
       <div className="space-y-2">
@@ -184,47 +163,25 @@ const RegistrationForm: React.FC<RegistrationFormProps> = ({ onSuccess }) => {
           id="confirm-password"
           type="password"
           placeholder="••••••••"
-          value={confirmPassword}
-          onChange={(e) => {
-            setConfirmPassword(e.target.value);
-            if (e.target.value) validateConfirmPassword(e.target.value);
-          }}
+          value={formData.confirmPassword}
+          onChange={(e) => handleInputChange('confirmPassword', e.target.value)}
           required
-          className={confirmPasswordError ? "border-red-500" : ""}
+          className={errors.confirmPassword ? "border-red-500" : ""}
         />
-        {confirmPasswordError && <p className="text-sm text-red-500 mt-1">{confirmPasswordError}</p>}
+        {errors.confirmPassword && <p className="text-sm text-red-500 mt-1">{errors.confirmPassword}</p>}
       </div>
       
-      <div className="space-y-2">
-        <Label htmlFor="role">Դերակատարում</Label>
-        <Select
-          value={role}
-          onValueChange={(value) => setRole(value as UserRole)}
-        >
-          <SelectTrigger id="role">
-            <SelectValue placeholder="Ընտրեք դերը" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="student">Ուսանող</SelectItem>
-            <SelectItem value="lecturer">Դասախոս</SelectItem>
-            <SelectItem value="project_manager">Նախագծի ղեկավար</SelectItem>
-            <SelectItem value="employer">Գործատու</SelectItem>
-          </SelectContent>
-        </Select>
-        <p className="text-sm text-muted-foreground mt-1">
-          {getRoleDescription(role)}
-        </p>
-      </div>
+      <RoleSelector role={formData.role} onRoleChange={(role) => handleInputChange('role', role)} />
         
-      {role === 'employer' && (
+      {formData.role === 'employer' && (
         <div className="space-y-2">
           <Label htmlFor="organization">Կազմակերպության անունը</Label>
           <Input
             id="organization"
             type="text"
             placeholder="Կազմակերպության անունը"
-            value={organization}
-            onChange={(e) => setOrganization(e.target.value)}
+            value={formData.organization}
+            onChange={(e) => handleInputChange('organization', e.target.value)}
             required
           />
         </div>
@@ -233,10 +190,10 @@ const RegistrationForm: React.FC<RegistrationFormProps> = ({ onSuccess }) => {
       <div className="flex items-center space-x-2 mt-4">
         <Checkbox 
           id="terms" 
-          checked={acceptTerms}
+          checked={formData.acceptTerms}
           onCheckedChange={(checked) => {
             if (typeof checked === 'boolean') {
-              setAcceptTerms(checked);
+              handleInputChange('acceptTerms', checked);
             }
           }} 
         />
