@@ -14,6 +14,7 @@ serve(async (req) => {
   }
 
   try {
+    console.log('Ensuring admin activation...')
     const supabaseAdmin = createClient(
       Deno.env.get('SUPABASE_URL') || '',
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') || '',
@@ -32,6 +33,8 @@ serve(async (req) => {
 
     // Also perform more direct verification
     await supabaseAdmin.rpc('verify_designated_admin')
+    
+    console.log('Admin activation successful')
     
     // Return success 
     return new Response(

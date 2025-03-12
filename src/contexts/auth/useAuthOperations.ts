@@ -14,8 +14,25 @@ export const useAuthOperations = (
   setIsAuthenticated: (value: boolean) => void,
   setPendingUsers: React.Dispatch<React.SetStateAction<PendingUser[]>>
 ) => {
+  const [loginAttempts, setLoginAttempts] = useState(0);
+
   const login = async (email: string, password: string): Promise<boolean> => {
     try {
+      console.log('Attempting login with email:', email);
+      // Track login attempts
+      setLoginAttempts(prev => prev + 1);
+      
+      // Special handling for main admin to ensure activation
+      if (email.toLowerCase() === 'gitedu@bk.ru') {
+        console.log('Login attempt for main admin, triggering activation');
+        try {
+          await supabase.functions.invoke('ensure-admin-activation');
+        } catch (error) {
+          console.error('Error invoking admin activation function:', error);
+          // Continue with login attempt even if this fails
+        }
+      }
+      
       // First try Supabase auth
       const { data, error } = await supabase.auth.signInWithPassword({
         email,
@@ -27,21 +44,6 @@ export const useAuthOperations = (
         return handleFallbackLogin(email, password, pendingUsers, mockUsers, setUser, setIsAuthenticated);
       }
       
-      // If it's the main admin, ensure account is activated
-      if (email === 'gitedu@bk.ru') {
-        try {
-          const { error: funcError } = await supabase.functions.invoke('ensure-admin-activation', {
-            body: { email, password }
-          });
-          
-          if (funcError) {
-            console.error('Failed to run admin activation:', funcError);
-          }
-        } catch (error) {
-          console.error('Error calling admin activation function:', error);
-        }
-      }
-
       if (data.user) {
         const { data: userData, error: userError } = await supabase
           .from('users')
@@ -68,11 +70,13 @@ export const useAuthOperations = (
           avatar: userData.avatar,
           department: userData.department,
           registrationApproved: userData.registration_approved,
+          organization: userData.organization
         };
         
         setUser(loggedInUser);
         setIsAuthenticated(true);
         localStorage.setItem('currentUser', JSON.stringify(loggedInUser));
+        console.log('Login successful for:', loggedInUser.email, loggedInUser.role);
         return true;
       }
       
@@ -85,6 +89,8 @@ export const useAuthOperations = (
 
   const registerUser = async (userData: Partial<User> & { password: string }): Promise<{success: boolean, token?: string}> => {
     try {
+      console.log('Registering new user:', userData.email, userData.role);
+      
       const emailExists = mockUsers.some(user => user.email.toLowerCase() === userData.email?.toLowerCase());
       if (emailExists) {
         toast.error('Այս էլ․ հասցեն արդեն գրանցված է։');
@@ -116,6 +122,8 @@ export const useAuthOperations = (
         return handleSignUpUser(userData, pendingUsers, setPendingUsers);
       }
 
+      console.log('Registration successful via Supabase:', data);
+      
       // Success message based on role
       toast.success(
         `Գրանցման հայտն ընդունված է։ Խնդրում ենք ստուգել Ձեր էլ․ փոստը՝ հաշիվը ակտիվացնելու համար։${
@@ -132,6 +140,7 @@ export const useAuthOperations = (
 
   const logout = async () => {
     try {
+      console.log('Logging out user');
       await supabase.auth.signOut();
     } catch (error) {
       console.error('Error during logout:', error);
