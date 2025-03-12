@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
@@ -9,6 +9,7 @@ import { Info, Copy, AlertCircle } from 'lucide-react';
 import { UserRole } from '@/data/userRoles';
 import { useAuth } from '@/contexts/AuthContext';
 import { toast } from 'sonner';
+import { useNavigate } from 'react-router-dom';
 import LoginForm from '@/components/auth/LoginForm';
 import RegistrationForm from '@/components/auth/RegistrationForm';
 import DemoAccounts from '@/components/auth/DemoAccounts';
@@ -19,9 +20,46 @@ const Login: React.FC = () => {
   const [verificationSent, setVerificationSent] = useState(false);
   const [resendEmail, setResendEmail] = useState('');
   const [verificationToken, setVerificationToken] = useState('');
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const { sendVerificationEmail } = useAuth();
+  const { sendVerificationEmail, login } = useAuth();
+  const navigate = useNavigate();
+  
+  // State for demo account quick login
+  const [demoEmail, setDemoEmail] = useState('');
+  const [demoPassword, setDemoPassword] = useState('');
+  const [isLoggingIn, setIsLoggingIn] = useState(false);
+
+  // Handle demo login when credentials are set
+  useEffect(() => {
+    const performDemoLogin = async () => {
+      if (demoEmail && demoPassword && !isLoggingIn) {
+        setIsLoggingIn(true);
+        try {
+          const success = await login(demoEmail, demoPassword);
+          if (success) {
+            toast.success('Մուտքն հաջողվել է', {
+              description: 'Դուք հաջողությամբ մուտք եք գործել համակարգ',
+            });
+            navigate('/');
+          } else {
+            toast.error('Մուտքը չի հաջողվել', {
+              description: 'Դեմո հաշվի մուտքի տվյալները սխալ են',
+            });
+          }
+        } catch (error) {
+          toast.error('Սխալ', {
+            description: 'Տեղի ունեցավ անսպասելի սխալ',
+          });
+        } finally {
+          setIsLoggingIn(false);
+          // Clear demo login state
+          setDemoEmail('');
+          setDemoPassword('');
+        }
+      }
+    };
+
+    performDemoLogin();
+  }, [demoEmail, demoPassword, login, navigate]);
 
   const handleResendVerification = async () => {
     if (!resendEmail) return;
@@ -53,8 +91,8 @@ const Login: React.FC = () => {
 
   const handleQuickLogin = (role: UserRole) => {
     const email = `${role}@example.com`;
-    setEmail(email);
-    setPassword('password');
+    setDemoEmail(email);
+    setDemoPassword('password');
   };
 
   return (
@@ -154,6 +192,11 @@ const Login: React.FC = () => {
               
               <TabsContent value="demo">
                 <DemoAccounts onQuickLogin={handleQuickLogin} />
+                {isLoggingIn && (
+                  <div className="mt-4 text-center">
+                    <p>Մուտք դեմո հաշիվ...</p>
+                  </div>
+                )}
               </TabsContent>
             </Tabs>
           </CardContent>
