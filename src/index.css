@@ -73,16 +73,6 @@
     transform: translateY(-8px);
   }
 
-  /* Hide scrollbar but keep functionality */
-  .hide-scrollbar {
-    -ms-overflow-style: none;  /* IE and Edge */
-    scrollbar-width: none;  /* Firefox */
-  }
-  
-  .hide-scrollbar::-webkit-scrollbar {
-    display: none; /* Chrome, Safari, Opera */
-  }
-
   /* Custom scroll bar */
   ::-webkit-scrollbar {
     width: 6px;
@@ -117,5 +107,15 @@
   /* Initially hide animation elements */
   .animate-on-scroll {
     opacity: 0;
+  }
+  
+  /* Floating animation */
+  @keyframes float {
+    0%, 100% {
+      transform: translateY(0) scale(1);
+    }
+    50% {
+      transform: translateY(-20px) scale(1.2);
+    }
   }
 }

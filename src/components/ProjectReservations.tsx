@@ -26,7 +26,7 @@ import {
 import { CheckCircle, XCircle, Clock, AlertTriangle } from 'lucide-react';
 
 const ProjectReservations: React.FC = () => {
-  const { projectReservations, approveReservation, rejectReservation, reserveProject, project, isReserved } = useProject();
+  const { projectReservations, approveReservation, rejectReservation, reserveProject, project, isReserved, openSupervisorDialog } = useProject();
   const { user } = useAuth();
   const [selectedSupervisor, setSelectedSupervisor] = useState<string>("");
   const [selectedInstructor, setSelectedInstructor] = useState<string>("");
@@ -59,15 +59,8 @@ const ProjectReservations: React.FC = () => {
   });
 
   const handleReserveProject = () => {
-    if (!selectedSupervisor && !selectedInstructor) {
-      alert("Խնդրում ենք ընտրել առնվազն մեկ ղեկավար կամ դասախոս");
-      return;
-    }
-    
-    reserveProject(
-      selectedSupervisor || undefined,
-      selectedInstructor || undefined
-    );
+    // Fixed: Instead of passing arguments to reserveProject, we now use openSupervisorDialog
+    openSupervisorDialog();
   };
 
   const handleRejectOpen = (projectId: number) => {

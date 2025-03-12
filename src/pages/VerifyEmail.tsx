@@ -1,218 +1,61 @@
 
 import React, { useEffect, useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
+import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { CheckCircle, XCircle, AlertCircle, Loader2 } from 'lucide-react';
-import { supabase } from '@/integrations/supabase/client';
-import { isDesignatedAdmin, checkFirstAdmin } from '@/contexts/auth/utils';
-import { toast } from 'sonner';
 
 const VerifyEmail: React.FC = () => {
   const navigate = useNavigate();
   const location = useLocation();
+  const { verifyEmail } = useAuth();
   const [verificationStatus, setVerificationStatus] = useState<'loading' | 'success' | 'error'>('loading');
   const [errorMessage, setErrorMessage] = useState('');
-  const [isAdmin, setIsAdmin] = useState(false);
-  const [isFirstAdmin, setIsFirstAdmin] = useState(false);
-  const [email, setEmail] = useState<string | null>(null);
+  const [isRoleWithApproval, setIsRoleWithApproval] = useState(false);
 
   useEffect(() => {
+    // Get token from URL query params
     const params = new URLSearchParams(location.search);
     const token = params.get('token');
-    const emailParam = params.get('email');
-    const type = params.get('type');
 
-    console.log('Verification params:', { token, email: emailParam, type });
-    
-    if (emailParam) {
-      setEmail(emailParam);
+    if (!token) {
+      setVerificationStatus('error');
+      setErrorMessage('Հաստատման գործընթացի սխալ: Նշանը (token) բացակայում է։');
+      return;
     }
 
-    const processUser = async () => {
-      if (emailParam) {
-        try {
-          // Check if designated admin
-          const adminResult = await isDesignatedAdmin(emailParam);
-          setIsAdmin(adminResult);
-          
-          // Check if first admin
-          if (!adminResult) {
-            const firstAdminResult = await checkFirstAdmin();
-            setIsFirstAdmin(firstAdminResult);
-            
-            if (firstAdminResult) {
-              console.log('First admin detected:', emailParam);
-              setVerificationStatus('success');
-              
-              // Call the RPC to ensure first admin is approved
-              try {
-                const { error } = await supabase.rpc(
-                  'approve_first_admin',
-                  { admin_email: emailParam }
-                );
-                
-                if (error) {
-                  console.error('Error approving first admin:', error);
-                } else {
-                  console.log('First admin approved successfully');
-                  toast.success('Առաջին ադմինի հաշիվը հաստատվել է', {
-                    description: 'Ձեզ տրվել են լիարժեք ադմինիստրատորի իրավունքներ'
-                  });
-                  
-                  // Auto redirect to admin dashboard
-                  setTimeout(() => {
-                    navigate('/admin');
-                  }, 2000);
-                }
-              } catch (err) {
-                console.error('Error in first admin approval:', err);
-              }
-              
-              return;
-            }
-          }
-          
-          if (adminResult) {
-            console.log('Admin email detected, verifying account');
-            setVerificationStatus('success');
-            
-            // Ensure admin verification and create proper profile
-            const { error } = await supabase.rpc('ensure_admin_login');
-            
-            if (error) {
-              console.error('Error verifying admin via RPC:', error);
-              toast.error('Ադմինի հաշվի ստուգման սխալ', {
-                description: 'Փորձեք վերակայել ադմինի հաշիվը'
-              });
-            } else {
-              console.log('Admin verified successfully via RPC');
-              
-              // Try to automatically sign in the admin
-              try {
-                const { error: signInError } = await supabase.auth.signInWithPassword({
-                  email: 'gitedu@bk.ru',
-                  password: 'Qolej2025*'
-                });
-                
-                if (signInError) {
-                  console.log('Admin auto-login attempt failed:', signInError.message);
-                  toast.error('Ավտոմատ մուտքը չի հաջողվել', {
-                    description: 'Խնդրում ենք մուտք գործել ձեռքով՝ օգտագործելով մուտքի ձևը'
-                  });
-                } else {
-                  console.log('Admin auto-login successful');
-                  toast.success('Ադմինիստրատորի հաշիվը հաստատվել է', {
-                    description: 'Դուք հիմա կուղղորդվեք կառավարման վահանակ'
-                  });
-                  
-                  setTimeout(() => {
-                    navigate('/admin');
-                  }, 1500);
-                }
-              } catch (err) {
-                console.error('Error in admin auto-login:', err);
-              }
-            }
-            return;
-          }
-        } catch (err) {
-          console.error('Error checking user type:', err);
-        }
-      }
-    };
-    
-    // First process special admin cases
-    processUser();
-
-    // Handle verification token process for regular users
+    // Call the verifyEmail function from AuthContext
     const verifyToken = async () => {
       try {
-        if (isAdmin || isFirstAdmin) {
-          console.log('Admin account, skipping token verification');
-          setVerificationStatus('success');
-          return;
-        }
+        // Simulate network delay
+        await new Promise(resolve => setTimeout(resolve, 1000));
         
-        if (token) {
-          console.log('Verifying token');
-          if (type === 'recovery') {
-            navigate('/login#type=recovery' + (emailParam ? `&email=${encodeURIComponent(emailParam)}` : ''));
-            return;
-          }
+        // Verify the token
+        const success = await verifyEmail(token);
+        
+        if (success) {
+          setVerificationStatus('success');
           
-          // Verify the OTP token
-          const { error } = await supabase.auth.verifyOtp({
-            token_hash: token,
-            type: 'email'
-          });
+          // Check in localStorage if this is a role that needs approval
+          const pendingUsers = JSON.parse(localStorage.getItem('pendingUsers') || '[]');
+          const user = pendingUsers.find((u: any) => u.verificationToken === token);
           
-          if (error) {
-            console.error('Token verification error:', error);
-            setVerificationStatus('error');
-            setErrorMessage('Հաստատման գործընթացի սխալ: ' + error.message);
-          } else {
-            console.log('Token verified successfully');
-            setVerificationStatus('success');
-            
-            // Auto sign-in the user after verification if possible
-            try {
-              const { data, error: signInError } = await supabase.auth.getSession();
-              
-              if (signInError) {
-                console.error('Error getting session after verification:', signInError);
-              } else if (data.session) {
-                console.log('User is signed in after verification');
-                // Redirect based on user role
-                const { data: userData, error: userError } = await supabase
-                  .from('users')
-                  .select('role')
-                  .eq('email', emailParam || '')
-                  .single();
-                  
-                if (!userError && userData) {
-                  console.log('User role after verification:', userData.role);
-                  
-                  // Redirect to appropriate dashboard
-                  setTimeout(() => {
-                    switch (userData.role) {
-                      case 'admin':
-                        navigate('/admin');
-                        break;
-                      case 'student':
-                        navigate('/student-dashboard');
-                        break;
-                      default:
-                        navigate('/');
-                    }
-                  }, 1500);
-                }
-              }
-            } catch (err) {
-              console.error('Error in auto-redirect after verification:', err);
-            }
+          if (user && ['lecturer', 'employer', 'project_manager', 'supervisor'].includes(user.role)) {
+            setIsRoleWithApproval(true);
           }
-        } else if (!isAdmin && !isFirstAdmin) {
+        } else {
           setVerificationStatus('error');
-          setErrorMessage('Հաստատման գործընթացի սխալ: Նշանը (token) բացակայում է։');
+          setErrorMessage('Հաստատման գործընթացի սխալ: Հղումն անվավեր է կամ արդեն օգտագործվել է։');
         }
       } catch (error) {
-        console.error('Verification process error:', error);
         setVerificationStatus('error');
         setErrorMessage('Հաստատման գործընթացի սխալ: Խնդրում ենք փորձել կրկին։');
       }
     };
 
     verifyToken();
-  }, [location.search, navigate, isAdmin, isFirstAdmin]);
-
-  const handleDashboardClick = () => {
-    if (isAdmin || isFirstAdmin) {
-      navigate('/admin');
-    } else {
-      navigate('/login');
-    }
-  };
+  }, [location.search, verifyEmail]);
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-background p-4">
@@ -237,13 +80,25 @@ const VerifyEmail: React.FC = () => {
               <div className="text-center">
                 <CheckCircle className="h-16 w-16 text-green-500 mx-auto mb-4" />
                 <p className="text-lg font-medium">Ձեր էլ․ հասցեն հաջողությամբ հաստատվել է</p>
-                <p className="text-muted-foreground mt-2">
-                  {isAdmin 
-                    ? 'Որպես ադմինիստրատոր, Ձեր հաշիվն ավտոմատ կերպով հաստատվել է:'
-                    : isFirstAdmin
-                    ? 'Որպես առաջին ադմինիստրատոր, Ձեզ տրվել են լիարժեք իրավունքներ:'
-                    : 'Այժմ Դուք կարող եք մուտք գործել համակարգ Ձեր հաշվի տվյալներով:'}
-                </p>
+                
+                {isRoleWithApproval ? (
+                  <div className="mt-4 p-4 bg-amber-50 border border-amber-200 rounded-md text-left">
+                    <div className="flex items-start">
+                      <AlertCircle className="h-5 w-5 text-amber-500 mr-2 mt-0.5" />
+                      <div>
+                        <p className="font-medium text-amber-900">Անհրաժեշտ է ադմինիստրատորի հաստատում</p>
+                        <p className="text-sm text-amber-800 mt-1">
+                          Ձեր հաշիվը հաստատվել է, սակայն այն պետք է հաստատվի նաև ադմինիստրատորի կողմից: 
+                          Հաստատումից հետո Դուք կկարողանաք մուտք գործել համակարգ:
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                ) : (
+                  <p className="text-muted-foreground mt-2">
+                    Այժմ Դուք կարող եք մուտք գործել համակարգ Ձեր հաշվի տվյալներով:
+                  </p>
+                )}
               </div>
             )}
             
@@ -271,12 +126,11 @@ const VerifyEmail: React.FC = () => {
           
           <CardFooter className="flex justify-center">
             <Button 
-              onClick={handleDashboardClick} 
+              onClick={() => navigate('/login')} 
               variant={verificationStatus === 'success' ? "default" : "outline"}
               className="w-full max-w-xs"
             >
-              {isAdmin || isFirstAdmin ? 'Անցնել կառավարման վահանակ' : 
-                (verificationStatus === 'success' ? 'Մուտք գործել' : 'Վերադառնալ մուտքի էջ')}
+              {verificationStatus === 'success' ? 'Մուտք գործել' : 'Վերադառնալ մուտքի էջ'}
             </Button>
           </CardFooter>
         </Card>

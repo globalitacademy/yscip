@@ -1,33 +1,33 @@
 
 import React from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
-import { LucideIcon } from 'lucide-react';
 
-interface SidebarMenuItemProps {
-  icon: React.ReactNode;
+export interface SidebarMenuItemProps {
   label: string;
   path: string;
-  isActive: boolean;
-  onClick?: () => void;
+  icon: React.ReactNode;
+  onCloseMenu?: () => void;
 }
 
-const SidebarMenuItem: React.FC<SidebarMenuItemProps> = ({ 
-  icon, 
-  label, 
-  path, 
-  isActive,
-  onClick 
+const SidebarMenuItem: React.FC<SidebarMenuItemProps> = ({
+  label,
+  path,
+  icon,
+  onCloseMenu
 }) => {
+  const location = useLocation();
+  const isActive = location.pathname === path;
+  
   return (
     <Link to={path}>
-      <Button
-        variant={isActive ? "default" : "ghost"}
-        className={`w-full justify-start ${isActive ? "" : "text-muted-foreground"}`}
-        onClick={onClick}
+      <Button 
+        variant={isActive ? "default" : "ghost"} 
+        className={`w-full justify-start ${isActive ? "" : "text-muted-foreground"}`} 
+        onClick={onCloseMenu}
       >
         {icon}
-        <span className="ml-2">{label}</span>
+        <span className="ml-2 mx-[6px]">{label}</span>
       </Button>
     </Link>
   );

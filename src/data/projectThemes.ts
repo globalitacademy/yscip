@@ -1,5 +1,13 @@
 
-import { Task } from '@/types/database.types';
+export interface Task {
+  id: string;
+  title: string;
+  description: string;
+  status: 'todo' | 'in-progress' | 'review' | 'done';
+  assignedTo?: string;
+  dueDate?: string;
+  createdBy?: string;
+}
 
 export interface TimelineEvent {
   id: string;

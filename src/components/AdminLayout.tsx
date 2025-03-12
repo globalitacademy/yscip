@@ -1,13 +1,12 @@
 
-import React, { useEffect } from 'react';
-import { Navigate, useNavigate } from 'react-router-dom';
-import { useAuth } from '@/contexts/auth';
+import React from 'react';
+import { Navigate } from 'react-router-dom';
+import { useAuth } from '@/contexts/AuthContext';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import AdminSidebar from '@/components/AdminSidebar';
 import { Menu } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { toast } from 'sonner';
 
 interface AdminLayoutProps {
   children: React.ReactNode;
@@ -15,86 +14,19 @@ interface AdminLayoutProps {
 }
 
 const AdminLayout: React.FC<AdminLayoutProps> = ({ children, pageTitle }) => {
-  const { user, isAuthenticated, loading, error } = useAuth();
+  const { user, isAuthenticated } = useAuth();
   const [isSidebarOpen, setIsSidebarOpen] = React.useState(false);
-  const navigate = useNavigate();
-  
-  // Enforce admin access
-  useEffect(() => {
-    if (!loading && isAuthenticated && user) {
-      if (user.role !== 'admin') {
-        toast.error("Մուտքը արգելափակված է", {
-          description: "Ձեզ չունեք բավարար իրավունք այս էջը դիտելու համար"
-        });
-        navigate('/');
-      }
-    }
-  }, [loading, isAuthenticated, user, navigate]);
-  
-  // Show loading state
-  if (loading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-background">
-        <div className="flex flex-col items-center gap-4">
-          <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary"></div>
-          <p className="text-muted-foreground">Բեռնում...</p>
-        </div>
-      </div>
-    );
-  }
-  
-  // Show error state
-  if (error) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-background">
-        <div className="text-center max-w-md p-6 bg-destructive/10 rounded-lg">
-          <h2 className="text-xl font-semibold text-destructive mb-4">Նույնականացման սխալ</h2>
-          <p className="mb-4">{error.message}</p>
-          <Button 
-            variant="outline" 
-            onClick={() => navigate('/login')}
-          >
-            Վերադառնալ մուտքի էջ
-          </Button>
-        </div>
-      </div>
-    );
-  }
   
   // Redirect if not authenticated or doesn't have appropriate role
-  if (!isAuthenticated || !user) {
-    console.log("User not authenticated, redirecting to login");
-    toast.error("Մուտքը արգելափակված է", {
-      description: "Նախքան շարունակելը, խնդրում ենք մուտք գործել համակարգ"
-    });
+  if (!isAuthenticated || !user || (
+    user.role !== 'admin' && 
+    user.role !== 'lecturer' && 
+    user.role !== 'instructor' && 
+    user.role !== 'project_manager' && 
+    user.role !== 'supervisor'
+  )) {
     return <Navigate to="/login" replace />;
   }
-  
-  // Check for appropriate role - be strict about admin role specifically
-  if (user.role !== 'admin') {
-    console.log("User doesn't have admin role, redirecting to dashboard");
-    toast.error("Մուտքը արգելափակված է", {
-      description: "Ձեզ չունեք բավարար իրավունք այս էջը դիտելու համար"
-    });
-    
-    // Redirect to appropriate dashboard based on role
-    switch (user.role) {
-      case 'lecturer':
-      case 'instructor':
-        return <Navigate to="/teacher-dashboard" replace />;
-      case 'project_manager':
-      case 'supervisor':
-        return <Navigate to="/project-manager-dashboard" replace />;
-      case 'employer':
-        return <Navigate to="/employer-dashboard" replace />;
-      case 'student':
-        return <Navigate to="/student-dashboard" replace />;
-      default:
-        return <Navigate to="/" replace />;
-    }
-  }
-  
-  // Հեռացնենք հաստատման ստուգումը
   
   const toggleSidebar = () => {
     setIsSidebarOpen(!isSidebarOpen);

@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { useAuth } from '@/contexts/auth';
+import { useAuth } from '@/contexts/AuthContext';
 import { useNavigate } from 'react-router-dom';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { 
@@ -13,9 +13,10 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { LogOut, User, UserCog, GraduationCap, ChevronDown, Building, School } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { mockUsers } from '@/data/userRoles';
 
 const UserMenu: React.FC = () => {
-  const { user, isAuthenticated, logout } = useAuth();
+  const { user, isAuthenticated, logout, switchRole } = useAuth();
   const navigate = useNavigate();
 
   if (!isAuthenticated || !user) {
@@ -89,6 +90,21 @@ const UserMenu: React.FC = () => {
             {getRoleLabel(user.role)}
           </span>
         </DropdownMenuItem>
+        
+        <DropdownMenuSeparator />
+        <DropdownMenuLabel>Փոխել դերը (Դեմո)</DropdownMenuLabel>
+        
+        {mockUsers
+          .filter(u => u.id !== user.id && u.registrationApproved)
+          .map(u => (
+            <DropdownMenuItem key={u.id} onClick={() => switchRole(u.role)}>
+              <div className="flex items-center">
+                {getRoleIcon(u.role)}
+                <span>{getRoleLabel(u.role)}</span>
+              </div>
+            </DropdownMenuItem>
+          ))
+        }
         
         <DropdownMenuSeparator />
         <DropdownMenuItem onClick={() => logout()} className="text-red-500 focus:text-red-500">

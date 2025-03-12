@@ -5,14 +5,24 @@ import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Check, Clock } from 'lucide-react';
 
-interface UserReservedProjectsProps {
-  userReservedProjectDetails: any[];
+interface ReservedProject {
+  projectId: number;
+  userId: string;
+  timestamp: string;
+  projectTitle?: string;
+  project?: {
+    id: number;
+    title: string;
+    techStack?: string[];
+  };
 }
 
-const UserReservedProjects: React.FC<UserReservedProjectsProps> = ({ 
-  userReservedProjectDetails 
-}) => {
-  if (!userReservedProjectDetails.length) {
+interface UserReservedProjectsProps {
+  reservedProjects: ReservedProject[];
+}
+
+const UserReservedProjects: React.FC<UserReservedProjectsProps> = ({ reservedProjects }) => {
+  if (reservedProjects.length === 0) {
     return null;
   }
 
@@ -20,7 +30,7 @@ const UserReservedProjects: React.FC<UserReservedProjectsProps> = ({
     <div className="mb-12">
       <h2 className="text-2xl font-semibold mb-6 text-left">Իմ Ամրագրված Նախագծերը</h2>
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {userReservedProjectDetails.map((rp) => (
+        {reservedProjects.map((rp) => (
           <Card key={rp.projectId} className="p-6 hover:shadow-md transition-shadow">
             <div className="flex justify-between items-start mb-4">
               <h3 className="text-lg font-medium">{rp.project?.title || rp.projectTitle}</h3>

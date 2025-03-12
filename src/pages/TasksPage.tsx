@@ -1,103 +1,69 @@
 
-import React, { useState, useEffect } from 'react';
-import { useParams } from 'react-router-dom';
-import { getTasksForProject, getTasksAssignedToUser } from '@/services/taskService';
-import { Task, convertDBTaskToTask } from '@/types/database.types';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Card, CardContent } from "@/components/ui/card";
-import TaskManager from '@/components/TaskManager';
-import { useAuth } from '@/contexts/AuthContext';
-import Header from '@/components/Header';
-import Footer from '@/components/Footer';
+import React from 'react';
+import AdminLayout from '@/components/AdminLayout';
+import TaskManager from '@/components/tasks/TaskManager';
+import { v4 as uuidv4 } from 'uuid';
 
-const TasksPage = () => {
-  const { id } = useParams<{ id: string }>();
-  const [tasks, setTasks] = useState<Task[]>([]);
-  const [isLoading, setIsLoading] = useState<boolean>(true);
-  const [error, setError] = useState<string | null>(null);
-  const { user } = useAuth();
+const TasksPage: React.FC = () => {
+  // Sample tasks data
+  const sampleTasks = [
+    {
+      id: uuidv4(),
+      title: 'Նախագծի նախնական պլանավորում',
+      description: 'Մշակել նախագծի նախնական պլան և հիմնական ֆունկցիոնալություն',
+      status: 'todo' as const,
+      assignedTo: '1', // student ID
+      dueDate: '2024-05-15',
+      createdBy: '2' // lecturer ID
+    },
+    {
+      id: uuidv4(),
+      title: 'Տվյալների բազայի սխեմայի ստեղծում',
+      description: 'Մշակել տվյալների բազայի սխեման և կապերը',
+      status: 'in-progress' as const,
+      assignedTo: '3', // student ID
+      dueDate: '2024-05-20',
+      createdBy: '2' // lecturer ID
+    },
+    {
+      id: uuidv4(),
+      title: 'Օգտագործողի ինտերֆեյսի դիզայն',
+      description: 'Ստեղծել հավելվածի օգտագործողի ինտերֆեյսի նախնական դիզայնը',
+      status: 'review' as const,
+      assignedTo: '4', // student ID
+      dueDate: '2024-05-25',
+      createdBy: '2' // lecturer ID
+    },
+    {
+      id: uuidv4(),
+      title: 'API ինտեգրացիա',
+      description: 'Իրականացնել API-ների ինտեգրացիա և տվյալների փոխանակում',
+      status: 'done' as const,
+      assignedTo: '1', // student ID
+      dueDate: '2024-05-10',
+      createdBy: '2' // lecturer ID
+    }
+  ];
 
-  useEffect(() => {
-    const fetchTasks = async () => {
-      setIsLoading(true);
-      try {
-        let fetchedTasks: Task[] = [];
-        
-        if (id) {
-          fetchedTasks = await getTasksForProject(Number(id));
-        } else if (user) {
-          fetchedTasks = await getTasksAssignedToUser(user.id);
-        }
-        
-        setTasks(fetchedTasks);
-      } catch (err) {
-        console.error('Error fetching tasks:', err);
-        setError('Խնդիր առաջացավ առաջադրանքների բեռնման ընթացքում։');
-      } finally {
-        setIsLoading(false);
-      }
-    };
-    
-    fetchTasks();
-  }, [id, user]);
+  // Handlers for TaskManager
+  const handleAddTask = (task: any) => {
+    console.log('New task added:', task);
+    // In a real app, this would update state or call an API
+  };
 
-  const todoTasks = tasks.filter(task => task.status === 'todo');
-  const inProgressTasks = tasks.filter(task => task.status === 'in-progress');
-  const reviewTasks = tasks.filter(task => task.status === 'review');
-  const doneTasks = tasks.filter(task => task.status === 'done');
+  const handleUpdateTaskStatus = (taskId: string, status: any) => {
+    console.log('Task status updated:', { taskId, status });
+    // In a real app, this would update state or call an API
+  };
 
   return (
-    <div className="min-h-screen flex flex-col">
-      <Header />
-      <main className="container mx-auto px-4 py-8 flex-grow">
-        <h1 className="text-3xl font-semibold mb-6">Առաջադրանքներ</h1>
-        
-        {isLoading && <p>Բեռնում...</p>}
-        {error && <p className="text-red-500">{error}</p>}
-
-        <Tabs defaultValue="todo" className="w-full">
-          <TabsList>
-            <TabsTrigger value="todo">Անելիք ({todoTasks.length})</TabsTrigger>
-            <TabsTrigger value="in-progress">Ընթացքում ({inProgressTasks.length})</TabsTrigger>
-            <TabsTrigger value="review">Ստուգման Կարիք Ունեցող ({reviewTasks.length})</TabsTrigger>
-            <TabsTrigger value="done">Ավարտված ({doneTasks.length})</TabsTrigger>
-          </TabsList>
-          
-          <TabsContent value="todo">
-            <Card>
-              <CardContent className="p-4">
-                <TaskManager tasks={todoTasks} setTasks={setTasks} />
-              </CardContent>
-            </Card>
-          </TabsContent>
-          
-          <TabsContent value="in-progress">
-            <Card>
-              <CardContent className="p-4">
-                <TaskManager tasks={inProgressTasks} setTasks={setTasks} />
-              </CardContent>
-            </Card>
-          </TabsContent>
-          
-          <TabsContent value="review">
-            <Card>
-              <CardContent className="p-4">
-                <TaskManager tasks={reviewTasks} setTasks={setTasks} />
-              </CardContent>
-            </Card>
-          </TabsContent>
-          
-          <TabsContent value="done">
-            <Card>
-              <CardContent className="p-4">
-                <TaskManager tasks={doneTasks} setTasks={setTasks} />
-              </CardContent>
-            </Card>
-          </TabsContent>
-        </Tabs>
-      </main>
-      <Footer />
-    </div>
+    <AdminLayout pageTitle="Առաջադրանքների կառավարում">
+      <TaskManager 
+        tasks={sampleTasks} 
+        onAddTask={handleAddTask}
+        onUpdateTaskStatus={handleUpdateTaskStatus}
+      />
+    </AdminLayout>
   );
 };
 
