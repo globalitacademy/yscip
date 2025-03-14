@@ -37,7 +37,7 @@ export function useSynchronizedData<T>(
       // Build the query
       const columns = options.columns || '*';
       
-      let query = supabase
+      const query = supabase
         .from(tableName)
         .select(columns, { count: 'exact' });
       
@@ -46,39 +46,40 @@ export function useSynchronizedData<T>(
         Object.entries(options.filter).forEach(([key, value]) => {
           if (value !== undefined && value !== null) {
             if (Array.isArray(value)) {
-              query = query.in(key, value);
-            } else if (typeof value === 'object' && value.operator) {
+              query.in(key, value);
+            } else if (typeof value === 'object' && value !== null && 'operator' in value) {
               // Support for more complex filters
-              switch (value.operator) {
+              const filterValue = value as { operator: string; value: any };
+              switch (filterValue.operator) {
                 case 'eq':
-                  query = query.eq(key, value.value);
+                  query.eq(key, filterValue.value);
                   break;
                 case 'neq':
-                  query = query.neq(key, value.value);
+                  query.neq(key, filterValue.value);
                   break;
                 case 'gt':
-                  query = query.gt(key, value.value);
+                  query.gt(key, filterValue.value);
                   break;
                 case 'gte':
-                  query = query.gte(key, value.value);
+                  query.gte(key, filterValue.value);
                   break;
                 case 'lt':
-                  query = query.lt(key, value.value);
+                  query.lt(key, filterValue.value);
                   break;
                 case 'lte':
-                  query = query.lte(key, value.value);
+                  query.lte(key, filterValue.value);
                   break;
                 case 'like':
-                  query = query.like(key, `%${value.value}%`);
+                  query.like(key, `%${filterValue.value}%`);
                   break;
                 case 'ilike':
-                  query = query.ilike(key, `%${value.value}%`);
+                  query.ilike(key, `%${filterValue.value}%`);
                   break;
                 default:
-                  query = query.eq(key, value.value);
+                  query.eq(key, filterValue.value);
               }
             } else {
-              query = query.eq(key, value);
+              query.eq(key, value);
             }
           }
         });
@@ -87,16 +88,16 @@ export function useSynchronizedData<T>(
       // Apply ordering
       if (options.orderBy) {
         const { column, ascending = true } = options.orderBy;
-        query = query.order(column, { ascending });
+        query.order(column, { ascending });
       }
       
       // Apply pagination
       if (options.page && options.limit) {
         const from = (options.page - 1) * options.limit;
         const to = from + options.limit - 1;
-        query = query.range(from, to);
+        query.range(from, to);
       } else if (options.limit) {
-        query = query.limit(options.limit);
+        query.limit(options.limit);
       }
       
       // Execute the query

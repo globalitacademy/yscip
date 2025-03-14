@@ -5,7 +5,7 @@ import { toast } from 'sonner';
 import { useAuth } from '@/contexts/AuthContext';
 import { Tables } from '@/integrations/supabase/types';
 
-// Define allowed table names as a type to ensure type safety
+// Define allowed table names using a literal type to ensure type safety
 type ValidTable = 'users' | 'projects' | 'tasks' | 'notifications' | 
                  'project_assignments' | 'timeline_events' | 
                  'project_proposals' | 'employer_projects' | 'auth_logs';
@@ -28,51 +28,50 @@ export const useRoleBasedData = <T>(tableName: ValidTable, options?: {
         setIsLoading(true);
         setError(null);
         
-        let query = supabase
+        // Initialize query
+        const query = supabase
           .from(tableName)
           .select('*');
           
-        // Apply role-based filtering
-        switch (user.role) {
-          case 'admin':
-            // Admins can see all data
-            break;
-          case 'student':
-            // Students can only see their assigned data
-            if (tableName === 'projects' || tableName === 'project_assignments' || tableName === 'tasks') {
-              query = query.eq('student_id', user.id);
+        // Apply role-based filtering based on role and table
+        if (user.role !== 'admin') {
+          if (tableName === 'projects' || tableName === 'project_assignments' || tableName === 'tasks') {
+            switch (user.role) {
+              case 'student':
+                // Students can only see their assigned data
+                query.eq('student_id', user.id);
+                break;
+              case 'supervisor':
+              case 'project_manager':
+                // Project managers and supervisors see projects they supervise
+                query.eq('supervisor_id', user.id);
+                break;
+              case 'lecturer':
+              case 'instructor':
+                // Lecturers see courses they teach
+                query.eq('instructor_id', user.id);
+                break;
+              case 'employer':
+                // Employers see projects they created
+                query.eq('created_by', user.id);
+                break;
+              default:
+                // Default filter by user_id if applicable
+                query.eq('user_id', user.id);
             }
-            break;
-          case 'supervisor':
-          case 'project_manager':
-            // Project managers and supervisors see projects they supervise
-            if (tableName === 'projects' || tableName === 'project_assignments' || tableName === 'tasks') {
-              query = query.eq('supervisor_id', user.id);
+          } else if (tableName === 'project_proposals' || tableName === 'employer_projects') {
+            // Employer specific tables
+            if (user.role === 'employer') {
+              query.eq('created_by', user.id);
             }
-            break;
-          case 'lecturer':
-          case 'instructor':
-            // Lecturers see courses they teach
-            if (tableName === 'projects' || tableName === 'project_assignments' || tableName === 'tasks') {
-              query = query.eq('instructor_id', user.id);
-            }
-            break;
-          case 'employer':
-            // Employers see projects they created
-            if (tableName === 'projects' || tableName === 'project_proposals' || tableName === 'employer_projects') {
-              query = query.eq('created_by', user.id);
-            }
-            break;
-          default:
-            // Default filter by user_id if applicable
-            query = query.eq('user_id', user.id);
+          }
         }
         
         // Apply extra filters if provided
         if (options?.extraFilters) {
           Object.entries(options.extraFilters).forEach(([key, value]) => {
             if (value !== undefined) {
-              query = query.eq(key, value);
+              query.eq(key, value);
             }
           });
         }
@@ -80,14 +79,15 @@ export const useRoleBasedData = <T>(tableName: ValidTable, options?: {
         // Apply ordering if provided
         if (options?.orderBy) {
           const { column, ascending = true } = options.orderBy;
-          query = query.order(column, { ascending });
+          query.order(column, { ascending });
         }
         
         // Apply limit if provided
         if (options?.limit) {
-          query = query.limit(options.limit);
+          query.limit(options.limit);
         }
         
+        // Execute the query
         const { data: responseData, error: responseError } = await query;
         
         if (responseError) {
