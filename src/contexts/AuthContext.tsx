@@ -70,7 +70,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         sendVerificationEmail,
         verifyEmail,
         approveRegistration,
-        // Modify this to match the required synchronous return type
         getPendingUsers: () => pendingUsers,
         resetAdminAccount
       }}
