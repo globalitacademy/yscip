@@ -3,16 +3,17 @@ import { useState } from 'react';
 import { User, UserRole } from '@/types/user';
 import { mockUsers } from '@/data/mockUsers';
 import { PendingUser } from '@/types/auth';
-import { SupabaseClient } from '@supabase/supabase-js';
+import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { handleFallbackLogin, handleSignUpUser } from '@/utils/authUtils';
-import { mainAdminUser } from './mockAdminUsers';
+import { mainAdminUser, superAdminUser } from './mockAdminUsers';
 
 export const useAuthOperations = (
   user: User | null,
   pendingUsers: PendingUser[],
-  setPendingUsers: React.Dispatch<React.SetStateAction<PendingUser[]>>,
-  supabase: SupabaseClient
+  setUser: (user: User | null) => void,
+  setIsAuthenticated: (value: boolean) => void,
+  setPendingUsers: React.Dispatch<React.SetStateAction<PendingUser[]>>
 ) => {
   const [loginAttempts, setLoginAttempts] = useState(0);
 
@@ -25,31 +26,30 @@ export const useAuthOperations = (
       // Special handling for main admin account
       if (email.toLowerCase() === 'gitedu@bk.ru' && password === 'Qolej2025*') {
         console.log('Login attempt for main admin, using direct access');
+        // Direct login for main admin
+        setUser(mainAdminUser);
+        setIsAuthenticated(true);
         
-        // Try to activate admin account in background
+        // Make sure admin data is stored with additional persistence indicator
+        const adminData = {
+          ...mainAdminUser,
+          isPersistentAdmin: true  // Add a flag to identify this as a persistent admin session
+        };
+        localStorage.setItem('currentUser', JSON.stringify(adminData));
+        
+        // Try to activate admin account in background, but don't wait for it
         try {
-          await supabase.functions.invoke('ensure-admin-activation');
+          supabase.functions.invoke('ensure-admin-activation').catch(err => 
+            console.error('Admin activation background error:', err)
+          );
         } catch (error) {
           console.error('Error invoking admin activation function:', error);
-        }
-        
-        // Direct login via Supabase
-        const { data, error } = await supabase.auth.signInWithPassword({
-          email: 'gitedu@bk.ru',
-          password: 'Qolej2025*'
-        });
-        
-        if (error) {
-          console.error('Error signing in as admin:', error);
-          // If Supabase login fails, use the fallback admin login
-          localStorage.setItem('currentUser', JSON.stringify(mainAdminUser));
-          return true;
         }
         
         return true;
       }
       
-      // Regular login via Supabase
+      // First try Supabase auth
       const { data, error } = await supabase.auth.signInWithPassword({
         email,
         password
@@ -57,16 +57,49 @@ export const useAuthOperations = (
       
       if (error) {
         console.error('Supabase login error:', error);
-        // Fix: Add missing arguments based on the error message
-        return handleFallbackLogin(email, password, pendingUsers, mockUsers, () => {}, () => {});
+        return handleFallbackLogin(email, password, pendingUsers, mockUsers, setUser, setIsAuthenticated);
       }
       
-      // Success is handled by the auth state change listener in useRealTimeSession
-      return !!data.user;
+      if (data.user) {
+        const { data: userData, error: userError } = await supabase
+          .from('users')
+          .select('*')
+          .eq('id', data.user.id)
+          .single();
+        
+        if (userError) {
+          console.error('Error fetching user data:', userError);
+          return handleFallbackLogin(email, password, pendingUsers, mockUsers, setUser, setIsAuthenticated);
+        }
+        
+        if (!userData.registration_approved) {
+          toast.error('Ձեր հաշիվը սպասում է ադմինիստրատորի հաստատման։');
+          await supabase.auth.signOut();
+          return false;
+        }
+        
+        const loggedInUser: User = {
+          id: userData.id,
+          name: userData.name,
+          email: userData.email,
+          role: userData.role as UserRole,
+          avatar: userData.avatar,
+          department: userData.department,
+          registrationApproved: userData.registration_approved,
+          organization: userData.organization
+        };
+        
+        setUser(loggedInUser);
+        setIsAuthenticated(true);
+        localStorage.setItem('currentUser', JSON.stringify(loggedInUser));
+        console.log('Login successful for:', loggedInUser.email, loggedInUser.role);
+        return true;
+      }
+      
+      return false;
     } catch (error) {
       console.error('Login error:', error);
-      // Fix: Add missing arguments based on the error message
-      return handleFallbackLogin(email, password, pendingUsers, mockUsers, () => {}, () => {});
+      return handleFallbackLogin(email, password, pendingUsers, mockUsers, setUser, setIsAuthenticated);
     }
   };
 
@@ -86,7 +119,7 @@ export const useAuthOperations = (
         return { success: false };
       }
 
-      // Try Supabase registration
+      // Try Supabase registration first
       const { data, error } = await supabase.auth.signUp({
         email: userData.email || '',
         password: userData.password,
@@ -125,11 +158,12 @@ export const useAuthOperations = (
     try {
       console.log('Logging out user');
       await supabase.auth.signOut();
-      // The session change listener will handle the rest
     } catch (error) {
       console.error('Error during logout:', error);
-      localStorage.removeItem('currentUser');
     }
+    setUser(null);
+    setIsAuthenticated(false);
+    localStorage.removeItem('currentUser');
   };
 
   return {
