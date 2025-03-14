@@ -9,7 +9,6 @@ import DeveloperInfo from '@/components/auth/login/DeveloperInfo';
 import VerificationAlert from '@/components/auth/verification/VerificationAlert';
 import { useDemoLogin } from '@/hooks/useDemoLogin';
 import { useVerification } from '@/hooks/useVerification';
-import AdminLogin from '@/components/auth/AdminLogin';
 
 const Login: React.FC = () => {
   const { isLoggingIn, handleQuickLogin } = useDemoLogin();
@@ -34,11 +33,10 @@ const Login: React.FC = () => {
           </CardHeader>
           <CardContent>
             <Tabs defaultValue="login" className="w-full">
-              <TabsList className="grid w-full grid-cols-4 mb-4">
+              <TabsList className="grid w-full grid-cols-3 mb-4">
                 <TabsTrigger value="login">Մուտք</TabsTrigger>
                 <TabsTrigger value="register">Գրանցում</TabsTrigger>
-                <TabsTrigger value="demo">Դեմո</TabsTrigger>
-                <TabsTrigger value="admin">Ադմին</TabsTrigger>
+                <TabsTrigger value="demo">Դեմո հաշիվներ</TabsTrigger>
               </TabsList>
               
               <TabsContent value="login">
@@ -65,10 +63,6 @@ const Login: React.FC = () => {
                     <p>Մուտք դեմո հաշիվ...</p>
                   </div>
                 )}
-              </TabsContent>
-              
-              <TabsContent value="admin">
-                <AdminLogin />
               </TabsContent>
             </Tabs>
           </CardContent>
