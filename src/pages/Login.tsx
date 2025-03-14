@@ -8,11 +8,13 @@ import DemoAccounts from '@/components/auth/DemoAccounts';
 import VerificationAlert from '@/components/auth/verification/VerificationAlert';
 import { useDemoLogin } from '@/hooks/useDemoLogin';
 import { useVerification } from '@/hooks/useVerification';
+import { FadeIn, SlideUp } from '@/components/LocalTransitions';
+import { GraduationCap } from 'lucide-react';
 
 const Login: React.FC = () => {
   const { isLoggingIn, handleQuickLogin } = useDemoLogin();
   const [activeTab, setActiveTab] = useState("login");
-  const [animateBackground, setAnimateBackground] = useState(false);
+  const [animate, setAnimate] = useState(false);
   
   const {
     verificationSent,
@@ -23,95 +25,125 @@ const Login: React.FC = () => {
   } = useVerification();
 
   useEffect(() => {
+    // Trigger animation after a short delay
     const timer = setTimeout(() => {
-      setAnimateBackground(true);
-    }, 300);
+      setAnimate(true);
+    }, 100);
     
     return () => clearTimeout(timer);
   }, []);
 
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center p-4 overflow-hidden relative">
-      {/* Animated gradient background */}
-      <div className={`absolute inset-0 bg-gradient-to-br from-indigo-100 via-violet-100 to-purple-100 transition-opacity duration-1000 ease-apple-ease ${animateBackground ? 'opacity-100' : 'opacity-0'}`}>
-        <div className="absolute inset-0 overflow-hidden">
-          {/* Animated shapes */}
-          <div className="absolute top-[-5%] left-[-10%] w-2/3 h-1/2 bg-gradient-to-br from-purple-200/50 to-indigo-300/50 rounded-full blur-3xl transform rotate-12 animate-[float_25s_ease-in-out_infinite]"></div>
-          <div className="absolute bottom-[-10%] right-[-5%] w-1/2 h-2/3 bg-gradient-to-tr from-violet-300/50 to-purple-200/50 rounded-full blur-3xl transform -rotate-12 animate-[float_20s_ease-in-out_infinite_reverse]"></div>
-          <div className="absolute top-[30%] right-[15%] w-1/3 h-1/3 bg-gradient-to-tr from-indigo-200/40 to-blue-300/40 rounded-full blur-3xl transform rotate-6 animate-[float_28s_ease-in-out_infinite_1s]"></div>
+    <div className="min-h-screen w-full flex items-center justify-center relative overflow-hidden">
+      {/* Background effect */}
+      <div className="absolute inset-0 bg-gradient-to-b from-background to-background/80 z-0">
+        <div className="absolute inset-0 opacity-30">
+          {/* Abstract shapes */}
+          <div className="absolute top-[-10%] left-[-5%] w-1/2 h-1/2 rounded-full blur-3xl bg-indigo-100/30 animate-[float_25s_ease-in-out_infinite]"></div>
+          <div className="absolute bottom-[-15%] right-[-10%] w-3/4 h-3/4 rounded-full blur-3xl bg-purple-100/30 animate-[float_35s_ease-in-out_infinite_reverse]"></div>
+          
+          {/* Grid pattern */}
+          <div className="absolute inset-0" 
+               style={{
+                 backgroundImage: 'linear-gradient(rgba(255,255,255,0.05) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.05) 1px, transparent 1px)',
+                 backgroundSize: '70px 70px'
+               }}>
+          </div>
         </div>
       </div>
       
-      <div className="w-full max-w-md z-10 animate-scale-in">
-        <Card className="border-none shadow-xl backdrop-blur-sm bg-white/80 overflow-hidden rounded-2xl transition-all duration-500 hover:shadow-2xl">
-          <CardHeader className="space-y-1 text-center pb-2">
-            <div className="animate-slide-up">
-              <CardTitle className="text-2xl font-bold bg-gradient-to-r from-indigo-600 to-violet-700 bg-clip-text text-transparent">
+      <div className={`relative z-10 w-full max-w-md px-4 transition-all duration-700 ease-out ${animate ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'}`}>
+        <div className="mb-8 text-center">
+          <FadeIn delay="delay-100">
+            <div className="inline-flex items-center justify-center mb-4">
+              <div className="relative">
+                <div className="absolute inset-0 rounded-full blur-md bg-primary/20"></div>
+                <div className="relative bg-card/80 backdrop-blur-sm text-primary p-3 rounded-full border border-border/40 shadow-xl">
+                  <GraduationCap size={32} />
+                </div>
+              </div>
+            </div>
+          </FadeIn>
+          
+          <SlideUp delay="delay-300">
+            <h1 className="text-3xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-indigo-500 to-purple-600">
+              Ուսանողական նախագծեր
+            </h1>
+          </SlideUp>
+          
+          <SlideUp delay="delay-400">
+            <p className="mt-2 text-muted-foreground max-w-md mx-auto">
+              Ողջույն, մուտք գործեք Ձեր հաշիվ կամ ստեղծեք նոր հաշիվ
+            </p>
+          </SlideUp>
+        </div>
+        
+        <SlideUp delay="delay-500">
+          <Card className="border-none shadow-lg backdrop-blur-sm bg-card/90 overflow-hidden rounded-2xl transition-all duration-500">
+            <CardHeader className="space-y-1 text-center pb-2">
+              <CardTitle className="text-xl font-semibold">
                 Մուտք / Գրանցում
               </CardTitle>
-            </div>
-            <div className="animate-slide-up opacity-0" style={{ animationDelay: '100ms', animationFillMode: 'forwards' }}>
-              <CardDescription className="text-gray-500">
+              <CardDescription className="text-muted-foreground">
                 Մուտք գործեք համակարգ կամ ստեղծեք նոր հաշիվ
               </CardDescription>
-            </div>
-          </CardHeader>
-          <CardContent className="pt-0">
-            <Tabs 
-              defaultValue="login" 
-              value={activeTab}
-              onValueChange={setActiveTab}
-              className="w-full"
-            >
-              <div className="animate-slide-up opacity-0" style={{ animationDelay: '200ms', animationFillMode: 'forwards' }}>
-                <TabsList className="grid w-full grid-cols-3 mb-4 bg-muted/50 rounded-xl p-1">
-                  <TabsTrigger value="login" className="rounded-lg transition-all data-[state=active]:bg-white data-[state=active]:text-indigo-700 data-[state=active]:shadow-md">
+            </CardHeader>
+            
+            <CardContent className="pt-2">
+              <Tabs 
+                defaultValue="login" 
+                value={activeTab}
+                onValueChange={setActiveTab}
+                className="w-full"
+              >
+                <TabsList className="grid w-full grid-cols-3 mb-6 bg-muted/50 rounded-lg h-10">
+                  <TabsTrigger value="login" className="rounded-md data-[state=active]:bg-background data-[state=active]:shadow-sm">
                     Մուտք
                   </TabsTrigger>
-                  <TabsTrigger value="register" className="rounded-lg transition-all data-[state=active]:bg-white data-[state=active]:text-indigo-700 data-[state=active]:shadow-md">
+                  <TabsTrigger value="register" className="rounded-md data-[state=active]:bg-background data-[state=active]:shadow-sm">
                     Գրանցում
                   </TabsTrigger>
-                  <TabsTrigger value="demo" className="rounded-lg transition-all data-[state=active]:bg-white data-[state=active]:text-indigo-700 data-[state=active]:shadow-md">
-                    Դեմո հաշիվներ
+                  <TabsTrigger value="demo" className="rounded-md data-[state=active]:bg-background data-[state=active]:shadow-sm">
+                    Դեմո
                   </TabsTrigger>
                 </TabsList>
-              </div>
-              
-              <div className="overflow-hidden">
-                <TabsContent value="login" className={`animate-fade-in transition-all duration-500 ease-apple-ease ${activeTab === 'login' ? 'translate-x-0 opacity-100' : 'translate-x-4 opacity-0'}`}>
-                  <LoginForm />
-                </TabsContent>
                 
-                <TabsContent value="register" className={`animate-fade-in transition-all duration-500 ease-apple-ease ${activeTab === 'register' ? 'translate-x-0 opacity-100' : '-translate-x-4 opacity-0'}`}>
-                  {verificationSent ? (
-                    <VerificationAlert 
-                      email={resendEmail} 
-                      verificationToken={verificationToken} 
-                      onResend={handleResendVerification} 
-                    />
-                  ) : (
-                    <RegistrationForm onSuccess={handleRegistrationSuccess} />
-                  )}
-                </TabsContent>
-                
-                <TabsContent value="demo" className={`animate-fade-in transition-all duration-500 ease-apple-ease ${activeTab === 'demo' ? 'translate-x-0 opacity-100' : 'translate-x-4 opacity-0'}`}>
-                  <DemoAccounts onQuickLogin={handleQuickLogin} />
-                  {isLoggingIn && (
-                    <div className="mt-4 text-center animate-pulse">
-                      <p>Մուտք դեմո հաշիվ...</p>
-                    </div>
-                  )}
-                </TabsContent>
-              </div>
-            </Tabs>
-          </CardContent>
-        </Card>
+                <div className="overflow-hidden">
+                  <TabsContent value="login" className={`transition-all duration-300 ease-out ${activeTab === 'login' ? 'translate-x-0 opacity-100' : 'translate-x-4 opacity-0'}`}>
+                    <LoginForm />
+                  </TabsContent>
+                  
+                  <TabsContent value="register" className={`transition-all duration-300 ease-out ${activeTab === 'register' ? 'translate-x-0 opacity-100' : '-translate-x-4 opacity-0'}`}>
+                    {verificationSent ? (
+                      <VerificationAlert 
+                        email={resendEmail} 
+                        verificationToken={verificationToken} 
+                        onResend={handleResendVerification} 
+                      />
+                    ) : (
+                      <RegistrationForm onSuccess={handleRegistrationSuccess} />
+                    )}
+                  </TabsContent>
+                  
+                  <TabsContent value="demo" className={`transition-all duration-300 ease-out ${activeTab === 'demo' ? 'translate-x-0 opacity-100' : 'translate-x-4 opacity-0'}`}>
+                    <DemoAccounts onQuickLogin={handleQuickLogin} />
+                    {isLoggingIn && (
+                      <div className="mt-4 text-center animate-pulse">
+                        <p>Մուտք դեմո հաշիվ...</p>
+                      </div>
+                    )}
+                  </TabsContent>
+                </div>
+              </Tabs>
+            </CardContent>
+          </Card>
+        </SlideUp>
         
-        <div className="text-center mt-6 text-xs text-white/70 animate-fade-in opacity-0" style={{ animationDelay: '800ms', animationFillMode: 'forwards' }}>
-          <p className="backdrop-blur-sm px-2 py-1 inline-block rounded">
-            © 2025 Երևանի ինֆորմատիկայի պետական քոլեջ
-          </p>
-        </div>
+        <SlideUp delay="delay-700">
+          <div className="mt-8 text-center text-sm text-muted-foreground">
+            <p>© 2025 Երևանի ինֆորմատիկայի պետական քոլեջ</p>
+          </div>
+        </SlideUp>
       </div>
     </div>
   );

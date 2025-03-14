@@ -9,12 +9,12 @@ const ForgotPasswordLink: React.FC = () => {
       <Button 
         variant="link" 
         type="button" 
-        className="p-0 h-auto text-sm text-indigo-600 group transition-all duration-300 hover:text-indigo-800"
+        className="p-0 h-auto text-sm text-muted-foreground group transition-all duration-300 hover:text-primary"
       >
-        <span className="bg-gradient-to-r from-indigo-600 to-violet-700 bg-[length:0px_1px] bg-left-bottom bg-no-repeat transition-[background-size] duration-500 hover:bg-[length:100%_1px] group-hover:bg-[length:100%_1px]">
+        <span className="relative after:absolute after:block after:w-full after:h-px after:bottom-0 after:left-0 after:bg-primary after:origin-left after:scale-x-0 after:transition-transform after:duration-300 group-hover:after:scale-x-100">
           Մոռացել եք գաղտնաբառը?
         </span>
-        <ArrowRight className="ml-1 h-3 w-3 opacity-0 transform translate-x-[-8px] group-hover:opacity-100 group-hover:translate-x-0 transition-all duration-300" />
+        <ArrowRight className="ml-1 h-3 w-3 opacity-0 transform translate-x-[-8px] transition-all duration-300 group-hover:translate-x-0 group-hover:opacity-100" />
       </Button>
     </div>
   );
