@@ -1,121 +1,61 @@
 
-// Follow this setup guide to integrate the Deno language server with your editor:
-// https://deno.land/manual/getting_started/setup_your_environment
-// This enables autocomplete, go to definition, etc.
+import { serve } from 'https://deno.land/std@0.177.0/http/server.ts'
+import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.49.1'
 
-import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.7.1';
-import { corsHeaders } from '../_shared/cors.ts';
+const corsHeaders = {
+  'Access-Control-Allow-Origin': '*',
+  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+}
 
-Deno.serve(async (req) => {
-  // Handle CORS preflight request
+serve(async (req) => {
+  // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
-    return new Response('ok', { headers: corsHeaders });
+    return new Response(null, { headers: corsHeaders })
   }
 
   try {
-    // Create a Supabase client with the Admin key
+    console.log('Ensuring admin activation...')
     const supabaseAdmin = createClient(
-      Deno.env.get('SUPABASE_URL') ?? '',
-      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? '',
-      {
-        auth: {
-          autoRefreshToken: false,
-          persistSession: false,
-        },
-      }
-    );
+      Deno.env.get('SUPABASE_URL') || '',
+      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') || '',
+    )
 
-    // First, ensure the admin user exists in auth.users
-    const adminEmail = 'gitedu@bk.ru';
-    const adminPassword = 'Qolej2025*';
-
-    // Check if admin exists
-    const { data: existingUsers, error: checkError } = await supabaseAdmin.auth.admin
-      .listUsers({
-        page: 1, 
-        perPage: 1,
-        filters: {
-          email: adminEmail
-        }
-      });
-
-    if (checkError) {
-      throw checkError;
-    }
-
-    // If admin doesn't exist, create them
-    if (!existingUsers || existingUsers.users.length === 0) {
-      console.log('Admin user does not exist. Creating...');
-      const { data: newUser, error: createError } = await supabaseAdmin.auth.admin.createUser({
-        email: adminEmail,
-        password: adminPassword,
-        email_confirm: true,
-        user_metadata: {
-          name: 'Administrator',
-          role: 'admin'
-        }
-      });
-
-      if (createError) {
-        throw createError;
-      }
-      
-      console.log('Admin user created successfully:', newUser);
+    // First reset admin account to ensure it exists properly
+    const { data: resetData, error: resetError } = await supabaseAdmin.rpc('reset_admin_account')
+    
+    if (resetError) {
+      console.error('Error resetting admin account:', resetError)
+      // Still try the other methods as fallback
     } else {
-      console.log('Admin user exists. Updating...');
-      // User exists, make sure they're confirmed and password works
-      const adminUser = existingUsers.users[0];
-      
-      const { error: updateError } = await supabaseAdmin.auth.admin.updateUserById(
-        adminUser.id,
-        {
-          email: adminEmail,
-          password: adminPassword,
-          email_confirm: true,
-          user_metadata: {
-            name: 'Administrator',
-            role: 'admin'
-          }
-        }
-      );
-
-      if (updateError) {
-        throw updateError;
-      }
-      
-      console.log('Admin user updated successfully');
+      console.log('Admin account reset successfully')
     }
-
-    // Now call the ensure_admin_login function to update the public.users table
-    const { data, error } = await supabaseAdmin.rpc('ensure_admin_login');
+    
+    // Now verify that the admin account exists and is properly set up
+    await supabaseAdmin.rpc('verify_designated_admin')
+    
+    // Also ensure login is enabled for the admin account
+    const { data, error } = await supabaseAdmin.rpc('ensure_admin_login')
 
     if (error) {
-      throw error;
+      console.error('Error ensuring admin login:', error)
+      return new Response(
+        JSON.stringify({ success: false, error: error.message }),
+        { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 500 }
+      )
     }
-
-    return new Response(
-      JSON.stringify({
-        success: true,
-        data,
-        message: 'Admin user verified and ensured',
-      }),
-      {
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-        status: 200,
-      }
-    );
-  } catch (error) {
-    console.error('Error in ensure-admin-activation:', error);
     
+    console.log('Admin activation successful')
+    
+    // Return success 
     return new Response(
-      JSON.stringify({
-        success: false,
-        error: error.message,
-      }),
-      {
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-        status: 400,
-      }
-    );
+      JSON.stringify({ success: true }),
+      { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 200 }
+    )
+  } catch (error) {
+    console.error('Server error:', error)
+    return new Response(
+      JSON.stringify({ success: false, error: error.message }),
+      { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 500 }
+    )
   }
-});
+})

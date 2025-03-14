@@ -9,7 +9,6 @@ import DeveloperInfo from '@/components/auth/login/DeveloperInfo';
 import VerificationAlert from '@/components/auth/verification/VerificationAlert';
 import { useDemoLogin } from '@/hooks/useDemoLogin';
 import { useVerification } from '@/hooks/useVerification';
-import AdminReset from '@/components/AdminReset';
 
 const Login: React.FC = () => {
   const { isLoggingIn, handleQuickLogin } = useDemoLogin();
@@ -24,7 +23,7 @@ const Login: React.FC = () => {
 
   return (
     <div className="min-h-screen flex flex-col items-center justify-center bg-background p-4">
-      <div className="w-full max-w-md space-y-6">
+      <div className="w-full max-w-md">
         <Card className="shadow-lg">
           <CardHeader className="space-y-1 text-center">
             <CardTitle className="text-2xl font-bold">Մուտք / Գրանցում</CardTitle>
@@ -34,11 +33,10 @@ const Login: React.FC = () => {
           </CardHeader>
           <CardContent>
             <Tabs defaultValue="login" className="w-full">
-              <TabsList className="grid w-full grid-cols-4 mb-4">
+              <TabsList className="grid w-full grid-cols-3 mb-4">
                 <TabsTrigger value="login">Մուտք</TabsTrigger>
                 <TabsTrigger value="register">Գրանցում</TabsTrigger>
                 <TabsTrigger value="demo">Դեմո հաշիվներ</TabsTrigger>
-                <TabsTrigger value="admin">Ադմին</TabsTrigger>
               </TabsList>
               
               <TabsContent value="login">
@@ -65,10 +63,6 @@ const Login: React.FC = () => {
                     <p>Մուտք դեմո հաշիվ...</p>
                   </div>
                 )}
-              </TabsContent>
-              
-              <TabsContent value="admin">
-                <AdminReset />
               </TabsContent>
             </Tabs>
           </CardContent>
