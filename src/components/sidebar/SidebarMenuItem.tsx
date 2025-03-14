@@ -27,7 +27,7 @@ const SidebarMenuItem: React.FC<SidebarMenuItemProps> = ({
         onClick={onCloseMenu}
       >
         {icon}
-        <span className="ml-2 mx-[6px]">{label}</span>
+        <span className="ml-3 font-medium">{label}</span>
       </Button>
     </Link>
   );
