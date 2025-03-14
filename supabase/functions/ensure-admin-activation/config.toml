@@ -1,4 +1,4 @@
 
 project_id = "nsaihorptygenpbguarw"
 [deploy]
-use = false
+use = true

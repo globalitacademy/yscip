@@ -25,7 +25,68 @@ Deno.serve(async (req) => {
       }
     );
 
-    // Call the ensure_admin_login function
+    // First, ensure the admin user exists in auth.users
+    const adminEmail = 'gitedu@bk.ru';
+    const adminPassword = 'Qolej2025*';
+
+    // Check if admin exists
+    const { data: existingUsers, error: checkError } = await supabaseAdmin.auth.admin
+      .listUsers({
+        page: 1, 
+        perPage: 1,
+        filters: {
+          email: adminEmail
+        }
+      });
+
+    if (checkError) {
+      throw checkError;
+    }
+
+    // If admin doesn't exist, create them
+    if (!existingUsers || existingUsers.users.length === 0) {
+      console.log('Admin user does not exist. Creating...');
+      const { data: newUser, error: createError } = await supabaseAdmin.auth.admin.createUser({
+        email: adminEmail,
+        password: adminPassword,
+        email_confirm: true,
+        user_metadata: {
+          name: 'Administrator',
+          role: 'admin'
+        }
+      });
+
+      if (createError) {
+        throw createError;
+      }
+      
+      console.log('Admin user created successfully:', newUser);
+    } else {
+      console.log('Admin user exists. Updating...');
+      // User exists, make sure they're confirmed and password works
+      const adminUser = existingUsers.users[0];
+      
+      const { error: updateError } = await supabaseAdmin.auth.admin.updateUserById(
+        adminUser.id,
+        {
+          email: adminEmail,
+          password: adminPassword,
+          email_confirm: true,
+          user_metadata: {
+            name: 'Administrator',
+            role: 'admin'
+          }
+        }
+      );
+
+      if (updateError) {
+        throw updateError;
+      }
+      
+      console.log('Admin user updated successfully');
+    }
+
+    // Now call the ensure_admin_login function to update the public.users table
     const { data, error } = await supabaseAdmin.rpc('ensure_admin_login');
 
     if (error) {

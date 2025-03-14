@@ -6,17 +6,27 @@ import { RefreshCw, CheckCircle } from 'lucide-react';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { useAuth } from '@/contexts/AuthContext';
 import { toast } from 'sonner';
+import { supabase } from '@/integrations/supabase/client';
 
 const AdminReset: React.FC = () => {
   const [isResetting, setIsResetting] = useState(false);
   const [resetSuccess, setResetSuccess] = useState(false);
-  const { resetAdminAccount } = useAuth();
   
   const handleResetAdmin = async () => {
     setIsResetting(true);
     try {
-      const success = await resetAdminAccount();
-      if (success) {
+      // Call the edge function to reset admin
+      const { data, error } = await supabase.functions.invoke('ensure-admin-activation');
+      
+      if (error) {
+        console.error('Error resetting admin account:', error);
+        toast.error('Սխալ', {
+          description: 'Չհաջողվեց վերականգնել ադմինիստրատորի հաշիվը'
+        });
+        return;
+      }
+      
+      if (data && data.success) {
         setResetSuccess(true);
         toast.success('Ադմինիստրատորի հաշիվը վերականգնված է', {
           description: 'Email: gitedu@bk.ru, Գաղտնաբառ: Qolej2025*'
@@ -27,6 +37,7 @@ const AdminReset: React.FC = () => {
         });
       }
     } catch (error) {
+      console.error('Unexpected error:', error);
       toast.error('Սխալ', {
         description: 'Տեղի ունեցավ անսպասելի սխալ'
       });
