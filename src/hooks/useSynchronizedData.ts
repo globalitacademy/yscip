@@ -4,6 +4,11 @@ import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { toast } from 'sonner';
 
+// Define allowed table names as a type to ensure type safety
+type ValidTable = 'users' | 'projects' | 'tasks' | 'notifications' | 
+                 'project_assignments' | 'timeline_events' | 
+                 'project_proposals' | 'employer_projects' | 'auth_logs';
+
 type FetchOptions = {
   columns?: string;
   filter?: Record<string, any>;
@@ -13,7 +18,7 @@ type FetchOptions = {
 };
 
 export function useSynchronizedData<T>(
-  tableName: string, 
+  tableName: ValidTable, 
   options: FetchOptions = {}
 ) {
   const [data, setData] = useState<T[]>([]);

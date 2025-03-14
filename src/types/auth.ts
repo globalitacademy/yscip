@@ -1,3 +1,4 @@
+
 import { User, UserRole } from '@/types/user';
 
 export interface PendingUser extends Partial<User> {
@@ -17,6 +18,6 @@ export interface AuthContextType {
   sendVerificationEmail: (email: string) => Promise<{success: boolean, token?: string}>;
   verifyEmail: (token: string) => Promise<boolean>;
   approveRegistration: (userId: string) => Promise<boolean>;
-  getPendingUsers: () => PendingUser[];
+  getPendingUsers: () => PendingUser[]; // Modified to be a synchronous function
   resetAdminAccount: () => Promise<boolean>;
 }

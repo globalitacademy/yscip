@@ -13,8 +13,8 @@ export const handleFallbackLogin = (
   password: string,
   pendingUsers: PendingUser[],
   mockUsers: User[],
-  setUser: (user: User | null) => void,
-  setIsAuthenticated: (value: boolean) => void,
+  setUser: (user: User | null) => void = () => {},
+  setIsAuthenticated: (value: boolean) => void = () => {},
 ) => {
   // Check real registered users (from pendingUsers that are verified)
   const pendingUser = pendingUsers.find(

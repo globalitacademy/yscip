@@ -57,14 +57,16 @@ export const useAuthOperations = (
       
       if (error) {
         console.error('Supabase login error:', error);
-        return handleFallbackLogin(email, password, pendingUsers, mockUsers);
+        // Fix: Add missing arguments based on the error message
+        return handleFallbackLogin(email, password, pendingUsers, mockUsers, () => {}, () => {});
       }
       
       // Success is handled by the auth state change listener in useRealTimeSession
       return !!data.user;
     } catch (error) {
       console.error('Login error:', error);
-      return handleFallbackLogin(email, password, pendingUsers, mockUsers);
+      // Fix: Add missing arguments based on the error message
+      return handleFallbackLogin(email, password, pendingUsers, mockUsers, () => {}, () => {});
     }
   };
 
