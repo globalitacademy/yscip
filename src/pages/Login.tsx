@@ -5,7 +5,6 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import LoginForm from '@/components/auth/LoginForm';
 import RegistrationForm from '@/components/auth/RegistrationForm';
 import DemoAccounts from '@/components/auth/DemoAccounts';
-import DeveloperInfo from '@/components/auth/login/DeveloperInfo';
 import VerificationAlert from '@/components/auth/verification/VerificationAlert';
 import { useDemoLogin } from '@/hooks/useDemoLogin';
 import { useVerification } from '@/hooks/useVerification';
@@ -41,7 +40,6 @@ const Login: React.FC = () => {
               
               <TabsContent value="login">
                 <LoginForm />
-                <DeveloperInfo />
               </TabsContent>
               
               <TabsContent value="register">
