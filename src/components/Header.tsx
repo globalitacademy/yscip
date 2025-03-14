@@ -110,7 +110,7 @@ const Header: React.FC<HeaderProps> = ({
           <Link to="/" className="flex items-center gap-2">
             <GraduationCap size={28} className="text-primary" />
             <div className="flex flex-col">
-              <span className="text-xl font-bold text-primary">Դիպլոմային</span>
+              <span className="text-xl font-bold text-primary">ՈՒԿԿՀ</span>
               <span className="text-sm text-muted-foreground -mt-1"></span>
             </div>
           </Link>
