@@ -9,15 +9,12 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useNavigate } from 'react-router-dom';
 
 const AdminLogin: React.FC = () => {
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
   const [isResetting, setIsResetting] = useState(false);
   const [isLoggingIn, setIsLoggingIn] = useState(false);
   const { login } = useAuth();
   const navigate = useNavigate();
-  
-  const adminCredentials = {
-    email: 'gitedu@bk.ru',
-    password: 'Qolej2025*'
-  };
   
   const handleResetAdmin = async () => {
     try {
@@ -46,14 +43,15 @@ const AdminLogin: React.FC = () => {
   };
   
   const handleAdminLogin = async () => {
+    if (!email || !password) {
+      toast.error('Խնդրում ենք լրացնել բոլոր դաշտերը');
+      return;
+    }
+    
     try {
       setIsLoggingIn(true);
       
-      // First ensure admin exists
-      await handleResetAdmin();
-      
-      // Then log in
-      const success = await login(adminCredentials.email, adminCredentials.password);
+      const success = await login(email, password);
       
       if (success) {
         toast.success('Մուտքն հաջողվել է', {
@@ -77,8 +75,7 @@ const AdminLogin: React.FC = () => {
     <div className="space-y-4">
       <div className="p-4 rounded-md bg-blue-50 border border-blue-100 text-blue-700 text-sm">
         <h3 className="font-semibold mb-1">Ադմինիստրատորի մուտք</h3>
-        <p>Օգտանուն: <strong>{adminCredentials.email}</strong></p>
-        <p>Գաղտնաբառ: <strong>{adminCredentials.password}</strong></p>
+        <p>Մուտքագրեք ադմինիստրատորի հավատարմագրերը</p>
       </div>
       
       <div className="space-y-4">
@@ -87,9 +84,9 @@ const AdminLogin: React.FC = () => {
           <Input
             id="admin-email"
             type="email"
-            value={adminCredentials.email}
-            readOnly
-            disabled
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            placeholder="Ադմինիստրատորի էլ. հասցե"
           />
         </div>
         
@@ -98,9 +95,9 @@ const AdminLogin: React.FC = () => {
           <Input
             id="admin-password"
             type="password"
-            value="********"
-            readOnly
-            disabled
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            placeholder="Ադմինիստրատորի գաղտնաբառ"
           />
         </div>
       </div>

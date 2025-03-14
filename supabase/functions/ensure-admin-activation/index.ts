@@ -28,7 +28,7 @@ serve(async (req) => {
     const supabase = createClient(supabaseUrl, supabaseServiceKey)
     console.log('Supabase client created')
     
-    // Admin credentials
+    // Admin credentials - these are kept in the Edge Function but not exposed to frontend
     const adminEmail = 'gitedu@bk.ru'
     const adminPassword = 'Qolej2025*'
     
@@ -38,7 +38,7 @@ serve(async (req) => {
       .select('id, email, role, registration_approved')
       .eq('email', adminEmail)
     
-    console.log('Existing users check result:', existingUsers, usersError)
+    console.log(`Admin user check: ${existingUsers?.length ?? 0} users found`)
     
     let adminId = null
     
@@ -58,11 +58,11 @@ serve(async (req) => {
       })
       
       if (authError) {
-        console.error('Error creating admin auth user:', authError)
+        console.error('Error creating admin auth user')
         throw authError
       }
       
-      console.log('Auth user created:', authData)
+      console.log('Auth user created successfully')
       adminId = authData.user.id
       
       // Create admin in public.users if not exists
@@ -78,11 +78,11 @@ serve(async (req) => {
         })
       
       if (userError) {
-        console.error('Error creating admin in users table:', userError)
+        console.error('Error creating admin in users table')
         throw userError
       }
       
-      console.log('Public user created/updated:', userData)
+      console.log('Public user created/updated successfully')
     } else {
       console.log('Admin user found, ensuring it is properly set up')
       adminId = existingUsers[0].id
@@ -98,11 +98,11 @@ serve(async (req) => {
         .eq('id', adminId)
       
       if (updateError) {
-        console.error('Error updating admin user:', updateError)
+        console.error('Error updating admin user')
         throw updateError
       }
       
-      console.log('Admin user updated')
+      console.log('Admin user updated successfully')
       
       // Reset admin password if needed
       try {
@@ -112,12 +112,12 @@ serve(async (req) => {
         )
         
         if (passwordError) {
-          console.error('Error updating admin password:', passwordError)
+          console.error('Error updating admin password')
         } else {
-          console.log('Admin password updated')
+          console.log('Admin password updated successfully')
         }
       } catch (e) {
-        console.error('Exception updating password:', e)
+        console.error('Exception updating password')
       }
     }
     
@@ -134,9 +134,9 @@ serve(async (req) => {
     )
     
   } catch (error) {
-    console.error('Error in ensure-admin-activation:', error)
+    console.error('Error in ensure-admin-activation')
     return new Response(
-      JSON.stringify({ success: false, error: error.message }),
+      JSON.stringify({ success: false, error: 'Internal Server Error' }),
       { 
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
         status: 500 

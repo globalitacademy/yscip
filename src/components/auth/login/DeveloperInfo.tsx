@@ -29,14 +29,10 @@ const DeveloperInfo: React.FC = () => {
           
           <Alert className="mb-3">
             <AlertCircle className="h-4 w-4" />
-            <AlertTitle>Հիմնական ադմինիստրատորի հաշիվ</AlertTitle>
+            <AlertTitle>Ադմինիստրատորի հաշիվ</AlertTitle>
             <AlertDescription>
-              <div className="mt-2 font-medium">
-                <div><strong>Էլ․ հասցե:</strong> gitedu@bk.ru</div>
-                <div><strong>Գաղտնաբառ:</strong> Qolej2025*</div>
-              </div>
               <p className="mt-2 text-sm text-muted-foreground">
-                Այս հաշիվն ունի բոլոր թույլտվությունները և կարող է հաստատել նոր օգտատերերի
+                Ադմինիստրատորի հաշիվն ունի բոլոր թույլտվությունները և կարող է հաստատել նոր օգտատերերի
               </p>
             </AlertDescription>
           </Alert>

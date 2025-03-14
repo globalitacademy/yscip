@@ -24,7 +24,6 @@ const ForgotPasswordLink: React.FC = () => {
       
       if (data.success) {
         toast.success('Ադմինիստրատորի հաշիվը վերականգնված է։');
-        toast.info('Օգտանուն: gitedu@bk.ru, Գաղտնաբառ: Qolej2025*');
       } else {
         toast.error('Սխալ ադմինիստրատորի հաշիվը վերականգնելիս։');
       }

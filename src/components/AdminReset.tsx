@@ -18,9 +18,7 @@ const AdminReset: React.FC = () => {
       const success = await resetAdminAccount();
       if (success) {
         setResetSuccess(true);
-        toast.success('Ադմինիստրատորի հաշիվը վերականգնված է', {
-          description: 'Email: gitedu@bk.ru, Գաղտնաբառ: Qolej2025*'
-        });
+        toast.success('Ադմինիստրատորի հաշիվը վերականգնված է');
       } else {
         toast.error('Սխալ', {
           description: 'Չհաջողվեց վերականգնել ադմինիստրատորի հաշիվը'
@@ -48,8 +46,7 @@ const AdminReset: React.FC = () => {
           <AlertTitle>Ադմինիստրատորի հաշվի մանրամասներ</AlertTitle>
           <AlertDescription>
             <div className="mt-2">
-              <div><strong>Էլ. հասցե:</strong> gitedu@bk.ru</div>
-              <div><strong>Գաղտնաբառ:</strong> Qolej2025*</div>
+              <p>Օգտագործեք վերականգնման կոճակը ադմինիստրատորի հաշիվը վերականգնելու համար:</p>
             </div>
           </AlertDescription>
         </Alert>
