@@ -3,18 +3,25 @@ import { User, UserRole } from '@/types/user';
 import { mockUsers } from '@/data/mockUsers';
 import { PendingUser } from '@/types/auth';
 import { toast } from 'sonner';
-import { supabase } from '@/integrations/supabase/client';
+import { SupabaseClient } from '@supabase/supabase-js';
 
 export const useUserOperations = (
   pendingUsers: PendingUser[],
   setPendingUsers: React.Dispatch<React.SetStateAction<PendingUser[]>>,
-  setUser: (user: User | null) => void
+  supabase: SupabaseClient
 ) => {
-  const switchRole = (role: UserRole) => {
+  const switchRole = async (role: UserRole) => {
+    // This function is for demo purposes only
     const userWithRole = mockUsers.find(u => u.role === role);
     if (userWithRole) {
-      setUser(userWithRole);
+      // First sign out current user
+      await supabase.auth.signOut();
+      
+      // Temporarily store the mock user in localStorage
       localStorage.setItem('currentUser', JSON.stringify(userWithRole));
+      
+      // Reload page to apply the change
+      window.location.reload();
     }
   };
 
@@ -126,53 +133,48 @@ export const useUserOperations = (
     return true;
   };
 
-  const getPendingUsers = () => pendingUsers;
+  const getPendingUsers = async () => {
+    // Try to get pending users from Supabase first
+    try {
+      const { data, error } = await supabase
+        .from('users')
+        .select('*')
+        .eq('registration_approved', false);
+        
+      if (!error && data) {
+        // Map to PendingUser format
+        return data.map(user => ({
+          id: user.id,
+          email: user.email,
+          name: user.name,
+          role: user.role as UserRole,
+          verified: true, // If it's in the database, it's verified
+          registrationApproved: user.registration_approved,
+          avatar: user.avatar
+        }));
+      }
+    } catch (e) {
+      console.error('Error fetching pending users from Supabase:', e);
+    }
+    
+    // Fallback to local storage
+    return pendingUsers;
+  };
   
   const resetAdminAccount = async (): Promise<boolean> => {
     try {
       console.log('Resetting admin account');
       
-      // First try direct admin activation through edge function
+      // Call admin activation through edge function
       const { data, error } = await supabase.functions.invoke('ensure-admin-activation');
       
       if (error) {
         console.error('Error calling admin activation function:', error);
-      } else {
-        console.log('Admin activation function response:', data);
+        toast.error('Սխալ ադմինիստրատորի հաշիվը վերականգնելիս։');
+        return false;
       }
       
-      // Whether or not the edge function succeeds, we'll also do the client-side reset
-      // to ensure the admin account is available locally
-      
-      // Add main admin to mock data if not exists
-      const adminExists = mockUsers.some(user => user.email === 'gitedu@bk.ru');
-      
-      if (!adminExists) {
-        const newAdmin: User = {
-          id: `admin-${Date.now()}`,
-          name: 'Ադմինիստրատոր',
-          email: 'gitedu@bk.ru',
-          role: 'admin',
-          avatar: `https://api.dicebear.com/7.x/avataaars/svg?seed=giteduadmin`,
-          department: 'Ադմինիստրացիա',
-          registrationApproved: true
-        };
-        
-        mockUsers.push(newAdmin);
-      }
-      
-      // Also ensure this admin is not in pending users (or is approved if there)
-      const pendingAdminIndex = pendingUsers.findIndex(
-        u => u.email?.toLowerCase() === 'gitedu@bk.ru'
-      );
-      
-      if (pendingAdminIndex >= 0) {
-        const updatedPendingUsers = [...pendingUsers];
-        updatedPendingUsers[pendingAdminIndex].verified = true;
-        updatedPendingUsers[pendingAdminIndex].registrationApproved = true;
-        setPendingUsers(updatedPendingUsers);
-      }
-      
+      console.log('Admin activation function response:', data);
       toast.success('Ադմինիստրատորի հաշիվը վերականգնված է։');
       return true;
     } catch (error) {

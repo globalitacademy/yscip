@@ -1,11 +1,13 @@
+
 import React, { createContext, useContext } from 'react';
 import { User, UserRole } from '@/types/user';
 import { mockUsers } from '@/data/mockUsers';
 import { AuthContextType, PendingUser } from '@/types/auth';
-import { useAuthSession } from '@/hooks/useAuthSession';
 import { ensureAdminUsersExist } from './auth/mockAdminUsers';
 import { useAuthOperations } from './auth/useAuthOperations';
 import { useUserOperations } from './auth/useUserOperations';
+import { useRealTimeSession } from '@/hooks/useRealTimeSession';
+import { supabase } from '@/integrations/supabase/client';
 
 // Ensure admin users exist in mockUsers
 const updatedMockUsers = ensureAdminUsersExist(mockUsers);
@@ -21,22 +23,28 @@ export const useAuth = () => {
 };
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const { 
-    user, 
-    isAuthenticated, 
-    pendingUsers, 
-    setUser, 
-    setIsAuthenticated, 
-    setPendingUsers 
-  } = useAuthSession();
+  const { user, isLoading } = useRealTimeSession();
+  const isAuthenticated = !!user;
+
+  // Get pending users from API or fall back to local storage
+  const [pendingUsers, setPendingUsers] = React.useState<PendingUser[]>(() => {
+    const storedPendingUsers = localStorage.getItem('pendingUsers');
+    return storedPendingUsers ? JSON.parse(storedPendingUsers) : [];
+  });
+
+  // Update localStorage when pendingUsers changes
+  React.useEffect(() => {
+    if (pendingUsers.length > 0) {
+      localStorage.setItem('pendingUsers', JSON.stringify(pendingUsers));
+    }
+  }, [pendingUsers]);
 
   // Authentication operations
   const { login, logout, registerUser } = useAuthOperations(
     user, 
     pendingUsers, 
-    setUser, 
-    setIsAuthenticated, 
-    setPendingUsers
+    setPendingUsers,
+    supabase
   );
 
   // User management operations
@@ -47,13 +55,14 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     approveRegistration, 
     getPendingUsers,
     resetAdminAccount 
-  } = useUserOperations(pendingUsers, setPendingUsers, setUser);
+  } = useUserOperations(pendingUsers, setPendingUsers, supabase);
 
   return (
     <AuthContext.Provider
       value={{
         user,
         isAuthenticated,
+        isLoading,
         login,
         logout,
         switchRole,

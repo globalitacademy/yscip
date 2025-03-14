@@ -1,0 +1,154 @@
+
+import { useState, useEffect } from 'react';
+import { supabase } from '@/integrations/supabase/client';
+import { useAuth } from '@/contexts/AuthContext';
+import { toast } from 'sonner';
+
+type FetchOptions = {
+  columns?: string;
+  filter?: Record<string, any>;
+  orderBy?: { column: string; ascending?: boolean };
+  limit?: number;
+  page?: number;
+};
+
+export function useSynchronizedData<T>(
+  tableName: string, 
+  options: FetchOptions = {}
+) {
+  const [data, setData] = useState<T[]>([]);
+  const [count, setCount] = useState<number>(0);
+  const [loading, setLoading] = useState<boolean>(true);
+  const [error, setError] = useState<Error | null>(null);
+  const { user } = useAuth();
+  
+  const fetchData = async () => {
+    if (!user) return;
+    
+    setLoading(true);
+    setError(null);
+    
+    try {
+      // Build the query
+      const columns = options.columns || '*';
+      
+      let query = supabase
+        .from(tableName)
+        .select(columns, { count: 'exact' });
+      
+      // Apply filters
+      if (options.filter) {
+        Object.entries(options.filter).forEach(([key, value]) => {
+          if (value !== undefined && value !== null) {
+            if (Array.isArray(value)) {
+              query = query.in(key, value);
+            } else if (typeof value === 'object' && value.operator) {
+              // Support for more complex filters
+              switch (value.operator) {
+                case 'eq':
+                  query = query.eq(key, value.value);
+                  break;
+                case 'neq':
+                  query = query.neq(key, value.value);
+                  break;
+                case 'gt':
+                  query = query.gt(key, value.value);
+                  break;
+                case 'gte':
+                  query = query.gte(key, value.value);
+                  break;
+                case 'lt':
+                  query = query.lt(key, value.value);
+                  break;
+                case 'lte':
+                  query = query.lte(key, value.value);
+                  break;
+                case 'like':
+                  query = query.like(key, `%${value.value}%`);
+                  break;
+                case 'ilike':
+                  query = query.ilike(key, `%${value.value}%`);
+                  break;
+                default:
+                  query = query.eq(key, value.value);
+              }
+            } else {
+              query = query.eq(key, value);
+            }
+          }
+        });
+      }
+      
+      // Apply ordering
+      if (options.orderBy) {
+        const { column, ascending = true } = options.orderBy;
+        query = query.order(column, { ascending });
+      }
+      
+      // Apply pagination
+      if (options.page && options.limit) {
+        const from = (options.page - 1) * options.limit;
+        const to = from + options.limit - 1;
+        query = query.range(from, to);
+      } else if (options.limit) {
+        query = query.limit(options.limit);
+      }
+      
+      // Execute the query
+      const { data: responseData, error: responseError, count: responseCount } = await query;
+      
+      if (responseError) {
+        throw new Error(responseError.message);
+      }
+      
+      setData(responseData as T[]);
+      if (responseCount !== null) {
+        setCount(responseCount);
+      }
+    } catch (err) {
+      console.error(`Error fetching ${tableName}:`, err);
+      setError(err instanceof Error ? err : new Error('Unknown error occurred'));
+      toast.error(`Սխալ տվյալների համաժամացման ժամանակ։`);
+    } finally {
+      setLoading(false);
+    }
+  };
+  
+  useEffect(() => {
+    if (user) {
+      fetchData();
+      
+      // Set up real-time subscription
+      const channel = supabase
+        .channel(`${tableName}-changes`)
+        .on('postgres_changes', { 
+          event: '*', 
+          schema: 'public', 
+          table: tableName 
+        }, () => {
+          fetchData();
+        })
+        .subscribe();
+        
+      return () => {
+        supabase.removeChannel(channel);
+      };
+    }
+  }, [
+    tableName, 
+    user, 
+    options.columns,
+    JSON.stringify(options.filter),
+    JSON.stringify(options.orderBy),
+    options.limit,
+    options.page
+  ]);
+  
+  return { 
+    data, 
+    count, 
+    loading, 
+    error, 
+    refresh: fetchData 
+  };
+}
