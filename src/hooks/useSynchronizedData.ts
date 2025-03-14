@@ -9,9 +9,14 @@ type ValidTable = 'users' | 'projects' | 'tasks' | 'notifications' |
                  'project_assignments' | 'timeline_events' | 
                  'project_proposals' | 'employer_projects' | 'auth_logs';
 
+type FilterValue = {
+  operator: 'eq' | 'neq' | 'gt' | 'gte' | 'lt' | 'lte' | 'like' | 'ilike';
+  value: any;
+};
+
 type FetchOptions = {
   columns?: string;
-  filter?: Record<string, any>;
+  filter?: Record<string, any | FilterValue | any[]>;
   orderBy?: { column: string; ascending?: boolean };
   limit?: number;
   page?: number;
@@ -37,7 +42,7 @@ export function useSynchronizedData<T>(
       // Build the query
       const columns = options.columns || '*';
       
-      const query = supabase
+      let query = supabase
         .from(tableName)
         .select(columns, { count: 'exact' });
       
@@ -46,40 +51,38 @@ export function useSynchronizedData<T>(
         Object.entries(options.filter).forEach(([key, value]) => {
           if (value !== undefined && value !== null) {
             if (Array.isArray(value)) {
-              query.in(key, value);
+              query = query.in(key, value);
             } else if (typeof value === 'object' && value !== null && 'operator' in value) {
               // Support for more complex filters
-              const filterValue = value as { operator: string; value: any };
+              const filterValue = value as FilterValue;
               switch (filterValue.operator) {
                 case 'eq':
-                  query.eq(key, filterValue.value);
+                  query = query.eq(key, filterValue.value);
                   break;
                 case 'neq':
-                  query.neq(key, filterValue.value);
+                  query = query.neq(key, filterValue.value);
                   break;
                 case 'gt':
-                  query.gt(key, filterValue.value);
+                  query = query.gt(key, filterValue.value);
                   break;
                 case 'gte':
-                  query.gte(key, filterValue.value);
+                  query = query.gte(key, filterValue.value);
                   break;
                 case 'lt':
-                  query.lt(key, filterValue.value);
+                  query = query.lt(key, filterValue.value);
                   break;
                 case 'lte':
-                  query.lte(key, filterValue.value);
+                  query = query.lte(key, filterValue.value);
                   break;
                 case 'like':
-                  query.like(key, `%${filterValue.value}%`);
+                  query = query.like(key, `%${filterValue.value}%`);
                   break;
                 case 'ilike':
-                  query.ilike(key, `%${filterValue.value}%`);
+                  query = query.ilike(key, `%${filterValue.value}%`);
                   break;
-                default:
-                  query.eq(key, filterValue.value);
               }
             } else {
-              query.eq(key, value);
+              query = query.eq(key, value);
             }
           }
         });
@@ -88,16 +91,16 @@ export function useSynchronizedData<T>(
       // Apply ordering
       if (options.orderBy) {
         const { column, ascending = true } = options.orderBy;
-        query.order(column, { ascending });
+        query = query.order(column, { ascending });
       }
       
       // Apply pagination
       if (options.page && options.limit) {
         const from = (options.page - 1) * options.limit;
         const to = from + options.limit - 1;
-        query.range(from, to);
+        query = query.range(from, to);
       } else if (options.limit) {
-        query.limit(options.limit);
+        query = query.limit(options.limit);
       }
       
       // Execute the query

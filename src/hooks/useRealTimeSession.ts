@@ -52,8 +52,8 @@ export const useRealTimeSession = () => {
             registrationApproved: userData.registration_approved,
             organization: userData.organization,
             course: userData.course,
-            // Use group_name from database for the group property
-            group: userData.group_name,
+            // Map group_name from database to group property
+            group: userData.group_name, 
             specialization: userData.specialization
           };
           

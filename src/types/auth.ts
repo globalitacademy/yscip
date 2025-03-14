@@ -11,7 +11,7 @@ export interface PendingUser extends Partial<User> {
 export interface AuthContextType {
   user: User | null;
   isAuthenticated: boolean;
-  isLoading: boolean; // Added isLoading property
+  isLoading: boolean; // Ensuring isLoading property is properly defined
   login: (email: string, password: string) => Promise<boolean>;
   logout: () => void;
   switchRole: (role: UserRole) => void;
@@ -19,6 +19,6 @@ export interface AuthContextType {
   sendVerificationEmail: (email: string) => Promise<{success: boolean, token?: string}>;
   verifyEmail: (token: string) => Promise<boolean>;
   approveRegistration: (userId: string) => Promise<boolean>;
-  getPendingUsers: () => PendingUser[]; // Modified to be a synchronous function
+  getPendingUsers: () => PendingUser[];
   resetAdminAccount: () => Promise<boolean>;
 }
