@@ -41,7 +41,7 @@ const HeroContent: React.FC<HeroContentProps> = ({
       
       <SlideUp delay="delay-700" className="mt-24">
         <button onClick={scrollToThemes} className="inline-flex flex-col items-center text-muted-foreground hover:text-foreground transition-colors group" aria-label="Scroll down">
-          <span className="text-sm mb-2 group-hover:translate-y-1 transition-transform">Ոլորել դեպի ներքև</span>
+          <span className="text-sm mb-2 group-hover:translate-y-1 transition-transform">Դեպի ներքև</span>
           <ChevronDown size={22} className="animate-bounce group-hover:animate-none group-hover:scale-125 transition-transform" />
         </button>
       </SlideUp>
