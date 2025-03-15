@@ -1,7 +1,7 @@
-
 import React, { useState, useEffect } from 'react';
 import Header from '@/components/Header';
 import Hero from '@/components/Hero';
+import FeaturesSection from '@/components/features';
 import Footer from '@/components/Footer';
 import { useAuth } from '@/contexts/AuthContext';
 import { toast } from 'sonner';
@@ -15,9 +15,7 @@ const Index = () => {
   const [reservedProjects, setReservedProjects] = useState<any[]>([]);
   const [assignments, setAssignments] = useState<any[]>([]);
   
-  // Load projects and assignments from localStorage
   useEffect(() => {
-    // Get created projects
     const storedProjects = localStorage.getItem('createdProjects');
     if (storedProjects) {
       try {
@@ -29,7 +27,6 @@ const Index = () => {
       }
     }
     
-    // Get reserved projects
     const storedReservations = localStorage.getItem('reservedProjects');
     if (storedReservations) {
       try {
@@ -41,7 +38,6 @@ const Index = () => {
       }
     }
     
-    // Get assignments
     const storedAssignments = localStorage.getItem('projectAssignments');
     if (storedAssignments) {
       try {
@@ -54,7 +50,6 @@ const Index = () => {
     }
   }, []);
 
-  // Display user role toast when logged in
   useEffect(() => {
     if (user) {
       const roleMap: Record<string, string> = {
@@ -73,22 +68,21 @@ const Index = () => {
     }
   }, [user]);
 
-  // Filter user's reserved projects
   const userReservedProjects = user 
     ? reservedProjects.filter(rp => rp.userId === user.id)
     : [];
 
-  // Find actual project details for reserved projects
   const userReservedProjectDetails = userReservedProjects.map(rp => {
     const project = [...projectThemes, ...createdProjects].find(p => Number(p.id) === Number(rp.projectId));
     return { ...rp, project };
-  }).filter(rp => rp.project); // Filter out any without matching project details
+  }).filter(rp => rp.project);
 
   return (
     <div className="min-h-screen flex flex-col">
       <Header />
       <main className="flex-grow">
         <Hero />
+        <FeaturesSection />
         <div id="themes-section" className="container mx-auto px-4 pb-16">
           {user && (
             <UserReservedProjects reservedProjects={userReservedProjectDetails} />
