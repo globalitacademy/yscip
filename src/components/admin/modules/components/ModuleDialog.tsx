@@ -1,11 +1,13 @@
 
-import React from 'react';
+import React, { useState } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { X, Plus } from 'lucide-react';
+import { Badge } from '@/components/ui/badge';
 import type { EducationalModule } from '@/components/educationalCycle';
 
 interface ModuleDialogProps {
@@ -23,6 +25,8 @@ const ModuleDialog: React.FC<ModuleDialogProps> = ({
   onSave,
   onModuleChange
 }) => {
+  const [newTopic, setNewTopic] = useState('');
+
   // Create handlers for each field update
   const handleTitleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (selectedModule) {
@@ -60,9 +64,39 @@ const ModuleDialog: React.FC<ModuleDialogProps> = ({
     }
   };
 
+  const handleAddTopic = () => {
+    if (newTopic.trim() === '' || !selectedModule) return;
+    
+    onModuleChange({
+      ...selectedModule,
+      topics: [...(selectedModule.topics || []), newTopic.trim()]
+    });
+    
+    setNewTopic('');
+  };
+
+  const handleRemoveTopic = (index: number) => {
+    if (!selectedModule) return;
+    
+    const updatedTopics = [...(selectedModule.topics || [])];
+    updatedTopics.splice(index, 1);
+    
+    onModuleChange({
+      ...selectedModule,
+      topics: updatedTopics
+    });
+  };
+
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      handleAddTopic();
+    }
+  };
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent>
+      <DialogContent className="max-w-md max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>
             {selectedModule?.id ? 'Խմբագրել մոդուլը' : 'Ավելացնել նոր մոդուլ'}
@@ -120,6 +154,43 @@ const ModuleDialog: React.FC<ModuleDialogProps> = ({
               value={selectedModule?.progress || 0} 
               onChange={handleProgressChange} 
             />
+          </div>
+
+          <div className="grid gap-2">
+            <Label htmlFor="topics">Թեմաներ</Label>
+            <div className="flex flex-wrap gap-2 mb-2">
+              {selectedModule?.topics?.map((topic, index) => (
+                <Badge key={index} variant="secondary" className="px-2 py-1">
+                  {topic}
+                  <Button 
+                    type="button" 
+                    variant="ghost" 
+                    size="icon" 
+                    className="h-4 w-4 ml-1"
+                    onClick={() => handleRemoveTopic(index)}
+                  >
+                    <X className="h-3 w-3" />
+                  </Button>
+                </Badge>
+              ))}
+            </div>
+            <div className="flex gap-2">
+              <Input
+                id="new-topic"
+                placeholder="Նոր թեմա"
+                value={newTopic}
+                onChange={(e) => setNewTopic(e.target.value)}
+                onKeyDown={handleKeyDown}
+              />
+              <Button 
+                type="button" 
+                size="sm" 
+                onClick={handleAddTopic}
+                className="shrink-0"
+              >
+                <Plus className="h-4 w-4 mr-1" /> Ավելացնել
+              </Button>
+            </div>
           </div>
         </div>
         
