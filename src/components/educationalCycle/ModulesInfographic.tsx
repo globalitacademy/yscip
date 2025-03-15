@@ -1,10 +1,10 @@
-
 import React, { useState } from 'react';
 import { Code, FileCode, Layers, Globe, Layout, Database, Monitor, PenTool, Image, Smartphone, Shield, Clock, Check, X } from 'lucide-react';
 import { FadeIn, SlideUp } from '@/components/LocalTransitions';
 import { Progress } from '@/components/ui/progress';
 import { useAuth } from '@/contexts/AuthContext';
 import { Popover, PopoverTrigger, PopoverContent } from '@/components/ui/popover';
+import { Card, CardContent } from '@/components/ui/card';
 
 export interface EducationalModule {
   id: number;
@@ -23,6 +23,8 @@ interface ModuleCardProps {
 }
 
 const ModuleCard: React.FC<ModuleCardProps> = ({ module, delay, showProgress }) => {
+  const [isFlipped, setIsFlipped] = useState(false);
+  
   const colors = [
     "bg-blue-100 text-blue-600 border-blue-200",
     "bg-green-100 text-green-600 border-green-200",
@@ -52,64 +54,98 @@ const ModuleCard: React.FC<ModuleCardProps> = ({ module, delay, showProgress }) 
         return <X className="h-5 w-5 text-gray-400" />;
     }
   };
+  
+  const handleCardClick = () => {
+    if (module.topics && module.topics.length > 0) {
+      setIsFlipped(!isFlipped);
+    }
+  };
 
-  const card = (
-    <div className={`p-6 rounded-lg border ${colorClass} flex flex-col items-center transition-transform hover:scale-105 cursor-pointer`}>
-      <div className="rounded-full bg-white p-3 mb-4">
-        <module.icon className={colorClass.split(' ')[1]} size={28} />
-      </div>
-      <div className="text-sm font-semibold mb-1">{module.id}.</div>
-      <h3 className="text-center font-medium mb-2">{module.title}</h3>
-      
-      {showProgress && module.status && (
-        <div className="mt-2 flex items-center gap-2">
-          {getStatusIcon()}
-          <span className="text-xs">
-            {module.status === 'completed' ? 'Ավարտված է' : 
-             module.status === 'in-progress' ? 'Ընթացքի մեջ է' : 
-             'Չսկսված'}
-          </span>
-        </div>
-      )}
-      
-      {showProgress && module.progress !== undefined && (
-        <div className="w-full mt-3">
-          <Progress value={module.progress} className="h-2" />
-          <p className="text-xs text-right mt-1">{module.progress}%</p>
-        </div>
-      )}
-    </div>
-  );
-  
-  // Always make module cards clickable with topics, regardless of authentication
-  if (module.topics && module.topics.length > 0) {
-    return (
-      <SlideUp delay={delay} className="flex flex-col">
-        <Popover>
-          <PopoverTrigger asChild>
-            {card}
-          </PopoverTrigger>
-          <PopoverContent className="w-80 p-4">
-            <h4 className="font-medium mb-2">{module.title} - Թեմաներ</h4>
-            <ul className="space-y-1">
-              {module.topics.map((topic, index) => (
-                <li key={index} className="text-sm flex items-start gap-2">
-                  <span className="bg-primary/10 text-primary rounded-full w-5 h-5 flex items-center justify-center text-xs flex-shrink-0 mt-0.5">
-                    {index + 1}
-                  </span>
-                  <span>{topic}</span>
-                </li>
-              ))}
-            </ul>
-          </PopoverContent>
-        </Popover>
-      </SlideUp>
-    );
-  }
-  
   return (
     <SlideUp delay={delay} className="flex flex-col">
-      {card}
+      <div 
+        className={`flip-card ${isFlipped ? 'flipped' : ''}`}
+        style={{ 
+          perspective: '1000px',
+          height: '280px' 
+        }}
+      >
+        <div 
+          className="flip-card-inner w-full h-full relative transition-transform duration-700 transform-style-preserve-3d"
+          style={{ 
+            transformStyle: 'preserve-3d',
+            transform: isFlipped ? 'rotateY(180deg)' : 'rotateY(0deg)'
+          }}
+        >
+          <div 
+            className={`flip-card-front absolute w-full h-full ${colorClass} border rounded-lg p-6 shadow-md flex flex-col items-center cursor-pointer`}
+            onClick={handleCardClick}
+            style={{ 
+              backfaceVisibility: 'hidden'
+            }}
+          >
+            <div className="rounded-full bg-white p-3 mb-4 shadow-inner">
+              <module.icon className={colorClass.split(' ')[1]} size={28} />
+            </div>
+            <div className="text-sm font-semibold mb-1">{module.id}.</div>
+            <h3 className="text-center font-medium mb-2">{module.title}</h3>
+            
+            {showProgress && module.status && (
+              <div className="mt-2 flex items-center gap-2">
+                {getStatusIcon()}
+                <span className="text-xs">
+                  {module.status === 'completed' ? 'Ավարտված է' : 
+                   module.status === 'in-progress' ? 'Ընթացքի մեջ է' : 
+                   'Չսկսված'}
+                </span>
+              </div>
+            )}
+            
+            {showProgress && module.progress !== undefined && (
+              <div className="w-full mt-3">
+                <Progress value={module.progress} className="h-2" />
+                <p className="text-xs text-right mt-1">{module.progress}%</p>
+              </div>
+            )}
+            
+            {module.topics && module.topics.length > 0 && (
+              <div className="mt-auto pt-4">
+                <p className="text-xs italic">Սեղմեք թեմաները տեսնելու համար</p>
+              </div>
+            )}
+          </div>
+          
+          <div 
+            className={`flip-card-back absolute w-full h-full ${colorClass} border rounded-lg p-6 shadow-md flex flex-col cursor-pointer`}
+            onClick={handleCardClick}
+            style={{ 
+              backfaceVisibility: 'hidden',
+              transform: 'rotateY(180deg)'
+            }}
+          >
+            <h4 className="font-medium mb-2 text-center">{module.title} - Թեմաներ</h4>
+            
+            {module.topics && module.topics.length > 0 ? (
+              <ul className="space-y-2 overflow-auto">
+                {module.topics.map((topic, index) => (
+                  <li key={index} className="text-sm flex items-start gap-2">
+                    <span className="bg-white text-primary rounded-full w-5 h-5 flex items-center justify-center text-xs flex-shrink-0 mt-0.5">
+                      {index + 1}
+                    </span>
+                    <span>{topic}</span>
+                  </li>
+                ))}
+              </ul>
+            ) : (
+              <p className="text-sm text-center italic">Թեմաներ չկան</p>
+            )}
+            
+            <div className="mt-auto pt-4 text-center">
+              <p className="text-xs italic">Սեղմեք քարտը շրջելու համար</p>
+            </div>
+          </div>
+        </div>
+      </div>
     </SlideUp>
   );
 };
@@ -117,7 +153,6 @@ const ModuleCard: React.FC<ModuleCardProps> = ({ module, delay, showProgress }) 
 export const ModulesInfographic: React.FC = () => {
   const { user, isAuthenticated } = useAuth();
   
-  // Demo educational modules data with status and topics - in a real app this would be fetched from backend
   const educationalModules: EducationalModule[] = [
     { 
       id: 1, 
@@ -165,7 +200,7 @@ export const ModulesInfographic: React.FC = () => {
       status: 'in-progress', 
       progress: 40,
       topics: [
-        "OSI մոդել և TCP/IP",
+        "OSI մոդեل և TCP/IP",
         "Մարշրուտիզացիա և կոմուտացիա",
         "Հաղորդակարգեր և ծառայություններ",
         "Ցանցային անվտանգություն"
@@ -270,7 +305,7 @@ export const ModulesInfographic: React.FC = () => {
       progress: 0,
       topics: [
         "UI/UX սկզբունքներ",
-        "Կոմպոնենտների նախագծում",
+        "Կոմپոնենտների նախագծում",
         "Թեմաների և ոճերի կառավարում",
         "Բազմապլատֆորմային ինտերֆեյսներ"
       ]

@@ -118,4 +118,32 @@
       transform: translateY(-20px) scale(1.2);
     }
   }
+  
+  /* 3D Card Flip Effect */
+  .flip-card {
+    perspective: 1000px;
+  }
+  
+  .flip-card-inner {
+    transition: transform 0.8s;
+    transform-style: preserve-3d;
+  }
+  
+  .flip-card:hover .flip-card-inner {
+    transform: rotateY(5deg);
+  }
+  
+  .flipped .flip-card-inner {
+    transform: rotateY(180deg) !important;
+  }
+  
+  .flip-card-front, .flip-card-back {
+    -webkit-backface-visibility: hidden;
+    backface-visibility: hidden;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+  }
+  
+  .flip-card-back {
+    transform: rotateY(180deg);
+  }
 }
