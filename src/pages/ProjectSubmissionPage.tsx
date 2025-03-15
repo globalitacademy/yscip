@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
@@ -7,7 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
-import { FileUpload, HardDrive, Check, X, Loader2, Info } from 'lucide-react';
+import { Upload, HardDrive, Check, X, Loader2, Info } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useAuth } from '@/contexts/AuthContext';
@@ -207,7 +206,7 @@ const ProjectSubmissionPage: React.FC = () => {
                   <div className="space-y-2">
                     <Label htmlFor="files">Կցել ֆայլեր</Label>
                     <div className="border border-dashed border-gray-300 rounded-lg p-6 flex flex-col items-center justify-center bg-gray-50">
-                      <FileUpload className="h-10 w-10 text-gray-400 mb-2" />
+                      <Upload className="h-10 w-10 text-gray-400 mb-2" />
                       <p className="text-sm text-muted-foreground mb-2">Քաշեք ֆայլերը այստեղ կամ սեղմեք ֆայլ ընտրելու համար</p>
                       <p className="text-xs text-muted-foreground mb-4">Առավելագույնը 10 MB, .pdf, .docx, .zip, .rar, .ppt</p>
                       <Input
