@@ -44,7 +44,7 @@ const FeatureCard = ({
   delay?: string;
 }) => (
   <SlideUp delay={delay}>
-    <div className="bg-white rounded-lg p-6 shadow-sm h-full flex flex-col items-start">
+    <div className="bg-white rounded-lg p-6 shadow-sm h-full flex flex-col items-center text-center">
       <div className={`p-3 rounded-lg ${ICON_BACKGROUNDS[type]} ${ICON_COLORS[type]} mb-4`}>
         <Icon size={24} />
       </div>
