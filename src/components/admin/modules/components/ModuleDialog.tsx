@@ -23,6 +23,43 @@ const ModuleDialog: React.FC<ModuleDialogProps> = ({
   onSave,
   onModuleChange
 }) => {
+  // Create handlers for each field update
+  const handleTitleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (selectedModule) {
+      onModuleChange({
+        ...selectedModule,
+        title: e.target.value
+      });
+    }
+  };
+
+  const handleDescriptionChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+    if (selectedModule) {
+      onModuleChange({
+        ...selectedModule,
+        description: e.target.value
+      });
+    }
+  };
+
+  const handleStatusChange = (value: string) => {
+    if (selectedModule) {
+      onModuleChange({
+        ...selectedModule,
+        status: value as 'not-started' | 'in-progress' | 'completed'
+      });
+    }
+  };
+
+  const handleProgressChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (selectedModule) {
+      onModuleChange({
+        ...selectedModule,
+        progress: parseInt(e.target.value, 10)
+      });
+    }
+  };
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent>
@@ -43,7 +80,7 @@ const ModuleDialog: React.FC<ModuleDialogProps> = ({
             <Input 
               id="title" 
               value={selectedModule?.title || ''} 
-              onChange={(e) => onModuleChange(prev => prev ? {...prev, title: e.target.value} : null)} 
+              onChange={handleTitleChange} 
             />
           </div>
           
@@ -52,7 +89,7 @@ const ModuleDialog: React.FC<ModuleDialogProps> = ({
             <Textarea 
               id="description" 
               value={selectedModule?.description || ''} 
-              onChange={(e) => onModuleChange(prev => prev ? {...prev, description: e.target.value} : null)} 
+              onChange={handleDescriptionChange} 
             />
           </div>
           
@@ -60,7 +97,7 @@ const ModuleDialog: React.FC<ModuleDialogProps> = ({
             <Label htmlFor="status">Կարգավիճակ</Label>
             <Select 
               value={selectedModule?.status || 'not-started'} 
-              onValueChange={(value) => onModuleChange(prev => prev ? {...prev, status: value as 'not-started' | 'in-progress' | 'completed'} : null)}
+              onValueChange={handleStatusChange}
             >
               <SelectTrigger id="status">
                 <SelectValue placeholder="Ընտրեք կարգավիճակը" />
@@ -81,7 +118,7 @@ const ModuleDialog: React.FC<ModuleDialogProps> = ({
               min="0" 
               max="100" 
               value={selectedModule?.progress || 0} 
-              onChange={(e) => onModuleChange(prev => prev ? {...prev, progress: parseInt(e.target.value, 10)} : null)} 
+              onChange={handleProgressChange} 
             />
           </div>
         </div>
