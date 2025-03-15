@@ -1,9 +1,10 @@
 
-import React from 'react';
+import React, { useState } from 'react';
 import { Code, FileCode, Layers, Globe, Layout, Database, Monitor, PenTool, Image, Smartphone, Shield, Clock, Check, X } from 'lucide-react';
 import { FadeIn, SlideUp } from '@/components/LocalTransitions';
 import { Progress } from '@/components/ui/progress';
 import { useAuth } from '@/contexts/AuthContext';
+import { Popover, PopoverTrigger, PopoverContent } from '@/components/ui/popover';
 
 export interface EducationalModule {
   id: number;
@@ -12,15 +13,17 @@ export interface EducationalModule {
   description?: string;
   status?: 'not-started' | 'in-progress' | 'completed';
   progress?: number;
+  topics?: string[];
 }
 
 interface ModuleCardProps {
   module: EducationalModule;
   delay: string;
   showProgress: boolean;
+  clickable: boolean;
 }
 
-const ModuleCard: React.FC<ModuleCardProps> = ({ module, delay, showProgress }) => {
+const ModuleCard: React.FC<ModuleCardProps> = ({ module, delay, showProgress, clickable }) => {
   const colors = [
     "bg-blue-100 text-blue-600 border-blue-200",
     "bg-green-100 text-green-600 border-green-200",
@@ -50,34 +53,63 @@ const ModuleCard: React.FC<ModuleCardProps> = ({ module, delay, showProgress }) 
         return <X className="h-5 w-5 text-gray-400" />;
     }
   };
+
+  const card = (
+    <div className={`p-6 rounded-lg border ${colorClass} flex flex-col items-center transition-transform hover:scale-105 ${clickable ? 'cursor-pointer' : ''}`}>
+      <div className="rounded-full bg-white p-3 mb-4">
+        <module.icon className={colorClass.split(' ')[1]} size={28} />
+      </div>
+      <div className="text-sm font-semibold mb-1">{module.id}.</div>
+      <h3 className="text-center font-medium mb-2">{module.title}</h3>
+      
+      {showProgress && module.status && (
+        <div className="mt-2 flex items-center gap-2">
+          {getStatusIcon()}
+          <span className="text-xs">
+            {module.status === 'completed' ? 'Ավարտված է' : 
+             module.status === 'in-progress' ? 'Ընթացքի մեջ է' : 
+             'Չսկսված'}
+          </span>
+        </div>
+      )}
+      
+      {showProgress && module.progress !== undefined && (
+        <div className="w-full mt-3">
+          <Progress value={module.progress} className="h-2" />
+          <p className="text-xs text-right mt-1">{module.progress}%</p>
+        </div>
+      )}
+    </div>
+  );
+  
+  if (clickable && module.topics && module.topics.length > 0) {
+    return (
+      <SlideUp delay={delay} className="flex flex-col">
+        <Popover>
+          <PopoverTrigger asChild>
+            {card}
+          </PopoverTrigger>
+          <PopoverContent className="w-80 p-4">
+            <h4 className="font-medium mb-2">{module.title} - Թեմաներ</h4>
+            <ul className="space-y-1">
+              {module.topics.map((topic, index) => (
+                <li key={index} className="text-sm flex items-start gap-2">
+                  <span className="bg-primary/10 text-primary rounded-full w-5 h-5 flex items-center justify-center text-xs flex-shrink-0 mt-0.5">
+                    {index + 1}
+                  </span>
+                  <span>{topic}</span>
+                </li>
+              ))}
+            </ul>
+          </PopoverContent>
+        </Popover>
+      </SlideUp>
+    );
+  }
   
   return (
     <SlideUp delay={delay} className="flex flex-col">
-      <div className={`p-6 rounded-lg border ${colorClass} flex flex-col items-center transition-transform hover:scale-105`}>
-        <div className="rounded-full bg-white p-3 mb-4">
-          <module.icon className={colorClass.split(' ')[1]} size={28} />
-        </div>
-        <div className="text-sm font-semibold mb-1">{module.id}.</div>
-        <h3 className="text-center font-medium mb-2">{module.title}</h3>
-        
-        {showProgress && module.status && (
-          <div className="mt-2 flex items-center gap-2">
-            {getStatusIcon()}
-            <span className="text-xs">
-              {module.status === 'completed' ? 'Ավարտված է' : 
-               module.status === 'in-progress' ? 'Ընթացքի մեջ է' : 
-               'Չսկսված'}
-            </span>
-          </div>
-        )}
-        
-        {showProgress && module.progress !== undefined && (
-          <div className="w-full mt-3">
-            <Progress value={module.progress} className="h-2" />
-            <p className="text-xs text-right mt-1">{module.progress}%</p>
-          </div>
-        )}
-      </div>
+      {card}
     </SlideUp>
   );
 };
@@ -85,21 +117,177 @@ const ModuleCard: React.FC<ModuleCardProps> = ({ module, delay, showProgress }) 
 export const ModulesInfographic: React.FC = () => {
   const { user, isAuthenticated } = useAuth();
   
-  // Demo educational modules data with status - in a real app this would be fetched from backend
+  // Demo educational modules data with status and topics - in a real app this would be fetched from backend
   const educationalModules: EducationalModule[] = [
-    { id: 1, title: "Ալգորիթմների տարրերի կիրառում", icon: Code, status: 'completed', progress: 100 },
-    { id: 2, title: "Ծրագրավորման հիմունքներ", icon: FileCode, status: 'completed', progress: 100 },
-    { id: 3, title: "Օբյեկտ կողմնորոշված ծրագրավորում", icon: Layers, status: 'in-progress', progress: 75 },
-    { id: 4, title: "Համակարգչային ցանցեր", icon: Globe, status: 'in-progress', progress: 40 },
-    { id: 5, title: "Ստատրիկ վեբ կայքերի նախագծում", icon: Layout, status: 'not-started', progress: 0 },
-    { id: 6, title: "Ջավասկրիպտի կիրառումը", icon: Code, status: 'not-started', progress: 0 },
-    { id: 7, title: "Ռելյացիոն տվյալների բազաների նախագծում", icon: Database, status: 'not-started', progress: 0 },
-    { id: 8, title: "Ոչ Ռելյացիոն տվյալների բազաների նախագծում", icon: Database, status: 'not-started', progress: 0 },
-    { id: 9, title: "Դինաﬕկ վեբ կայքերի նախագծում", icon: Monitor, status: 'not-started', progress: 0 },
-    { id: 10, title: "Վեկտորային գրաֆիկա", icon: PenTool, status: 'not-started', progress: 0 },
-    { id: 11, title: "Կետային գրաֆիկա", icon: Image, status: 'not-started', progress: 0 },
-    { id: 12, title: "Գրաֆիկական ինտերֆեյսի ծրագրավորում", icon: Smartphone, status: 'not-started', progress: 0 },
-    { id: 13, title: "Տեղեկատվության անվտանգություն", icon: Shield, status: 'not-started', progress: 0 },
+    { 
+      id: 1, 
+      title: "Ալգորիթմների տարրերի կիրառում", 
+      icon: Code, 
+      status: 'completed', 
+      progress: 100,
+      topics: [
+        "Ալգորիթմի հիմնական սահմանումները", 
+        "Պարզ ալգորիթմների նախագծում",
+        "Տրամաբանական կառուցվածքներ",
+        "Կրկնվող գործողություններ"
+      ]
+    },
+    { 
+      id: 2, 
+      title: "Ծրագրավորման հիմունքներ", 
+      icon: FileCode, 
+      status: 'completed', 
+      progress: 100,
+      topics: [
+        "Փոփոխականներ և տիպեր",
+        "Պայմանական կառուցվածքներ",
+        "Ֆունկցիաներ և պրոցեդուրաներ",
+        "Զանգվածներ և կոլեկցիաներ"
+      ]
+    },
+    { 
+      id: 3, 
+      title: "Օբյեկտ կողմնորոշված ծրագրավորում", 
+      icon: Layers, 
+      status: 'in-progress', 
+      progress: 75,
+      topics: [
+        "Դասեր և օբյեկտներ",
+        "Ժառանգություն և պոլիմորֆիզմ",
+        "Ինկապսուլյացիա",
+        "Ինտերֆեյսներ և աբստրակտ դասեր"
+      ]
+    },
+    { 
+      id: 4, 
+      title: "Համակարգչային ցանցեր", 
+      icon: Globe, 
+      status: 'in-progress', 
+      progress: 40,
+      topics: [
+        "OSI մոդել և TCP/IP",
+        "Մարշրուտիզացիա և կոմուտացիա",
+        "Հաղորդակարգեր և ծառայություններ",
+        "Ցանցային անվտանգություն"
+      ]
+    },
+    { 
+      id: 5, 
+      title: "Ստատրիկ վեբ կայքերի նախագծում", 
+      icon: Layout, 
+      status: 'not-started', 
+      progress: 0,
+      topics: [
+        "HTML5 կառուցվածք",
+        "CSS3 ձևավորում",
+        "Ադապտիվ դիզայն",
+        "Վեբ մատչելիություն"
+      ]
+    },
+    { 
+      id: 6, 
+      title: "Ջավասկրիպտի կիրառումը", 
+      icon: Code, 
+      status: 'not-started', 
+      progress: 0,
+      topics: [
+        "JavaScript հիմունքներ",
+        "DOM մանիպուլյացիա",
+        "Իրադարձությունների մշակում",
+        "AJAX և Fetch API"
+      ]
+    },
+    { 
+      id: 7, 
+      title: "Ռելյացիոն տվյալների բազաների նախագծում", 
+      icon: Database, 
+      status: 'not-started', 
+      progress: 0,
+      topics: [
+        "SQL լեզու",
+        "Տվյալների մոդելավորում",
+        "Նորմալացման կանոններ",
+        "Ինդեքսավորում և օպտիմիզացիա"
+      ]
+    },
+    { 
+      id: 8, 
+      title: "Ոչ Ռելյացիոն տվյալների բազաների նախագծում", 
+      icon: Database, 
+      status: 'not-started', 
+      progress: 0,
+      topics: [
+        "NoSQL տեսակներ",
+        "Document և Key-Value պահեստներ",
+        "Սխեմաների նախագծում",
+        "Մասշտաբավորում"
+      ]
+    },
+    { 
+      id: 9, 
+      title: "Դինաﬕկ վեբ կայքերի նախագծում", 
+      icon: Monitor, 
+      status: 'not-started', 
+      progress: 0,
+      topics: [
+        "Սերվերային տեխնոլոգիաներ",
+        "MVC արխիտեկտուրա",
+        "API-ներ և միկրոսերվիսներ",
+        "WebSockets և իրական ժամանակի ծրագրեր"
+      ]
+    },
+    { 
+      id: 10, 
+      title: "Վեկտորային գրաֆիկա", 
+      icon: PenTool, 
+      status: 'not-started', 
+      progress: 0,
+      topics: [
+        "SVG հիմունքներ",
+        "Վեկտորային օբյեկտների կառուցում",
+        "Տեքստի և գրաֆիկայի համադրում",
+        "Անիմացիաներ և փոխազդեցություններ"
+      ]
+    },
+    { 
+      id: 11, 
+      title: "Կետային գրաֆիկա", 
+      icon: Image, 
+      status: 'not-started', 
+      progress: 0,
+      topics: [
+        "Նկարների խմբագրում",
+        "Ֆիլտրեր և էֆեկտներ",
+        "Շերտերի աշխատանք",
+        "Լուսանկարների ռետուշավորում"
+      ]
+    },
+    { 
+      id: 12, 
+      title: "Գրաֆիկական ինտերֆեյսի ծրագրավորում", 
+      icon: Smartphone, 
+      status: 'not-started', 
+      progress: 0,
+      topics: [
+        "UI/UX սկզբունքներ",
+        "Կոմպոնենտների նախագծում",
+        "Թեմաների և ոճերի կառավարում",
+        "Բազմապլատֆորմային ինտերֆեյսներ"
+      ]
+    },
+    { 
+      id: 13, 
+      title: "Տեղեկատվության անվտանգություն", 
+      icon: Shield, 
+      status: 'not-started', 
+      progress: 0,
+      topics: [
+        "Կրիպտոգրաֆիայի հիմունքներ",
+        "Հաքերային հարձակումների տիպեր",
+        "Անվտանգության թույլ կողմերի գտնում",
+        "Պաշտպանական մեխանիզմներ"
+      ]
+    },
   ];
 
   const getIntroDescription = () => {
@@ -129,6 +317,7 @@ export const ModulesInfographic: React.FC = () => {
             module={module}
             delay={`delay-${100 * (index % 5 + 1)}`}
             showProgress={isAuthenticated}
+            clickable={isAuthenticated}
           />
         ))}
       </div>
@@ -137,7 +326,7 @@ export const ModulesInfographic: React.FC = () => {
         <FadeIn delay="delay-300">
           <div className="text-center mt-4 mb-8">
             <p className="text-muted-foreground">
-              Մուտք գործեք համակարգ՝ ուսումնական առաջընթացը տեսնելու համար
+              Մուտք գործեք համակարգ՝ ուսումնական առաջընթացը և թեմաները տեսնելու համար
             </p>
           </div>
         </FadeIn>
@@ -147,4 +336,3 @@ export const ModulesInfographic: React.FC = () => {
 };
 
 export default ModulesInfographic;
-
