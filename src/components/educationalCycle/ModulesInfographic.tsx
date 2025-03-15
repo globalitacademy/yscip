@@ -17,9 +17,10 @@ export interface EducationalModule {
 interface ModuleCardProps {
   module: EducationalModule;
   delay: string;
+  showProgress: boolean;
 }
 
-const ModuleCard: React.FC<ModuleCardProps> = ({ module, delay }) => {
+const ModuleCard: React.FC<ModuleCardProps> = ({ module, delay, showProgress }) => {
   const colors = [
     "bg-blue-100 text-blue-600 border-blue-200",
     "bg-green-100 text-green-600 border-green-200",
@@ -59,7 +60,7 @@ const ModuleCard: React.FC<ModuleCardProps> = ({ module, delay }) => {
         <div className="text-sm font-semibold mb-1">{module.id}.</div>
         <h3 className="text-center font-medium mb-2">{module.title}</h3>
         
-        {module.status && (
+        {showProgress && module.status && (
           <div className="mt-2 flex items-center gap-2">
             {getStatusIcon()}
             <span className="text-xs">
@@ -70,7 +71,7 @@ const ModuleCard: React.FC<ModuleCardProps> = ({ module, delay }) => {
           </div>
         )}
         
-        {module.progress !== undefined && (
+        {showProgress && module.progress !== undefined && (
           <div className="w-full mt-3">
             <Progress value={module.progress} className="h-2" />
             <p className="text-xs text-right mt-1">{module.progress}%</p>
@@ -82,7 +83,7 @@ const ModuleCard: React.FC<ModuleCardProps> = ({ module, delay }) => {
 };
 
 export const ModulesInfographic: React.FC = () => {
-  const { user } = useAuth();
+  const { user, isAuthenticated } = useAuth();
   
   // Demo educational modules data with status - in a real app this would be fetched from backend
   const educationalModules: EducationalModule[] = [
@@ -101,6 +102,12 @@ export const ModulesInfographic: React.FC = () => {
     { id: 13, title: "Տեղեկատվության անվտանգություն", icon: Shield, status: 'not-started', progress: 0 },
   ];
 
+  const getIntroDescription = () => {
+    return isAuthenticated 
+      ? "Ուսումնասիրեք մեր մոդուլները հերթականությամբ՝ սկսած հիմնական ալգորիթմներից մինչև առաջադեմ ծրագրավորում" 
+      : "Ուսումնական ծրագրի մոդուլները ներկայացնում են հիմնական առարկաները հերթականությամբ՝ սկսած հիմնական ալգորիթմներից մինչև առաջադեմ ծրագրավորում";
+  };
+
   return (
     <div className="mt-12">
       <FadeIn delay="delay-100">
@@ -111,7 +118,7 @@ export const ModulesInfographic: React.FC = () => {
       
       <FadeIn delay="delay-200">
         <p className="text-muted-foreground text-center max-w-2xl mx-auto mb-8">
-          Ուսումնասիրեք մեր մոդուլները հերթականությամբ՝ սկսած հիմնական ալգորիթմներից մինչև առաջադեմ ծրագրավորում
+          {getIntroDescription()}
         </p>
       </FadeIn>
 
@@ -121,11 +128,23 @@ export const ModulesInfographic: React.FC = () => {
             key={module.id}
             module={module}
             delay={`delay-${100 * (index % 5 + 1)}`}
+            showProgress={isAuthenticated}
           />
         ))}
       </div>
+      
+      {!isAuthenticated && (
+        <FadeIn delay="delay-300">
+          <div className="text-center mt-4 mb-8">
+            <p className="text-muted-foreground">
+              Մուտք գործեք համակարգ՝ ուսումնական առաջընթացը տեսնելու համար
+            </p>
+          </div>
+        </FadeIn>
+      )}
     </div>
   );
 };
 
 export default ModulesInfographic;
+
