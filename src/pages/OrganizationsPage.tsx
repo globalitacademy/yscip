@@ -1,18 +1,13 @@
 
 import React from 'react';
+import AdminLayout from '@/components/AdminLayout';
 import OrganizationManagement from '@/components/OrganizationManagement';
-import Header from '@/components/Header';
-import Footer from '@/components/Footer';
 
 const OrganizationsPage: React.FC = () => {
   return (
-    <div className="min-h-screen flex flex-col">
-      <Header />
-      <main className="flex-grow container mx-auto px-4 py-8">
-        <OrganizationManagement />
-      </main>
-      <Footer />
-    </div>
+    <AdminLayout pageTitle="Կազմակերպություններ">
+      <OrganizationManagement />
+    </AdminLayout>
   );
 };
 
