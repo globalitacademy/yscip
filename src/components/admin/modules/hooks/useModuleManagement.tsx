@@ -6,19 +6,19 @@ import type { EducationalModule } from '@/components/educationalCycle';
 
 export function useModuleManagement() {
   const [modules, setModules] = useState<EducationalModule[]>([
-    { id: 1, title: "Ալգորիթմների տարրերի կիրառում", icon: Plus, status: 'completed', progress: 100 },
-    { id: 2, title: "Ծրագրավորման հիմունքներ", icon: Plus, status: 'completed', progress: 100 },
-    { id: 3, title: "Օբյեկտ կողմնորոշված ծրագրավորում", icon: Plus, status: 'in-progress', progress: 75 },
-    { id: 4, title: "Համակարգչային ցանցեր", icon: Plus, status: 'in-progress', progress: 40 },
-    { id: 5, title: "Ստատրիկ վեբ կայքերի նախագծում", icon: Plus, status: 'not-started', progress: 0 },
-    { id: 6, title: "Ջավասկրիպտի կիրառումը", icon: Plus, status: 'not-started', progress: 0 },
-    { id: 7, title: "Ռելյացիոն տվյալների բազաների նախագծում", icon: Plus, status: 'not-started', progress: 0 },
-    { id: 8, title: "Ոչ Ռելյացիոն տվյալների բազաների նախագծում", icon: Plus, status: 'not-started', progress: 0 },
-    { id: 9, title: "Դինաﬕկ վեբ կայքերի նախագծում", icon: Plus, status: 'not-started', progress: 0 },
-    { id: 10, title: "Վեկտորային գրաֆիկա", icon: Plus, status: 'not-started', progress: 0 },
-    { id: 11, title: "Կետային գրաֆիկա", icon: Plus, status: 'not-started', progress: 0 },
-    { id: 12, title: "Գրաֆիկական ինտերֆեյսի ծրագրավորում", icon: Plus, status: 'not-started', progress: 0 },
-    { id: 13, title: "Տեղեկատվության անվտանգություն", icon: Plus, status: 'not-started', progress: 0 },
+    { id: 1, title: "Ալգորիթմների տարրերի կիրառում", icon: Plus, status: 'completed', progress: 100, topics: ["Ալգորիթմի սահմանում", "Գծային ալգորիթմներ", "Ցիկլեր", "Զանգվածներ"] },
+    { id: 2, title: "Ծրագրավորման հիմունքներ", icon: Plus, status: 'completed', progress: 100, topics: ["C++ հիմունքներ", "Փոփոխականներ", "Պայմաններ", "Ֆունկցիաներ"] },
+    { id: 3, title: "Օբյեկտ կողմնորոշված ծրագրավորում", icon: Plus, status: 'in-progress', progress: 75, topics: ["Դասեր և օբյեկտներ", "Ժառանգում", "Պոլիմորֆիզմ"] },
+    { id: 4, title: "Համակարգչային ցանցեր", icon: Plus, status: 'in-progress', progress: 40, topics: ["OSI մոդել", "TCP/IP", "Ցանցային սարքեր"] },
+    { id: 5, title: "Ստատրիկ վեբ կայքերի նախագծում", icon: Plus, status: 'not-started', progress: 0, topics: ["HTML հիմունքներ", "CSS ստիլեր", "Responsive դիզայն"] },
+    { id: 6, title: "Ջավասկրիպտի կիրառումը", icon: Plus, status: 'not-started', progress: 0, topics: ["JavaScript հիմունքներ", "DOM", "Events"] },
+    { id: 7, title: "Ռելյացիոն տվյալների բազաների նախագծում", icon: Plus, status: 'not-started', progress: 0, topics: ["SQL հիմունքներ", "Տվյալների տիպեր", "Հարցումներ"] },
+    { id: 8, title: "Ոչ Ռելյացիոն տվյալների բազաների նախագծում", icon: Plus, status: 'not-started', progress: 0, topics: ["NoSQL հիմունքներ", "MongoDB", "Redis"] },
+    { id: 9, title: "Դինաﬕկ վեբ կայքերի նախագծում", icon: Plus, status: 'not-started', progress: 0, topics: ["Node.js", "Express.js", "API-ներ"] },
+    { id: 10, title: "Վեկտորային գրաֆիկա", icon: Plus, status: 'not-started', progress: 0, topics: ["Illustrator հիմունքներ", "Վեկտորային օբյեկտներ"] },
+    { id: 11, title: "Կետային գրաֆիկա", icon: Plus, status: 'not-started', progress: 0, topics: ["Photoshop հիմունքներ", "Շերտեր", "Ֆիլտրեր"] },
+    { id: 12, title: "Գրաֆիկական ինտերֆեյսի ծրագրավորում", icon: Plus, status: 'not-started', progress: 0, topics: ["UI/UX հիմունքներ", "Qt Framework", "Ինտերֆեյսի նախագծում"] },
+    { id: 13, title: "Տեղեկատվության անվտանգություն", icon: Plus, status: 'not-started', progress: 0, topics: ["Կրիպտոգրաֆիա", "Ցանցային անվտանգություն", "Թվային սերտիֆիկատներ"] },
   ]);
 
   const [isDialogOpen, setIsDialogOpen] = useState(false);
@@ -72,7 +72,8 @@ export function useModuleManagement() {
       title: "",
       icon: Plus,
       status: 'not-started',
-      progress: 0
+      progress: 0,
+      topics: []
     });
     setIsDialogOpen(true);
   };
