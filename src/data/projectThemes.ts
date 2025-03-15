@@ -1,4 +1,3 @@
-
 export interface Task {
   id: string;
   title: string;
@@ -21,22 +20,19 @@ export interface ProjectTheme {
   id: number;
   title: string;
   description: string;
-  detailedDescription?: string;
-  complexity: 'Սկսնակ' | 'Միջին' | 'Առաջադեմ';
-  techStack: string[];
-  steps: string[];
-  category: string;
   image?: string;
+  category: string;
+  techStack?: string[];
+  complexity?: string;
   duration?: string;
-  prerequisites?: string[];
-  learningOutcomes?: string[];
-  timeline?: TimelineEvent[];
-  tasks?: Task[];
   createdBy?: string;
   createdAt?: string;
-  assignedInstructor?: string;
-  assignedInstructorName?: string;
-  assignedGroups?: string[];
+  tasks?: Task[];
+  timeline?: TimelineEvent[];
+  learningOutcomes?: string[];
+  prerequisites?: string[];
+  steps?: string[];
+  detailedDescription?: string;
 }
 
 // Import all project categories
