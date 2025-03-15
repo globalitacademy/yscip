@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { 
   GraduationCap, Users, Briefcase, UserCog, ClipboardCheck, 
@@ -142,7 +141,7 @@ const FeaturesSection = () => {
     },
     {
       icon: FileCode,
-      title: "Ծրագրային նախագծեր",
+      title: "Դիպլոմային Աշխատանքներ",
       description: "Ստեղծեք, կառավարեք և հետևեք ուսանողների նախագծերի առաջընթացին։",
       type: "code" as const,
       delay: "delay-1100"
