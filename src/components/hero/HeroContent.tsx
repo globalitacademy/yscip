@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { ChevronDown } from 'lucide-react';
 import { FadeIn, SlideDown, SlideUp } from '../LocalTransitions';
@@ -27,7 +26,7 @@ const HeroContent: React.FC<HeroContentProps> = ({
       </SlideDown>
       
       <SlideDown delay="delay-300">
-        <p className="max-w-xl mx-auto md:text-xl text-muted-foreground mb-12 tracking-wide text-xs">Դիտեք մեր ընտրված 100 ժամանակակից պրոեկտների թեմաները՝ բարդության գնահատականներով և իրականացման քայլերով։</p>
+        <p className="max-w-xl mx-auto md:text-xl text-muted-foreground mb-12 tracking-wide text-xs">Մեր հարթակը միավորում է ուսանողներին, դասախոսներին և գործատուներին՝ ստեղծելով կրթության նոր ճանապարհ, որը հարմարեցված է ձեր կարիքներին։</p>
       </SlideDown>
       
       <FadeIn delay="delay-500">
