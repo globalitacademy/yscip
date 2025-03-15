@@ -3,6 +3,7 @@ import { useState, useEffect } from 'react';
 import { toast } from 'sonner';
 import { v4 as uuidv4 } from 'uuid';
 import { Course } from './types';
+import { useAuth } from '@/contexts/AuthContext';
 
 // Mock data
 const mockCourses: Course[] = [
@@ -12,7 +13,8 @@ const mockCourses: Course[] = [
     description: 'HTML, CSS, JavaScript, React և Node.js օգտագործելով վեբ հավելվածների մշակում',
     specialization: 'Ծրագրավորում',
     duration: '4 ամիս',
-    modules: ['HTML/CSS հիմունքներ', 'JavaScript', 'React', 'Node.js/Express', 'Վերջնական նախագիծ']
+    modules: ['HTML/CSS հիմունքներ', 'JavaScript', 'React', 'Node.js/Express', 'Վերջնական նախագիծ'],
+    createdBy: 'admin'
   },
   {
     id: '2',
@@ -20,7 +22,8 @@ const mockCourses: Course[] = [
     description: 'Ներածություն մեքենայական ուսուցման մեջ՝ օգտագործելով Python և TensorFlow',
     specialization: 'Տվյալագիտություն',
     duration: '6 ամիս',
-    modules: ['Python հիմունքներ', 'Տվյալների վերլուծություն', 'Վիճակագրություն', 'Մեքենայական ուսուցման մոդելներ', 'Խորը ուսուցում', 'Վերջնական նախագիծ']
+    modules: ['Python հիմունքներ', 'Տվյալների վերլուծություն', 'Վիճակագրություն', 'Մեքենայական ուսուցման մոդելներ', 'Խորը ուսուցում', 'Վերջնական նախագիծ'],
+    createdBy: 'admin'
   }
 ];
 
@@ -40,6 +43,7 @@ const initializeCourses = (): Course[] => {
 };
 
 export const useCourseManagement = () => {
+  const { user } = useAuth();
   const [courses, setCourses] = useState<Course[]>(initializeCourses());
   const [selectedCourse, setSelectedCourse] = useState<Course | null>(null);
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
@@ -49,9 +53,13 @@ export const useCourseManagement = () => {
     description: '',
     specialization: '',
     duration: '',
-    modules: []
+    modules: [],
+    createdBy: user?.id || ''
   });
   const [newModule, setNewModule] = useState('');
+
+  // Get user's courses
+  const userCourses = courses.filter(course => course.createdBy === user?.id);
 
   const handleAddCourse = () => {
     if (!newCourse.name || !newCourse.description || !newCourse.duration) {
@@ -65,7 +73,8 @@ export const useCourseManagement = () => {
       description: newCourse.description,
       specialization: newCourse.specialization,
       duration: newCourse.duration,
-      modules: newCourse.modules || []
+      modules: newCourse.modules || [],
+      createdBy: user?.id || 'unknown'
     };
 
     const updatedCourses = [...courses, courseToAdd];
@@ -77,7 +86,8 @@ export const useCourseManagement = () => {
       description: '',
       specialization: '',
       duration: '',
-      modules: []
+      modules: [],
+      createdBy: user?.id || ''
     });
     setIsAddDialogOpen(false);
     toast.success('Կուրսը հաջողությամբ ավելացվել է');
@@ -144,14 +154,22 @@ export const useCourseManagement = () => {
   };
 
   const handleDeleteCourse = (id: string) => {
-    const updatedCourses = courses.filter(course => course.id !== id);
-    setCourses(updatedCourses);
-    localStorage.setItem('courses', JSON.stringify(updatedCourses));
-    toast.success('Կուրսը հաջողությամբ հեռացվել է');
+    const courseToDelete = courses.find(course => course.id === id);
+    
+    // Only allow users to delete their own courses (admin can delete any)
+    if (courseToDelete && (user?.role === 'admin' || courseToDelete.createdBy === user?.id)) {
+      const updatedCourses = courses.filter(course => course.id !== id);
+      setCourses(updatedCourses);
+      localStorage.setItem('courses', JSON.stringify(updatedCourses));
+      toast.success('Կուրսը հաջողությամբ հեռացվել է');
+    } else {
+      toast.error('Դուք չունեք իրավունք ջնջելու այս կուրսը');
+    }
   };
 
   return {
     courses,
+    userCourses,
     selectedCourse,
     setSelectedCourse,
     isAddDialogOpen,

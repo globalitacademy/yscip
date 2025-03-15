@@ -1,4 +1,3 @@
-
 import React from 'react';
 import {
   LayoutDashboard,
@@ -13,7 +12,6 @@ import {
   Building,
   FileText,
   Briefcase,
-  CheckSquare,
   GitPullRequest,
   BarChart,
   Trophy,

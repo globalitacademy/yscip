@@ -1,68 +1,67 @@
 
 import React from 'react';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Pencil } from 'lucide-react';
 import { Course } from './types';
+import { Edit, Trash2 } from 'lucide-react';
+import { Badge } from '@/components/ui/badge';
 
 interface CourseCardProps {
   course: Course;
   isAdmin: boolean;
+  canEdit: boolean;
   onEdit: (course: Course) => void;
   onDelete: (id: string) => void;
 }
 
-const CourseCard: React.FC<CourseCardProps> = ({ course, isAdmin, onEdit, onDelete }) => {
+const CourseCard: React.FC<CourseCardProps> = ({ course, isAdmin, canEdit, onEdit, onDelete }) => {
   return (
-    <Card key={course.id} className="overflow-hidden">
-      <CardHeader className="pb-2">
-        <div className="flex justify-between">
+    <Card className="h-full flex flex-col">
+      <CardHeader>
+        <div className="flex items-start justify-between">
           <div>
             <CardTitle className="text-xl">{course.name}</CardTitle>
-            <CardDescription>{course.specialization}</CardDescription>
+            {course.specialization && (
+              <Badge variant="outline" className="mt-1">
+                {course.specialization}
+              </Badge>
+            )}
           </div>
-          {isAdmin && (
-            <div className="flex space-x-1">
-              <Button 
-                variant="ghost" 
-                size="icon" 
-                className="text-primary" 
-                onClick={() => onEdit(course)}
-              >
-                <Pencil size={16} />
-              </Button>
-              <Button 
-                variant="ghost" 
-                size="icon" 
-                className="text-destructive" 
-                onClick={() => onDelete(course.id)}
-              >
-                ✕
-              </Button>
-            </div>
-          )}
+          <Badge>{course.duration}</Badge>
         </div>
+        <CardDescription className="line-clamp-2 mt-2">
+          {course.description}
+        </CardDescription>
       </CardHeader>
-      <CardContent>
-        <div className="space-y-2">
-          <p className="text-sm text-muted-foreground">{course.description}</p>
-          <div className="flex justify-between text-sm">
-            <span className="font-semibold">Տևողություն:</span>
-            <span>{course.duration}</span>
-          </div>
-          <div className="text-sm">
-            <div className="font-semibold mb-1">Մոդուլներ:</div>
-            <ul className="list-disc list-inside">
-              {course.modules.map((module, index) => (
-                <li key={index} className="text-sm">{module}</li>
-              ))}
-            </ul>
-          </div>
-          <div className="pt-2">
-            <Button size="sm" className="w-full">Դիտել մանրամասները</Button>
-          </div>
+      <CardContent className="flex-grow">
+        <div className="mt-2">
+          <h4 className="text-sm font-medium mb-2">Մոդուլներ ({course.modules.length})</h4>
+          <ul className="text-sm space-y-1">
+            {course.modules.slice(0, 3).map((module, index) => (
+              <li key={index} className="text-muted-foreground">
+                • {module}
+              </li>
+            ))}
+            {course.modules.length > 3 && (
+              <li className="text-muted-foreground">
+                • ... և {course.modules.length - 3} այլ
+              </li>
+            )}
+          </ul>
         </div>
       </CardContent>
+      {canEdit && (
+        <CardFooter className="flex justify-end gap-2 pt-2">
+          <Button variant="outline" size="sm" onClick={() => onEdit(course)}>
+            <Edit className="h-4 w-4 mr-1" />
+            Խմբագրել
+          </Button>
+          <Button variant="destructive" size="sm" onClick={() => onDelete(course.id)}>
+            <Trash2 className="h-4 w-4 mr-1" />
+            Ջնջել
+          </Button>
+        </CardFooter>
+      )}
     </Card>
   );
 };

@@ -6,4 +6,5 @@ export interface Course {
   specialization?: string;
   duration: string;
   modules: string[];
+  createdBy: string;
 }

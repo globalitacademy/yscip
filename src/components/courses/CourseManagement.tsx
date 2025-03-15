@@ -10,6 +10,7 @@ const CourseManagement: React.FC = () => {
   const { user } = useAuth();
   const {
     courses,
+    userCourses,
     selectedCourse,
     setSelectedCourse,
     isAddDialogOpen,
@@ -31,12 +32,14 @@ const CourseManagement: React.FC = () => {
   } = useCourseManagement();
 
   const isAdmin = user?.role === 'admin';
+  const isLecturer = ['lecturer', 'instructor', 'supervisor', 'project_manager'].includes(user?.role || '');
+  const canAddCourses = isAdmin || isLecturer;
 
   return (
     <div className="space-y-6">
       <div className="flex justify-between items-center">
         <h1 className="text-3xl font-bold">Կուրսերի կառավարում</h1>
-        {isAdmin && (
+        {canAddCourses && (
           <AddCourseDialog
             isOpen={isAddDialogOpen}
             setIsOpen={setIsAddDialogOpen}
@@ -53,6 +56,7 @@ const CourseManagement: React.FC = () => {
 
       <CourseList
         courses={courses}
+        userCourses={userCourses}
         isAdmin={isAdmin}
         onEdit={handleEditInit}
         onDelete={handleDeleteCourse}
