@@ -3,8 +3,9 @@ import React from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Edit, Trash, Image } from 'lucide-react';
+import { Edit, Trash, Image, User } from 'lucide-react';
 import { ProjectTheme } from '@/data/projectThemes';
+import { useAuth } from '@/contexts/AuthContext';
 
 interface ProjectCardProps {
   project: ProjectTheme;
@@ -19,6 +20,11 @@ const ProjectCard: React.FC<ProjectCardProps> = ({
   onImageChange, 
   onDelete 
 }) => {
+  const { user } = useAuth();
+  
+  // Check if the project was created by the current user
+  const isCreatedByCurrentUser = project.createdBy === user?.id;
+
   return (
     <Card key={project.id} className="overflow-hidden hover:shadow-md transition-shadow">
       <div className="h-40 sm:h-48 bg-gray-100 relative">
@@ -64,6 +70,17 @@ const ProjectCard: React.FC<ProjectCardProps> = ({
             </Badge>
           )}
         </div>
+        
+        {/* Display project creator information */}
+        <div className="mt-3 flex items-center text-xs text-gray-500">
+          <User className="h-3 w-3 mr-1" />
+          {isCreatedByCurrentUser ? (
+            <span>Ձեր կողմից ստեղծված</span>
+          ) : (
+            <span>Ադմինիստրատորի կողմից ստեղծված</span>
+          )}
+        </div>
+        
         <div className="mt-4 flex justify-end">
           <Button 
             variant="outline" 

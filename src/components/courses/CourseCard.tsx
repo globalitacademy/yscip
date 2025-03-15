@@ -3,8 +3,9 @@ import React from 'react';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Course } from './types';
-import { Edit, Trash2 } from 'lucide-react';
+import { Edit, Trash2, User } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
+import { useAuth } from '@/contexts/AuthContext';
 
 interface CourseCardProps {
   course: Course;
@@ -15,6 +16,11 @@ interface CourseCardProps {
 }
 
 const CourseCard: React.FC<CourseCardProps> = ({ course, isAdmin, canEdit, onEdit, onDelete }) => {
+  const { user } = useAuth();
+  
+  // Check if the course was created by the current user
+  const isCreatedByCurrentUser = course.createdBy === user?.id;
+  
   return (
     <Card className="h-full flex flex-col">
       <CardHeader>
@@ -48,6 +54,16 @@ const CourseCard: React.FC<CourseCardProps> = ({ course, isAdmin, canEdit, onEdi
               </li>
             )}
           </ul>
+        </div>
+        
+        {/* Display course creator information */}
+        <div className="mt-4 flex items-center text-sm text-muted-foreground">
+          <User size={14} className="mr-1" />
+          {isCreatedByCurrentUser ? (
+            <span>Ձեր կողմից ստեղծված</span>
+          ) : (
+            <span>{course.createdBy === 'admin' ? 'Ադմինիստրատորի' : 'Դասախոսի'} կողմից ստեղծված</span>
+          )}
         </div>
       </CardContent>
       {canEdit && (

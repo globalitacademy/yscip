@@ -3,7 +3,8 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { BookOpen } from 'lucide-react';
+import { BookOpen, User } from 'lucide-react';
+import { useAuth } from '@/contexts/AuthContext';
 
 interface Project {
   id: number;
@@ -19,6 +20,7 @@ interface CreatedProjectsTabProps {
 }
 
 const CreatedProjectsTab: React.FC<CreatedProjectsTabProps> = ({ projects, userId }) => {
+  const { user } = useAuth();
   const userProjects = projects.filter(p => p.createdBy === userId);
 
   if (userProjects.length === 0) {
@@ -53,6 +55,12 @@ const CreatedProjectsTab: React.FC<CreatedProjectsTabProps> = ({ projects, userI
                 {tech}
               </Badge>
             ))}
+          </div>
+          
+          {/* Display project creator information */}
+          <div className="mt-2 mb-4 flex items-center text-xs text-muted-foreground">
+            <User className="h-3 w-3 mr-1" />
+            <span>Ձեր կողմից ստեղծված</span>
           </div>
           
           <div className="flex items-center justify-end mt-4">
