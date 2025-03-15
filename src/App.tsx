@@ -44,6 +44,10 @@ function App() {
             {/* Redirect /admin to /admin/dashboard */}
             <Route path="/admin" element={<Navigate to="/admin/dashboard" replace />} />
             
+            {/* Student specific redirects */}
+            <Route path="/projects/manage" element={<Navigate to="/admin/my-projects" replace />} />
+            <Route path="/my-projects" element={<Navigate to="/admin/my-projects" replace />} />
+            
             {/* Admin routes */}
             <Route path="/admin/dashboard" element={<AdminDashboard />} />
             <Route path="/admin/users" element={<UserManagementPage />} />

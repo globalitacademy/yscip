@@ -17,16 +17,8 @@ const AdminLayout: React.FC<AdminLayoutProps> = ({ children, pageTitle }) => {
   const { user, isAuthenticated } = useAuth();
   const [isSidebarOpen, setIsSidebarOpen] = React.useState(false);
   
-  // Redirect if not authenticated or doesn't have appropriate role
-  if (!isAuthenticated || !user || (
-    user.role !== 'admin' && 
-    user.role !== 'lecturer' && 
-    user.role !== 'instructor' && 
-    user.role !== 'project_manager' && 
-    user.role !== 'supervisor' &&
-    user.role !== 'employer' &&
-    user.role !== 'student'
-  )) {
+  // Redirect if not authenticated
+  if (!isAuthenticated || !user) {
     return <Navigate to="/login" replace />;
   }
   

@@ -22,10 +22,18 @@ const Header: React.FC<HeaderProps> = ({
   const getRoleNavigation = () => {
     if (!user) return null;
     
-    // All roles including students now have the Admin Panel button
+    // Determine correct dashboard route based on user role
+    const getDashboardRoute = () => {
+      if (user.role === 'student') {
+        return '/admin/my-projects';
+      } else {
+        return '/admin/dashboard';
+      }
+    };
+
     return (
       <div className="flex items-center gap-2 md:gap-4">
-        <Link to={user.role === 'student' ? '/projects/manage' : '/admin/dashboard'}>
+        <Link to={getDashboardRoute()}>
           <Button variant="outline" size="sm" className="gap-1">
             <LayoutDashboard size={16} />
             <span className="hidden md:inline">
@@ -35,7 +43,7 @@ const Header: React.FC<HeaderProps> = ({
         </Link>
         
         {user.role === 'student' && (
-          <Link to="/my-projects">
+          <Link to="/admin/student-projects">
             <Button variant="outline" size="sm" className="gap-1">
               <GraduationCap size={16} />
               <span className="hidden md:inline">Նախագծեր</span>
