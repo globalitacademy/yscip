@@ -7,6 +7,7 @@ import ProjectImageDialog from './projects/ProjectImageDialog';
 import ProjectEditDialog from './projects/ProjectEditDialog';
 import ProjectSearch from './projects/ProjectSearch';
 import ProjectEmptyState from './projects/ProjectEmptyState';
+import ProjectCategories from './projects/ProjectCategories';
 import { deleteProject, changeProjectImage, saveEditedProject, filterProjects } from './projects/ProjectUtils';
 import { Button } from '@/components/ui/button';
 import { Plus } from 'lucide-react';
@@ -20,6 +21,7 @@ import { toast } from 'sonner';
 const ProjectManagement: React.FC = () => {
   const [projects, setProjects] = useState<ProjectTheme[]>(projectThemes);
   const [searchQuery, setSearchQuery] = useState('');
+  const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const [selectedProject, setSelectedProject] = useState<ProjectTheme | null>(null);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [isImageDialogOpen, setIsImageDialogOpen] = useState(false);
@@ -55,7 +57,8 @@ const ProjectManagement: React.FC = () => {
             category: project.category,
             techStack: project.tech_stack || [],
             createdBy: project.created_by,
-            createdAt: project.created_at
+            createdAt: project.created_at,
+            duration: project.duration
           }));
           
           setProjects(fetchedProjects);
@@ -96,7 +99,8 @@ const ProjectManagement: React.FC = () => {
                 category: newProject.category,
                 techStack: newProject.tech_stack || [],
                 createdBy: newProject.created_by,
-                createdAt: newProject.created_at
+                createdAt: newProject.created_at,
+                duration: newProject.duration
               };
               
               // Avoid duplicates
@@ -119,7 +123,8 @@ const ProjectManagement: React.FC = () => {
                     description: updatedProject.description,
                     image: updatedProject.image || project.image,
                     category: updatedProject.category,
-                    techStack: updatedProject.tech_stack || []
+                    techStack: updatedProject.tech_stack || [],
+                    duration: updatedProject.duration
                   };
                 }
                 return project;
@@ -144,8 +149,27 @@ const ProjectManagement: React.FC = () => {
     };
   }, []);
   
-  // Get filtered projects
-  const filteredProjects = filterProjects(projects, searchQuery);
+  // Filter projects by both search query and selected category
+  const filteredProjects = React.useMemo(() => {
+    let filtered = projects;
+    
+    // Filter by search query
+    if (searchQuery) {
+      const query = searchQuery.toLowerCase();
+      filtered = filtered.filter(project => 
+        project.title.toLowerCase().includes(query) || 
+        project.description.toLowerCase().includes(query) ||
+        (project.category && project.category.toLowerCase().includes(query))
+      );
+    }
+    
+    // Filter by selected category
+    if (selectedCategory) {
+      filtered = filtered.filter(project => project.category === selectedCategory);
+    }
+    
+    return filtered;
+  }, [projects, searchQuery, selectedCategory]);
 
   // Handle delete project
   const handleDelete = async () => {
@@ -319,6 +343,13 @@ const ProjectManagement: React.FC = () => {
           </Button>
         )}
       </div>
+
+      {/* Categories */}
+      <ProjectCategories 
+        projects={projects}
+        selectedCategory={selectedCategory}
+        onCategoryChange={setSelectedCategory}
+      />
 
       {/* Loading state */}
       {isLoading && (
