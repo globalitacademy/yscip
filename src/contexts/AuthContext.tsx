@@ -3,7 +3,7 @@ import React, { createContext, useContext } from 'react';
 import { User, UserRole } from '@/types/user';
 import { mockUsers } from '@/data/mockUsers';
 import { AuthContextType, PendingUser } from '@/types/auth';
-import { useAuthSession } from '@/hooks/useAuthSession';
+import { useAuthSession } from '@/hooks/auth/useAuthSession';
 import { ensureAdminUsersExist } from './auth/mockAdminUsers';
 import { useAuthOperations } from './auth/useAuthOperations';
 import { useUserOperations } from './auth/useUserOperations';
