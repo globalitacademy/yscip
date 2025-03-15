@@ -2,13 +2,10 @@
 import React from 'react';
 import SidebarMenuItem from './SidebarMenuItem';
 import { useAuth } from '@/contexts/AuthContext';
-import { SidebarMenuItemType } from './sidebarMenuConfig';
+import { SidebarMenuGroup as SidebarMenuGroupType, SidebarMenuItemType } from './types';
 
 interface SidebarMenuGroupProps {
-  menuItems: {
-    title: string;
-    items: SidebarMenuItemType[];
-  }[];
+  menuItems: SidebarMenuGroupType[];
   onCloseMenu?: () => void;
 }
 
