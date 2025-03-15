@@ -39,6 +39,18 @@ const ProjectCard: React.FC<ProjectCardProps> = ({
           alt={project.title} 
           className="w-full h-full object-cover"
         />
+        
+        {/* Creator avatar on the image */}
+        <div className="absolute bottom-3 right-3 flex items-center gap-2 bg-background/80 backdrop-blur-sm px-3 py-1.5 rounded-full border border-border shadow-sm">
+          <span className="text-xs font-medium">{creatorName}</span>
+          <Avatar className="h-6 w-6 border border-border">
+            <AvatarImage src={creatorAvatar} alt={creatorName} />
+            <AvatarFallback>
+              {creatorType === 'user' ? <User size={12} /> : <Building size={12} />}
+            </AvatarFallback>
+          </Avatar>
+        </div>
+        
         <div className="absolute top-2 right-2 flex gap-1">
           <Button 
             variant="secondary" 
@@ -67,22 +79,6 @@ const ProjectCard: React.FC<ProjectCardProps> = ({
         </div>
       </CardHeader>
       <CardContent className="p-4">
-        {/* Creator oval badge positioned between title and description */}
-        <div className="flex justify-end -mt-2 mb-3">
-          <div className="flex items-center gap-2 bg-muted/50 px-3 py-1.5 rounded-full border border-border">
-            <span className="text-xs text-muted-foreground">
-              {creatorType === 'user' ? 'Հեղինակ:' : 'Կազմակերպություն:'}
-            </span>
-            <span className="text-sm font-medium">{creatorName}</span>
-            <Avatar className="h-6 w-6 border border-border">
-              <AvatarImage src={creatorAvatar} alt={creatorName} />
-              <AvatarFallback>
-                {creatorType === 'user' ? <User size={12} /> : <Building size={12} />}
-              </AvatarFallback>
-            </Avatar>
-          </div>
-        </div>
-        
         <p className="text-xs sm:text-sm text-gray-500 line-clamp-3 mb-4">{project.description}</p>
         <div className="flex flex-wrap gap-1">
           {project.techStack.slice(0, 3).map((tech, index) => (

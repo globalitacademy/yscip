@@ -42,16 +42,27 @@ const ProjectCard: React.FC<ProjectCardProps> = ({ project, className }) => {
     >
       <div className="absolute top-0 inset-x-0 h-1 bg-primary rounded-t-xl" />
       
-      <div className="w-full h-48 overflow-hidden">
+      <div className="w-full h-48 overflow-hidden relative">
         <img 
           src={imageUrl} 
           alt={project.title}
           className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
         />
+        
+        {/* Creator information positioned on the image */}
+        <div className="absolute bottom-3 right-3 flex items-center gap-2 bg-background/80 backdrop-blur-sm px-3 py-2 rounded-full border border-border shadow-sm">
+          <span className="text-xs font-medium">{creatorName}</span>
+          <Avatar className="h-7 w-7 border border-border">
+            <AvatarImage src={creatorAvatar} alt={creatorName} />
+            <AvatarFallback>
+              {creatorType === 'user' ? <User size={12} /> : <Building size={12} />}
+            </AvatarFallback>
+          </Avatar>
+        </div>
       </div>
 
       <div className="p-6 flex-grow flex flex-col">
-        <div className="mb-2 flex justify-between items-start">
+        <div className="mb-4 flex justify-between items-start">
           <div className="space-y-1">
             <Badge variant="outline" className={cn("font-medium", complexityColor)}>
               {project.complexity}
@@ -59,22 +70,6 @@ const ProjectCard: React.FC<ProjectCardProps> = ({ project, className }) => {
             <h3 className="text-xl font-medium mt-2 group-hover:text-primary transition-colors duration-300">
               {project.title}
             </h3>
-          </div>
-        </div>
-
-        {/* Creator information with oval shape - positioned between title and description */}
-        <div className="flex justify-end -mt-1 mb-3">
-          <div className="flex items-center gap-2 bg-muted/50 px-3 py-1.5 rounded-full border border-border">
-            <span className="text-xs text-muted-foreground">
-              {creatorType === 'user' ? 'Հեղինակ:' : 'Կազմակերպություն:'}
-            </span>
-            <span className="text-sm font-medium">{creatorName}</span>
-            <Avatar className="h-6 w-6 border border-border">
-              <AvatarImage src={creatorAvatar} alt={creatorName} />
-              <AvatarFallback>
-                {creatorType === 'user' ? <User size={12} /> : <Building size={12} />}
-              </AvatarFallback>
-            </Avatar>
           </div>
         </div>
 
