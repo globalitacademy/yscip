@@ -2,8 +2,7 @@
 import React from 'react';
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
-import { Edit, Trash, CheckCircle, Clock, XCircle, BookOpen } from 'lucide-react';
-import { Badge } from '@/components/ui/badge';
+import { Edit, Trash, CheckCircle, Clock, XCircle } from 'lucide-react';
 import type { EducationalModule } from '@/components/educationalCycle';
 
 interface ModuleTableProps {
@@ -50,7 +49,6 @@ const ModuleTable: React.FC<ModuleTableProps> = ({
             <th className="pb-2 text-left font-medium">Անվանում</th>
             <th className="pb-2 text-left font-medium">Կարգավիճակ</th>
             <th className="pb-2 text-left font-medium">Առաջընթաց</th>
-            <th className="pb-2 text-left font-medium">Թեմաներ</th>
             <th className="pb-2 text-right font-medium">Գործողություններ</th>
           </tr>
         </thead>
@@ -70,18 +68,6 @@ const ModuleTable: React.FC<ModuleTableProps> = ({
                   <Progress value={module.progress || 0} className="h-2 flex-grow" />
                   <span className="text-xs whitespace-nowrap">{module.progress || 0}%</span>
                 </div>
-              </td>
-              <td className="py-3">
-                {module.topics && module.topics.length > 0 ? (
-                  <div className="flex items-center gap-2">
-                    <BookOpen className="h-4 w-4 text-blue-500" />
-                    <Badge variant="outline" className="text-xs">
-                      {module.topics.length}
-                    </Badge>
-                  </div>
-                ) : (
-                  <span className="text-muted-foreground text-xs">Չկան</span>
-                )}
               </td>
               <td className="py-3 text-right">
                 <div className="flex justify-end gap-2">
