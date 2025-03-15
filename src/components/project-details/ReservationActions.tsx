@@ -12,6 +12,7 @@ interface ReservationActionsProps {
   selectedSupervisor: string | null;
   selectSupervisor: (supervisorId: string) => void;
   reserveProject: () => void;
+  projectTitle: string; // Added the missing projectTitle prop
 }
 
 const ReservationActions: React.FC<ReservationActionsProps> = ({
