@@ -4,32 +4,53 @@ import {
   GraduationCap, Users, Briefcase, UserCog, ClipboardCheck, 
   BookOpen, GaugeCircle, MessageSquare, UserPlus
 } from 'lucide-react';
-import { Card, CardContent } from '@/components/ui/card';
 import { FadeIn, SlideUp } from '@/components/LocalTransitions';
+
+const ICON_BACKGROUNDS = {
+  student: "bg-blue-100",
+  instructor: "bg-green-100",
+  employer: "bg-purple-100",
+  manager: "bg-yellow-100",
+  internship: "bg-orange-100",
+  course: "bg-blue-100",
+  grading: "bg-green-100",
+  communication: "bg-red-100",
+  admissions: "bg-pink-100"
+};
+
+const ICON_COLORS = {
+  student: "text-blue-500",
+  instructor: "text-green-500",
+  employer: "text-purple-500", 
+  manager: "text-yellow-600",
+  internship: "text-orange-500",
+  course: "text-blue-500",
+  grading: "text-green-500",
+  communication: "text-red-500",
+  admissions: "text-pink-500"
+};
 
 const FeatureCard = ({ 
   icon: Icon, 
   title, 
   description,
+  type,
   delay = "delay-0" 
 }: { 
   icon: React.ElementType; 
   title: string; 
   description: string;
+  type: keyof typeof ICON_BACKGROUNDS;
   delay?: string;
 }) => (
   <SlideUp delay={delay}>
-    <Card className="h-full border border-border/50 bg-card/50 backdrop-blur-sm hover:shadow-md hover:border-primary/20 transition-all duration-300">
-      <CardContent className="p-6">
-        <div className="flex flex-col items-center text-center">
-          <div className="p-3 mb-4 rounded-full bg-primary/10 text-primary">
-            <Icon size={24} />
-          </div>
-          <h3 className="text-lg font-medium mb-2">{title}</h3>
-          <p className="text-sm text-muted-foreground">{description}</p>
-        </div>
-      </CardContent>
-    </Card>
+    <div className="bg-white rounded-lg p-6 shadow-sm h-full flex flex-col items-start">
+      <div className={`p-3 rounded-lg ${ICON_BACKGROUNDS[type]} ${ICON_COLORS[type]} mb-4`}>
+        <Icon size={24} />
+      </div>
+      <h3 className="text-lg font-medium mb-2">{title}</h3>
+      <p className="text-sm text-muted-foreground">{description}</p>
+    </div>
   </SlideUp>
 );
 
@@ -39,30 +60,35 @@ const FeaturesSection = () => {
       icon: GraduationCap,
       title: "Ուսանողներ",
       description: "Մասնակցեք դասընթացներին, կատարեք առաջադրանքներ և ստացեք գնահատականներ։",
+      type: "student" as const,
       delay: "delay-100"
     },
     {
       icon: Users,
       title: "Դասախոսներ",
       description: "Ստեղծեք և խմբագրեք դասընթացներ, ավելացրեք նյութեր և գնահատեք ուսանողներին։",
+      type: "instructor" as const,
       delay: "delay-200"
     },
     {
       icon: Briefcase,
       title: "Գործատուներ",
       description: "Գտեք հմուտ ուսանողներ, կազմակերպեք հարցազրույցներ և առաջարկեք աշխատանք։",
+      type: "employer" as const,
       delay: "delay-300"
     },
     {
       icon: UserCog,
       title: "Ծրագրի ղեկավարներ",
       description: "Վերահսկեք դասընթացների որակը և ուսանողների առաջընթացը։",
+      type: "manager" as const,
       delay: "delay-400"
     },
     {
       icon: ClipboardCheck,
       title: "Պրակտիկայի ղեկավարներ",
       description: "Ստեղծեք և ղեկավարեք պրակտիկայի ծրագրերը, կապ պահպանեք բոլոր կողմերի հետ։",
+      type: "internship" as const,
       delay: "delay-500"
     }
   ];
@@ -72,36 +98,38 @@ const FeaturesSection = () => {
       icon: BookOpen,
       title: "Դասընթացների կառավարում",
       description: "Ստեղծեք, կազմակերպեք և ժամանակացույց կազմեք ուսումնական ծրագրերի համար։",
+      type: "course" as const,
       delay: "delay-100"
     },
     {
       icon: GaugeCircle,
       title: "Գնահատման համակարգ",
       description: "Գնահատեք աշխատանքները, թեստերը և ստեղծեք քննություններ։",
+      type: "grading" as const,
       delay: "delay-200"
     },
     {
       icon: MessageSquare,
       title: "Հաղորդակցման գործիքներ",
       description: "Արդյունավետ հաղորդակցություն ուսանողների, դասախոսների և ղեկավարների միջև։",
+      type: "communication" as const,
       delay: "delay-300"
     },
     {
       icon: UserPlus,
       title: "Ընդունելության կազմակերպում",
-      description: "Կառավարեք դիմումների ընդունումը, փաստաթղթերի ստուգումը և ընդունելության գործընթացը։",
+      description: "Կառավարեք դիմումների ընդունումը, փաստաթղթերի ստուգումն և ընդունելության գործընթացը։",
+      type: "admissions" as const,
       delay: "delay-400"
     }
   ];
 
   return (
-    <section id="features-section" className="py-16 bg-gradient-to-b from-background to-background/90">
+    <section id="features-section" className="py-16 bg-gray-50">
       <div className="container mx-auto px-4">
         <FadeIn delay="delay-100">
           <h2 className="text-3xl md:text-4xl font-bold mb-4 text-center">
-            <span className="bg-clip-text text-transparent bg-gradient-to-r from-primary to-primary/70">
-              Համակարգի հիմնական առանձնահատկությունները
-            </span>
+            Համակարգի հիմնական առանձնահատկությունները
           </h2>
         </FadeIn>
         
@@ -111,34 +139,30 @@ const FeaturesSection = () => {
           </p>
         </FadeIn>
 
-        <div className="mb-16">
-          <h3 className="text-xl font-medium mb-8 text-center">Օգտատերերի տեսակներ</h3>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-6">
-            {userFeatures.map((feature, index) => (
-              <FeatureCard 
-                key={index}
-                icon={feature.icon}
-                title={feature.title}
-                description={feature.description}
-                delay={feature.delay}
-              />
-            ))}
-          </div>
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 mb-12">
+          {userFeatures.map((feature, index) => (
+            <FeatureCard 
+              key={index}
+              icon={feature.icon}
+              title={feature.title}
+              description={feature.description}
+              type={feature.type}
+              delay={feature.delay}
+            />
+          ))}
         </div>
 
-        <div>
-          <h3 className="text-xl font-medium mb-8 text-center">Համակարգի գործառույթներ</h3>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-            {systemFeatures.map((feature, index) => (
-              <FeatureCard 
-                key={index}
-                icon={feature.icon}
-                title={feature.title}
-                description={feature.description}
-                delay={feature.delay}
-              />
-            ))}
-          </div>
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+          {systemFeatures.map((feature, index) => (
+            <FeatureCard 
+              key={index}
+              icon={feature.icon}
+              title={feature.title}
+              description={feature.description}
+              type={feature.type}
+              delay={feature.delay}
+            />
+          ))}
         </div>
       </div>
     </section>
