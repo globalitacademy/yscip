@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { projectThemes, ProjectTheme } from '@/data/projectThemes';
 import ProjectCard from './projects/ProjectCard';
@@ -34,12 +33,10 @@ const ProjectManagement: React.FC = () => {
   const { user } = useAuth();
   const permissions = useProjectPermissions(user?.role);
   
-  // Fetch projects from Supabase
   useEffect(() => {
     const fetchProjects = async () => {
       setIsLoading(true);
       try {
-        // Fetch projects from Supabase
         const { data, error } = await supabase
           .from('projects')
           .select('*');
@@ -48,7 +45,6 @@ const ProjectManagement: React.FC = () => {
           console.error('Error fetching projects:', error);
           toast('Սխալ նախագծերի ստացման ժամանակ');
         } else if (data) {
-          // Convert to ProjectTheme format
           const fetchedProjects: ProjectTheme[] = data.map(project => ({
             id: project.id,
             title: project.title,
@@ -65,7 +61,6 @@ const ProjectManagement: React.FC = () => {
         }
       } catch (err) {
         console.error('Unexpected error:', err);
-        // Fallback to local data if there's an error
         setProjects(projectThemes);
         toast('Տվյալների ստացման սխալ, օգտագործվում են լոկալ տվյալները');
       } finally {
@@ -76,21 +71,16 @@ const ProjectManagement: React.FC = () => {
     fetchProjects();
   }, []);
   
-  // Set up real-time subscription to projects table
   useEffect(() => {
-    // Enable real-time subscription to the projects table
     const projectsSubscription = supabase
       .channel('projects-changes')
       .on(
         'postgres_changes',
         { event: '*', schema: 'public', table: 'projects' },
         (payload) => {
-          // Handle different types of changes
           if (payload.eventType === 'INSERT') {
             const newProject = payload.new as any;
-            // Add the new project to state
             setProjects(prevProjects => {
-              // Convert to ProjectTheme format
               const projectToAdd: ProjectTheme = {
                 id: newProject.id,
                 title: newProject.title,
@@ -103,7 +93,6 @@ const ProjectManagement: React.FC = () => {
                 duration: newProject.duration
               };
               
-              // Avoid duplicates
               if (!prevProjects.some(p => p.id === projectToAdd.id)) {
                 toast(`Նոր նախագիծ: ${projectToAdd.title}`);
                 return [projectToAdd, ...prevProjects];
@@ -112,11 +101,9 @@ const ProjectManagement: React.FC = () => {
             });
           } else if (payload.eventType === 'UPDATE') {
             const updatedProject = payload.new as any;
-            // Update the existing project
             setProjects(prevProjects => 
               prevProjects.map(project => {
                 if (project.id === updatedProject.id) {
-                  // Convert to ProjectTheme format
                   return {
                     ...project,
                     title: updatedProject.title,
@@ -133,7 +120,6 @@ const ProjectManagement: React.FC = () => {
             toast(`Նախագիծը թարմացվել է: ${updatedProject.title}`);
           } else if (payload.eventType === 'DELETE') {
             const deletedProject = payload.old as any;
-            // Remove the deleted project
             setProjects(prevProjects => 
               prevProjects.filter(project => project.id !== deletedProject.id)
             );
@@ -143,17 +129,14 @@ const ProjectManagement: React.FC = () => {
       )
       .subscribe();
       
-    // Cleanup subscription on component unmount
     return () => {
       supabase.removeChannel(projectsSubscription);
     };
   }, []);
   
-  // Filter projects by both search query and selected category
   const filteredProjects = React.useMemo(() => {
     let filtered = projects;
     
-    // Filter by search query
     if (searchQuery) {
       const query = searchQuery.toLowerCase();
       filtered = filtered.filter(project => 
@@ -163,7 +146,6 @@ const ProjectManagement: React.FC = () => {
       );
     }
     
-    // Filter by selected category
     if (selectedCategory) {
       filtered = filtered.filter(project => project.category === selectedCategory);
     }
@@ -171,12 +153,10 @@ const ProjectManagement: React.FC = () => {
     return filtered;
   }, [projects, searchQuery, selectedCategory]);
 
-  // Handle delete project
   const handleDelete = async () => {
     if (!selectedProject) return;
     
     try {
-      // Delete from Supabase
       const { error } = await supabase
         .from('projects')
         .delete()
@@ -186,12 +166,10 @@ const ProjectManagement: React.FC = () => {
         console.error('Error deleting project:', error);
         toast('Սխալ նախագծի ջնջման ժամանակ');
       } else {
-        // Local state will be updated by the real-time subscription
         toast('Նախագիծը հաջողությամբ ջնջվել է');
       }
     } catch (err) {
       console.error('Unexpected error deleting project:', err);
-      // Fallback to local deletion if database deletion fails
       deleteProject(projects, selectedProject, setProjects);
       toast('Տվյալների բազայի հետ կապի սխալ, նախագիծը ջնջվել է լոկալ');
     }
@@ -200,12 +178,10 @@ const ProjectManagement: React.FC = () => {
     setSelectedProject(null);
   };
 
-  // Handle change project image
   const handleChangeImage = async () => {
     if (!selectedProject) return;
     
     try {
-      // Update image in Supabase
       const { error } = await supabase
         .from('projects')
         .update({ image: newImageUrl })
@@ -215,14 +191,12 @@ const ProjectManagement: React.FC = () => {
         console.error('Error updating project image:', error);
         toast('Սխալ նախագծի նկարի թարմացման ժամանակ');
       } else {
-        // Local state will be updated by the real-time subscription
         toast('Նախագծի նկարը հաջողությամբ թարմացվել է');
       }
     } catch (err) {
       console.error('Unexpected error updating project image:', err);
-      // Fallback to local update if database update fails
       changeProjectImage(projects, selectedProject, newImageUrl, setProjects);
-      toast('Տվյալների բազայի հետ կապի սխալ, նկարը թարմացվել է լոկալ');
+      toast('Տվյալների բազայի հետ կապի սխալ, նախագիծը նկարը թարմացվել է լոկալ');
     }
     
     setIsImageDialogOpen(false);
@@ -230,7 +204,6 @@ const ProjectManagement: React.FC = () => {
     setSelectedProject(null);
   };
 
-  // Handle edit project initialization
   const handleEditInit = (project: ProjectTheme) => {
     setSelectedProject(project);
     setEditedProject({
@@ -241,12 +214,10 @@ const ProjectManagement: React.FC = () => {
     setIsEditDialogOpen(true);
   };
 
-  // Handle save edited project
   const handleSaveEdit = async () => {
     if (!selectedProject) return;
     
     try {
-      // Update project in Supabase
       const { error } = await supabase
         .from('projects')
         .update({
@@ -261,12 +232,10 @@ const ProjectManagement: React.FC = () => {
         console.error('Error updating project:', error);
         toast('Սխալ նախագծի թարմացման ժամանակ');
       } else {
-        // Local state will be updated by the real-time subscription
         toast('Նախագիծը հաջողությամբ թարմացվել է');
       }
     } catch (err) {
       console.error('Unexpected error updating project:', err);
-      // Fallback to local update if database update fails
       saveEditedProject(projects, selectedProject, editedProject, setProjects);
       toast('Տվյալների բազայի հետ կապի սխալ, նախագիծը թարմացվել է լոկալ');
     }
@@ -276,23 +245,19 @@ const ProjectManagement: React.FC = () => {
     setSelectedProject(null);
   };
 
-  // Handle image change initialization
   const handleImageChangeInit = (project: ProjectTheme) => {
     setSelectedProject(project);
     setNewImageUrl(project.image || '');
     setIsImageDialogOpen(true);
   };
 
-  // Handle delete initialization
   const handleDeleteInit = (project: ProjectTheme) => {
     setSelectedProject(project);
     setIsDeleteDialogOpen(true);
   };
 
-  // Handle project creation
   const handleProjectCreated = async (project: ProjectTheme) => {
     try {
-      // Create project in Supabase
       const { data, error } = await supabase
         .from('projects')
         .insert({
@@ -310,16 +275,13 @@ const ProjectManagement: React.FC = () => {
         console.error('Error creating project:', error);
         toast('Սխալ նախագծի ստեղծման ժամանակ');
         
-        // Fallback to local creation if database creation fails
         setProjects((prevProjects) => [project, ...prevProjects]);
         toast('Տվյալների բազայի հետ կապի սխալ, նախագիծը ստեղծվել է լոկալ');
       } else {
-        // Local state will be updated by the real-time subscription
         toast('Նախագիծը հաջողությամբ ստեղծվել է');
       }
     } catch (err) {
       console.error('Unexpected error creating project:', err);
-      // Fallback to local creation
       setProjects((prevProjects) => [project, ...prevProjects]);
       toast('Տվյալների բազայի հետ կապի սխալ, նախագիծը ստեղծվել է լոկալ');
     }
@@ -327,15 +289,18 @@ const ProjectManagement: React.FC = () => {
     setIsCreateDialogOpen(false);
   };
 
+  const handleOpenCreateDialog = () => {
+    setIsCreateDialogOpen(true);
+  };
+
   return (
     <div className="space-y-4">
-      {/* Header with search and add button */}
       <div className="flex flex-col sm:flex-row justify-between gap-4 items-start sm:items-center">
         <ProjectSearch searchQuery={searchQuery} onSearchChange={setSearchQuery} />
         
         {permissions.canCreateProjects && (
           <Button 
-            onClick={() => setIsCreateDialogOpen(true)} 
+            onClick={handleOpenCreateDialog} 
             className="w-full sm:w-auto"
           >
             <Plus className="h-4 w-4 mr-2" />
@@ -344,21 +309,18 @@ const ProjectManagement: React.FC = () => {
         )}
       </div>
 
-      {/* Categories */}
       <ProjectCategories 
         projects={projects}
         selectedCategory={selectedCategory}
         onCategoryChange={setSelectedCategory}
       />
 
-      {/* Loading state */}
       {isLoading && (
         <div className="flex justify-center items-center py-20">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
         </div>
       )}
 
-      {/* Project grid */}
       {!isLoading && (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
           {filteredProjects.map((project) => (
@@ -373,10 +335,10 @@ const ProjectManagement: React.FC = () => {
         </div>
       )}
 
-      {/* Empty state when no projects match the filter */}
-      {!isLoading && filteredProjects.length === 0 && <ProjectEmptyState />}
+      {!isLoading && filteredProjects.length === 0 && (
+        <ProjectEmptyState onAddNewProject={handleOpenCreateDialog} />
+      )}
 
-      {/* Dialogs */}
       <ProjectDeleteDialog 
         open={isDeleteDialogOpen}
         onOpenChange={setIsDeleteDialogOpen}
@@ -402,7 +364,6 @@ const ProjectManagement: React.FC = () => {
         onSave={handleSaveEdit}
       />
 
-      {/* Project Creation Dialog */}
       <Dialog open={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen}>
         <DialogContent className="max-w-4xl p-0 overflow-y-auto max-h-screen">
           <ProjectCreation onProjectCreated={handleProjectCreated} />
