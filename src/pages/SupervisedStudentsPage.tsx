@@ -9,7 +9,7 @@ import { toast } from "@/components/ui/use-toast";
 import { MessageSquare, Search, Clipboard } from 'lucide-react';
 import { useProject } from '@/contexts/ProjectContext';
 import { loadProjectReservations } from '@/utils/projectUtils';
-import { ProjectReservation } from '@/utils/projectUtils'; // Use from projectUtils to match types
+import { ProjectReservation } from '@/types/project'; // Use from types/project
 import SupervisorProjectManagement from '@/components/supervisor/SupervisorProjectManagement';
 import SupervisorRequestsTab from '@/components/supervisor/SupervisorRequestsTab';
 import SupervisorRejectDialog from '@/components/supervisor/SupervisorRejectDialog';
@@ -126,7 +126,7 @@ const SupervisedStudentsPage: React.FC = () => {
           <h2 className="text-xl font-semibold mb-4">Սպասող հարցումներ</h2>
           
           <SupervisorRequestsTab 
-            pendingReservations={filteredPendingReservations}
+            pendingReservations={filteredPendingReservations as any}
             onApprove={handleApprove}
             onReject={handleOpenRejectDialog}
           />
@@ -142,7 +142,7 @@ const SupervisedStudentsPage: React.FC = () => {
               description="Դուք դեռ չեք հաստատել որևէ նախագծի ղեկավարում։ Հաստատելուց հետո նախագծերը կհայտնվեն այստեղ։"
             />
           ) : (
-            <SupervisorProjectManagement reservations={filteredApprovedReservations} />
+            <SupervisorProjectManagement reservations={filteredApprovedReservations as any} />
           )}
         </TabsContent>
       </Tabs>

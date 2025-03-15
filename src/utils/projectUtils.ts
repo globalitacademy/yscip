@@ -13,9 +13,9 @@ export interface ProjectReservation {
   status: 'pending' | 'approved' | 'rejected';
   requestDate: string;
   responseDate?: string;
-  userId?: string;  // Added for compatibility with existing code
-  projectTitle?: string; // Added for compatibility with existing code
-  timestamp?: string;    // Added for compatibility with existing code
+  userId: string;  // Changed from optional to required
+  projectTitle: string; // Changed from optional to required
+  timestamp: string;    // Changed from optional to required
   feedback?: string;
   instructorId?: string;
 }
@@ -30,7 +30,7 @@ export const calculateProjectProgress = (tasks: Task[], timeline: TimelineEvent[
   // Count completed tasks
   if (tasks.length > 0) {
     totalItems += tasks.length;
-    completedItems += tasks.filter(task => task.status === 'completed').length;
+    completedItems += tasks.filter(task => task.status === 'completed' || task.status === 'done').length;
   }
   
   // Count completed timeline events
@@ -83,14 +83,14 @@ export const generateSampleTasks = (userId: string): Task[] => {
       id: uuidv4(),
       title: 'Տեխնիկական առաջադրանքի կազմում',
       description: 'Նախագծի տեխնիկական առաջադրանքի մշակում և կազմում',
-      status: 'completed',
+      status: 'done', // Changed from 'completed' to 'done'
       assignedTo: userId
     },
     {
       id: uuidv4(),
       title: 'Ճարտարապետության մշակում',
       description: 'Նախագծի ճարտարապետության նախագծում և սխեմատիկ պատկերում',
-      status: 'in_progress',
+      status: 'in-progress', // Changed from 'in_progress' to 'in-progress'
       assignedTo: userId
     },
     {
@@ -110,11 +110,15 @@ export const loadProjectReservations = (): ProjectReservation[] => {
     try {
       const parsed = JSON.parse(reservations);
       // Add compatibility fields if they don't exist
-      return parsed.map((res: ProjectReservation) => ({
+      return parsed.map((res: any) => ({
         ...res,
         userId: res.userId || res.studentId,
         projectTitle: res.projectTitle || `Project #${res.projectId}`,
-        timestamp: res.timestamp || res.requestDate
+        timestamp: res.timestamp || res.requestDate,
+        studentId: res.studentId || res.userId,
+        studentName: res.studentName || "Student",
+        requestDate: res.requestDate || res.timestamp,
+        id: res.id || uuidv4()
       }));
     } catch (e) {
       console.error('Error parsing project reservations:', e);
@@ -160,6 +164,8 @@ export const saveProjectReservation = (
     return false;
   }
   
+  const now = new Date().toISOString();
+  
   // Create new reservation
   const newReservation: ProjectReservation = {
     id: uuidv4(),
@@ -168,11 +174,11 @@ export const saveProjectReservation = (
     studentName: "Student", // In a real app, get name from user profile
     supervisorId: supervisorId,
     status: 'pending',
-    requestDate: new Date().toISOString(),
+    requestDate: now,
     // Add compatibility fields
     userId: studentId,
     projectTitle: project.title,
-    timestamp: new Date().toISOString()
+    timestamp: now
   };
   
   reservations.push(newReservation);

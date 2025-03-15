@@ -32,7 +32,7 @@ export const ProjectProvider: React.FC<ProjectProviderProps> = ({
   const [tasks, setTasks] = useState<Task[]>([]);
   const [projectStatus, setProjectStatus] = useState<'not_submitted' | 'pending' | 'approved' | 'rejected'>('not_submitted');
   const [isReserved, setIsReserved] = useState(false);
-  const [projectReservations, setProjectReservations] = useState<ProjectReservation[]>([]);
+  const [projectReservationsState, setProjectReservationsState] = useState<ProjectReservation[]>([]);
   const [selectedSupervisor, setSelectedSupervisor] = useState<string | null>(null);
   const [showSupervisorDialog, setShowSupervisorDialog] = useState(false);
 
@@ -51,7 +51,7 @@ export const ProjectProvider: React.FC<ProjectProviderProps> = ({
   // Load project reservations from localStorage
   useEffect(() => {
     const loadedReservations = loadProjectReservations();
-    setProjectReservations(loadedReservations);
+    setProjectReservationsState(loadedReservations as any);
     
     // Check if current project is reserved by current user
     if (projectId && user) {
@@ -79,7 +79,9 @@ export const ProjectProvider: React.FC<ProjectProviderProps> = ({
   // Add sample tasks for demo
   useEffect(() => {
     if (tasks.length === 0 && project && user) {
-      const demoTasks = generateSampleTasks(user.id);
+      const demoTasks =
+
+ generateSampleTasks(user.id);
       setTasks(demoTasks);
     }
   }, [tasks.length, project, user]);
@@ -207,7 +209,7 @@ export const ProjectProvider: React.FC<ProjectProviderProps> = ({
         canInstructorCreate,
         canInstructorAssign,
         canSupervisorApprove,
-        projectReservations,
+        projectReservations: projectReservationsState,
         approveReservation,
         rejectReservation,
         projectProgress,

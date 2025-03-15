@@ -2,6 +2,7 @@
 import { ProjectTheme, Task, TimelineEvent } from '@/data/projectThemes';
 
 export interface ProjectReservation {
+  id: string;
   projectId: number;
   userId: string;
   projectTitle: string;
@@ -10,6 +11,10 @@ export interface ProjectReservation {
   supervisorId?: string;
   instructorId?: string;
   feedback?: string;
+  studentId?: string;
+  studentName?: string;
+  requestDate?: string;
+  responseDate?: string;
 }
 
 export interface ProjectContextType {
@@ -31,8 +36,8 @@ export interface ProjectContextType {
   canInstructorAssign: boolean;
   canSupervisorApprove: boolean;
   projectReservations: ProjectReservation[];
-  approveReservation: (reservationId: number) => void;
-  rejectReservation: (reservationId: number, feedback: string) => void;
+  approveReservation: (reservationId: string) => void;
+  rejectReservation: (reservationId: string, feedback: string) => void;
   projectProgress: number;
   openSupervisorDialog: () => void;
   closeSupervisorDialog: () => void;
