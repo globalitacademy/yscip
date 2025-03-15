@@ -17,6 +17,21 @@ export const useAuthSession = () => {
     const checkAuth = async () => {
       setIsLoading(true);
       try {
+        // Check local storage first for faster loading
+        const storedUser = localStorage.getItem('currentUser');
+        if (storedUser) {
+          const parsedUser = JSON.parse(storedUser);
+          setUser(parsedUser);
+          setIsAuthenticated(true);
+          
+          // If this is the admin user, we can stop here
+          if (parsedUser.email === 'gitedu@bk.ru' && parsedUser.role === 'admin') {
+            console.log('Admin user found in localStorage, skipping Supabase check');
+            setIsLoading(false);
+            return;
+          }
+        }
+
         // Try to get session from Supabase
         const { data: { session }, error } = await supabase.auth.getSession();
         
@@ -45,16 +60,9 @@ export const useAuthSession = () => {
             
             setUser(authUser);
             setIsAuthenticated(true);
+            localStorage.setItem('currentUser', JSON.stringify(authUser));
           } else if (error) {
             console.error('Error fetching user data:', userError);
-          }
-        } else {
-          // Check local storage
-          const storedUser = localStorage.getItem('currentUser');
-          if (storedUser) {
-            const parsedUser = JSON.parse(storedUser);
-            setUser(parsedUser);
-            setIsAuthenticated(true);
           }
         }
 

@@ -133,18 +133,7 @@ export const useUserOperations = (
     try {
       console.log('Resetting admin account');
       
-      // First try direct admin activation through edge function
-      const { data, error } = await supabase.functions.invoke('ensure-admin-activation');
-      
-      if (error) {
-        console.error('Error calling admin activation function:', error);
-      } else {
-        console.log('Admin activation function response:', data);
-      }
-      
-      // Whether or not the edge function succeeds, we'll also do the client-side reset
-      // to ensure the admin account is available locally
-      
+      // Try to use local approach first to ensure admin account is available in mockUsers
       // Add main admin to mock data if not exists
       const adminExists = mockUsers.some(user => user.email === 'gitedu@bk.ru');
       
@@ -172,6 +161,20 @@ export const useUserOperations = (
         updatedPendingUsers[pendingAdminIndex].verified = true;
         updatedPendingUsers[pendingAdminIndex].registrationApproved = true;
         setPendingUsers(updatedPendingUsers);
+      }
+      
+      // After local setup, try edge function for Supabase
+      try {
+        const { data, error } = await supabase.functions.invoke('ensure-admin-activation');
+        
+        if (error) {
+          console.error('Error calling admin activation function:', error);
+        } else {
+          console.log('Admin activation function response:', data);
+        }
+      } catch (error) {
+        console.error('Error with edge function:', error);
+        // Continue even if edge function fails
       }
       
       toast.success('Ադմինիստրատորի հաշիվը վերականգնված է։');
