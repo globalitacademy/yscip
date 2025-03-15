@@ -1,18 +1,15 @@
 
 import React, { useState, useEffect } from 'react';
 import { ProjectTheme } from '@/data/projectThemes';
-import { supabase } from '@/integrations/supabase/client';
-import { toast } from 'sonner';
-import { useAuth } from '@/contexts/AuthContext';
 import { Dialog, DialogContent } from '@/components/ui/dialog';
 import ProjectCreation from './ProjectCreation';
 import ProjectList from './projects/ProjectList';
 import ProjectFilterSection from './projects/ProjectFilterSection';
 import ProjectDialogManager from './projects/ProjectDialogManager';
 import { useProjectEvents } from './projects/hooks/useProjectEvents';
+import { useProjectOperations } from '@/hooks/useProjectOperations';
 
 const ProjectManagement: React.FC = () => {
-  const [projects, setProjects] = useState<ProjectTheme[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const [selectedProject, setSelectedProject] = useState<ProjectTheme | null>(null);
@@ -22,94 +19,36 @@ const ProjectManagement: React.FC = () => {
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
   const [newImageUrl, setNewImageUrl] = useState('');
   const [editedProject, setEditedProject] = useState<Partial<ProjectTheme>>({});
-  const [isLoading, setIsLoading] = useState(true);
   
-  const { user } = useAuth();
+  // Use our custom hook for project operations
+  const {
+    projects,
+    setProjects,
+    isLoading,
+    loadProjects,
+    updateProject,
+    updateProjectImage,
+    deleteProject,
+    createProject
+  } = useProjectOperations();
   
   // Set up real-time subscription to project changes
   useProjectEvents(setProjects);
   
   useEffect(() => {
-    const fetchProjects = async () => {
-      setIsLoading(true);
-      try {
-        const { data, error } = await supabase
-          .from('projects')
-          .select('*');
-        
-        if (error) {
-          console.error('Error fetching projects:', error);
-          toast('Սխալ նախագծերի ստացման ժամանակ');
-        } else if (data) {
-          const fetchedProjects: ProjectTheme[] = data.map(project => ({
-            id: project.id,
-            title: project.title,
-            description: project.description,
-            image: project.image || `https://source.unsplash.com/random/800x600/?${encodeURIComponent(project.category)}`,
-            category: project.category,
-            techStack: project.tech_stack || [],
-            createdBy: project.created_by,
-            createdAt: project.created_at,
-            duration: project.duration
-          }));
-          
-          setProjects(fetchedProjects);
-        }
-      } catch (err) {
-        console.error('Unexpected error:', err);
-        toast('Տվյալների ստացման սխալ, օգտագործվում են լոկալ տվյալները');
-      } finally {
-        setIsLoading(false);
-      }
-    };
-    
-    fetchProjects();
+    loadProjects();
   }, []);
 
   const handleDelete = async () => {
     if (!selectedProject) return;
-    
-    try {
-      const { error } = await supabase
-        .from('projects')
-        .delete()
-        .eq('id', selectedProject.id);
-        
-      if (error) {
-        console.error('Error deleting project:', error);
-        toast('Սխալ նախագծի ջնջման ժամանակ');
-      } else {
-        toast('Նախագիծը հաջողությամբ ջնջվել է');
-      }
-    } catch (err) {
-      console.error('Unexpected error deleting project:', err);
-      toast('Տվյալների բազայի հետ կապի սխալ, նախագիծը ջնջվել է լոկալ');
-    }
-    
+    await deleteProject(selectedProject);
     setIsDeleteDialogOpen(false);
     setSelectedProject(null);
   };
 
   const handleChangeImage = async () => {
     if (!selectedProject) return;
-    
-    try {
-      const { error } = await supabase
-        .from('projects')
-        .update({ image: newImageUrl })
-        .eq('id', selectedProject.id);
-        
-      if (error) {
-        console.error('Error updating project image:', error);
-        toast('Սխալ նախագծի նկարի թարմացման ժամանակ');
-      } else {
-        toast('Նախագծի նկարը հաջողությամբ թարմացվել է');
-      }
-    } catch (err) {
-      console.error('Unexpected error updating project image:', err);
-      toast('Տվյալների բազայի հետ կապի սխալ, նախագիծը նկարը թարմացվել է լոկալ');
-    }
-    
+    await updateProjectImage(selectedProject, newImageUrl);
     setIsImageDialogOpen(false);
     setNewImageUrl('');
     setSelectedProject(null);
@@ -127,29 +66,7 @@ const ProjectManagement: React.FC = () => {
 
   const handleSaveEdit = async () => {
     if (!selectedProject) return;
-    
-    try {
-      const { error } = await supabase
-        .from('projects')
-        .update({
-          title: editedProject.title,
-          description: editedProject.description,
-          category: editedProject.category,
-          updated_at: new Date().toISOString()
-        })
-        .eq('id', selectedProject.id);
-        
-      if (error) {
-        console.error('Error updating project:', error);
-        toast('Սխալ նախագծի թարմացման ժամանակ');
-      } else {
-        toast('Նախագիծը հաջողությամբ թարմացվել է');
-      }
-    } catch (err) {
-      console.error('Unexpected error updating project:', err);
-      toast('Տվյալների բազայի հետ կապի սխալ, նախագիծը թարմացվել է լոկալ');
-    }
-    
+    await updateProject(selectedProject, editedProject);
     setIsEditDialogOpen(false);
     setEditedProject({});
     setSelectedProject(null);
@@ -167,35 +84,7 @@ const ProjectManagement: React.FC = () => {
   };
 
   const handleProjectCreated = async (project: ProjectTheme) => {
-    try {
-      const { data, error } = await supabase
-        .from('projects')
-        .insert({
-          title: project.title,
-          description: project.description,
-          category: project.category,
-          tech_stack: project.techStack,
-          image: project.image,
-          created_by: user?.id,
-          duration: project.duration,
-        })
-        .select();
-        
-      if (error) {
-        console.error('Error creating project:', error);
-        toast('Սխալ նախագծի ստեղծման ժամանակ');
-        
-        setProjects((prevProjects) => [project, ...prevProjects]);
-        toast('Տվյալների բազայի հետ կապի սխալ, նախագիծը ստեղծվել է լոկալ');
-      } else {
-        toast('Նախագիծը հաջողությամբ ստեղծվել է');
-      }
-    } catch (err) {
-      console.error('Unexpected error creating project:', err);
-      setProjects((prevProjects) => [project, ...prevProjects]);
-      toast('Տվյալների բազայի հետ կապի սխալ, նախագիծը ստեղծվել է լոկալ');
-    }
-    
+    await createProject(project);
     setIsCreateDialogOpen(false);
   };
 
