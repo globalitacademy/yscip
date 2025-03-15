@@ -50,12 +50,12 @@ export const ProjectProvider: React.FC<ProjectProviderProps> = ({
 
   // Load project reservations from localStorage
   useEffect(() => {
-    const reservations = loadProjectReservations();
-    setProjectReservations(reservations);
+    const loadedReservations = loadProjectReservations();
+    setProjectReservations(loadedReservations);
     
     // Check if current project is reserved by current user
     if (projectId && user) {
-      const userReserved = isProjectReservedByUser(projectId, user.id, reservations);
+      const userReserved = isProjectReservedByUser(projectId, user.id, loadedReservations);
       setIsReserved(userReserved);
     }
   }, [projectId, user]);
@@ -157,38 +157,23 @@ export const ProjectProvider: React.FC<ProjectProviderProps> = ({
     if (!user || user.role !== 'student' || !project || !selectedSupervisor) return;
     
     // Save reservation in localStorage with pending status
-    saveProjectReservation(project, user.id, selectedSupervisor);
+    const success = saveProjectReservation(project, user.id, selectedSupervisor);
     
     // Update local state
-    setIsReserved(true);
-    setProjectReservations(loadProjectReservations());
-    setShowSupervisorDialog(false);
+    if (success) {
+      setIsReserved(true);
+      setProjectReservations(loadProjectReservations());
+      setShowSupervisorDialog(false);
+    }
   };
 
-  const approveReservation = (projectId: number) => {
-    if (!user) return;
-    
-    const updatedReservations = updateReservationStatus(
-      projectId, 
-      user.id, 
-      user.role, 
-      'approved'
-    );
-    
+  const approveReservation = (reservationId: string) => {
+    const updatedReservations = updateReservationStatus(reservationId, 'approved');
     setProjectReservations(updatedReservations);
   };
 
-  const rejectReservation = (projectId: number, feedback: string) => {
-    if (!user) return;
-    
-    const updatedReservations = updateReservationStatus(
-      projectId, 
-      user.id, 
-      user.role, 
-      'rejected', 
-      feedback
-    );
-    
+  const rejectReservation = (reservationId: string, feedback: string) => {
+    const updatedReservations = updateReservationStatus(reservationId, 'rejected', feedback);
     setProjectReservations(updatedReservations);
   };
 
@@ -196,7 +181,7 @@ export const ProjectProvider: React.FC<ProjectProviderProps> = ({
     if (!projectId || !user) return null;
     
     const reservation = projectReservations.find(
-      res => res.projectId === projectId && res.userId === user.id
+      res => res.projectId === projectId && (res.userId === user.id || res.studentId === user.id)
     );
     
     return reservation ? reservation.status : null;

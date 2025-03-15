@@ -9,7 +9,7 @@ import { toast } from "@/components/ui/use-toast";
 import { MessageSquare, Search, Clipboard } from 'lucide-react';
 import { useProject } from '@/contexts/ProjectContext';
 import { loadProjectReservations } from '@/utils/projectUtils';
-import { ProjectReservation } from '@/types/project';
+import { ProjectReservation } from '@/utils/projectUtils'; // Use from projectUtils to match types
 import SupervisorProjectManagement from '@/components/supervisor/SupervisorProjectManagement';
 import SupervisorRequestsTab from '@/components/supervisor/SupervisorRequestsTab';
 import SupervisorRejectDialog from '@/components/supervisor/SupervisorRejectDialog';
@@ -37,19 +37,19 @@ const SupervisedStudentsPage: React.FC = () => {
   
   // Filter reservations based on search term
   const filteredPendingReservations = pendingReservations.filter(res => 
-    res.projectTitle.toLowerCase().includes(searchTerm.toLowerCase())
+    (res.projectTitle || `Project #${res.projectId}`).toLowerCase().includes(searchTerm.toLowerCase())
   );
   
   const filteredApprovedReservations = approvedReservations.filter(res => 
-    res.projectTitle.toLowerCase().includes(searchTerm.toLowerCase())
+    (res.projectTitle || `Project #${res.projectId}`).toLowerCase().includes(searchTerm.toLowerCase())
   );
   
   // Handle approval of a reservation
   const handleApprove = (reservation: ProjectReservation) => {
-    approveReservation(reservation.projectId);
+    approveReservation(reservation.id);
     toast({
       title: "Հարցումն ընդունված է",
-      description: `Դուք հաստատել եք ${reservation.projectTitle} նախագծի ղեկավարումը։`,
+      description: `Դուք հաստատել եք ${reservation.projectTitle || `Project #${reservation.projectId}`} նախագծի ղեկավարումը։`,
     });
   };
   
@@ -62,7 +62,7 @@ const SupervisedStudentsPage: React.FC = () => {
   // Handle rejection of a reservation
   const handleReject = () => {
     if (selectedReservation && rejectFeedback) {
-      rejectReservation(selectedReservation.projectId, rejectFeedback);
+      rejectReservation(selectedReservation.id, rejectFeedback);
       setShowRejectDialog(false);
       setRejectFeedback('');
       setSelectedReservation(null);

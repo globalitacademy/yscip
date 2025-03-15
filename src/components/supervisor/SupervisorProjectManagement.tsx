@@ -6,7 +6,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Progress } from "@/components/ui/progress";
 import { Badge } from '@/components/ui/badge';
 import { FileText, ClipboardList, Calendar } from 'lucide-react';
-import { ProjectReservation } from '@/types/project';
+import { ProjectReservation } from '@/utils/projectUtils'; // Use from projectUtils to match types
 import { getUsersByRole } from '@/data/userRoles';
 import { Link } from 'react-router-dom';
 import { calculateProjectProgress } from '@/utils/projectUtils';
@@ -28,14 +28,15 @@ const SupervisorProjectManagement: React.FC<SupervisorProjectManagementProps> = 
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
       {reservations.map(reservation => {
-        const student = getStudentInfo(reservation.userId);
+        const student = getStudentInfo(reservation.studentId || reservation.userId || '');
         // For demo purposes, generate a random progress value
         const progress = Math.floor(Math.random() * 100);
+        const projectTitle = reservation.projectTitle || `Project #${reservation.projectId}`;
         
         return (
-          <Card key={`${reservation.projectId}-${reservation.userId}`} className="overflow-hidden border border-border hover:shadow-md transition-shadow">
+          <Card key={`${reservation.projectId}-${reservation.studentId || reservation.userId}`} className="overflow-hidden border border-border hover:shadow-md transition-shadow">
             <CardHeader className="pb-2 bg-card/5">
-              <CardTitle className="text-lg font-medium">{reservation.projectTitle}</CardTitle>
+              <CardTitle className="text-lg font-medium">{projectTitle}</CardTitle>
             </CardHeader>
             <CardContent className="pt-4">
               <div className="flex items-center mb-4">
@@ -44,7 +45,7 @@ const SupervisorProjectManagement: React.FC<SupervisorProjectManagementProps> = 
                   <AvatarFallback>{student?.name?.substring(0, 2) || 'ՈՒ'}</AvatarFallback>
                 </Avatar>
                 <div>
-                  <p className="font-medium">{student?.name || 'Անհայտ ուսանող'}</p>
+                  <p className="font-medium">{student?.name || reservation.studentName || 'Անհայտ ուսանող'}</p>
                   <p className="text-sm text-muted-foreground">{student?.group || 'Անհայտ խումբ'}</p>
                 </div>
               </div>
@@ -64,7 +65,7 @@ const SupervisorProjectManagement: React.FC<SupervisorProjectManagementProps> = 
                   </Badge>
                   <div className="flex items-center gap-1 text-muted-foreground">
                     <Calendar size={14} />
-                    <span>{new Date(reservation.timestamp).toLocaleDateString()}</span>
+                    <span>{new Date(reservation.timestamp || reservation.requestDate || '').toLocaleDateString()}</span>
                   </div>
                 </div>
                 
