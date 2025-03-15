@@ -1,24 +1,17 @@
+
 import React, { useState, useEffect } from 'react';
-import { projectThemes, ProjectTheme } from '@/data/projectThemes';
-import ProjectCard from './projects/ProjectCard';
-import ProjectDeleteDialog from './projects/ProjectDeleteDialog';
-import ProjectImageDialog from './projects/ProjectImageDialog';
-import ProjectEditDialog from './projects/ProjectEditDialog';
-import ProjectSearch from './projects/ProjectSearch';
-import ProjectEmptyState from './projects/ProjectEmptyState';
-import ProjectCategories from './projects/ProjectCategories';
-import { deleteProject, changeProjectImage, saveEditedProject, filterProjects } from './projects/ProjectUtils';
-import { Button } from '@/components/ui/button';
-import { Plus } from 'lucide-react';
-import ProjectCreation from './ProjectCreation';
-import { Dialog, DialogContent } from '@/components/ui/dialog';
-import { useProjectPermissions } from '@/hooks/useProjectPermissions';
-import { useAuth } from '@/contexts/AuthContext';
+import { ProjectTheme } from '@/data/projectThemes';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
+import { useAuth } from '@/contexts/AuthContext';
+import { Dialog, DialogContent } from '@/components/ui/dialog';
+import ProjectCreation from './ProjectCreation';
+import ProjectList from './projects/ProjectList';
+import ProjectFilterSection from './projects/ProjectFilterSection';
+import ProjectDialogManager from './projects/ProjectDialogManager';
 
 const ProjectManagement: React.FC = () => {
-  const [projects, setProjects] = useState<ProjectTheme[]>(projectThemes);
+  const [projects, setProjects] = useState<ProjectTheme[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const [selectedProject, setSelectedProject] = useState<ProjectTheme | null>(null);
@@ -31,7 +24,6 @@ const ProjectManagement: React.FC = () => {
   const [isLoading, setIsLoading] = useState(true);
   
   const { user } = useAuth();
-  const permissions = useProjectPermissions(user?.role);
   
   useEffect(() => {
     const fetchProjects = async () => {
@@ -61,7 +53,6 @@ const ProjectManagement: React.FC = () => {
         }
       } catch (err) {
         console.error('Unexpected error:', err);
-        setProjects(projectThemes);
         toast('Տվյալների ստացման սխալ, օգտագործվում են լոկալ տվյալները');
       } finally {
         setIsLoading(false);
@@ -133,25 +124,6 @@ const ProjectManagement: React.FC = () => {
       supabase.removeChannel(projectsSubscription);
     };
   }, []);
-  
-  const filteredProjects = React.useMemo(() => {
-    let filtered = projects;
-    
-    if (searchQuery) {
-      const query = searchQuery.toLowerCase();
-      filtered = filtered.filter(project => 
-        project.title.toLowerCase().includes(query) || 
-        project.description.toLowerCase().includes(query) ||
-        (project.category && project.category.toLowerCase().includes(query))
-      );
-    }
-    
-    if (selectedCategory) {
-      filtered = filtered.filter(project => project.category === selectedCategory);
-    }
-    
-    return filtered;
-  }, [projects, searchQuery, selectedCategory]);
 
   const handleDelete = async () => {
     if (!selectedProject) return;
@@ -170,7 +142,6 @@ const ProjectManagement: React.FC = () => {
       }
     } catch (err) {
       console.error('Unexpected error deleting project:', err);
-      deleteProject(projects, selectedProject, setProjects);
       toast('Տվյալների բազայի հետ կապի սխալ, նախագիծը ջնջվել է լոկալ');
     }
     
@@ -195,7 +166,6 @@ const ProjectManagement: React.FC = () => {
       }
     } catch (err) {
       console.error('Unexpected error updating project image:', err);
-      changeProjectImage(projects, selectedProject, newImageUrl, setProjects);
       toast('Տվյալների բազայի հետ կապի սխալ, նախագիծը նկարը թարմացվել է լոկալ');
     }
     
@@ -236,7 +206,6 @@ const ProjectManagement: React.FC = () => {
       }
     } catch (err) {
       console.error('Unexpected error updating project:', err);
-      saveEditedProject(projects, selectedProject, editedProject, setProjects);
       toast('Տվյալների բազայի հետ կապի սխալ, նախագիծը թարմացվել է լոկալ');
     }
     
@@ -295,73 +264,41 @@ const ProjectManagement: React.FC = () => {
 
   return (
     <div className="space-y-4">
-      <div className="flex flex-col sm:flex-row justify-between gap-4 items-start sm:items-center">
-        <ProjectSearch searchQuery={searchQuery} onSearchChange={setSearchQuery} />
-        
-        {permissions.canCreateProjects && (
-          <Button 
-            onClick={handleOpenCreateDialog} 
-            className="w-full sm:w-auto"
-          >
-            <Plus className="h-4 w-4 mr-2" />
-            Նոր նախագիծ
-          </Button>
-        )}
-      </div>
-
-      <ProjectCategories 
+      <ProjectFilterSection 
+        searchQuery={searchQuery}
+        onSearchChange={setSearchQuery}
+        onAddNewProject={handleOpenCreateDialog}
         projects={projects}
         selectedCategory={selectedCategory}
         onCategoryChange={setSelectedCategory}
       />
 
-      {isLoading && (
-        <div className="flex justify-center items-center py-20">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
-        </div>
-      )}
-
-      {!isLoading && (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
-          {filteredProjects.map((project) => (
-            <ProjectCard 
-              key={project.id}
-              project={project}
-              onEdit={handleEditInit}
-              onImageChange={handleImageChangeInit}
-              onDelete={handleDeleteInit}
-            />
-          ))}
-        </div>
-      )}
-
-      {!isLoading && filteredProjects.length === 0 && (
-        <ProjectEmptyState onAddNewProject={handleOpenCreateDialog} />
-      )}
-
-      <ProjectDeleteDialog 
-        open={isDeleteDialogOpen}
-        onOpenChange={setIsDeleteDialogOpen}
-        selectedProject={selectedProject}
-        onDelete={handleDelete}
+      <ProjectList 
+        projects={projects}
+        searchQuery={searchQuery}
+        selectedCategory={selectedCategory}
+        isLoading={isLoading}
+        onEdit={handleEditInit}
+        onImageChange={handleImageChangeInit}
+        onDelete={handleDeleteInit}
+        onAddNewProject={handleOpenCreateDialog}
       />
 
-      <ProjectImageDialog 
-        open={isImageDialogOpen}
-        onOpenChange={setIsImageDialogOpen}
+      <ProjectDialogManager
+        isDeleteDialogOpen={isDeleteDialogOpen}
+        setIsDeleteDialogOpen={setIsDeleteDialogOpen}
+        isImageDialogOpen={isImageDialogOpen}
+        setIsImageDialogOpen={setIsImageDialogOpen}
+        isEditDialogOpen={isEditDialogOpen}
+        setIsEditDialogOpen={setIsEditDialogOpen}
         selectedProject={selectedProject}
         newImageUrl={newImageUrl}
         setNewImageUrl={setNewImageUrl}
-        onSave={handleChangeImage}
-      />
-
-      <ProjectEditDialog 
-        open={isEditDialogOpen}
-        onOpenChange={setIsEditDialogOpen}
-        selectedProject={selectedProject}
         editedProject={editedProject}
         setEditedProject={setEditedProject}
-        onSave={handleSaveEdit}
+        onDeleteConfirm={handleDelete}
+        onImageSave={handleChangeImage}
+        onEditSave={handleSaveEdit}
       />
 
       <Dialog open={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen}>
