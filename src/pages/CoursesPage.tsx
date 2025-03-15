@@ -1,7 +1,7 @@
 
 import React from 'react';
 import AdminLayout from '@/components/AdminLayout';
-import CourseManagement from '@/components/CourseManagement';
+import CourseManagement from '@/components/courses/CourseManagement';
 
 const CoursesPage: React.FC = () => {
   return (
