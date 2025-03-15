@@ -23,7 +23,9 @@ const AdminLayout: React.FC<AdminLayoutProps> = ({ children, pageTitle }) => {
     user.role !== 'lecturer' && 
     user.role !== 'instructor' && 
     user.role !== 'project_manager' && 
-    user.role !== 'supervisor'
+    user.role !== 'supervisor' &&
+    user.role !== 'employer' &&
+    user.role !== 'student'
   )) {
     return <Navigate to="/login" replace />;
   }

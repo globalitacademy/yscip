@@ -18,19 +18,19 @@ const DashboardHeader: React.FC = () => {
       
       {showAdminActions && (
         <div className="flex flex-wrap items-center gap-2">
-          <Button variant="outline" onClick={() => navigate('/users')} className="text-xs md:text-sm">
+          <Button variant="outline" onClick={() => navigate('/admin/users')} className="text-xs md:text-sm">
             <Users className="mr-2 h-4 w-4" />
             <span className="hidden sm:inline">Օգտատերեր</span>
           </Button>
-          <Button variant="outline" onClick={() => navigate('/organizations')} className="text-xs md:text-sm">
+          <Button variant="outline" onClick={() => navigate('/admin/organizations')} className="text-xs md:text-sm">
             <Building className="mr-2 h-4 w-4" />
             <span className="hidden sm:inline">Կազմակերպություններ</span>
           </Button>
-          <Button variant="outline" onClick={() => navigate('/courses')} className="text-xs md:text-sm">
+          <Button variant="outline" onClick={() => navigate('/admin/courses')} className="text-xs md:text-sm">
             <BookOpen className="mr-2 h-4 w-4" />
             <span className="hidden sm:inline">Կուրսեր</span>
           </Button>
-          <Button variant="outline" onClick={() => navigate('/specializations')} className="text-xs md:text-sm">
+          <Button variant="outline" onClick={() => navigate('/admin/specializations')} className="text-xs md:text-sm">
             <GraduationCap className="mr-2 h-4 w-4" />
             <span className="hidden sm:inline">Մասնագիտություններ</span>
           </Button>

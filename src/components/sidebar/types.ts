@@ -1,13 +1,12 @@
 
-import React from 'react';
+import { ReactNode } from 'react';
+import { UserRole } from '@/types/user';
 
 export interface SidebarMenuItemType {
   title: string;
-  icon: React.ReactNode;
+  icon: ReactNode;
   href: string;
-  label?: string;
-  path?: string;
-  roles: string[];
+  roles: UserRole[];
 }
 
 export interface SidebarMenuGroup {
