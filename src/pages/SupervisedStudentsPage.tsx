@@ -23,8 +23,13 @@ const SupervisedStudentsPage: React.FC = () => {
   const [showRejectDialog, setShowRejectDialog] = useState(false);
   const [rejectFeedback, setRejectFeedback] = useState('');
   
-  // Get all project reservations
-  const projectReservations = loadProjectReservations();
+  // Get all project reservations and convert to ProjectReservation type from types/project
+  const projectReservations = loadProjectReservations().map(res => ({
+    ...res,
+    userId: res.userId || res.studentId || '',
+    projectTitle: res.projectTitle || `Project #${res.projectId}`,
+    timestamp: res.timestamp || res.requestDate || '',
+  } as ProjectReservation));
   
   // Filter reservations for the current supervisor
   const pendingReservations = projectReservations.filter(
@@ -126,7 +131,7 @@ const SupervisedStudentsPage: React.FC = () => {
           <h2 className="text-xl font-semibold mb-4">Սպասող հարցումներ</h2>
           
           <SupervisorRequestsTab 
-            pendingReservations={filteredPendingReservations as ProjectReservation[]}
+            pendingReservations={filteredPendingReservations}
             onApprove={handleApprove}
             onReject={handleOpenRejectDialog}
           />
@@ -142,7 +147,7 @@ const SupervisedStudentsPage: React.FC = () => {
               description="Դուք դեռ չեք հաստատել որևէ նախագծի ղեկավարում։ Հաստատելուց հետո նախագծերը կհայտնվեն այստեղ։"
             />
           ) : (
-            <SupervisorProjectManagement reservations={filteredApprovedReservations as ProjectReservation[]} />
+            <SupervisorProjectManagement reservations={filteredApprovedReservations} />
           )}
         </TabsContent>
       </Tabs>

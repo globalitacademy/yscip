@@ -29,7 +29,7 @@ export const calculateProjectProgress = (tasks: Task[], timeline: TimelineEvent[
   // Count completed tasks
   if (tasks.length > 0) {
     totalItems += tasks.length;
-    completedItems += tasks.filter(task => task.status === 'done' || task.status === 'done').length;
+    completedItems += tasks.filter(task => task.status === 'done').length;
   }
   
   // Count completed timeline events
@@ -111,12 +111,12 @@ export const loadProjectReservations = (): ProjectReservation[] => {
       // Add compatibility fields if they don't exist
       return parsed.map((res: any) => ({
         ...res,
-        userId: res.userId || res.studentId,
+        userId: res.userId || res.studentId || '',
         projectTitle: res.projectTitle || `Project #${res.projectId}`,
-        timestamp: res.timestamp || res.requestDate,
-        studentId: res.studentId || res.userId,
+        timestamp: res.timestamp || res.requestDate || '',
+        studentId: res.studentId || res.userId || '',
         studentName: res.studentName || "Student",
-        requestDate: res.requestDate || res.timestamp,
+        requestDate: res.requestDate || res.timestamp || '',
         id: res.id || uuidv4()
       }));
     } catch (e) {
