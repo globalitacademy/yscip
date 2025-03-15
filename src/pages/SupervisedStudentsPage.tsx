@@ -11,7 +11,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription } from "@/components/ui/dialog";
 import { Textarea } from '@/components/ui/textarea';
 import { toast } from "@/components/ui/use-toast";
-import { CheckCircle, XCircle, Clock, Search, Filter, MessageSquare, Clipboard, FileText } from 'lucide-react';
+import { CheckCircle, XCircle, Clock, Search, MessageSquare, Clipboard } from 'lucide-react';
 import { useProject } from '@/contexts/ProjectContext';
 import { getUsersByRole } from '@/data/userRoles';
 import { loadProjectReservations } from '@/utils/projectUtils';
@@ -195,8 +195,8 @@ const SupervisedStudentsPage: React.FC = () => {
         </TabsList>
         
         {/* Search bar */}
-        <div className="mb-6 flex gap-4">
-          <div className="relative flex-1">
+        <div className="mb-6">
+          <div className="relative">
             <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
             <Input
               placeholder="Փնտրել ըստ նախագծի կամ ուսանողի..."

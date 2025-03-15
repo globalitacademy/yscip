@@ -22,7 +22,7 @@ const Header: React.FC<HeaderProps> = ({
   const getRoleNavigation = () => {
     if (!user) return null;
     
-    // All roles now only show the Admin Panel button
+    // All roles now show only the Admin Panel button
     return (
       <div className="flex items-center gap-2 md:gap-4">
         <Link to="/admin">
@@ -42,7 +42,6 @@ const Header: React.FC<HeaderProps> = ({
             <GraduationCap size={28} className="text-primary" />
             <div className="flex flex-col">
               <span className="text-xl font-bold text-primary">ՈՒԿՀ</span>
-              
             </div>
           </Link>
           

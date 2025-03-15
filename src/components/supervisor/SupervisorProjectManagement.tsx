@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Progress } from "@/components/ui/progress";
 import { Badge } from '@/components/ui/badge';
-import { FileText, ClipboardList, BarChart, Link as LinkIcon } from 'lucide-react';
+import { FileText, ClipboardList, Calendar } from 'lucide-react';
 import { ProjectReservation } from '@/types/project';
 import { getUsersByRole } from '@/data/userRoles';
 import { Link } from 'react-router-dom';
@@ -33,13 +33,13 @@ const SupervisorProjectManagement: React.FC<SupervisorProjectManagementProps> = 
         const progress = Math.floor(Math.random() * 100);
         
         return (
-          <Card key={`${reservation.projectId}-${reservation.userId}`}>
-            <CardHeader className="pb-2">
-              <CardTitle className="text-lg">{reservation.projectTitle}</CardTitle>
+          <Card key={`${reservation.projectId}-${reservation.userId}`} className="overflow-hidden border border-border hover:shadow-md transition-shadow">
+            <CardHeader className="pb-2 bg-card/5">
+              <CardTitle className="text-lg font-medium">{reservation.projectTitle}</CardTitle>
             </CardHeader>
-            <CardContent>
+            <CardContent className="pt-4">
               <div className="flex items-center mb-4">
-                <Avatar className="h-10 w-10 mr-3">
+                <Avatar className="h-10 w-10 mr-3 border border-primary/10">
                   <AvatarImage src={student?.avatar} alt={student?.name} />
                   <AvatarFallback>{student?.name?.substring(0, 2) || 'ՈՒ'}</AvatarFallback>
                 </Avatar>
@@ -58,24 +58,23 @@ const SupervisorProjectManagement: React.FC<SupervisorProjectManagementProps> = 
                   <Progress value={progress} className="h-2" />
                 </div>
                 
-                <div className="flex justify-between items-center">
-                  <div className="flex space-x-2">
-                    <Badge variant="outline" className="bg-blue-50 text-blue-700 border-blue-200">
-                      Ուսանող
-                    </Badge>
+                <div className="flex justify-between items-center text-sm">
+                  <Badge variant="outline" className="bg-blue-50 text-blue-700 border-blue-200">
+                    Ուսանող
+                  </Badge>
+                  <div className="flex items-center gap-1 text-muted-foreground">
+                    <Calendar size={14} />
+                    <span>{new Date(reservation.timestamp).toLocaleDateString()}</span>
                   </div>
-                  <p className="text-sm text-muted-foreground">
-                    Հաստատվել է {new Date(reservation.timestamp).toLocaleDateString()}
-                  </p>
                 </div>
                 
-                <div className="flex flex-wrap gap-2">
-                  <Button variant="outline" size="sm" asChild>
+                <div className="flex flex-wrap gap-2 pt-2">
+                  <Button variant="outline" size="sm" asChild className="w-full sm:w-auto">
                     <Link to={`/projects/${reservation.projectId}`}>
                       <FileText className="h-4 w-4 mr-1" /> Դիտել նախագիծը
                     </Link>
                   </Button>
-                  <Button variant="outline" size="sm" asChild>
+                  <Button variant="outline" size="sm" asChild className="w-full sm:w-auto">
                     <Link to={`/tasks`}>
                       <ClipboardList className="h-4 w-4 mr-1" /> Առաջադրանքներ
                     </Link>
