@@ -25,7 +25,7 @@ const Header: React.FC<HeaderProps> = ({
     // All roles including students now have the Admin Panel button
     return (
       <div className="flex items-center gap-2 md:gap-4">
-        <Link to={user.role === 'student' ? '/projects/manage' : '/admin'}>
+        <Link to={user.role === 'student' ? '/projects/manage' : '/admin/dashboard'}>
           <Button variant="outline" size="sm" className="gap-1">
             <LayoutDashboard size={16} />
             <span className="hidden md:inline">
