@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
@@ -52,7 +51,7 @@ const ProjectCard: React.FC<ProjectCardProps> = ({ project, className }) => {
       </div>
 
       <div className="p-6 flex-grow flex flex-col">
-        <div className="mb-4 flex justify-between items-start">
+        <div className="mb-2 flex justify-between items-start">
           <div className="space-y-1">
             <Badge variant="outline" className={cn("font-medium", complexityColor)}>
               {project.complexity}
@@ -61,23 +60,21 @@ const ProjectCard: React.FC<ProjectCardProps> = ({ project, className }) => {
               {project.title}
             </h3>
           </div>
-          
-          {/* Creator information with avatar */}
-          <div className="flex items-center mt-1">
-            <div className="flex flex-col items-end">
-              <span className="text-xs text-muted-foreground mb-1">
-                {creatorType === 'user' ? 'Հեղինակ' : 'Կազմակերպություն'}
-              </span>
-              <div className="flex items-center gap-2">
-                <span className="text-sm font-medium">{creatorName}</span>
-                <Avatar className="h-8 w-8 border border-border">
-                  <AvatarImage src={creatorAvatar} alt={creatorName} />
-                  <AvatarFallback>
-                    {creatorType === 'user' ? <User size={14} /> : <Building size={14} />}
-                  </AvatarFallback>
-                </Avatar>
-              </div>
-            </div>
+        </div>
+
+        {/* Creator information with oval shape - positioned between title and description */}
+        <div className="flex justify-end -mt-1 mb-3">
+          <div className="flex items-center gap-2 bg-muted/50 px-3 py-1.5 rounded-full border border-border">
+            <span className="text-xs text-muted-foreground">
+              {creatorType === 'user' ? 'Հեղինակ:' : 'Կազմակերպություն:'}
+            </span>
+            <span className="text-sm font-medium">{creatorName}</span>
+            <Avatar className="h-6 w-6 border border-border">
+              <AvatarImage src={creatorAvatar} alt={creatorName} />
+              <AvatarFallback>
+                {creatorType === 'user' ? <User size={12} /> : <Building size={12} />}
+              </AvatarFallback>
+            </Avatar>
           </div>
         </div>
 

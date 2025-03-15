@@ -64,25 +64,25 @@ const ProjectCard: React.FC<ProjectCardProps> = ({
             <CardTitle className="line-clamp-1 text-base sm:text-lg">{project.title}</CardTitle>
             <CardDescription>{project.category}</CardDescription>
           </div>
-          
-          {/* Creator avatar and name */}
-          <div className="flex items-center gap-2">
-            <div className="text-right">
-              <p className="text-xs text-muted-foreground">
-                {creatorType === 'user' ? 'Հեղինակ' : 'Կազմակերպություն'}
-              </p>
-              <p className="text-sm font-medium">{creatorName}</p>
-            </div>
-            <Avatar className="h-8 w-8 border border-border">
+        </div>
+      </CardHeader>
+      <CardContent className="p-4">
+        {/* Creator oval badge positioned between title and description */}
+        <div className="flex justify-end -mt-2 mb-3">
+          <div className="flex items-center gap-2 bg-muted/50 px-3 py-1.5 rounded-full border border-border">
+            <span className="text-xs text-muted-foreground">
+              {creatorType === 'user' ? 'Հեղինակ:' : 'Կազմակերպություն:'}
+            </span>
+            <span className="text-sm font-medium">{creatorName}</span>
+            <Avatar className="h-6 w-6 border border-border">
               <AvatarImage src={creatorAvatar} alt={creatorName} />
               <AvatarFallback>
-                {creatorType === 'user' ? <User size={14} /> : <Building size={14} />}
+                {creatorType === 'user' ? <User size={12} /> : <Building size={12} />}
               </AvatarFallback>
             </Avatar>
           </div>
         </div>
-      </CardHeader>
-      <CardContent className="p-4">
+        
         <p className="text-xs sm:text-sm text-gray-500 line-clamp-3 mb-4">{project.description}</p>
         <div className="flex flex-wrap gap-1">
           {project.techStack.slice(0, 3).map((tech, index) => (
