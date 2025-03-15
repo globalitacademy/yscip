@@ -1,8 +1,7 @@
-
 import React from 'react';
 import { 
   GraduationCap, Users, Briefcase, UserCog, ClipboardCheck, 
-  BookOpen, GaugeCircle, MessageSquare, UserPlus
+  BookOpen, GaugeCircle, MessageSquare, UserPlus, FileSpreadsheet
 } from 'lucide-react';
 import { FadeIn, SlideUp } from '@/components/LocalTransitions';
 
@@ -15,7 +14,8 @@ const ICON_BACKGROUNDS = {
   course: "bg-blue-100",
   grading: "bg-green-100",
   communication: "bg-red-100",
-  admissions: "bg-pink-100"
+  admissions: "bg-pink-100",
+  exams: "bg-indigo-100"
 };
 
 const ICON_COLORS = {
@@ -27,7 +27,8 @@ const ICON_COLORS = {
   course: "text-blue-500",
   grading: "text-green-500",
   communication: "text-red-500",
-  admissions: "text-pink-500"
+  admissions: "text-pink-500",
+  exams: "text-indigo-500"
 };
 
 const FeatureCard = ({ 
@@ -121,6 +122,13 @@ const FeaturesSection = () => {
       description: "Կառավարեք դիմումների ընդունումը, փաստաթղթերի ստուգումն և ընդունելության գործընթացը։",
       type: "admissions" as const,
       delay: "delay-400"
+    },
+    {
+      icon: FileSpreadsheet,
+      title: "Քննությունների կազմակերպում",
+      description: "Պլանավորեք, կազմակերպեք և անցկացրեք առցանց և լսարանային քննություններ։",
+      type: "exams" as const,
+      delay: "delay-500"
     }
   ];
 
@@ -152,7 +160,7 @@ const FeaturesSection = () => {
           ))}
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-6">
           {systemFeatures.map((feature, index) => (
             <FeatureCard 
               key={index}
