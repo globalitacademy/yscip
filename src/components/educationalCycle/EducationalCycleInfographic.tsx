@@ -1,7 +1,8 @@
 
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { LogIn, BookOpen, ClipboardCheck, GraduationCap, FileCode } from 'lucide-react';
 import { FadeIn, SlideUp } from '@/components/LocalTransitions';
+import { Course } from '@/components/courses/types';
 
 const stageColors = {
   admission: {
@@ -68,6 +69,21 @@ const CycleStage: React.FC<CycleStageProps> = ({
 );
 
 const EducationalCycleInfographic: React.FC = () => {
+  const [courses, setCourses] = useState<Course[]>([]);
+  
+  useEffect(() => {
+    // Load courses from localStorage
+    const storedCourses = localStorage.getItem('courses');
+    if (storedCourses) {
+      try {
+        const parsedCourses = JSON.parse(storedCourses);
+        setCourses(parsedCourses);
+      } catch (e) {
+        console.error('Error parsing stored courses:', e);
+      }
+    }
+  }, []);
+
   const stages = [
     {
       icon: LogIn,
@@ -145,6 +161,39 @@ const EducationalCycleInfographic: React.FC = () => {
             />
           ))}
         </div>
+        
+        {/* Courses section added within educational cycle */}
+        {courses.length > 0 && (
+          <div className="mt-24">
+            <FadeIn delay="delay-100">
+              <h2 className="text-3xl font-bold mb-4 text-center">
+                Մեր կուրսերը
+              </h2>
+            </FadeIn>
+            
+            <FadeIn delay="delay-200">
+              <p className="text-muted-foreground text-center max-w-2xl mx-auto mb-12">
+                Տեսեք մեր առաջարկած կրթական ծրագրերը ուսումնական ցիկլի շրջանակներում
+              </p>
+            </FadeIn>
+
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              {courses.map((course) => (
+                <div key={course.id} className="bg-white border rounded-lg shadow-sm p-6 hover:shadow-md transition-shadow">
+                  <h3 className="text-xl font-semibold mb-2">{course.name}</h3>
+                  <p className="text-sm text-muted-foreground mb-4">{course.description}</p>
+                  <div className="flex items-center text-sm text-muted-foreground">
+                    <ClipboardCheck className="w-4 h-4 mr-1" />
+                    <span>{course.modules.length} մոդուլ</span>
+                    <span className="mx-2">•</span>
+                    <Clock className="w-4 h-4 mr-1" />
+                    <span>{course.duration}</span>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
       </div>
     </section>
   );
