@@ -8,6 +8,12 @@ import ProjectEditDialog from './projects/ProjectEditDialog';
 import ProjectSearch from './projects/ProjectSearch';
 import ProjectEmptyState from './projects/ProjectEmptyState';
 import { deleteProject, changeProjectImage, saveEditedProject, filterProjects } from './projects/ProjectUtils';
+import { Button } from '@/components/ui/button';
+import { Plus } from 'lucide-react';
+import ProjectCreation from './ProjectCreation';
+import { Dialog, DialogContent } from '@/components/ui/dialog';
+import { useProjectPermissions } from '@/hooks/useProjectPermissions';
+import { useAuth } from '@/contexts/AuthContext';
 
 const ProjectManagement: React.FC = () => {
   const [projects, setProjects] = useState(projectThemes);
@@ -16,8 +22,12 @@ const ProjectManagement: React.FC = () => {
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [isImageDialogOpen, setIsImageDialogOpen] = useState(false);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
+  const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
   const [newImageUrl, setNewImageUrl] = useState('');
   const [editedProject, setEditedProject] = useState<Partial<ProjectTheme>>({});
+  
+  const { user } = useAuth();
+  const permissions = useProjectPermissions(user?.role);
   
   // Get filtered projects
   const filteredProjects = filterProjects(projects, searchQuery);
@@ -72,10 +82,28 @@ const ProjectManagement: React.FC = () => {
     setIsDeleteDialogOpen(true);
   };
 
+  // Handle project creation
+  const handleProjectCreated = (project: ProjectTheme) => {
+    setProjects((prevProjects) => [project, ...prevProjects]);
+    setIsCreateDialogOpen(false);
+  };
+
   return (
     <div className="space-y-4">
-      {/* Search and filter header */}
-      <ProjectSearch searchQuery={searchQuery} onSearchChange={setSearchQuery} />
+      {/* Header with search and add button */}
+      <div className="flex flex-col sm:flex-row justify-between gap-4 items-start sm:items-center">
+        <ProjectSearch searchQuery={searchQuery} onSearchChange={setSearchQuery} />
+        
+        {permissions.canCreateProjects && (
+          <Button 
+            onClick={() => setIsCreateDialogOpen(true)} 
+            className="w-full sm:w-auto"
+          >
+            <Plus className="h-4 w-4 mr-2" />
+            Նոր նախագիծ
+          </Button>
+        )}
+      </div>
 
       {/* Project grid */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
@@ -118,6 +146,13 @@ const ProjectManagement: React.FC = () => {
         setEditedProject={setEditedProject}
         onSave={handleSaveEdit}
       />
+
+      {/* Project Creation Dialog */}
+      <Dialog open={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen}>
+        <DialogContent className="max-w-4xl p-0 overflow-y-auto max-h-screen">
+          <ProjectCreation onProjectCreated={handleProjectCreated} />
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
