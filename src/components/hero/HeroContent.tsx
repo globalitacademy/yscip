@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { ChevronDown } from 'lucide-react';
 import { FadeIn, SlideDown, SlideUp } from '../LocalTransitions';
@@ -20,7 +19,8 @@ const HeroContent: React.FC<HeroContentProps> = ({
           <span className="relative inline-block bg-clip-text text-transparent bg-gradient-to-r from-foreground via-foreground/90 to-foreground/70 text-4xl font-semibold">Սկսիր մասնագիտական ուղիդ</span>
           <br />
           <span className="relative inline-block mt-2">
-            <span className="relative z-10 bg-clip-text text-transparent bg-gradient-to-r from-primary via-primary/90 to-primary/70">Ընտրիր ՔՈ նախագիծը</span>
+            <span className="relative z-10 bg-clip-text text-transparent bg-gradient-to-r from-primary via-primary/90 to-primary/70">Ուսուցում առանց 
+սահմանների</span>
             <span className="absolute bottom-1 left-0 w-full h-4 bg-primary/20 rounded-full -z-10 blur-[2px] transform skew-x-12"></span>
           </span>
         </h1>
