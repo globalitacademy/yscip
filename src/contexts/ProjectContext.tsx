@@ -2,21 +2,20 @@ import React, { createContext, useContext, useState, useEffect } from 'react';
 import { v4 as uuidv4 } from 'uuid';
 import { ProjectTheme, Task, TimelineEvent } from '@/data/projectThemes';
 import { useAuth } from '@/contexts/AuthContext';
-import { 
-  ProjectContextType, 
-  ProjectProviderProps, 
-  ProjectReservation 
-} from '@/types/project';
+import { ProjectContextType, ProjectProviderProps } from '@/types/project';
 import { useProjectPermissions } from '@/hooks/useProjectPermissions';
 import { 
   calculateProjectProgress,
+  generateSampleTimeline,
+  generateSampleTasks
+} from '@/utils/projectProgressUtils';
+import {
+  ProjectReservation,
   loadProjectReservations,
   isProjectReservedByUser,
   saveProjectReservation,
-  updateReservationStatus,
-  generateSampleTimeline,
-  generateSampleTasks
-} from '@/utils/projectUtils';
+  updateReservationStatus
+} from '@/utils/reservationUtils';
 
 const ProjectContext = createContext<ProjectContextType | undefined>(undefined);
 
@@ -50,7 +49,7 @@ export const ProjectProvider: React.FC<ProjectProviderProps> = ({
   // Load project reservations from localStorage
   useEffect(() => {
     const loadedReservations = loadProjectReservations();
-    setProjectReservationsState(loadedReservations as any);
+    setProjectReservationsState(loadedReservations);
     
     // Check if current project is reserved by current user
     if (projectId && user) {
@@ -67,7 +66,6 @@ export const ProjectProvider: React.FC<ProjectProviderProps> = ({
     }
   }, [initialProject]);
 
-  // Add sample timeline events for demo
   useEffect(() => {
     if (timeline.length === 0 && project) {
       const demoTimeline = generateSampleTimeline();
@@ -75,7 +73,6 @@ export const ProjectProvider: React.FC<ProjectProviderProps> = ({
     }
   }, [timeline.length, project]);
 
-  // Add sample tasks for demo
   useEffect(() => {
     if (tasks.length === 0 && project && user) {
       const demoTasks = generateSampleTasks(user.id);

@@ -2,7 +2,7 @@
 import { useState } from 'react';
 import { useProject } from '@/contexts/ProjectContext';
 import { useAuth } from '@/contexts/AuthContext';
-import { ProjectReservation } from '@/types/project';
+import { ProjectReservation } from '@/utils/reservationUtils';
 import { toast } from '@/components/ui/use-toast';
 
 export const useReservationLogic = () => {
@@ -46,8 +46,8 @@ export const useReservationLogic = () => {
     openSupervisorDialog();
   };
 
-  const handleRejectOpen = (projectId: string) => {
-    setRejectProjectId(projectId);
+  const handleRejectOpen = (reservationId: string) => {
+    setRejectProjectId(reservationId);
     setRejectFeedback("");
   };
 

@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import AdminLayout from '@/components/AdminLayout';
@@ -8,8 +7,7 @@ import { Badge } from '@/components/ui/badge';
 import { toast } from "@/components/ui/use-toast";
 import { MessageSquare, Search, Clipboard } from 'lucide-react';
 import { useProject } from '@/contexts/ProjectContext';
-import { loadProjectReservations } from '@/utils/projectUtils';
-import { ProjectReservation } from '@/types/project'; // Use from types/project
+import { loadProjectReservations, ProjectReservation } from '@/utils/reservationUtils';
 import SupervisorProjectManagement from '@/components/supervisor/SupervisorProjectManagement';
 import SupervisorRequestsTab from '@/components/supervisor/SupervisorRequestsTab';
 import SupervisorRejectDialog from '@/components/supervisor/SupervisorRejectDialog';
@@ -23,15 +21,8 @@ const SupervisedStudentsPage: React.FC = () => {
   const [showRejectDialog, setShowRejectDialog] = useState(false);
   const [rejectFeedback, setRejectFeedback] = useState('');
   
-  // Get all project reservations and convert to ProjectReservation type from types/project
-  const projectReservations = loadProjectReservations().map(res => ({
-    ...res,
-    userId: res.userId || res.studentId || '',
-    projectTitle: res.projectTitle || `Project #${res.projectId}`,
-    timestamp: res.timestamp || res.requestDate || '',
-  } as ProjectReservation));
+  const projectReservations = loadProjectReservations();
   
-  // Filter reservations for the current supervisor
   const pendingReservations = projectReservations.filter(
     res => res.supervisorId === user?.id && res.status === 'pending'
   );
@@ -40,7 +31,6 @@ const SupervisedStudentsPage: React.FC = () => {
     res => res.supervisorId === user?.id && res.status === 'approved'
   );
   
-  // Filter reservations based on search term
   const filteredPendingReservations = pendingReservations.filter(res => 
     (res.projectTitle || `Project #${res.projectId}`).toLowerCase().includes(searchTerm.toLowerCase())
   );
@@ -49,7 +39,6 @@ const SupervisedStudentsPage: React.FC = () => {
     (res.projectTitle || `Project #${res.projectId}`).toLowerCase().includes(searchTerm.toLowerCase())
   );
   
-  // Handle approval of a reservation
   const handleApprove = (reservation: ProjectReservation) => {
     approveReservation(reservation.id);
     toast({
@@ -58,13 +47,11 @@ const SupervisedStudentsPage: React.FC = () => {
     });
   };
   
-  // Open reject dialog
   const handleOpenRejectDialog = (reservation: ProjectReservation) => {
     setSelectedReservation(reservation);
     setShowRejectDialog(true);
   };
   
-  // Handle rejection of a reservation
   const handleReject = () => {
     if (selectedReservation && rejectFeedback) {
       rejectReservation(selectedReservation.id, rejectFeedback);
@@ -78,7 +65,6 @@ const SupervisedStudentsPage: React.FC = () => {
     }
   };
   
-  // If user is not a supervisor, show error message
   if (!user || (user.role !== 'supervisor' && user.role !== 'project_manager')) {
     return (
       <AdminLayout pageTitle="Ուսանողների ղեկավարում">
@@ -114,7 +100,6 @@ const SupervisedStudentsPage: React.FC = () => {
           </TabsTrigger>
         </TabsList>
         
-        {/* Search bar */}
         <div className="mb-6">
           <div className="relative">
             <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
@@ -152,7 +137,6 @@ const SupervisedStudentsPage: React.FC = () => {
         </TabsContent>
       </Tabs>
       
-      {/* Reject Dialog */}
       <SupervisorRejectDialog 
         open={showRejectDialog}
         onOpenChange={setShowRejectDialog}

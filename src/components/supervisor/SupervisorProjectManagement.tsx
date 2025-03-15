@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from '@/components/ui/button';
@@ -6,10 +5,10 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Progress } from "@/components/ui/progress";
 import { Badge } from '@/components/ui/badge';
 import { FileText, ClipboardList, Calendar } from 'lucide-react';
-import { ProjectReservation } from '@/utils/projectUtils'; // Use from projectUtils to match types
+import { ProjectReservation } from '@/utils/reservationUtils'; // Updated import path
 import { getUsersByRole } from '@/data/userRoles';
 import { Link } from 'react-router-dom';
-import { calculateProjectProgress } from '@/utils/projectUtils';
+import { calculateProjectProgress } from '@/utils/projectProgressUtils';
 
 interface SupervisorProjectManagementProps {
   reservations: ProjectReservation[];
