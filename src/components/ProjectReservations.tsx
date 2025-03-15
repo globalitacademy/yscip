@@ -31,7 +31,7 @@ const ProjectReservations: React.FC = () => {
   const [selectedSupervisor, setSelectedSupervisor] = useState<string>("");
   const [selectedInstructor, setSelectedInstructor] = useState<string>("");
   const [rejectFeedback, setRejectFeedback] = useState("");
-  const [rejectProjectId, setRejectProjectId] = useState<number | null>(null);
+  const [rejectProjectId, setRejectProjectId] = useState<string | null>(null);
   
   // Get supervisors and instructors for selection
   const supervisors = getUsersByRole('supervisor').concat(getUsersByRole('project_manager'));
@@ -63,7 +63,7 @@ const ProjectReservations: React.FC = () => {
     openSupervisorDialog();
   };
 
-  const handleRejectOpen = (projectId: number) => {
+  const handleRejectOpen = (projectId: string) => {
     setRejectProjectId(projectId);
     setRejectFeedback("");
   };
@@ -181,7 +181,7 @@ const ProjectReservations: React.FC = () => {
                       <Button 
                         variant="outline" 
                         size="sm"
-                        onClick={() => approveReservation(reservation.projectId)}
+                        onClick={() => approveReservation(reservation.id)}
                       >
                         Հաստատել
                       </Button>
@@ -190,7 +190,7 @@ const ProjectReservations: React.FC = () => {
                           <Button 
                             variant="destructive" 
                             size="sm"
-                            onClick={() => handleRejectOpen(reservation.projectId)}
+                            onClick={() => handleRejectOpen(reservation.id)}
                           >
                             Մերժել
                           </Button>

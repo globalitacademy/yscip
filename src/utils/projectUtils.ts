@@ -1,4 +1,3 @@
-
 import { v4 as uuidv4 } from 'uuid';
 import { ProjectTheme, Task, TimelineEvent } from '@/data/projectThemes';
 import { getUsersByRole } from '@/data/userRoles';
@@ -13,9 +12,9 @@ export interface ProjectReservation {
   status: 'pending' | 'approved' | 'rejected';
   requestDate: string;
   responseDate?: string;
-  userId: string;  // Changed from optional to required
-  projectTitle: string; // Changed from optional to required
-  timestamp: string;    // Changed from optional to required
+  userId: string;  // Required field
+  projectTitle: string; // Required field
+  timestamp: string;    // Required field
   feedback?: string;
   instructorId?: string;
 }
@@ -30,7 +29,7 @@ export const calculateProjectProgress = (tasks: Task[], timeline: TimelineEvent[
   // Count completed tasks
   if (tasks.length > 0) {
     totalItems += tasks.length;
-    completedItems += tasks.filter(task => task.status === 'completed' || task.status === 'done').length;
+    completedItems += tasks.filter(task => task.status === 'done' || task.status === 'done').length;
   }
   
   // Count completed timeline events
@@ -83,14 +82,14 @@ export const generateSampleTasks = (userId: string): Task[] => {
       id: uuidv4(),
       title: 'Տեխնիկական առաջադրանքի կազմում',
       description: 'Նախագծի տեխնիկական առաջադրանքի մշակում և կազմում',
-      status: 'done', // Changed from 'completed' to 'done'
+      status: 'done',
       assignedTo: userId
     },
     {
       id: uuidv4(),
       title: 'Ճարտարապետության մշակում',
       description: 'Նախագծի ճարտարապետության նախագծում և սխեմատիկ պատկերում',
-      status: 'in-progress', // Changed from 'in_progress' to 'in-progress'
+      status: 'in-progress',
       assignedTo: userId
     },
     {

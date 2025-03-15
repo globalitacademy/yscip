@@ -126,7 +126,7 @@ const SupervisedStudentsPage: React.FC = () => {
           <h2 className="text-xl font-semibold mb-4">Սպասող հարցումներ</h2>
           
           <SupervisorRequestsTab 
-            pendingReservations={filteredPendingReservations as any}
+            pendingReservations={filteredPendingReservations as ProjectReservation[]}
             onApprove={handleApprove}
             onReject={handleOpenRejectDialog}
           />
@@ -142,7 +142,7 @@ const SupervisedStudentsPage: React.FC = () => {
               description="Դուք դեռ չեք հաստատել որևէ նախագծի ղեկավարում։ Հաստատելուց հետո նախագծերը կհայտնվեն այստեղ։"
             />
           ) : (
-            <SupervisorProjectManagement reservations={filteredApprovedReservations as any} />
+            <SupervisorProjectManagement reservations={filteredApprovedReservations as ProjectReservation[]} />
           )}
         </TabsContent>
       </Tabs>

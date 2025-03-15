@@ -1,4 +1,3 @@
-
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { v4 as uuidv4 } from 'uuid';
 import { ProjectTheme, Task, TimelineEvent } from '@/data/projectThemes';
@@ -79,9 +78,7 @@ export const ProjectProvider: React.FC<ProjectProviderProps> = ({
   // Add sample tasks for demo
   useEffect(() => {
     if (tasks.length === 0 && project && user) {
-      const demoTasks =
-
- generateSampleTasks(user.id);
+      const demoTasks = generateSampleTasks(user.id);
       setTasks(demoTasks);
     }
   }, [tasks.length, project, user]);
@@ -164,25 +161,25 @@ export const ProjectProvider: React.FC<ProjectProviderProps> = ({
     // Update local state
     if (success) {
       setIsReserved(true);
-      setProjectReservations(loadProjectReservations());
+      setProjectReservationsState(loadProjectReservations());
       setShowSupervisorDialog(false);
     }
   };
 
   const approveReservation = (reservationId: string) => {
     const updatedReservations = updateReservationStatus(reservationId, 'approved');
-    setProjectReservations(updatedReservations);
+    setProjectReservationsState(updatedReservations);
   };
 
   const rejectReservation = (reservationId: string, feedback: string) => {
     const updatedReservations = updateReservationStatus(reservationId, 'rejected', feedback);
-    setProjectReservations(updatedReservations);
+    setProjectReservationsState(updatedReservations);
   };
 
   const getReservationStatus = (): 'pending' | 'approved' | 'rejected' | null => {
     if (!projectId || !user) return null;
     
-    const reservation = projectReservations.find(
+    const reservation = projectReservationsState.find(
       res => res.projectId === projectId && (res.userId === user.id || res.studentId === user.id)
     );
     
