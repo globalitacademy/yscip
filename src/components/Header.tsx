@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { cn } from '@/lib/utils';
@@ -27,12 +28,6 @@ const Header: React.FC<HeaderProps> = ({
               <Button variant="outline" size="sm" className="gap-1">
                 <LayoutDashboard size={16} />
                 <span className="hidden md:inline">Ադմին պանել</span>
-              </Button>
-            </Link>
-            <Link to="/organizations">
-              <Button variant="outline" size="sm" className="gap-1">
-                <Building size={16} />
-                <span className="hidden md:inline">Կազմակերպություններ</span>
               </Button>
             </Link>
           </div>;
