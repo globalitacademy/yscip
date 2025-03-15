@@ -51,11 +51,11 @@ const FeatureCard = ({
   delay?: string;
 }) => (
   <SlideUp delay={delay}>
-    <div className="bg-white rounded-lg p-6 shadow-sm h-full flex flex-col items-center text-center">
-      <div className={`p-3 rounded-lg ${ICON_BACKGROUNDS[type]} ${ICON_COLORS[type]} mb-4`}>
+    <div className="bg-white rounded-lg p-6 shadow-sm h-full flex flex-col items-center text-center transition-all duration-300 hover:shadow-md hover:-translate-y-2 hover:bg-gray-50 group">
+      <div className={`p-3 rounded-lg ${ICON_BACKGROUNDS[type]} ${ICON_COLORS[type]} mb-4 transition-all duration-300 group-hover:scale-110`}>
         <Icon size={24} />
       </div>
-      <h3 className="text-lg font-medium mb-2">{title}</h3>
+      <h3 className="text-lg font-medium mb-2 transition-colors duration-300 group-hover:text-primary">{title}</h3>
       <p className="text-sm text-muted-foreground">{description}</p>
     </div>
   </SlideUp>
