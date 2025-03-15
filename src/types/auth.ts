@@ -8,6 +8,14 @@ export interface PendingUser extends Partial<User> {
   registrationApproved?: boolean;
 }
 
+export interface DemoAccount {
+  id: string;
+  name: string;
+  email: string;
+  role: UserRole;
+  password: string;
+}
+
 export interface AuthContextType {
   user: User | null;
   isAuthenticated: boolean;
@@ -21,4 +29,7 @@ export interface AuthContextType {
   approveRegistration: (userId: string) => Promise<boolean>;
   getPendingUsers: () => PendingUser[];
   resetAdminAccount: () => Promise<boolean>;
+  demoAccounts?: DemoAccount[];
+  manageDemoAccount: (account: DemoAccount, action: 'add' | 'update' | 'delete') => Promise<boolean>;
+  registerRealAccount: (userData: Partial<User> & { password: string }) => Promise<{success: boolean, user?: User}>;
 }

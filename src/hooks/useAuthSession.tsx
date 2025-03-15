@@ -1,228 +1,100 @@
 
 import { useState, useEffect } from 'react';
-import { User, UserRole } from '@/types/user';
+import { User } from '@/types/user';
+import { PendingUser, DemoAccount } from '@/types/auth';
+import { mockUsers } from '@/data/mockUsers';
 import { supabase } from '@/integrations/supabase/client';
-import { PendingUser } from '@/types/auth';
-import { toast } from 'sonner';
 
-interface UseAuthSessionResult {
-  user: User | null;
-  isAuthenticated: boolean;
-  pendingUsers: PendingUser[];
-  setUser: (user: User | null) => void;
-  setIsAuthenticated: (value: boolean) => void;
-  setPendingUsers: React.Dispatch<React.SetStateAction<PendingUser[]>>;
-  isLoading: boolean;
-}
-
-export const useAuthSession = (): UseAuthSessionResult => {
+export const useAuthSession = () => {
   const [user, setUser] = useState<User | null>(null);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [pendingUsers, setPendingUsers] = useState<PendingUser[]>([]);
-  const [sessionChecked, setSessionChecked] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
-
-  // Function to map database user to application user model
-  const mapDatabaseUserToUserModel = (userData: any): User => {
-    return {
-      id: userData.id,
-      name: userData.name,
-      email: userData.email,
-      role: userData.role as UserRole,
-      avatar: userData.avatar,
-      department: userData.department,
-      registrationApproved: userData.registration_approved,
-      organization: userData.organization,
-      group: userData.group_name // Note: mapping from group_name to group
-    };
-  };
+  const [demoAccounts, setDemoAccounts] = useState<DemoAccount[]>([]);
 
   useEffect(() => {
-    // Initial session check
-    const initSession = async () => {
+    // Check if there's a persisted session
+    const checkAuth = async () => {
+      setIsLoading(true);
       try {
-        console.log('Checking initial session...');
-        setIsLoading(true);
+        // Try to get session from Supabase
+        const { data: { session }, error } = await supabase.auth.getSession();
         
-        // First, check localStorage for a stored user (for compatibility with previous approach)
-        const storedUser = localStorage.getItem('currentUser');
-        if (storedUser) {
-          console.log('Found stored user');
-          const parsedUser = JSON.parse(storedUser);
-          
-          // Check if this is the admin user first - handle admin separately
-          if (parsedUser.email === 'gitedu@bk.ru') {
-            console.log('Admin user found in localStorage');
-            setUser(parsedUser);
-            setIsAuthenticated(true);
-            setSessionChecked(true);
-            setIsLoading(false);
-            return;
-          }
-          
-          // For non-admin users, verify with Supabase if possible
-          try {
-            const { data: { session } } = await supabase.auth.getSession();
-            if (session?.user) {
-              console.log('Supabase session exists, using that instead');
-              // Continue with Supabase session below
-            } else {
-              // Just use the stored user if no Supabase session exists
-              console.log('No Supabase session, using stored user');
-              setUser(parsedUser);
-              setIsAuthenticated(true);
-              setSessionChecked(true);
-              setIsLoading(false);
-              return;
-            }
-          } catch (error) {
-            console.log('Error checking Supabase session, falling back to stored user');
-            setUser(parsedUser);
-            setIsAuthenticated(true);
-            setSessionChecked(true);
-            setIsLoading(false);
-            return;
-          }
-        }
-        
-        // Check Supabase session
-        const { data: { session } } = await supabase.auth.getSession();
-        if (session?.user) {
-          console.log('Session found, fetching user data');
-          
-          try {
-            const { data: userData, error } = await supabase
-              .from('users')
-              .select('*')
-              .eq('id', session.user.id)
-              .single();
-              
-            if (error) {
-              console.error('Error fetching user data:', error);
-              setSessionChecked(true);
-              setIsLoading(false);
-              return;
-            }
-            
-            if (userData) {
-              const loggedInUser = mapDatabaseUserToUserModel(userData);
-              
-              if (!userData.registration_approved) {
-                console.log('User not approved yet:', loggedInUser.email);
-                toast.error('Ձեր հաշիվը սպասում է ադմինիստրատորի հաստատման։');
-                await supabase.auth.signOut();
-                setSessionChecked(true);
-                setIsLoading(false);
-                return;
-              }
-              
-              console.log('User authenticated:', loggedInUser.email, loggedInUser.role);
-              setUser(loggedInUser);
-              setIsAuthenticated(true);
-              localStorage.setItem('currentUser', JSON.stringify(loggedInUser));
-            }
-          } catch (error) {
-            console.error('Error fetching user data from Supabase:', error);
-          }
-        }
-        
-        setSessionChecked(true);
-        setIsLoading(false);
-      } catch (error) {
-        console.error('Error in initSession:', error);
-        setSessionChecked(true);
-        setIsLoading(false);
-      }
-    };
-
-    initSession();
-    
-    // Set up real-time auth state changes
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
-      console.log('Auth state changed:', event, session);
-      
-      // Handle direct admin login specially - don't disrupt it
-      const storedUser = localStorage.getItem('currentUser');
-      if (storedUser) {
-        const parsedUser = JSON.parse(storedUser);
-        if (parsedUser.email === 'gitedu@bk.ru' && isAuthenticated) {
-          console.log('Admin already logged in, ignoring auth state change');
-          return;
-        }
-      }
-      
-      if (event === 'SIGNED_IN' && session) {
-        try {
-          const { data: userData, error } = await supabase
+        if (session) {
+          // Found a Supabase session
+          const { data: userData, error: userError } = await supabase
             .from('users')
             .select('*')
             .eq('id', session.user.id)
             .single();
           
-          if (error) throw error;
-          
-          if (userData) {
-            const loggedInUser = mapDatabaseUserToUserModel(userData);
+          if (userData && !userError) {
+            // Map to our User type
+            const authUser: User = {
+              id: userData.id,
+              name: userData.name,
+              email: userData.email,
+              role: userData.role,
+              department: userData.department || '',
+              avatar: userData.avatar || `https://api.dicebear.com/7.x/avataaars/svg?seed=${userData.id}`,
+              course: userData.course,
+              group: userData.group_name,
+              organization: userData.organization,
+              registrationApproved: userData.registration_approved
+            };
             
-            if (!userData.registration_approved) {
-              console.log('User not approved yet:', loggedInUser.email);
-              toast.error('Ձեր հաշիվը սպասում է ադմինիստրատորի հաստատման։');
-              await supabase.auth.signOut();
-              return;
-            }
-            
-            console.log('User signed in:', loggedInUser.email, loggedInUser.role);
-            setUser(loggedInUser);
+            setUser(authUser);
             setIsAuthenticated(true);
-            localStorage.setItem('currentUser', JSON.stringify(loggedInUser));
+          } else if (error) {
+            console.error('Error fetching user data:', userError);
           }
-        } catch (error) {
-          console.error('Error fetching user profile:', error);
-          toast.error('Սխալ է տեղի ունեցել օգտատիրոջ տվյալները բեռնելիս');
-        }
-      } else if (event === 'SIGNED_OUT') {
-        // Don't sign out admin user if this is just a Supabase session timeout
-        const storedUser = localStorage.getItem('currentUser');
-        if (storedUser) {
-          const parsedUser = JSON.parse(storedUser);
-          if (parsedUser.email === 'gitedu@bk.ru') {
-            console.log('Admin user sign out prevented - keeping admin session active');
-            return;
+        } else {
+          // Check local storage
+          const storedUser = localStorage.getItem('currentUser');
+          if (storedUser) {
+            const parsedUser = JSON.parse(storedUser);
+            setUser(parsedUser);
+            setIsAuthenticated(true);
           }
         }
-        
-        console.log('User signed out');
-        setUser(null);
-        setIsAuthenticated(false);
-        localStorage.removeItem('currentUser');
+
+        // Load demo accounts from localStorage
+        const storedDemoAccounts = localStorage.getItem('demoAccounts');
+        if (storedDemoAccounts) {
+          setDemoAccounts(JSON.parse(storedDemoAccounts));
+        } else {
+          // Initialize with default demo accounts
+          const defaultDemoAccounts: DemoAccount[] = mockUsers.map(user => ({
+            id: user.id,
+            name: user.name,
+            email: user.email,
+            role: user.role,
+            password: 'password123'
+          }));
+          
+          setDemoAccounts(defaultDemoAccounts);
+          localStorage.setItem('demoAccounts', JSON.stringify(defaultDemoAccounts));
+        }
+
+      } catch (error) {
+        console.error('Error checking authentication:', error);
+      } finally {
+        setIsLoading(false);
       }
-    });
-
-    // Load pending users from localStorage
-    const storedPendingUsers = localStorage.getItem('pendingUsers');
-    if (storedPendingUsers) {
-      setPendingUsers(JSON.parse(storedPendingUsers));
-    }
-
-    return () => {
-      subscription.unsubscribe();
     };
-  }, [isAuthenticated]); // Added isAuthenticated as a dependency to trigger session checks when auth state changes
 
-  // Save pendingUsers to localStorage when it changes
-  useEffect(() => {
-    if (pendingUsers.length > 0) {
-      localStorage.setItem('pendingUsers', JSON.stringify(pendingUsers));
-    }
-  }, [pendingUsers]);
+    checkAuth();
+  }, []);
 
   return {
     user,
     isAuthenticated,
     pendingUsers,
+    isLoading,
+    demoAccounts,
     setUser,
     setIsAuthenticated,
     setPendingUsers,
-    isLoading
+    setDemoAccounts
   };
 };
