@@ -64,12 +64,20 @@ const ProjectCard: React.FC<ProjectCardProps> = ({ project, className }) => {
           
           {/* Creator information with avatar */}
           <div className="flex items-center mt-1">
-            <Avatar className="h-8 w-8 border border-border">
-              <AvatarImage src={creatorAvatar} alt={creatorName} />
-              <AvatarFallback>
-                {creatorType === 'user' ? <User size={14} /> : <Building size={14} />}
-              </AvatarFallback>
-            </Avatar>
+            <div className="flex flex-col items-end">
+              <span className="text-xs text-muted-foreground mb-1">
+                {creatorType === 'user' ? 'Հեղինակ' : 'Կազմակերպություն'}
+              </span>
+              <div className="flex items-center gap-2">
+                <span className="text-sm font-medium">{creatorName}</span>
+                <Avatar className="h-8 w-8 border border-border">
+                  <AvatarImage src={creatorAvatar} alt={creatorName} />
+                  <AvatarFallback>
+                    {creatorType === 'user' ? <User size={14} /> : <Building size={14} />}
+                  </AvatarFallback>
+                </Avatar>
+              </div>
+            </div>
           </div>
         </div>
 
@@ -122,14 +130,7 @@ const ProjectCard: React.FC<ProjectCardProps> = ({ project, className }) => {
         </div>
 
         <div className="mt-6 pt-4 border-t border-border flex justify-between items-center">
-          <div className="flex items-center gap-2">
-            <Badge variant="outline">{project.category}</Badge>
-            {/* Display creator name */}
-            <span className="text-xs text-muted-foreground flex items-center gap-1">
-              {creatorType === 'user' ? <User size={12} /> : <Building size={12} />}
-              {creatorName}
-            </span>
-          </div>
+          <Badge variant="outline">{project.category}</Badge>
           <button className="text-sm text-primary font-medium inline-flex items-center gap-1 group-hover:gap-2 transition-all">
             Տեսնել մանրամասները <ArrowRight size={14} />
           </button>

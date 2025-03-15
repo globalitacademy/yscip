@@ -3,9 +3,10 @@ import React from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Edit, Trash, Image, User } from 'lucide-react';
+import { Edit, Trash, Image, User, Building } from 'lucide-react';
 import { ProjectTheme } from '@/data/projectThemes';
 import { useAuth } from '@/contexts/AuthContext';
+import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 
 interface ProjectCardProps {
   project: ProjectTheme;
@@ -24,6 +25,11 @@ const ProjectCard: React.FC<ProjectCardProps> = ({
   
   // Check if the project was created by the current user
   const isCreatedByCurrentUser = project.createdBy === user?.id;
+  const creatorName = isCreatedByCurrentUser ? 'Ձեր կողմից' : 'Ուսումնական Կենտրոն';
+  const creatorAvatar = isCreatedByCurrentUser && user?.avatar 
+    ? user.avatar 
+    : 'https://api.dicebear.com/7.x/avataaars/svg?seed=project';
+  const creatorType = isCreatedByCurrentUser ? 'user' : 'organization';
 
   return (
     <Card key={project.id} className="overflow-hidden hover:shadow-md transition-shadow">
@@ -53,8 +59,28 @@ const ProjectCard: React.FC<ProjectCardProps> = ({
         </div>
       </div>
       <CardHeader className="p-4 pb-0">
-        <CardTitle className="line-clamp-1 text-base sm:text-lg">{project.title}</CardTitle>
-        <CardDescription>{project.category}</CardDescription>
+        <div className="flex justify-between items-start">
+          <div>
+            <CardTitle className="line-clamp-1 text-base sm:text-lg">{project.title}</CardTitle>
+            <CardDescription>{project.category}</CardDescription>
+          </div>
+          
+          {/* Creator avatar and name */}
+          <div className="flex items-center gap-2">
+            <div className="text-right">
+              <p className="text-xs text-muted-foreground">
+                {creatorType === 'user' ? 'Հեղինակ' : 'Կազմակերպություն'}
+              </p>
+              <p className="text-sm font-medium">{creatorName}</p>
+            </div>
+            <Avatar className="h-8 w-8 border border-border">
+              <AvatarImage src={creatorAvatar} alt={creatorName} />
+              <AvatarFallback>
+                {creatorType === 'user' ? <User size={14} /> : <Building size={14} />}
+              </AvatarFallback>
+            </Avatar>
+          </div>
+        </div>
       </CardHeader>
       <CardContent className="p-4">
         <p className="text-xs sm:text-sm text-gray-500 line-clamp-3 mb-4">{project.description}</p>
@@ -68,16 +94,6 @@ const ProjectCard: React.FC<ProjectCardProps> = ({
             <Badge variant="outline" className="text-xs">
               +{project.techStack.length - 3}
             </Badge>
-          )}
-        </div>
-        
-        {/* Display project creator information */}
-        <div className="mt-3 flex items-center text-xs text-gray-500">
-          <User className="h-3 w-3 mr-1" />
-          {isCreatedByCurrentUser ? (
-            <span>Ձեր կողմից ստեղծված</span>
-          ) : (
-            <span>Ադմինիստրատորի կողմից ստեղծված</span>
           )}
         </div>
         
