@@ -27,7 +27,7 @@ const HeroContent: React.FC<HeroContentProps> = ({
       </SlideDown>
       
       <SlideDown delay="delay-300">
-        <p className="max-w-xl mx-auto md:text-xl text-muted-foreground mb-12 tracking-wide text-xs">Մեր հարթակը միավորում է ուսանողներին, դասախոսներին և գործատուներին՝ ստեղծելով կրթության նոր ճանապարհ, որը հարմարեցված է ձեր կարիքներին։</p>
+        <p className="max-w-xl mx-auto md:text-xl text-muted-foreground mb-12 tracking-wide text-xs">Հարթակը միավորում է ուսանողներին, դասախոսներին և գործատուներին՝ ստեղծելով կրթության նոր ճանապարհ, որը հարմարեցված է ձեր կարիքներին։</p>
       </SlideDown>
       
       <FadeIn delay="delay-500">
