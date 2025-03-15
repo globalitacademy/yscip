@@ -22,15 +22,26 @@ const Header: React.FC<HeaderProps> = ({
   const getRoleNavigation = () => {
     if (!user) return null;
     
-    // All roles now show only the Admin Panel button
+    // All roles including students now have the Admin Panel button
     return (
       <div className="flex items-center gap-2 md:gap-4">
-        <Link to="/admin">
+        <Link to={user.role === 'student' ? '/projects/manage' : '/admin'}>
           <Button variant="outline" size="sm" className="gap-1">
             <LayoutDashboard size={16} />
-            <span className="hidden md:inline">Ադմին պանել</span>
+            <span className="hidden md:inline">
+              {user.role === 'student' ? 'Իմ նախագծերը' : 'Ադմին պանել'}
+            </span>
           </Button>
         </Link>
+        
+        {user.role === 'student' && (
+          <Link to="/my-projects">
+            <Button variant="outline" size="sm" className="gap-1">
+              <GraduationCap size={16} />
+              <span className="hidden md:inline">Նախագծեր</span>
+            </Button>
+          </Link>
+        )}
       </div>
     );
   };

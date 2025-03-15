@@ -16,10 +16,10 @@ const ProjectEmptyState: React.FC<ProjectEmptyStateProps> = ({ onAddNewProject }
   return (
     <div className="text-center py-12">
       <p className="text-gray-500">Նախագծեր չեն գտնվել</p>
-      {permissions.canCreateProjects && onAddNewProject && (
+      {(permissions.canCreateProjects || user?.role === 'student') && onAddNewProject && (
         <Button className="mt-4" onClick={onAddNewProject}>
           <PlusCircle className="mr-2 h-4 w-4" />
-          Ավելացնել նոր նախագիծ
+          {user?.role === 'student' ? 'Տեսնել հասանելի նախագծերը' : 'Ավելացնել նոր նախագիծ'}
         </Button>
       )}
     </div>
