@@ -9,7 +9,8 @@ import {
   adminMenuItems, 
   lecturerMenuItems, 
   supervisorMenuItems,
-  employerMenuItems 
+  employerMenuItems,
+  studentMenuItems 
 } from './sidebar/sidebarMenuConfig';
 import { loadProjectReservations } from '@/utils/projectUtils';
 import { Badge } from '@/components/ui/badge';
@@ -42,7 +43,7 @@ const AdminSidebar: React.FC<AdminSidebarProps> = ({
   const pendingCount = getPendingApprovalsCount();
 
   // Early return if user doesn't have appropriate role
-  if (!user || user.role !== 'admin' && user.role !== 'lecturer' && user.role !== 'instructor' && user.role !== 'project_manager' && user.role !== 'supervisor' && user.role !== 'employer') {
+  if (!user) {
     return null;
   }
   
@@ -87,6 +88,10 @@ const AdminSidebar: React.FC<AdminSidebarProps> = ({
 
         {user.role === 'employer' && 
           <SidebarMenuGroup menuItems={employerMenuItems} onCloseMenu={onCloseMenu} />
+        }
+        
+        {user.role === 'student' && 
+          <SidebarMenuGroup menuItems={studentMenuItems} onCloseMenu={onCloseMenu} />
         }
       </nav>
     </aside>

@@ -1,4 +1,3 @@
-
 import React from 'react';
 import {
   LayoutDashboard,
@@ -15,7 +14,8 @@ import {
   Layers,
   List,
   UserPlus,
-  ClipboardList
+  ClipboardList,
+  Upload
 } from 'lucide-react';
 
 // Define the type for menu items
@@ -140,5 +140,32 @@ export const employerMenuItems: SidebarMenuItemType[] = [
     path: '/my-projects',
     icon: <Briefcase className="h-4 w-4" />,
     roles: ['employer']
+  }
+];
+
+export const studentMenuItems: SidebarMenuItemType[] = [
+  {
+    label: 'Իմ նախագծերը',
+    path: '/my-projects',
+    icon: <Briefcase className="h-4 w-4" />,
+    roles: ['student']
+  },
+  {
+    label: 'Նախագծի ներկայացում',
+    path: '/projects/manage',
+    icon: <Upload className="h-4 w-4" />,
+    roles: ['student']
+  },
+  {
+    label: 'Առաջադրանքներ',
+    path: '/tasks',
+    icon: <ListChecks className="h-4 w-4" />,
+    roles: ['student']
+  },
+  {
+    label: 'Պոрտֆոլիո',
+    path: '/portfolios',
+    icon: <Layers className="h-4 w-4" />,
+    roles: ['student']
   }
 ];
