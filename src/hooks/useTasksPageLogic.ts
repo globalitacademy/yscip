@@ -5,10 +5,10 @@ import { toast } from '@/components/ui/use-toast';
 import { getCourses, getGroups, getStudentsByCourseAndGroup } from '@/data/userRoles';
 
 interface ProjectTask {
-  id: string;
+  id: number;
   title: string;
   description: string;
-  status: string;
+  status: 'todo' | 'in-progress' | 'review' | 'done';
   assignedTo: string;
   dueDate: string;
   createdBy: string;
@@ -33,14 +33,14 @@ export function useTasksPageLogic() {
   const [studentProjects, setStudentProjects] = useState<Project[]>([]);
   const [loading, setLoading] = useState(false);
 
-  // Վերցնում ենք կուրսերի, խմբերի և ուսանողների տվյալները
+  // Get courses, groups, and students data
   const courses = getCourses();
   const groups = selectedCourse ? getGroups(selectedCourse) : [];
   const students = selectedCourse && selectedGroup 
     ? getStudentsByCourseAndGroup(selectedCourse, selectedGroup) 
     : [];
 
-  // Նախագծերի ստացում տվյալ ուսանողի համար
+  // Fetch student projects
   const fetchStudentProjects = async (studentId: string) => {
     setLoading(true);
     try {
@@ -80,7 +80,7 @@ export function useTasksPageLogic() {
     }
   };
 
-  // Առաջադրանքների ստացում ըստ նախագծի
+  // Fetch project tasks
   const fetchProjectTasks = async (projectId: string) => {
     setLoading(true);
     try {
@@ -88,17 +88,17 @@ export function useTasksPageLogic() {
       
       const { data, error } = await supabase
         .from('tasks')
-        .select('*, users(name, avatar)')
+        .select('*, users!tasks_assigned_to_fkey(name, avatar)')
         .eq('project_id', projectIdNumber);
 
       if (error) throw error;
 
       if (data) {
-        const formattedTasks = data.map(task => ({
+        const formattedTasks: ProjectTask[] = data.map(task => ({
           id: task.id,
           title: task.title,
           description: task.description,
-          status: task.status,
+          status: task.status as 'todo' | 'in-progress' | 'review' | 'done',
           assignedTo: task.assigned_to,
           dueDate: task.due_date,
           createdBy: task.created_by,
@@ -118,7 +118,7 @@ export function useTasksPageLogic() {
     }
   };
 
-  // Կուրսի փոփոխության մշակում
+  // Handle course change
   const handleCourseChange = (value: string) => {
     setSelectedCourse(value);
     setSelectedGroup('');
@@ -127,7 +127,7 @@ export function useTasksPageLogic() {
     setTasks([]);
   };
 
-  // Խմբի փոփոխության մշակում
+  // Handle group change
   const handleGroupChange = (value: string) => {
     setSelectedGroup(value);
     setSelectedStudent('');
@@ -135,7 +135,7 @@ export function useTasksPageLogic() {
     setTasks([]);
   };
 
-  // Ուսանողի փոփոխության մշակում
+  // Handle student change
   const handleStudentChange = (value: string) => {
     setSelectedStudent(value);
     setSelectedProject('');
@@ -145,7 +145,7 @@ export function useTasksPageLogic() {
     }
   };
 
-  // Նախագծի փոփոխության մշակում
+  // Handle project change
   const handleProjectChange = (value: string) => {
     setSelectedProject(value);
     if (value) {
@@ -155,7 +155,7 @@ export function useTasksPageLogic() {
     }
   };
 
-  // Նոր առաջադրանքի ավելացում
+  // Add new task
   const handleAddTask = async (task: any) => {
     try {
       const projectIdNumber = parseInt(selectedProject, 10);
@@ -193,8 +193,8 @@ export function useTasksPageLogic() {
     setShowTaskForm(false);
   };
 
-  // Առաջադրանքի կարգավիճակի թարմացում
-  const handleUpdateTaskStatus = async (taskId: string, status: string) => {
+  // Update task status
+  const handleUpdateTaskStatus = async (taskId: number, status: 'todo' | 'in-progress' | 'review' | 'done') => {
     try {
       const { error } = await supabase
         .from('tasks')
@@ -208,7 +208,7 @@ export function useTasksPageLogic() {
         description: "Առաջադրանքի կարգավիճակը հաջողությամբ փոխվեց։",
       });
       
-      // Թարմացնում ենք լոկալ state-ը
+      // Update local state
       setTasks(prevTasks => 
         prevTasks.map(task => 
           task.id === taskId ? { ...task, status } : task

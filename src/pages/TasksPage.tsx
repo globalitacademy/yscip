@@ -6,6 +6,7 @@ import { ClipboardList } from 'lucide-react';
 import SupervisorEmptyState from '@/components/supervisor/SupervisorEmptyState';
 import StudentProjectSelector from '@/components/tasks/StudentProjectSelector';
 import { useTasksPageLogic } from '@/hooks/useTasksPageLogic';
+import { Task } from '@/data/projectThemes';
 
 const TasksPage: React.FC = () => {
   const {
@@ -27,6 +28,17 @@ const TasksPage: React.FC = () => {
     handleAddTask,
     handleUpdateTaskStatus
   } = useTasksPageLogic();
+
+  // Convert ProjectTask[] to Task[] for compatibility with TaskManager
+  const convertedTasks: Task[] = tasks.map(task => ({
+    id: String(task.id),
+    title: task.title,
+    description: task.description,
+    status: task.status,
+    assignedTo: task.assignedTo,
+    dueDate: task.dueDate,
+    createdBy: task.createdBy
+  }));
 
   return (
     <AdminLayout pageTitle="Առաջադրանքների կառավարում">
@@ -51,9 +63,11 @@ const TasksPage: React.FC = () => {
 
         {selectedProject ? (
           <TaskManager 
-            tasks={tasks} 
+            tasks={convertedTasks} 
             onAddTask={handleAddTask}
-            onUpdateTaskStatus={handleUpdateTaskStatus}
+            onUpdateTaskStatus={(taskId, status) => 
+              handleUpdateTaskStatus(parseInt(taskId, 10), status)
+            }
           />
         ) : (
           <SupervisorEmptyState 
