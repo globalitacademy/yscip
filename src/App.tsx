@@ -129,13 +129,13 @@ function AppRoutes() {
       
       {/* Employer routes */}
       <Route path="/projects/submit" element={
-        <ProtectedRoute allowedRoles={['employer']}>
+        <ProtectedRoute allowedRoles={['employer', 'student']}>
           <ProjectSubmissionPage />
         </ProtectedRoute>
       } />
       <Route path="/projects/my" element={
-        <ProtectedRoute allowedRoles={['employer']}>
-          <div>My Projects (Coming Soon)</div>
+        <ProtectedRoute allowedRoles={['employer', 'student']}>
+          <MyProjectsPage />
         </ProtectedRoute>
       } />
       <Route path="/project-proposals" element={
@@ -144,7 +144,7 @@ function AppRoutes() {
         </ProtectedRoute>
       } />
       <Route path="/my-projects" element={
-        <ProtectedRoute allowedRoles={['employer']}>
+        <ProtectedRoute allowedRoles={['employer', 'student']}>
           <MyProjectsPage />
         </ProtectedRoute>
       } />
@@ -162,7 +162,11 @@ function AppRoutes() {
       } />
       
       {/* Supervised Students routes */}
-      <Route path="/supervised-students" element={<SupervisedStudentsPage />} />
+      <Route path="/supervised-students" element={
+        <ProtectedRoute allowedRoles={['supervisor', 'instructor']}>
+          <SupervisedStudentsPage />
+        </ProtectedRoute>
+      } />
       
       <Route path="*" element={<NotFound />} />
     </Routes>
