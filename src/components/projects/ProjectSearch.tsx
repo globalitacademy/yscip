@@ -2,7 +2,7 @@
 import React from 'react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
-import { Search, Filter, ArrowUpDown, PlusCircle } from 'lucide-react';
+import { Search, Filter, ArrowUpDown } from 'lucide-react';
 
 interface ProjectSearchProps {
   searchQuery: string;
@@ -32,10 +32,6 @@ const ProjectSearch: React.FC<ProjectSearchProps> = ({ searchQuery, onSearchChan
           </Button>
           <Button variant="outline" size="icon" title="Դասավորել">
             <ArrowUpDown className="h-4 w-4" />
-          </Button>
-          <Button className="whitespace-nowrap">
-            <PlusCircle className="mr-2 h-4 w-4" />
-            Նոր նախագիծ
           </Button>
         </div>
       </div>
