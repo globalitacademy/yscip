@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import Header from '@/components/Header';
 import Hero from '@/components/Hero';
@@ -86,8 +85,6 @@ const Index = () => {
       <main className="flex-grow">
         <Hero />
         <FeaturesSection />
-        <CoursesSection />
-        <EducationalCycleInfographic />
         <div id="themes-section" className="container mx-auto px-4 pb-16">
           {user && (
             <UserReservedProjects reservedProjects={userReservedProjectDetails} />
@@ -100,6 +97,8 @@ const Index = () => {
             projectThemes={projectThemes}
           />
         </div>
+        <CoursesSection />
+        <EducationalCycleInfographic />
       </main>
       <Footer />
     </div>
