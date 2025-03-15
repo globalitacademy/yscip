@@ -1,171 +1,185 @@
+
 import React from 'react';
 import {
   LayoutDashboard,
   Users,
-  GraduationCap,
-  ListChecks,
-  FileText,
+  Folders,
   Book,
+  Layers,
+  MousePointerClick,
+  GraduationCap,
   Settings,
   Bell,
-  Briefcase,
   Building,
-  ChartBar,
-  Layers,
-  List,
-  UserPlus,
-  ClipboardList,
-  Upload
+  FileText,
+  Briefcase,
+  CheckSquare,
+  GitPullRequest,
+  BarChart,
+  Trophy,
+  School,
+  BookOpen
 } from 'lucide-react';
 
-// Define the type for menu items
-export interface SidebarMenuItemType {
-  label: string;
-  path: string;
-  icon: React.ReactNode;
-  roles: string[];
-}
-
-export const baseMenuItems: SidebarMenuItemType[] = [
+export const baseMenuItems = [
   {
-    label: 'Ադմին պանել',
-    path: '/admin',
-    icon: <LayoutDashboard className="h-4 w-4" />,
-    roles: ['admin', 'lecturer', 'instructor', 'supervisor', 'project_manager', 'employer']
-  },
-  {
-    label: 'Ծանուցումներ',
-    path: '/notifications',
-    icon: <Bell className="h-4 w-4" />,
-    roles: ['admin', 'lecturer', 'instructor', 'supervisor', 'project_manager', 'employer', 'student']
+    title: 'Ընդհանուր',
+    items: [
+      {
+        title: 'Կառավարման վահանակ',
+        icon: <LayoutDashboard className="h-4 w-4" />,
+        href: '/admin/dashboard'
+      },
+      {
+        title: 'Ծանուցումներ',
+        icon: <Bell className="h-4 w-4" />,
+        href: '/admin/notifications'
+      }
+    ]
   }
 ];
 
-export const adminMenuItems: SidebarMenuItemType[] = [
+export const adminMenuItems = [
   {
-    label: 'Օգտագործողներ',
-    path: '/users',
-    icon: <Users className="h-4 w-4" />,
-    roles: ['admin']
-  },
-  {
-    label: 'Սպասող հաստատումներ',
-    path: '/pending-approvals',
-    icon: <UserPlus className="h-4 w-4" />,
-    roles: ['admin']
-  },
-  {
-    label: 'Մասնագիտացումներ',
-    path: '/specializations',
-    icon: <Book className="h-4 w-4" />,
-    roles: ['admin']
-  },
-  {
-    label: 'Կուրսեր',
-    path: '/courses',
-    icon: <Book className="h-4 w-4" />,
-    roles: ['admin']
-  },
-  {
-    label: 'Խմբեր',
-    path: '/groups',
-    icon: <Users className="h-4 w-4" />,
-    roles: ['admin']
-  },
-  {
-    label: 'Կազմակերպություններ',
-    path: '/organizations',
-    icon: <Building className="h-4 w-4" />,
-    roles: ['admin']
-  },
-  {
-    label: 'Հաշվետվություններ',
-    path: '/reports',
-    icon: <ChartBar className="h-4 w-4" />,
-    roles: ['admin']
-  },
-  {
-    label: 'Կարգավորումներ',
-    path: '/settings',
-    icon: <Settings className="h-4 w-4" />,
-    roles: ['admin']
+    title: 'Կառավարում',
+    items: [
+      {
+        title: 'Օգտատերեր',
+        icon: <Users className="h-4 w-4" />,
+        href: '/admin/users'
+      },
+      {
+        title: 'Ծրագրեր',
+        icon: <Folders className="h-4 w-4" />,
+        href: '/admin/projects'
+      },
+      {
+        title: 'Մասնագիտացումներ',
+        icon: <Trophy className="h-4 w-4" />,
+        href: '/admin/specializations'
+      },
+      {
+        title: 'Խմբեր',
+        icon: <Users className="h-4 w-4" />,
+        href: '/admin/groups'
+      },
+      {
+        title: 'Կազմակերպություններ',
+        icon: <Building className="h-4 w-4" />,
+        href: '/admin/organizations'
+      },
+      {
+        title: 'Հաշվետվություններ',
+        icon: <FileText className="h-4 w-4" />,
+        href: '/admin/reports'
+      },
+      {
+        title: 'Կուրսեր',
+        icon: <School className="h-4 w-4" />,
+        href: '/admin/courses'
+      },
+      {
+        title: 'Ուսումնական մոդուլներ',
+        icon: <BookOpen className="h-4 w-4" />,
+        href: '/admin/modules'
+      }
+    ]
   }
 ];
 
-export const lecturerMenuItems: SidebarMenuItemType[] = [
+export const lecturerMenuItems = [
   {
-    label: 'Նախագծեր',
-    path: '/projects',
-    icon: <Briefcase className="h-4 w-4" />,
-    roles: ['lecturer', 'instructor', 'supervisor', 'project_manager']
-  },
-  {
-    label: 'Ուսանողներ',
-    path: '/students',
-    icon: <GraduationCap className="h-4 w-4" />,
-    roles: ['lecturer', 'instructor']
-  },
-  {
-    label: 'Առաջադրանքներ',
-    path: '/tasks',
-    icon: <ListChecks className="h-4 w-4" />,
-    roles: ['lecturer', 'instructor', 'supervisor', 'project_manager']
+    title: 'Դասավանդում',
+    items: [
+      {
+        title: 'Ուսանողների նախագծեր',
+        icon: <GraduationCap className="h-4 w-4" />,
+        href: '/admin/student-projects'
+      },
+      {
+        title: 'Ծրագրեր',
+        icon: <Book className="h-4 w-4" />,
+        href: '/admin/projects'
+      },
+      {
+        title: 'Կուրսեր',
+        icon: <School className="h-4 w-4" />,
+        href: '/admin/courses'
+      },
+      {
+        title: 'Ուսումնական մոդուլներ',
+        icon: <BookOpen className="h-4 w-4" />,
+        href: '/admin/modules'
+      },
+      {
+        title: 'Հանձնարարություններ',
+        icon: <CheckSquare className="h-4 w-4" />,
+        href: '/admin/tasks'
+      }
+    ]
   }
 ];
 
-export const supervisorMenuItems: SidebarMenuItemType[] = [
+export const supervisorMenuItems = [
   {
-    label: 'Ուսանողների ղեկավարում',
-    path: '/supervised-students',
-    icon: <GraduationCap className="h-4 w-4" />,
-    roles: ['supervisor', 'project_manager']
-  },
-  {
-    label: 'Պորտֆոլիոներ',
-    path: '/portfolios',
-    icon: <Layers className="h-4 w-4" />,
-    roles: ['supervisor', 'project_manager']
+    title: 'Ղեկավարություն',
+    items: [
+      {
+        title: 'Ղեկավարվող ուսանողներ',
+        icon: <Users className="h-4 w-4" />,
+        href: '/admin/supervised-students'
+      },
+      {
+        title: 'Թեմաների հարցումներ',
+        icon: <MousePointerClick className="h-4 w-4" />,
+        href: '/admin/pending-approvals'
+      },
+      {
+        title: 'Հանձնարարություններ',
+        icon: <CheckSquare className="h-4 w-4" />,
+        href: '/admin/tasks'
+      }
+    ]
   }
 ];
 
-export const employerMenuItems: SidebarMenuItemType[] = [
+export const employerMenuItems = [
   {
-    label: 'Նախագծերի առաջարկներ',
-    path: '/project-proposals',
-    icon: <FileText className="h-4 w-4" />,
-    roles: ['employer']
-  },
-  {
-    label: 'Իմ նախագծերը',
-    path: '/my-projects',
-    icon: <Briefcase className="h-4 w-4" />,
-    roles: ['employer']
+    title: 'Գործատու',
+    items: [
+      {
+        title: 'Նախագծեր',
+        icon: <Briefcase className="h-4 w-4" />,
+        href: '/admin/projects'
+      },
+      {
+        title: 'Նախագծերի առաջարկներ',
+        icon: <GitPullRequest className="h-4 w-4" />,
+        href: '/admin/project-proposals'
+      }
+    ]
   }
 ];
 
-export const studentMenuItems: SidebarMenuItemType[] = [
+export const studentMenuItems = [
   {
-    label: 'Իմ նախագծերը',
-    path: '/my-projects',
-    icon: <Briefcase className="h-4 w-4" />,
-    roles: ['student']
-  },
-  {
-    label: 'Նախագծի ներկայացում',
-    path: '/projects/manage',
-    icon: <Upload className="h-4 w-4" />,
-    roles: ['student']
-  },
-  {
-    label: 'Առաջադրանքներ',
-    path: '/tasks',
-    icon: <ListChecks className="h-4 w-4" />,
-    roles: ['student']
-  },
-  {
-    label: 'Պոрտֆոլիո',
-    path: '/portfolios',
-    icon: <Layers className="h-4 w-4" />,
-    roles: ['student']
+    title: 'Ուսանող',
+    items: [
+      {
+        title: 'Իմ նախագծերը',
+        icon: <Folders className="h-4 w-4" />,
+        href: '/admin/my-projects'
+      },
+      {
+        title: 'Հանձնարարություններ',
+        icon: <CheckSquare className="h-4 w-4" />,
+        href: '/admin/tasks'
+      },
+      {
+        title: 'Պորտֆոլիո',
+        icon: <Layers className="h-4 w-4" />,
+        href: '/admin/portfolio'
+      }
+    ]
   }
 ];
