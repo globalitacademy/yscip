@@ -1,3 +1,4 @@
+
 import { User, UserRole } from '@/types/user';
 
 export interface PendingUser extends Partial<User> {
@@ -10,6 +11,7 @@ export interface PendingUser extends Partial<User> {
 export interface AuthContextType {
   user: User | null;
   isAuthenticated: boolean;
+  isLoading: boolean;
   login: (email: string, password: string) => Promise<boolean>;
   logout: () => void;
   switchRole: (role: UserRole) => void;

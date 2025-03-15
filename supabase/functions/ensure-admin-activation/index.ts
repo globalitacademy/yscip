@@ -1,61 +1,65 @@
 
-import { serve } from 'https://deno.land/std@0.177.0/http/server.ts'
-import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.49.1'
+import { serve } from "https://deno.land/std@0.177.0/http/server.ts";
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2.42.1";
 
+// Define CORS headers
 const corsHeaders = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
-}
+  "Access-Control-Allow-Origin": "*",
+  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
+};
 
 serve(async (req) => {
   // Handle CORS preflight requests
-  if (req.method === 'OPTIONS') {
-    return new Response(null, { headers: corsHeaders })
+  if (req.method === "OPTIONS") {
+    return new Response(null, { headers: corsHeaders });
   }
 
   try {
-    console.log('Ensuring admin activation...')
+    // Create a Supabase client with the service role key (admin privileges)
     const supabaseAdmin = createClient(
-      Deno.env.get('SUPABASE_URL') || '',
-      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') || '',
-    )
+      Deno.env.get("SUPABASE_URL") || "",
+      Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") || "",
+      {
+        auth: {
+          autoRefreshToken: false,
+          persistSession: false,
+        },
+      }
+    );
 
-    // First reset admin account to ensure it exists properly
-    const { data: resetData, error: resetError } = await supabaseAdmin.rpc('reset_admin_account')
-    
-    if (resetError) {
-      console.error('Error resetting admin account:', resetError)
-      // Still try the other methods as fallback
-    } else {
-      console.log('Admin account reset successfully')
-    }
-    
-    // Now verify that the admin account exists and is properly set up
-    await supabaseAdmin.rpc('verify_designated_admin')
-    
-    // Also ensure login is enabled for the admin account
-    const { data, error } = await supabaseAdmin.rpc('ensure_admin_login')
+    console.log("Ensuring admin activation...");
+
+    // Call the database function to ensure admin account is set up
+    const { data, error } = await supabaseAdmin.rpc("ensure_admin_login");
 
     if (error) {
-      console.error('Error ensuring admin login:', error)
+      console.error("Error ensuring admin login:", error);
       return new Response(
         JSON.stringify({ success: false, error: error.message }),
-        { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 500 }
-      )
+        {
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+          status: 500,
+        }
+      );
     }
-    
-    console.log('Admin activation successful')
-    
-    // Return success 
+
+    console.log("Admin activation completed successfully:", data);
+
     return new Response(
-      JSON.stringify({ success: true }),
-      { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 200 }
-    )
+      JSON.stringify({ success: true, message: "Admin account activated successfully" }),
+      {
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+        status: 200,
+      }
+    );
   } catch (error) {
-    console.error('Server error:', error)
+    console.error("Unexpected error:", error.message);
     return new Response(
       JSON.stringify({ success: false, error: error.message }),
-      { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 500 }
-    )
+      {
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+        status: 500,
+      }
+    );
   }
-})
+});

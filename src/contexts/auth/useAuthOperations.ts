@@ -46,6 +46,7 @@ export const useAuthOperations = (
           console.error('Error invoking admin activation function:', error);
         }
         
+        toast.success('Մուտքը հաջողված է։ Բարի գալուստ, Ադմինիստրատոր։');
         return true;
       }
       
@@ -57,7 +58,15 @@ export const useAuthOperations = (
       
       if (error) {
         console.error('Supabase login error:', error);
-        return handleFallbackLogin(email, password, pendingUsers, mockUsers, setUser, setIsAuthenticated);
+        const fallbackResult = handleFallbackLogin(email, password, pendingUsers, mockUsers, setUser, setIsAuthenticated);
+        
+        if (fallbackResult) {
+          toast.success('Մուտքը հաջողված է։');
+        } else {
+          toast.error('Սխալ էլ․ հասցե կամ գաղտնաբառ։');
+        }
+        
+        return fallbackResult;
       }
       
       if (data.user) {
@@ -69,7 +78,13 @@ export const useAuthOperations = (
         
         if (userError) {
           console.error('Error fetching user data:', userError);
-          return handleFallbackLogin(email, password, pendingUsers, mockUsers, setUser, setIsAuthenticated);
+          const fallbackResult = handleFallbackLogin(email, password, pendingUsers, mockUsers, setUser, setIsAuthenticated);
+          
+          if (fallbackResult) {
+            toast.success('Մուտքը հաջողված է։');
+          }
+          
+          return fallbackResult;
         }
         
         if (!userData.registration_approved) {
@@ -86,20 +101,29 @@ export const useAuthOperations = (
           avatar: userData.avatar,
           department: userData.department,
           registrationApproved: userData.registration_approved,
-          organization: userData.organization
+          organization: userData.organization,
+          group: userData.group_name // Note: mapping from group_name to group
         };
         
         setUser(loggedInUser);
         setIsAuthenticated(true);
         localStorage.setItem('currentUser', JSON.stringify(loggedInUser));
         console.log('Login successful for:', loggedInUser.email, loggedInUser.role);
+        toast.success('Մուտքը հաջողված է։');
         return true;
       }
       
+      toast.error('Սխալ էլ․ հասցե կամ գաղտնաբառ։');
       return false;
     } catch (error) {
       console.error('Login error:', error);
-      return handleFallbackLogin(email, password, pendingUsers, mockUsers, setUser, setIsAuthenticated);
+      const fallbackResult = handleFallbackLogin(email, password, pendingUsers, mockUsers, setUser, setIsAuthenticated);
+      
+      if (!fallbackResult) {
+        toast.error('Սխալ էլ․ հասցե կամ գաղտնաբառ։');
+      }
+      
+      return fallbackResult;
     }
   };
 
@@ -135,6 +159,7 @@ export const useAuthOperations = (
       
       if (error) {
         console.error('Supabase registration error:', error);
+        toast.error('Գրանցման ընթացքում սխալ է տեղի ունեցել։ Խնդրում ենք փորձել կրկին։');
         return handleSignUpUser(userData, pendingUsers, setPendingUsers);
       }
 
@@ -150,6 +175,7 @@ export const useAuthOperations = (
       return { success: true, token: data?.user?.confirmation_sent_at ? 'sent' : undefined };
     } catch (error) {
       console.error('Registration error:', error);
+      toast.error('Գրանցման ընթացքում սխալ է տեղի ունեցել։ Խնդրում ենք փորձել կրկին։');
       return { success: false };
     }
   };
@@ -158,8 +184,10 @@ export const useAuthOperations = (
     try {
       console.log('Logging out user');
       await supabase.auth.signOut();
+      toast.info('Դուք դուրս եք եկել համակարգից։');
     } catch (error) {
       console.error('Error during logout:', error);
+      toast.error('Սխալ դուրս գալու ընթացքում։');
     }
     setUser(null);
     setIsAuthenticated(false);

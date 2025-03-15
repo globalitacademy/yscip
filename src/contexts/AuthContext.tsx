@@ -1,3 +1,4 @@
+
 import React, { createContext, useContext } from 'react';
 import { User, UserRole } from '@/types/user';
 import { mockUsers } from '@/data/mockUsers';
@@ -27,7 +28,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     pendingUsers, 
     setUser, 
     setIsAuthenticated, 
-    setPendingUsers 
+    setPendingUsers,
+    isLoading
   } = useAuthSession();
 
   // Authentication operations
@@ -54,6 +56,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       value={{
         user,
         isAuthenticated,
+        isLoading,
         login,
         logout,
         switchRole,

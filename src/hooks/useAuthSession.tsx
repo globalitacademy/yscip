@@ -12,6 +12,7 @@ interface UseAuthSessionResult {
   setUser: (user: User | null) => void;
   setIsAuthenticated: (value: boolean) => void;
   setPendingUsers: React.Dispatch<React.SetStateAction<PendingUser[]>>;
+  isLoading: boolean;
 }
 
 export const useAuthSession = (): UseAuthSessionResult => {
@@ -31,7 +32,8 @@ export const useAuthSession = (): UseAuthSessionResult => {
       avatar: userData.avatar,
       department: userData.department,
       registrationApproved: userData.registration_approved,
-      organization: userData.organization
+      organization: userData.organization,
+      group: userData.group_name // Note: mapping from group_name to group
     };
   };
 
@@ -220,6 +222,7 @@ export const useAuthSession = (): UseAuthSessionResult => {
     pendingUsers,
     setUser,
     setIsAuthenticated,
-    setPendingUsers
+    setPendingUsers,
+    isLoading
   };
 };
