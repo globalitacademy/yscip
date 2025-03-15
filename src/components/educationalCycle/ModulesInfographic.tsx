@@ -20,10 +20,9 @@ interface ModuleCardProps {
   module: EducationalModule;
   delay: string;
   showProgress: boolean;
-  clickable: boolean;
 }
 
-const ModuleCard: React.FC<ModuleCardProps> = ({ module, delay, showProgress, clickable }) => {
+const ModuleCard: React.FC<ModuleCardProps> = ({ module, delay, showProgress }) => {
   const colors = [
     "bg-blue-100 text-blue-600 border-blue-200",
     "bg-green-100 text-green-600 border-green-200",
@@ -55,7 +54,7 @@ const ModuleCard: React.FC<ModuleCardProps> = ({ module, delay, showProgress, cl
   };
 
   const card = (
-    <div className={`p-6 rounded-lg border ${colorClass} flex flex-col items-center transition-transform hover:scale-105 ${clickable ? 'cursor-pointer' : ''}`}>
+    <div className={`p-6 rounded-lg border ${colorClass} flex flex-col items-center transition-transform hover:scale-105 cursor-pointer`}>
       <div className="rounded-full bg-white p-3 mb-4">
         <module.icon className={colorClass.split(' ')[1]} size={28} />
       </div>
@@ -82,7 +81,8 @@ const ModuleCard: React.FC<ModuleCardProps> = ({ module, delay, showProgress, cl
     </div>
   );
   
-  if (clickable && module.topics && module.topics.length > 0) {
+  // Always make module cards clickable with topics, regardless of authentication
+  if (module.topics && module.topics.length > 0) {
     return (
       <SlideUp delay={delay} className="flex flex-col">
         <Popover>
@@ -317,7 +317,6 @@ export const ModulesInfographic: React.FC = () => {
             module={module}
             delay={`delay-${100 * (index % 5 + 1)}`}
             showProgress={isAuthenticated}
-            clickable={isAuthenticated}
           />
         ))}
       </div>
@@ -326,7 +325,7 @@ export const ModulesInfographic: React.FC = () => {
         <FadeIn delay="delay-300">
           <div className="text-center mt-4 mb-8">
             <p className="text-muted-foreground">
-              Մուտք գործեք համակարգ՝ ուսումնական առաջընթացը և թեմաները տեսնելու համար
+              Մուտք գործեք համակարգ՝ ուսումնական առաջընթացը տեսնելու համար
             </p>
           </div>
         </FadeIn>
