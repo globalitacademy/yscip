@@ -147,28 +147,15 @@ const FeaturesSection = () => {
           </p>
         </FadeIn>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 mb-12">
-          {userFeatures.map((feature, index) => (
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
+          {[...userFeatures, ...systemFeatures].map((feature, index) => (
             <FeatureCard 
               key={index}
               icon={feature.icon}
               title={feature.title}
               description={feature.description}
               type={feature.type}
-              delay={feature.delay}
-            />
-          ))}
-        </div>
-
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-6">
-          {systemFeatures.map((feature, index) => (
-            <FeatureCard 
-              key={index}
-              icon={feature.icon}
-              title={feature.title}
-              description={feature.description}
-              type={feature.type}
-              delay={feature.delay}
+              delay={`delay-${(index + 1) * 100}`}
             />
           ))}
         </div>
