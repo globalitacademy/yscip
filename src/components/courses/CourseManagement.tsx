@@ -11,6 +11,7 @@ const CourseManagement: React.FC = () => {
   const {
     courses,
     selectedCourse,
+    setSelectedCourse,
     isAddDialogOpen,
     isEditDialogOpen,
     newCourse,

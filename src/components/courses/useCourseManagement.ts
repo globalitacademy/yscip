@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { toast } from 'sonner';
 import { v4 as uuidv4 } from 'uuid';
@@ -153,6 +152,7 @@ export const useCourseManagement = () => {
   return {
     courses,
     selectedCourse,
+    setSelectedCourse,
     isAddDialogOpen,
     isEditDialogOpen,
     newCourse,
