@@ -9,8 +9,8 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { toast } from 'sonner';
-import { EducationalModule } from '../../educationalCycle/ModulesInfographic';
 import { Progress } from '@/components/ui/progress';
+import type { EducationalModule } from '../../educationalCycle';
 
 const ModuleManagement: React.FC = () => {
   const [modules, setModules] = useState<EducationalModule[]>([

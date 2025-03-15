@@ -1,6 +1,6 @@
 
 import ModulesInfographic from './ModulesInfographic';
-export { ModuleCard } from './ModuleCard';
+export { default as ModuleCard } from './ModuleCard';
 export { educationalModules } from './moduleData';
-export { EducationalModule } from './types';
+export type { EducationalModule } from './types';
 export default ModulesInfographic;
