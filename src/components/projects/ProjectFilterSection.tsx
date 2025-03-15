@@ -4,38 +4,31 @@ import ProjectSearch from './ProjectSearch';
 import ProjectCategories from './ProjectCategories';
 import { Button } from '@/components/ui/button';
 import { Plus } from 'lucide-react';
-import { ProjectTheme } from '@/data/projectThemes';
 import { useProjectPermissions } from '@/hooks/useProjectPermissions';
 import { useAuth } from '@/contexts/AuthContext';
+import { useProjectManagement } from '@/contexts/ProjectManagementContext';
 
-interface ProjectFilterSectionProps {
-  searchQuery: string;
-  onSearchChange: (query: string) => void;
-  onAddNewProject: () => void;
-  projects: ProjectTheme[];
-  selectedCategory: string | null;
-  onCategoryChange: (category: string | null) => void;
-}
-
-const ProjectFilterSection: React.FC<ProjectFilterSectionProps> = ({
-  searchQuery,
-  onSearchChange,
-  onAddNewProject,
-  projects,
-  selectedCategory,
-  onCategoryChange
-}) => {
+const ProjectFilterSection: React.FC = () => {
+  const { 
+    searchQuery, 
+    setSearchQuery, 
+    projects, 
+    selectedCategory, 
+    setSelectedCategory,
+    handleOpenCreateDialog
+  } = useProjectManagement();
+  
   const { user } = useAuth();
   const permissions = useProjectPermissions(user?.role);
 
   return (
     <>
       <div className="flex flex-col sm:flex-row justify-between gap-4 items-start sm:items-center">
-        <ProjectSearch searchQuery={searchQuery} onSearchChange={onSearchChange} />
+        <ProjectSearch searchQuery={searchQuery} onSearchChange={setSearchQuery} />
         
         {permissions.canCreateProjects && (
           <Button 
-            onClick={onAddNewProject} 
+            onClick={handleOpenCreateDialog} 
             className="w-full sm:w-auto"
           >
             <Plus className="h-4 w-4 mr-2" />
@@ -47,7 +40,7 @@ const ProjectFilterSection: React.FC<ProjectFilterSectionProps> = ({
       <ProjectCategories 
         projects={projects}
         selectedCategory={selectedCategory}
-        onCategoryChange={onCategoryChange}
+        onCategoryChange={setSelectedCategory}
       />
     </>
   );

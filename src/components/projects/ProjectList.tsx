@@ -1,31 +1,22 @@
 
 import React, { useMemo } from 'react';
-import { ProjectTheme } from '@/data/projectThemes';
 import ProjectCard from './ProjectCard';
 import ProjectEmptyState from './ProjectEmptyState';
 import { filterProjects } from './ProjectUtils';
+import { useProjectManagement } from '@/contexts/ProjectManagementContext';
 
-interface ProjectListProps {
-  projects: ProjectTheme[];
-  searchQuery: string;
-  selectedCategory: string | null;
-  isLoading: boolean;
-  onEdit: (project: ProjectTheme) => void;
-  onImageChange: (project: ProjectTheme) => void;
-  onDelete: (project: ProjectTheme) => void;
-  onAddNewProject: () => void;
-}
+const ProjectList: React.FC = () => {
+  const {
+    projects,
+    searchQuery,
+    selectedCategory,
+    isLoading,
+    handleEditInit,
+    handleImageChangeInit,
+    handleDeleteInit,
+    handleOpenCreateDialog
+  } = useProjectManagement();
 
-const ProjectList: React.FC<ProjectListProps> = ({
-  projects,
-  searchQuery,
-  selectedCategory,
-  isLoading,
-  onEdit,
-  onImageChange,
-  onDelete,
-  onAddNewProject
-}) => {
   const filteredProjects = useMemo(() => {
     return filterProjects(projects, searchQuery, selectedCategory);
   }, [projects, searchQuery, selectedCategory]);
@@ -39,7 +30,7 @@ const ProjectList: React.FC<ProjectListProps> = ({
   }
 
   if (filteredProjects.length === 0) {
-    return <ProjectEmptyState onAddNewProject={onAddNewProject} />;
+    return <ProjectEmptyState onAddNewProject={handleOpenCreateDialog} />;
   }
 
   return (
@@ -48,9 +39,9 @@ const ProjectList: React.FC<ProjectListProps> = ({
         <ProjectCard 
           key={project.id}
           project={project}
-          onEdit={onEdit}
-          onImageChange={onImageChange}
-          onDelete={onDelete}
+          onEdit={handleEditInit}
+          onImageChange={handleImageChangeInit}
+          onDelete={handleDeleteInit}
         />
       ))}
     </div>
