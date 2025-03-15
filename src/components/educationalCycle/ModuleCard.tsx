@@ -4,7 +4,7 @@ import { FadeIn } from '@/components/LocalTransitions';
 import { Card, CardContent, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
 import { Badge } from '@/components/ui/badge';
-import { CircleCheck, CircleClock, CircleX } from 'lucide-react';
+import { CircleCheck, Clock, CircleX } from 'lucide-react';
 import type { EducationalModule } from './types';
 
 interface ModuleCardProps {
@@ -21,7 +21,7 @@ const ModuleCard: React.FC<ModuleCardProps> = ({ module, delay = '', showProgres
       case 'completed':
         return <CircleCheck className="h-5 w-5 text-green-500" />;
       case 'in-progress':
-        return <CircleClock className="h-5 w-5 text-amber-500" />;
+        return <Clock className="h-5 w-5 text-amber-500" />;
       case 'not-started':
       default:
         return <CircleX className="h-5 w-5 text-muted-foreground" />;
