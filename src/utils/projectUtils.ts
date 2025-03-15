@@ -1,9 +1,6 @@
 
 import { v4 as uuidv4 } from 'uuid';
 import { ProjectTheme } from '@/data/projectThemes';
-import { TaskUtils } from './taskUtils';
-import { ReservationUtils } from './reservationUtils';
-import { ProjectProgressUtils } from './projectProgressUtils';
 import { getUsersByRole } from '@/data/userRoles';
 
 // Re-export utilities from specialized modules
@@ -13,8 +10,11 @@ export {
   generateSampleTasks 
 } from './projectProgressUtils';
 
+export type { 
+  ProjectReservation
+} from './reservationUtils';
+
 export { 
-  ProjectReservation,
   loadProjectReservations,
   saveProjectReservations,
   isProjectReservedByUser,
