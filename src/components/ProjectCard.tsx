@@ -3,9 +3,11 @@ import React from 'react';
 import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
 import { ProjectTheme } from '@/data/projectThemes';
-import { ArrowRight, Code, Layers, FileCheck, Clock } from 'lucide-react';
+import { ArrowRight, Code, Layers, FileCheck, Clock, Building, User } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { getProjectImage } from '@/lib/getProjectImage';
+import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
+import { useAuth } from '@/contexts/AuthContext';
 
 interface ProjectCardProps {
   project: ProjectTheme;
@@ -13,6 +15,7 @@ interface ProjectCardProps {
 }
 
 const ProjectCard: React.FC<ProjectCardProps> = ({ project, className }) => {
+  const { user } = useAuth();
   const complexityColor = {
     Սկսնակ: 'bg-green-500/10 text-green-600 border-green-200',
     Միջին: 'bg-amber-500/10 text-amber-600 border-amber-200',
@@ -21,6 +24,14 @@ const ProjectCard: React.FC<ProjectCardProps> = ({ project, className }) => {
 
   // Use the image utility function
   const imageUrl = getProjectImage(project);
+
+  // Determine creator information
+  const isCreatedByCurrentUser = project.createdBy === user?.id;
+  const creatorName = isCreatedByCurrentUser ? 'Ձեր կողմից' : 'Ուսումնական Կենտրոն';
+  const creatorAvatar = isCreatedByCurrentUser && user?.avatar 
+    ? user.avatar 
+    : 'https://api.dicebear.com/7.x/avataaars/svg?seed=project';
+  const creatorType = isCreatedByCurrentUser ? 'user' : 'organization';
 
   return (
     <Link 
@@ -49,6 +60,16 @@ const ProjectCard: React.FC<ProjectCardProps> = ({ project, className }) => {
             <h3 className="text-xl font-medium mt-2 group-hover:text-primary transition-colors duration-300">
               {project.title}
             </h3>
+          </div>
+          
+          {/* Creator information with avatar */}
+          <div className="flex items-center mt-1">
+            <Avatar className="h-8 w-8 border border-border">
+              <AvatarImage src={creatorAvatar} alt={creatorName} />
+              <AvatarFallback>
+                {creatorType === 'user' ? <User size={14} /> : <Building size={14} />}
+              </AvatarFallback>
+            </Avatar>
           </div>
         </div>
 
@@ -101,7 +122,14 @@ const ProjectCard: React.FC<ProjectCardProps> = ({ project, className }) => {
         </div>
 
         <div className="mt-6 pt-4 border-t border-border flex justify-between items-center">
-          <Badge variant="outline">{project.category}</Badge>
+          <div className="flex items-center gap-2">
+            <Badge variant="outline">{project.category}</Badge>
+            {/* Display creator name */}
+            <span className="text-xs text-muted-foreground flex items-center gap-1">
+              {creatorType === 'user' ? <User size={12} /> : <Building size={12} />}
+              {creatorName}
+            </span>
+          </div>
           <button className="text-sm text-primary font-medium inline-flex items-center gap-1 group-hover:gap-2 transition-all">
             Տեսնել մանրամասները <ArrowRight size={14} />
           </button>
