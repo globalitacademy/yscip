@@ -39,7 +39,7 @@ const TaskForm: React.FC<TaskFormProps> = ({
     title: '',
     description: '',
     status: 'todo' as const,
-    assignedTo: '',
+    assignedTo: currentUserId || '',
     dueDate: ''
   });
 
@@ -81,6 +81,23 @@ const TaskForm: React.FC<TaskFormProps> = ({
             />
           </div>
           <div className="grid gap-2">
+            <Label htmlFor="status">Կարգավիճակ</Label>
+            <Select 
+              onValueChange={(value) => setNewTask({ ...newTask, status: value as any })}
+              defaultValue={newTask.status}
+            >
+              <SelectTrigger id="status">
+                <SelectValue placeholder="Ընտրեք կարգավիճակը" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="todo">Անելիք</SelectItem>
+                <SelectItem value="in-progress">Ընթացքի մեջ</SelectItem>
+                <SelectItem value="review">Վերանայման</SelectItem>
+                <SelectItem value="done">Ավարտված</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+          <div className="grid gap-2">
             <Label htmlFor="dueDate">Վերջնաժամկետ</Label>
             <Input
               id="dueDate"
@@ -94,7 +111,7 @@ const TaskForm: React.FC<TaskFormProps> = ({
             <Label htmlFor="assignee">Նշանակված ուսանող</Label>
             <Select 
               onValueChange={(value) => setNewTask({ ...newTask, assignedTo: value })}
-              defaultValue={newTask.assignedTo}
+              defaultValue={currentUserId || newTask.assignedTo}
             >
               <SelectTrigger id="assignee">
                 <SelectValue placeholder="Ընտրեք ուսանող" />
