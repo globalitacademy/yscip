@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { cn } from '@/lib/utils';
@@ -6,9 +5,11 @@ import UserMenu from '@/components/UserMenu';
 import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
 import { LayoutDashboard, GraduationCap, BookOpen, ClipboardList, Users, Building, FileText } from 'lucide-react';
+
 interface HeaderProps {
   className?: string;
 }
+
 const Header: React.FC<HeaderProps> = ({
   className
 }) => {
@@ -26,12 +27,6 @@ const Header: React.FC<HeaderProps> = ({
               <Button variant="outline" size="sm" className="gap-1">
                 <LayoutDashboard size={16} />
                 <span className="hidden md:inline">Ադմին պանել</span>
-              </Button>
-            </Link>
-            <Link to="/users">
-              <Button variant="outline" size="sm" className="gap-1">
-                <Users size={16} />
-                <span className="hidden md:inline">Օգտատերեր</span>
               </Button>
             </Link>
             <Link to="/organizations">
@@ -105,6 +100,7 @@ const Header: React.FC<HeaderProps> = ({
         return null;
     }
   };
+
   return <header className={cn("border-b border-border sticky top-0 z-50 bg-background", className)}>
       <div className="container mx-auto px-4 py-3 flex justify-between items-center">
         <div className="flex items-center gap-6">
@@ -123,4 +119,5 @@ const Header: React.FC<HeaderProps> = ({
       </div>
     </header>;
 };
+
 export default Header;
