@@ -1,3 +1,4 @@
+
 import React from 'react';
 import {
   LayoutDashboard,
@@ -28,7 +29,7 @@ export interface SidebarMenuItemType {
 
 export const baseMenuItems: SidebarMenuItemType[] = [
   {
-    label: 'Դաշտակ',
+    label: 'Ադմին պանել',
     path: '/admin',
     icon: <LayoutDashboard className="h-4 w-4" />,
     roles: ['admin', 'lecturer', 'instructor', 'supervisor', 'project_manager', 'employer']

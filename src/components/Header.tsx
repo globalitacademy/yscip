@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { cn } from '@/lib/utils';
@@ -24,7 +25,7 @@ const Header: React.FC<HeaderProps> = ({
             <Link to="/admin">
               <Button variant="outline" size="sm" className="gap-1">
                 <LayoutDashboard size={16} />
-                <span className="hidden md:inline">Կառավարման վահանակ</span>
+                <span className="hidden md:inline">Ադմին պանել</span>
               </Button>
             </Link>
             <Link to="/users">
