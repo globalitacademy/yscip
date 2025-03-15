@@ -78,10 +78,12 @@ const TasksPage: React.FC = () => {
   const fetchProjectTasks = async (projectId: string) => {
     setLoading(true);
     try {
+      const projectIdNumber = parseInt(projectId, 10);
+      
       const { data, error } = await supabase
         .from('tasks')
         .select('*, users(name, avatar)')
-        .eq('project_id', projectId);
+        .eq('project_id', projectIdNumber);
 
       if (error) throw error;
 
@@ -150,6 +152,8 @@ const TasksPage: React.FC = () => {
   // Նոր առաջադրանքի ավելացում
   const handleAddTask = async (task: any) => {
     try {
+      const projectIdNumber = parseInt(selectedProject, 10);
+      
       const { data, error } = await supabase
         .from('tasks')
         .insert({
@@ -159,7 +163,7 @@ const TasksPage: React.FC = () => {
           assigned_to: task.assignedTo,
           due_date: task.dueDate,
           created_by: task.createdBy,
-          project_id: parseInt(selectedProject)
+          project_id: projectIdNumber
         })
         .select();
 
