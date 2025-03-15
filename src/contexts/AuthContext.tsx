@@ -29,25 +29,16 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     setUser, 
     setIsAuthenticated, 
     setPendingUsers,
-    isLoading,
-    demoAccounts,
-    setDemoAccounts
+    isLoading
   } = useAuthSession();
 
   // Authentication operations
-  const { 
-    login, 
-    logout, 
-    registerUser, 
-    manageDemoAccount 
-  } = useAuthOperations(
+  const { login, logout, registerUser } = useAuthOperations(
     user, 
     pendingUsers, 
-    demoAccounts,
     setUser, 
     setIsAuthenticated, 
-    setPendingUsers,
-    setDemoAccounts
+    setPendingUsers
   );
 
   // User management operations
@@ -57,8 +48,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     verifyEmail, 
     approveRegistration, 
     getPendingUsers,
-    resetAdminAccount,
-    registerRealAccount
+    resetAdminAccount 
   } = useUserOperations(pendingUsers, setPendingUsers, setUser);
 
   return (
@@ -75,10 +65,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         verifyEmail,
         approveRegistration,
         getPendingUsers,
-        resetAdminAccount,
-        demoAccounts,
-        manageDemoAccount,
-        registerRealAccount
+        resetAdminAccount
       }}
     >
       {children}
