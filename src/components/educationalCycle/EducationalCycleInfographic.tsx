@@ -1,6 +1,6 @@
 
 import React, { useEffect, useState } from 'react';
-import { LogIn, BookOpen, ClipboardCheck, GraduationCap, FileCode } from 'lucide-react';
+import { LogIn, BookOpen, ClipboardCheck, GraduationCap, FileCode, Clock } from 'lucide-react';
 import { FadeIn, SlideUp } from '@/components/LocalTransitions';
 import { Course } from '@/components/courses/types';
 
