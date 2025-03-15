@@ -10,6 +10,7 @@ import { projectThemes } from '@/data/projectThemes';
 import UserReservedProjects from '@/components/user/UserReservedProjects';
 import ProjectTabs from '@/components/projects/ProjectTabs';
 import EducationalCycleInfographic from '@/components/educationalCycle';
+import CoursesSection from '@/components/courses/CoursesSection';
 
 const Index = () => {
   const { user } = useAuth();
@@ -85,6 +86,7 @@ const Index = () => {
       <main className="flex-grow">
         <Hero />
         <FeaturesSection />
+        <CoursesSection />
         <EducationalCycleInfographic />
         <div id="themes-section" className="container mx-auto px-4 pb-16">
           {user && (

@@ -11,6 +11,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Textarea } from '@/components/ui/textarea';
 import { toast } from 'sonner';
 import { v4 as uuidv4 } from 'uuid';
+import { Pencil } from 'lucide-react';
 
 interface Course {
   id: string;
@@ -43,11 +44,25 @@ const mockCourses: Course[] = [
 
 const mockSpecializations = ['Ծրագրավորում', 'Տվյալագիտություն', 'Դիզայն', 'Մարկետինգ', 'Բիզնես վերլուծություն'];
 
+// Check if courses are already in localStorage, otherwise use mock data
+const initializeCourses = () => {
+  const storedCourses = localStorage.getItem('courses');
+  if (storedCourses) {
+    try {
+      return JSON.parse(storedCourses);
+    } catch (e) {
+      console.error('Error parsing stored courses:', e);
+    }
+  }
+  return mockCourses;
+};
+
 const CourseManagement: React.FC = () => {
   const { user } = useAuth();
-  const [courses, setCourses] = useState<Course[]>(mockCourses);
+  const [courses, setCourses] = useState<Course[]>(initializeCourses());
   const [selectedCourse, setSelectedCourse] = useState<Course | null>(null);
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
+  const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [newCourse, setNewCourse] = useState<Partial<Course>>({
     name: '',
     description: '',
@@ -74,7 +89,10 @@ const CourseManagement: React.FC = () => {
       modules: newCourse.modules || []
     };
 
-    setCourses([...courses, courseToAdd]);
+    const updatedCourses = [...courses, courseToAdd];
+    setCourses(updatedCourses);
+    localStorage.setItem('courses', JSON.stringify(updatedCourses));
+    
     setNewCourse({
       name: '',
       description: '',
@@ -84,6 +102,29 @@ const CourseManagement: React.FC = () => {
     });
     setIsAddDialogOpen(false);
     toast.success('Կուրսը հաջողությամբ ավելացվել է');
+  };
+
+  const handleEditCourse = () => {
+    if (!selectedCourse) return;
+    
+    if (!selectedCourse.name || !selectedCourse.description || !selectedCourse.duration) {
+      toast.error('Լրացրեք բոլոր պարտադիր դաշտերը');
+      return;
+    }
+
+    const updatedCourses = courses.map(course => 
+      course.id === selectedCourse.id ? selectedCourse : course
+    );
+    
+    setCourses(updatedCourses);
+    localStorage.setItem('courses', JSON.stringify(updatedCourses));
+    setIsEditDialogOpen(false);
+    toast.success('Կուրսը հաջողությամբ թարմացվել է');
+  };
+
+  const handleEditInit = (course: Course) => {
+    setSelectedCourse({...course});
+    setIsEditDialogOpen(true);
   };
 
   const handleAddModule = () => {
@@ -104,8 +145,29 @@ const CourseManagement: React.FC = () => {
     });
   };
 
+  const handleAddModuleToEdit = () => {
+    if (!newModule || !selectedCourse) return;
+    setSelectedCourse({
+      ...selectedCourse,
+      modules: [...selectedCourse.modules, newModule]
+    });
+    setNewModule('');
+  };
+
+  const handleRemoveModuleFromEdit = (index: number) => {
+    if (!selectedCourse) return;
+    const updatedModules = [...selectedCourse.modules];
+    updatedModules.splice(index, 1);
+    setSelectedCourse({
+      ...selectedCourse,
+      modules: updatedModules
+    });
+  };
+
   const handleDeleteCourse = (id: string) => {
-    setCourses(courses.filter(course => course.id !== id));
+    const updatedCourses = courses.filter(course => course.id !== id);
+    setCourses(updatedCourses);
+    localStorage.setItem('courses', JSON.stringify(updatedCourses));
     toast.success('Կուրսը հաջողությամբ հեռացվել է');
   };
 
@@ -243,14 +305,24 @@ const CourseManagement: React.FC = () => {
                         <CardDescription>{course.specialization}</CardDescription>
                       </div>
                       {isAdmin && (
-                        <Button 
-                          variant="ghost" 
-                          size="icon" 
-                          className="text-destructive" 
-                          onClick={() => handleDeleteCourse(course.id)}
-                        >
-                          ✕
-                        </Button>
+                        <div className="flex space-x-1">
+                          <Button 
+                            variant="ghost" 
+                            size="icon" 
+                            className="text-primary" 
+                            onClick={() => handleEditInit(course)}
+                          >
+                            <Pencil size={16} />
+                          </Button>
+                          <Button 
+                            variant="ghost" 
+                            size="icon" 
+                            className="text-destructive" 
+                            onClick={() => handleDeleteCourse(course.id)}
+                          >
+                            ✕
+                          </Button>
+                        </div>
                       )}
                     </div>
                   </CardHeader>
@@ -283,6 +355,114 @@ const CourseManagement: React.FC = () => {
           <p className="text-center text-gray-500">Կուրսեր չկան: Դասախոսները կտեսնեն իրենց նշանակված կուրսերը այստեղ:</p>
         </TabsContent>
       </Tabs>
+
+      {/* Edit Course Dialog */}
+      <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
+        <DialogContent className="sm:max-w-[500px]">
+          <DialogHeader>
+            <DialogTitle>Կուրսի խմբագրում</DialogTitle>
+            <DialogDescription>
+              Փոփոխեք կուրսի տվյալները ներքևում: Պատրաստ լինելուց հետո սեղմեք "Պահպանել" կոճակը:
+            </DialogDescription>
+          </DialogHeader>
+          {selectedCourse && (
+            <div className="grid gap-4 py-4">
+              <div className="grid grid-cols-4 items-center gap-4">
+                <Label htmlFor="edit-name" className="text-right">
+                  Անվանում
+                </Label>
+                <Input
+                  id="edit-name"
+                  value={selectedCourse.name}
+                  onChange={(e) => setSelectedCourse({ ...selectedCourse, name: e.target.value })}
+                  className="col-span-3"
+                />
+              </div>
+              <div className="grid grid-cols-4 items-center gap-4">
+                <Label htmlFor="edit-specialization" className="text-right">
+                  Մասնագիտություն
+                </Label>
+                <Select 
+                  value={selectedCourse.specialization} 
+                  onValueChange={(value) => setSelectedCourse({ ...selectedCourse, specialization: value })}
+                >
+                  <SelectTrigger className="col-span-3">
+                    <SelectValue placeholder="Ընտրեք մասնագիտությունը" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {mockSpecializations.map((spec) => (
+                      <SelectItem key={spec} value={spec}>
+                        {spec}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="grid grid-cols-4 items-center gap-4">
+                <Label htmlFor="edit-duration" className="text-right">
+                  Տևողություն
+                </Label>
+                <Input
+                  id="edit-duration"
+                  value={selectedCourse.duration}
+                  onChange={(e) => setSelectedCourse({ ...selectedCourse, duration: e.target.value })}
+                  className="col-span-3"
+                  placeholder="Օր. 4 ամիս"
+                />
+              </div>
+              <div className="grid grid-cols-4 items-start gap-4">
+                <Label htmlFor="edit-description" className="text-right pt-2">
+                  Նկարագրություն
+                </Label>
+                <Textarea
+                  id="edit-description"
+                  value={selectedCourse.description}
+                  onChange={(e) => setSelectedCourse({ ...selectedCourse, description: e.target.value })}
+                  className="col-span-3"
+                  rows={3}
+                />
+              </div>
+              <div className="grid grid-cols-4 items-start gap-4">
+                <Label className="text-right pt-2">Մոդուլներ</Label>
+                <div className="col-span-3 space-y-2">
+                  <div className="flex gap-2">
+                    <Input
+                      value={newModule}
+                      onChange={(e) => setNewModule(e.target.value)}
+                      placeholder="Մոդուլի անվանում"
+                    />
+                    <Button type="button" onClick={handleAddModuleToEdit} size="sm">
+                      Ավելացնել
+                    </Button>
+                  </div>
+                  {selectedCourse.modules.length > 0 && (
+                    <ul className="space-y-1 mt-2">
+                      {selectedCourse.modules.map((module, index) => (
+                        <li key={index} className="flex justify-between items-center bg-secondary/30 p-2 rounded">
+                          {module}
+                          <Button 
+                            variant="ghost" 
+                            size="icon" 
+                            onClick={() => handleRemoveModuleFromEdit(index)}
+                            className="h-5 w-5 text-destructive"
+                          >
+                            ✕
+                          </Button>
+                        </li>
+                      ))}
+                    </ul>
+                  )}
+                </div>
+              </div>
+            </div>
+          )}
+          <DialogFooter>
+            <Button type="submit" onClick={handleEditCourse}>
+              Պահպանել
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
