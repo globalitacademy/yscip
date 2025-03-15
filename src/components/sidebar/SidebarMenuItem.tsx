@@ -23,11 +23,11 @@ const SidebarMenuItem: React.FC<SidebarMenuItemProps> = ({
     <Link to={path}>
       <Button 
         variant={isActive ? "default" : "ghost"} 
-        className={`w-full justify-start ${isActive ? "" : "text-muted-foreground"}`} 
+        className={`w-full justify-start ${isActive ? "" : "text-muted-foreground"} transition-colors duration-200 hover:bg-secondary/20`} 
         onClick={onCloseMenu}
       >
         {icon}
-        <span className="ml-2 mx-[6px]">{label}</span>
+        <span className="ml-2 mx-[6px] font-medium transition-colors duration-200 group-hover:text-primary">{label}</span>
       </Button>
     </Link>
   );
