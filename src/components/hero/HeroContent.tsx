@@ -11,7 +11,7 @@ const HeroContent: React.FC<HeroContentProps> = ({
   return <div className="container px-4 mx-auto text-center z-10">
       <SlideDown delay="delay-100">
         <div className="inline-block px-4 py-1 mb-6 rounded-full text-sm font-medium bg-gradient-to-r from-accent to-accent/70 text-accent-foreground backdrop-blur-sm border border-accent/20 transform hover:scale-105 transition-transform duration-300">
-          Ուսումնական կառավարման վեբ-համակարգ
+          Ուսումցման կառավարման վեբ-համակարգ
         </div>
       </SlideDown>
       
