@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import Header from '@/components/Header';
 import Hero from '@/components/Hero';
@@ -8,6 +9,7 @@ import { toast } from 'sonner';
 import { projectThemes } from '@/data/projectThemes';
 import UserReservedProjects from '@/components/user/UserReservedProjects';
 import ProjectTabs from '@/components/projects/ProjectTabs';
+import EducationalCycleInfographic from '@/components/educationalCycle';
 
 const Index = () => {
   const { user } = useAuth();
@@ -83,6 +85,7 @@ const Index = () => {
       <main className="flex-grow">
         <Hero />
         <FeaturesSection />
+        <EducationalCycleInfographic />
         <div id="themes-section" className="container mx-auto px-4 pb-16">
           {user && (
             <UserReservedProjects reservedProjects={userReservedProjectDetails} />
