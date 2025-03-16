@@ -1,6 +1,5 @@
 
 import React from 'react';
-import { Button } from '@/components/ui/button';
 import { ProjectTheme } from '@/data/projectThemes';
 import ProjectCard from '@/components/projects/ProjectCard';
 import { FadeIn } from '@/components/LocalTransitions';
@@ -43,37 +42,6 @@ const ProjectGrid: React.FC<ProjectGridProps> = ({
             onImageChange={onImageChange}
             onDelete={onDeleteProject}
           />
-          
-          {/* Action buttons overlay */}
-          <div className="absolute bottom-4 right-4 flex gap-2">
-            {permissions.canAssignProjects && (
-              <Button 
-                size="sm" 
-                variant="outline"
-                className="bg-background/80 backdrop-blur-sm"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  onSelectProject(project, 'assign');
-                }}
-              >
-                Նշանակել
-              </Button>
-            )}
-            
-            {permissions.canApproveProject && (
-              <Button 
-                size="sm" 
-                variant="outline"
-                className="bg-background/80 backdrop-blur-sm"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  onSelectProject(project, 'approve');
-                }}
-              >
-                Հաստատել
-              </Button>
-            )}
-          </div>
         </div>
       ))}
     </FadeIn>
