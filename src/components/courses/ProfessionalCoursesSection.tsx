@@ -1,11 +1,16 @@
 
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { FadeIn } from '@/components/LocalTransitions';
 import { Button } from '@/components/ui/button';
-import { Code, BookText, BrainCircuit, Database, FileCode, Globe, User, Building } from 'lucide-react';
-import { Link } from 'react-router-dom';
+import { Code, BookText, BrainCircuit, Database, FileCode, Globe, User, Building, Plus } from 'lucide-react';
+import { Link, useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardFooter, CardHeader } from '@/components/ui/card';
+import { useAuth } from '@/contexts/AuthContext';
+import { useCourseManagement } from './useCourseManagement';
+import { Course } from './types';
+import { toast } from 'sonner';
 
+// Interface for professional courses display
 interface ProfessionalCourse {
   id: string;
   title: string;
@@ -19,7 +24,28 @@ interface ProfessionalCourse {
   institution: string;
 }
 
-const professionalCourses: ProfessionalCourse[] = [
+// Icons mapping for different course types
+const courseIcons: Record<string, React.ReactNode> = {
+  'WEB Front-End': <Code className="w-16 h-16" />,
+  'Python (ML / AI)': <BrainCircuit className="w-16 h-16" />,
+  'Java': <BookText className="w-16 h-16" />,
+  'JavaScript': <FileCode className="w-16 h-16" />,
+  'PHP': <Database className="w-16 h-16" />,
+  'C#/.NET': <Globe className="w-16 h-16" />
+};
+
+// Colors mapping for different course types
+const courseColors: Record<string, string> = {
+  'WEB Front-End': 'text-amber-500',
+  'Python (ML / AI)': 'text-blue-500',
+  'Java': 'text-red-500',
+  'JavaScript': 'text-yellow-500',
+  'PHP': 'text-purple-500',
+  'C#/.NET': 'text-green-500'
+};
+
+// Default courses if no courses are available from the database
+const defaultProfessionalCourses: ProfessionalCourse[] = [
   {
     id: '1',
     title: 'WEB Front-End',
@@ -95,20 +121,82 @@ const professionalCourses: ProfessionalCourse[] = [
 ];
 
 const ProfessionalCoursesSection: React.FC = () => {
+  const { user } = useAuth();
+  const { courses } = useCourseManagement();
+  const [professionalCourses, setProfessionalCourses] = useState<ProfessionalCourse[]>(defaultProfessionalCourses);
+  const navigate = useNavigate();
+
+  // Check if user has permissions to add courses
+  const isAdmin = user?.role === 'admin';
+  const isLecturer = ['lecturer', 'instructor', 'supervisor', 'project_manager'].includes(user?.role || '');
+  const isEmployer = user?.role === 'employer';
+  const canManageCourses = isAdmin || isLecturer || isEmployer;
+
+  // Transform courses from database to ProfessionalCourse format
+  useEffect(() => {
+    if (courses && courses.length > 0) {
+      const transformedCourses: ProfessionalCourse[] = courses.map((course: Course) => {
+        // Determine icon and color based on course name or use default
+        const icon = courseIcons[course.name] || <Code className="w-16 h-16" />;
+        const color = courseColors[course.name] || 'text-gray-500';
+        
+        return {
+          id: course.id,
+          title: course.name,
+          subtitle: 'ԴԱՍԸՆԹԱՑ',
+          icon: icon,
+          duration: course.duration || '6 ամիս',
+          price: '58,000 ֏', // Default price, can be added to Course type if needed
+          buttonText: 'Դիտել',
+          color: color,
+          createdBy: course.createdBy || 'Admin',
+          institution: course.specialization || 'ԵՊՀ'
+        };
+      });
+      
+      setProfessionalCourses(transformedCourses);
+    }
+  }, [courses]);
+
+  const handleAddCourse = () => {
+    if (!user) {
+      toast.error('Խնդրում ենք մուտք գործել համակարգ նախքան դասընթաց ավելացնելը');
+      return;
+    }
+    
+    navigate('/courses');
+  };
+
   return (
     <section className="py-16 bg-white">
       <div className="container mx-auto px-4">
-        <FadeIn>
-          <h2 className="text-3xl font-bold mb-2 text-center">
-            Ծրագրավորման դասընթացներ
-          </h2>
-        </FadeIn>
-        
-        <FadeIn delay="delay-100">
-          <p className="text-muted-foreground text-center max-w-2xl mx-auto mb-8">
-            Ծրագրավորման դասընթացներ նախատեսված սկսնակների համար
-          </p>
-        </FadeIn>
+        <div className="flex justify-between items-center mb-8">
+          <div>
+            <FadeIn>
+              <h2 className="text-3xl font-bold mb-2">
+                Ծրագրավորման դասընթացներ
+              </h2>
+            </FadeIn>
+            
+            <FadeIn delay="delay-100">
+              <p className="text-muted-foreground max-w-2xl mb-2">
+                Ծրագրավորման դասընթացներ նախատեսված սկսնակների համար
+              </p>
+            </FadeIn>
+          </div>
+          
+          {canManageCourses && (
+            <FadeIn delay="delay-150">
+              <Button 
+                onClick={handleAddCourse}
+                className="flex items-center gap-2"
+              >
+                <Plus size={16} />
+                Ավելացնել դասընթաց
+              </Button>
+            </FadeIn>
+          )}
+        </div>
         
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {professionalCourses.map((course) => (
