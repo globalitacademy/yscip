@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { FadeIn } from '@/components/LocalTransitions';
 import { Button } from '@/components/ui/button';
@@ -127,13 +126,7 @@ const ProfessionalCoursesSection: React.FC = () => {
                   </div>
                 </CardContent>
                 
-                <CardFooter className="pt-4 flex flex-col gap-2">
-                  <Button 
-                    className="w-full"
-                  >
-                    Դիմել
-                  </Button>
-                  
+                <CardFooter className="pt-4">
                   <Button 
                     variant="outline"
                     className="w-full"
