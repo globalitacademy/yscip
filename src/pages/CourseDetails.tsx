@@ -131,6 +131,7 @@ const CourseDetails: React.FC = () => {
   const handleEditCourse = () => {
     if (!course) return;
 
+    // Update the course in localStorage
     try {
       const storedCourses = localStorage.getItem('professionalCourses');
       if (storedCourses) {
@@ -150,6 +151,7 @@ const CourseDetails: React.FC = () => {
 
   const toggleEditMode = () => {
     if (isEditing) {
+      // Save changes
       if (!editedCourse) return;
       
       try {
@@ -168,6 +170,7 @@ const CourseDetails: React.FC = () => {
         toast.error('Դասընթացի թարմացման ժամանակ սխալ է տեղի ունեցել');
       }
     } else {
+      // Enter edit mode
       setEditedCourse(course);
     }
     
@@ -245,6 +248,7 @@ const CourseDetails: React.FC = () => {
     });
   };
 
+  // Check if user can edit this course
   const canEdit = user && (user.role === 'admin' || course?.createdBy === user.name);
 
   if (loading) {
@@ -318,100 +322,65 @@ const CourseDetails: React.FC = () => {
           
           <FadeIn>
             <div className="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-xl p-8 mb-10">
-              <div className="flex flex-col md:flex-row gap-8">
-                {isEditing ? (
-                  <div className="w-full md:w-1/3">
-                    <div className="border-2 border-dashed border-gray-300 rounded-lg p-4 text-center">
-                      <Input 
-                        type="text"
-                        value={editedCourse?.imageUrl || ''}
-                        onChange={(e) => setEditedCourse(prev => prev ? {...prev, imageUrl: e.target.value} : prev)}
-                        placeholder="URL նկարի"
-                        className="mb-2"
-                      />
-                      <p className="text-sm text-muted-foreground">Մուտքագրեք նկարի URL-ը</p>
-                    </div>
-                  </div>
-                ) : displayCourse?.imageUrl ? (
-                  <div className="w-full md:w-1/3">
-                    <img 
-                      src={displayCourse.imageUrl}
-                      alt={displayCourse.title}
-                      className="w-full h-auto rounded-lg object-cover shadow-md"
-                    />
-                  </div>
-                ) : (
-                  <div className="w-full md:w-1/3">
-                    <div className="bg-gradient-to-r from-blue-100 to-indigo-100 rounded-lg h-64 flex items-center justify-center">
-                      <div className="text-6xl text-indigo-300">
-                        {displayCourse?.icon || <code className="text-4xl">{"</>"}</code>}
-                      </div>
-                    </div>
-                  </div>
-                )}
-
-                <div className="flex-1">
+              {isEditing ? (
+                <>
+                  <Input 
+                    value={editedCourse?.title || ''}
+                    onChange={(e) => setEditedCourse(prev => prev ? {...prev, title: e.target.value} : prev)}
+                    className="text-3xl md:text-4xl font-bold mb-3"
+                  />
+                  <Textarea 
+                    value={editedCourse?.description || ''}
+                    onChange={(e) => setEditedCourse(prev => prev ? {...prev, description: e.target.value} : prev)}
+                    className="text-lg mb-6"
+                    rows={4}
+                  />
+                </>
+              ) : (
+                <>
+                  <h1 className="text-3xl md:text-4xl font-bold mb-3">{displayCourse?.title}</h1>
+                  <p className="text-lg text-muted-foreground mb-6">{displayCourse?.description}</p>
+                </>
+              )}
+              
+              <div className="flex flex-wrap gap-6 mb-8">
+                <div className="flex items-center gap-2">
+                  <User size={18} className="text-blue-500" />
                   {isEditing ? (
-                    <>
-                      <Input 
-                        value={editedCourse?.title || ''}
-                        onChange={(e) => setEditedCourse(prev => prev ? {...prev, title: e.target.value} : prev)}
-                        className="text-3xl md:text-4xl font-bold mb-3"
-                      />
-                      <Textarea 
-                        value={editedCourse?.description || ''}
-                        onChange={(e) => setEditedCourse(prev => prev ? {...prev, description: e.target.value} : prev)}
-                        className="text-lg mb-6"
-                        rows={4}
-                      />
-                    </>
+                    <Input 
+                      value={editedCourse?.createdBy || ''}
+                      onChange={(e) => setEditedCourse(prev => prev ? {...prev, createdBy: e.target.value} : prev)}
+                      className="w-48"
+                    />
                   ) : (
-                    <>
-                      <h1 className="text-3xl md:text-4xl font-bold mb-3">{displayCourse?.title}</h1>
-                      <p className="text-lg text-muted-foreground mb-6">{displayCourse?.description}</p>
-                    </>
+                    <span>Դասախոս՝ {displayCourse?.createdBy}</span>
                   )}
-                  
-                  <div className="flex flex-wrap gap-6 mb-8">
-                    <div className="flex items-center gap-2">
-                      <User size={18} className="text-blue-500" />
-                      {isEditing ? (
-                        <Input 
-                          value={editedCourse?.createdBy || ''}
-                          onChange={(e) => setEditedCourse(prev => prev ? {...prev, createdBy: e.target.value} : prev)}
-                          className="w-48"
-                        />
-                      ) : (
-                        <span>Դասախոս՝ {displayCourse?.createdBy}</span>
-                      )}
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <Clock size={18} className="text-blue-500" />
-                      {isEditing ? (
-                        <Input 
-                          value={editedCourse?.duration || ''}
-                          onChange={(e) => setEditedCourse(prev => prev ? {...prev, duration: e.target.value} : prev)}
-                          className="w-48"
-                        />
-                      ) : (
-                        <span>Տևողություն՝ {displayCourse?.duration}</span>
-                      )}
-                    </div>
-                  </div>
-                  
-                  <div className="flex gap-4 mt-6">
-                    {!isEditing && (
-                      <>
-                        <Button onClick={handleApply} size="lg">
-                          Դիմել դասընթացին
-                        </Button>
-                        <Button variant="outline" size="lg">
-                          Կապ հաստատել
-                        </Button>
-                      </>
-                    )}
-                  </div>
                 </div>
+                <div className="flex items-center gap-2">
+                  <Clock size={18} className="text-blue-500" />
+                  {isEditing ? (
+                    <Input 
+                      value={editedCourse?.duration || ''}
+                      onChange={(e) => setEditedCourse(prev => prev ? {...prev, duration: e.target.value} : prev)}
+                      className="w-48"
+                    />
+                  ) : (
+                    <span>Տևողություն՝ {displayCourse?.duration}</span>
+                  )}
+                </div>
+              </div>
+              
+              <div className="flex gap-4 mt-6">
+                {!isEditing && (
+                  <>
+                    <Button onClick={handleApply} size="lg">
+                      Դիմել դասընթացին
+                    </Button>
+                    <Button variant="outline" size="lg">
+                      Կապ հաստատել
+                    </Button>
+                  </>
+                )}
               </div>
             </div>
           </FadeIn>
