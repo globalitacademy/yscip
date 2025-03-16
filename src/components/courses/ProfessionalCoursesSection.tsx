@@ -113,12 +113,12 @@ const ProfessionalCoursesSection: React.FC = () => {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {professionalCourses.map((course) => (
             <FadeIn key={course.id} delay="delay-200" className="flex">
-              <Card className="flex flex-col w-full hover:shadow-md transition-shadow">
-                <CardHeader className="pb-2 text-center">
-                  <div className="absolute top-4 left-4 flex items-center text-xs bg-gray-100 px-2 py-1 rounded-full">
-                    <Building size={12} className="mr-1" />
-                    <span>{course.institution}</span>
-                  </div>
+              <Card className="flex flex-col w-full hover:shadow-md transition-shadow relative">
+                <div className="absolute top-4 left-4 flex items-center text-xs bg-gray-100 px-2 py-1 rounded-full z-10">
+                  <Building size={12} className="mr-1" />
+                  <span>{course.institution}</span>
+                </div>
+                <CardHeader className="pb-2 text-center pt-12">
                   <div className={`mb-4 ${course.color} mx-auto`}>
                     {course.icon}
                   </div>
