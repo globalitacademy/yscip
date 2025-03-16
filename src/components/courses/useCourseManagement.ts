@@ -1,11 +1,103 @@
-
 import { useState, useEffect } from 'react';
 import { toast } from 'sonner';
 import { v4 as uuidv4 } from 'uuid';
 import { Course } from './types';
+import { ProfessionalCourse } from './types/ProfessionalCourse';
 import { useAuth } from '@/contexts/AuthContext';
+import { Code, BookText, BrainCircuit, Database, FileCode, Globe } from 'lucide-react';
 
-// Mock data
+// Mock professional courses data
+const mockProfessionalCourses: ProfessionalCourse[] = [
+  {
+    id: '1',
+    title: 'WEB Front-End',
+    subtitle: 'ԴԱՍԸՆԹԱՑ',
+    icon: <Code className="w-16 h-16" />,
+    duration: '9 ամիս',
+    price: '58,000 ֏',
+    buttonText: 'Դիտել',
+    color: 'text-amber-500',
+    createdBy: 'Արամ Հակոբյան',
+    institution: 'ՀՊՏՀ'
+  },
+  {
+    id: '2',
+    title: 'Python (ML / AI)',
+    subtitle: 'ԴԱՍԸՆԹԱՑ',
+    icon: <BrainCircuit className="w-16 h-16" />,
+    duration: '7 ամիս',
+    price: '68,000 ֏',
+    buttonText: 'Դիտել',
+    color: 'text-blue-500',
+    createdBy: 'Լիլիթ Մարտիրոսյան',
+    institution: 'ԵՊՀ'
+  },
+  {
+    id: '3',
+    title: 'Java',
+    subtitle: 'ԴԱՍԸՆԹԱՑ',
+    icon: <BookText className="w-16 h-16" />,
+    duration: '6 ամիս',
+    price: '68,000 ֏',
+    buttonText: 'Դիտել',
+    color: 'text-red-500',
+    createdBy: 'Գարիկ Սարգսյան',
+    institution: 'ՀԱՊՀ'
+  },
+  {
+    id: '4',
+    title: 'JavaScript',
+    subtitle: 'ԴԱՍԸՆԹԱՑ',
+    icon: <FileCode className="w-16 h-16" />,
+    duration: '3.5 ամիս',
+    price: '58,000 ֏',
+    buttonText: 'Դիտել',
+    color: 'text-yellow-500',
+    createdBy: 'Անի Մուրադյան',
+    institution: 'ՀԱՀ'
+  },
+  {
+    id: '5',
+    title: 'PHP',
+    subtitle: 'ԴԱՍԸՆԹԱՑ',
+    icon: <Database className="w-16 h-16" />,
+    duration: '5 ամիս',
+    price: '58,000 ֏',
+    buttonText: 'Դիտել',
+    color: 'text-purple-500',
+    createdBy: 'Վահե Ղազարյան',
+    institution: 'ՀՊՄՀ'
+  },
+  {
+    id: '6',
+    title: 'C#/.NET',
+    subtitle: 'ԴԱՍԸՆԹԱՑ',
+    icon: <Globe className="w-16 h-16" />,
+    duration: '6 ամիս',
+    price: '68,000 ֏',
+    buttonText: 'Դիտել',
+    color: 'text-green-500',
+    createdBy: 'Տիգրան Դավթյան',
+    institution: 'ՀՌԱՀ'
+  }
+];
+
+export const mockSpecializations = ['Ծրագրավորում', 'Տվյալագիտություն', 'Դիզայն', 'Մարկետինգ', 'Բիզնես վերլուծություն'];
+
+// Initialize professional courses with mock data if localStorage is empty
+const initializeProfessionalCourses = (): ProfessionalCourse[] => {
+  const storedCourses = localStorage.getItem('professionalCourses');
+  if (storedCourses) {
+    try {
+      return JSON.parse(storedCourses);
+    } catch (e) {
+      console.error('Error parsing stored professional courses:', e);
+    }
+  }
+  return mockProfessionalCourses;
+};
+
+// Old mock data kept for reference
 const mockCourses: Course[] = [
   {
     id: '1',
@@ -27,8 +119,6 @@ const mockCourses: Course[] = [
   }
 ];
 
-export const mockSpecializations = ['Ծրագրավորում', 'Տվյալագիտություն', 'Դիզայն', 'Մարկետինգ', 'Բիզնես վերլուծություն'];
-
 // Initialize courses with mock data if localStorage is empty
 const initializeCourses = (): Course[] => {
   const storedCourses = localStorage.getItem('courses');
@@ -45,9 +135,14 @@ const initializeCourses = (): Course[] => {
 export const useCourseManagement = () => {
   const { user } = useAuth();
   const [courses, setCourses] = useState<Course[]>(initializeCourses());
+  const [professionalCourses, setProfessionalCourses] = useState<ProfessionalCourse[]>(initializeProfessionalCourses());
+  
   const [selectedCourse, setSelectedCourse] = useState<Course | null>(null);
+  const [selectedProfessionalCourse, setSelectedProfessionalCourse] = useState<ProfessionalCourse | null>(null);
+  
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
+  
   const [newCourse, setNewCourse] = useState<Partial<Course>>({
     name: '',
     description: '',
@@ -56,10 +151,27 @@ export const useCourseManagement = () => {
     modules: [],
     createdBy: user?.id || ''
   });
+  
+  const [newProfessionalCourse, setNewProfessionalCourse] = useState<ProfessionalCourse>({
+    id: '',
+    title: '',
+    subtitle: 'ԴԱՍԸՆԹԱՑ',
+    icon: <Code className="w-16 h-16" />,
+    duration: '',
+    price: '',
+    buttonText: 'Դիտել',
+    color: 'text-amber-500',
+    createdBy: user?.name || '',
+    institution: 'ՀՊՏՀ'
+  });
+  
   const [newModule, setNewModule] = useState('');
 
   // Get user's courses
   const userCourses = courses.filter(course => course.createdBy === user?.id);
+  
+  // Get user's professional courses
+  const userProfessionalCourses = professionalCourses.filter(course => course.createdBy === user?.name);
 
   const handleAddCourse = () => {
     if (!newCourse.name || !newCourse.description || !newCourse.duration) {
@@ -167,26 +279,106 @@ export const useCourseManagement = () => {
     }
   };
 
+  // Professional Courses Functions
+  const handleAddProfessionalCourse = () => {
+    if (!newProfessionalCourse.title || !newProfessionalCourse.duration || !newProfessionalCourse.price) {
+      toast.error('Լրացրեք բոլոր պարտադիր դաշտերը');
+      return;
+    }
+
+    const courseToAdd: ProfessionalCourse = {
+      ...newProfessionalCourse,
+      id: uuidv4(),
+      createdBy: user?.name || 'Unknown',
+    };
+
+    const updatedCourses = [...professionalCourses, courseToAdd];
+    setProfessionalCourses(updatedCourses);
+    localStorage.setItem('professionalCourses', JSON.stringify(updatedCourses));
+    
+    setNewProfessionalCourse({
+      id: '',
+      title: '',
+      subtitle: 'ԴԱՍԸՆԹԱՑ',
+      icon: <Code className="w-16 h-16" />,
+      duration: '',
+      price: '',
+      buttonText: 'Դիտել',
+      color: 'text-amber-500',
+      createdBy: user?.name || '',
+      institution: 'ՀՊՏՀ'
+    });
+    setIsAddDialogOpen(false);
+    toast.success('Դասընթացը հաջողությամբ ավելացվել է');
+  };
+
+  const handleEditProfessionalCourse = () => {
+    if (!selectedProfessionalCourse) return;
+    
+    if (!selectedProfessionalCourse.title || !selectedProfessionalCourse.duration || !selectedProfessionalCourse.price) {
+      toast.error('Լրացրեք բոլոր պարտադիր դաշտերը');
+      return;
+    }
+
+    const updatedCourses = professionalCourses.map(course => 
+      course.id === selectedProfessionalCourse.id ? selectedProfessionalCourse : course
+    );
+    
+    setProfessionalCourses(updatedCourses);
+    localStorage.setItem('professionalCourses', JSON.stringify(updatedCourses));
+    setIsEditDialogOpen(false);
+    toast.success('Դասընթացը հաջողությամբ թարմացվել է');
+  };
+
+  const handleEditProfessionalCourseInit = (course: ProfessionalCourse) => {
+    setSelectedProfessionalCourse({...course});
+    setIsEditDialogOpen(true);
+  };
+
+  const handleDeleteProfessionalCourse = (id: string) => {
+    const courseToDelete = professionalCourses.find(course => course.id === id);
+    
+    // Only allow admins to delete courses
+    if (courseToDelete && user?.role === 'admin') {
+      const updatedCourses = professionalCourses.filter(course => course.id !== id);
+      setProfessionalCourses(updatedCourses);
+      localStorage.setItem('professionalCourses', JSON.stringify(updatedCourses));
+      toast.success('Դասընթացը հաջողությամբ հեռացվել է');
+    } else {
+      toast.error('Դուք չունեք իրավունք ջնջելու այս դասընթացը');
+    }
+  };
+
   return {
     courses,
     userCourses,
+    professionalCourses,
+    userProfessionalCourses,
     selectedCourse,
+    selectedProfessionalCourse,
     setSelectedCourse,
+    setSelectedProfessionalCourse,
     isAddDialogOpen,
     isEditDialogOpen,
     newCourse,
+    newProfessionalCourse,
     newModule,
     setNewCourse,
+    setNewProfessionalCourse,
     setNewModule,
     setIsAddDialogOpen,
     setIsEditDialogOpen,
     handleAddCourse,
+    handleAddProfessionalCourse,
     handleEditCourse,
+    handleEditProfessionalCourse,
     handleEditInit,
+    handleEditProfessionalCourseInit,
     handleAddModule,
     handleRemoveModule,
     handleAddModuleToEdit,
     handleRemoveModuleFromEdit,
-    handleDeleteCourse
+    handleDeleteCourse,
+    handleDeleteProfessionalCourse
   };
 };
