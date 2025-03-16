@@ -1,7 +1,8 @@
+
 import React from 'react';
 import { FadeIn } from '@/components/LocalTransitions';
 import { Button } from '@/components/ui/button';
-import { Code, BookText, BrainCircuit, Database, FileCode, Globe, User } from 'lucide-react';
+import { Code, BookText, BrainCircuit, Database, FileCode, Globe, User, Building } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { Card, CardContent, CardFooter, CardHeader } from '@/components/ui/card';
 
@@ -15,6 +16,7 @@ interface ProfessionalCourse {
   buttonText: string;
   color: string;
   createdBy: string;
+  institution: string;
 }
 
 const professionalCourses: ProfessionalCourse[] = [
@@ -27,7 +29,8 @@ const professionalCourses: ProfessionalCourse[] = [
     price: '58,000 ֏',
     buttonText: 'Դիտել',
     color: 'text-amber-500',
-    createdBy: 'Արամ Հակոբյան'
+    createdBy: 'Արամ Հակոբյան',
+    institution: 'ՀՊՏՀ'
   },
   {
     id: '2',
@@ -38,7 +41,8 @@ const professionalCourses: ProfessionalCourse[] = [
     price: '68,000 ֏',
     buttonText: 'Դիտել',
     color: 'text-blue-500',
-    createdBy: 'Լիլիթ Մարտիրոսյան'
+    createdBy: 'Լիլիթ Մարտիրոսյան',
+    institution: 'ԵՊՀ'
   },
   {
     id: '3',
@@ -49,7 +53,8 @@ const professionalCourses: ProfessionalCourse[] = [
     price: '68,000 ֏',
     buttonText: 'Դիտել',
     color: 'text-red-500',
-    createdBy: 'Գարիկ Սարգսյան'
+    createdBy: 'Գարիկ Սարգսյան',
+    institution: 'ՀԱՊՀ'
   },
   {
     id: '4',
@@ -60,7 +65,8 @@ const professionalCourses: ProfessionalCourse[] = [
     price: '58,000 ֏',
     buttonText: 'Դիտել',
     color: 'text-yellow-500',
-    createdBy: 'Անի Մուրադյան'
+    createdBy: 'Անի Մուրադյան',
+    institution: 'ՀԱՀ'
   },
   {
     id: '5',
@@ -71,7 +77,8 @@ const professionalCourses: ProfessionalCourse[] = [
     price: '58,000 ֏',
     buttonText: 'Դիտել',
     color: 'text-purple-500',
-    createdBy: 'Վահե Ղազարյան'
+    createdBy: 'Վահե Ղազարյան',
+    institution: 'ՀՊՄՀ'
   },
   {
     id: '6',
@@ -82,7 +89,8 @@ const professionalCourses: ProfessionalCourse[] = [
     price: '68,000 ֏',
     buttonText: 'Դիտել',
     color: 'text-green-500',
-    createdBy: 'Տիգրան Դավթյան'
+    createdBy: 'Տիգրան Դավթյան',
+    institution: 'ՀՌԱՀ'
   }
 ];
 
@@ -107,6 +115,10 @@ const ProfessionalCoursesSection: React.FC = () => {
             <FadeIn key={course.id} delay="delay-200" className="flex">
               <Card className="flex flex-col w-full hover:shadow-md transition-shadow">
                 <CardHeader className="pb-2 text-center">
+                  <div className="absolute top-4 left-4 flex items-center text-xs bg-gray-100 px-2 py-1 rounded-full">
+                    <Building size={12} className="mr-1" />
+                    <span>{course.institution}</span>
+                  </div>
                   <div className={`mb-4 ${course.color} mx-auto`}>
                     {course.icon}
                   </div>
