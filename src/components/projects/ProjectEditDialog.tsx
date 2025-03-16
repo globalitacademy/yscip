@@ -6,6 +6,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { ProjectTheme } from '@/data/projectThemes';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 
 interface ProjectEditDialogProps {
   open: boolean;
@@ -24,6 +25,18 @@ const ProjectEditDialog: React.FC<ProjectEditDialogProps> = ({
   setEditedProject,
   onSave
 }) => {
+  // List of available categories for the select dropdown
+  const categories = [
+    "Կրթություն",
+    "Ֆինտեխ",
+    "Առողջապահություն",
+    "Էլեկտրոնային Առևտուր",
+    "Անշարժ Գույք",
+    "Խաղեր",
+    "Կիբերանվտանգություն",
+    "Արհեստական Բանականություն"
+  ];
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-md">
@@ -45,12 +58,21 @@ const ProjectEditDialog: React.FC<ProjectEditDialogProps> = ({
           </div>
           <div className="flex flex-col gap-2">
             <Label htmlFor="project-category">Կատեգորիա</Label>
-            <Input
-              id="project-category"
-              placeholder="Նախագծի կատեգորիա"
+            <Select 
               value={editedProject.category || ''}
-              onChange={(e) => setEditedProject({...editedProject, category: e.target.value})}
-            />
+              onValueChange={(value) => setEditedProject({...editedProject, category: value})}
+            >
+              <SelectTrigger id="project-category">
+                <SelectValue placeholder="Ընտրեք կատեգորիան" />
+              </SelectTrigger>
+              <SelectContent>
+                {categories.map((category) => (
+                  <SelectItem key={category} value={category}>
+                    {category}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           </div>
           <div className="flex flex-col gap-2">
             <Label htmlFor="project-description">Նկարագրություն</Label>

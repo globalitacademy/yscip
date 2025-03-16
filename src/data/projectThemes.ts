@@ -1,3 +1,4 @@
+
 export interface Task {
   id: string;
   title: string;
@@ -33,6 +34,7 @@ export interface ProjectTheme {
   prerequisites?: string[];
   steps?: string[];
   detailedDescription?: string;
+  status?: 'pending' | 'assigned' | 'approved' | 'completed';
 }
 
 // Import all project categories

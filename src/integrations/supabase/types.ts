@@ -36,54 +36,6 @@ export type Database = {
         }
         Relationships: []
       }
-      courses: {
-        Row: {
-          button_text: string | null
-          color: string
-          created_at: string | null
-          created_by: string | null
-          description: string | null
-          duration: string
-          icon_name: string
-          id: string
-          institution: string | null
-          price: string
-          subtitle: string
-          title: string
-          updated_at: string | null
-        }
-        Insert: {
-          button_text?: string | null
-          color?: string
-          created_at?: string | null
-          created_by?: string | null
-          description?: string | null
-          duration: string
-          icon_name: string
-          id?: string
-          institution?: string | null
-          price: string
-          subtitle?: string
-          title: string
-          updated_at?: string | null
-        }
-        Update: {
-          button_text?: string | null
-          color?: string
-          created_at?: string | null
-          created_by?: string | null
-          description?: string | null
-          duration?: string
-          icon_name?: string
-          id?: string
-          institution?: string | null
-          price?: string
-          subtitle?: string
-          title?: string
-          updated_at?: string | null
-        }
-        Relationships: []
-      }
       employer_projects: {
         Row: {
           category: string
