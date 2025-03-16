@@ -5,7 +5,7 @@ import { cn } from '@/lib/utils';
 import UserMenu from '@/components/UserMenu';
 import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
-import { LayoutDashboard, GraduationCap, BookOpen, Code } from 'lucide-react';
+import { LayoutDashboard, GraduationCap } from 'lucide-react';
 import {
   NavigationMenu,
   NavigationMenuContent,
@@ -73,22 +73,7 @@ const Header: React.FC<HeaderProps> = ({
           
           <NavigationMenu className="hidden md:flex">
             <NavigationMenuList>
-              <NavigationMenuItem>
-                <Link to="/admin/student-projects">
-                  <NavigationMenuLink className={navigationMenuTriggerStyle()}>
-                    <Code className="mr-2 h-4 w-4" />
-                    Նախագծեր
-                  </NavigationMenuLink>
-                </Link>
-              </NavigationMenuItem>
-              <NavigationMenuItem>
-                <Link to="/admin/courses">
-                  <NavigationMenuLink className={navigationMenuTriggerStyle()}>
-                    <BookOpen className="mr-2 h-4 w-4" />
-                    Դասընթացներ
-                  </NavigationMenuLink>
-                </Link>
-              </NavigationMenuItem>
+              {/* Navigation menu items for Projects and Courses have been removed */}
             </NavigationMenuList>
           </NavigationMenu>
           
