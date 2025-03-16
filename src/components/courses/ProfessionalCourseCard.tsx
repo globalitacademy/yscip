@@ -25,7 +25,7 @@ const ProfessionalCourseCard: React.FC<ProfessionalCourseCardProps> = ({ course 
         </div>
         
         <CardHeader className="pb-2 text-center pt-14">
-          <div className={`mb-4 ${course.color} mx-auto transform group-hover:scale-110 transition-transform duration-300`}>
+          <div className={`${course.color} mx-auto p-4 rounded-full bg-gray-50 shadow-sm w-20 h-20 flex items-center justify-center mb-4 transform group-hover:scale-110 transition-transform duration-300`}>
             {icon}
           </div>
           <h3 className="font-bold text-xl mb-1">{course.title}</h3>
