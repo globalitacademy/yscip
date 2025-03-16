@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { Github, Twitter, Linkedin, Mail } from 'lucide-react';
@@ -9,7 +8,7 @@ const Footer: React.FC = () => {
           <div className="md:col-span-2">
             <Link to="/" className="text-xl font-medium flex items-center space-x-2 mb-4">
               <span className="bg-primary text-primary-foreground rounded-md p-1 transform -rotate-6">PΘ</span>
-              <span>Պրոեկտների Թեմաներ</span>
+              <span>Ուսուցում Առանց Սահմանների</span>
             </Link>
             <p className="text-muted-foreground max-w-md text-left">
               Ընտրված 100 ժամանակակից պրոեկտի թեմաներ՝ ոգեշնչելու ծրագրավորողներին և օգնելու նրանց ընտրել իրենց հաջորդ ծրագրավորման մարտահրավերը։
