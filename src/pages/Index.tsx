@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import Header from '@/components/Header';
 import Hero from '@/components/Hero';
@@ -11,7 +10,6 @@ import UserReservedProjects from '@/components/user/UserReservedProjects';
 import ProjectTabs from '@/components/projects/ProjectTabs';
 import EducationalCycleInfographic from '@/components/educationalCycle';
 import CoursesSection from '@/components/courses/CoursesSection';
-import HomePageModules from '@/components/educationalCycle/HomePageModules';
 
 const Index = () => {
   const { user } = useAuth();
@@ -100,7 +98,6 @@ const Index = () => {
           />
         </div>
         <CoursesSection />
-        <HomePageModules />
         <EducationalCycleInfographic />
       </main>
       <Footer />
