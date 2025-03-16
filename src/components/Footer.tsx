@@ -10,9 +10,7 @@ const Footer: React.FC = () => {
               <span className="bg-primary text-primary-foreground rounded-md p-1 transform -rotate-6">PΘ</span>
               <span>Ուսուցում Առանց Սահմանների</span>
             </Link>
-            <p className="text-muted-foreground max-w-md text-left">
-              Ընտրված 100 ժամանակակից պրոեկտի թեմաներ՝ ոգեշնչելու ծրագրավորողներին և օգնելու նրանց ընտրել իրենց հաջորդ ծրագրավորման մարտահրավերը։
-            </p>
+            <p className="text-muted-foreground max-w-md text-left">Հարթակը միավորում է ուսանողներին, դասախոսներին և գործատուներին՝ ստեղծելով կրթության նոր ճանապարհ, որը հարմարեցված է ձեր կարիքներին։</p>
             <div className="flex space-x-4 mt-6">
               <a href="#" className="text-muted-foreground hover:text-primary transition-colors" aria-label="GitHub">
                 <Github size={20} />
