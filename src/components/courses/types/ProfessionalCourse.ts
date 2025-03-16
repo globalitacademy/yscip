@@ -5,7 +5,7 @@ export interface ProfessionalCourse {
   id: string;
   title: string;
   subtitle: string;
-  icon: React.ReactNode;
+  icon: React.ReactElement;
   duration: string;
   price: string;
   buttonText: string;

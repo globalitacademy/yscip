@@ -5,6 +5,7 @@ import { Course } from './types';
 import { ProfessionalCourse } from './types/ProfessionalCourse';
 import { useAuth } from '@/contexts/AuthContext';
 import { Code, BookText, BrainCircuit, Database, FileCode, Globe } from 'lucide-react';
+import React from 'react';
 
 // Mock professional courses data
 const mockProfessionalCourses: ProfessionalCourse[] = [
@@ -12,7 +13,7 @@ const mockProfessionalCourses: ProfessionalCourse[] = [
     id: '1',
     title: 'WEB Front-End',
     subtitle: 'ԴԱՍԸՆԹԱՑ',
-    icon: <Code className="w-16 h-16" />,
+    icon: React.createElement(Code, { className: "w-16 h-16" }),
     duration: '9 ամիս',
     price: '58,000 ֏',
     buttonText: 'Դիտել',
@@ -24,7 +25,7 @@ const mockProfessionalCourses: ProfessionalCourse[] = [
     id: '2',
     title: 'Python (ML / AI)',
     subtitle: 'ԴԱՍԸՆԹԱՑ',
-    icon: <BrainCircuit className="w-16 h-16" />,
+    icon: React.createElement(BrainCircuit, { className: "w-16 h-16" }),
     duration: '7 ամիս',
     price: '68,000 ֏',
     buttonText: 'Դիտել',
@@ -36,7 +37,7 @@ const mockProfessionalCourses: ProfessionalCourse[] = [
     id: '3',
     title: 'Java',
     subtitle: 'ԴԱՍԸՆԹԱՑ',
-    icon: <BookText className="w-16 h-16" />,
+    icon: React.createElement(BookText, { className: "w-16 h-16" }),
     duration: '6 ամիս',
     price: '68,000 ֏',
     buttonText: 'Դիտել',
@@ -48,7 +49,7 @@ const mockProfessionalCourses: ProfessionalCourse[] = [
     id: '4',
     title: 'JavaScript',
     subtitle: 'ԴԱՍԸՆԹԱՑ',
-    icon: <FileCode className="w-16 h-16" />,
+    icon: React.createElement(FileCode, { className: "w-16 h-16" }),
     duration: '3.5 ամիս',
     price: '58,000 ֏',
     buttonText: 'Դիտել',
@@ -60,7 +61,7 @@ const mockProfessionalCourses: ProfessionalCourse[] = [
     id: '5',
     title: 'PHP',
     subtitle: 'ԴԱՍԸՆԹԱՑ',
-    icon: <Database className="w-16 h-16" />,
+    icon: React.createElement(Database, { className: "w-16 h-16" }),
     duration: '5 ամիս',
     price: '58,000 ֏',
     buttonText: 'Դիտել',
@@ -72,7 +73,7 @@ const mockProfessionalCourses: ProfessionalCourse[] = [
     id: '6',
     title: 'C#/.NET',
     subtitle: 'ԴԱՍԸՆԹԱՑ',
-    icon: <Globe className="w-16 h-16" />,
+    icon: React.createElement(Globe, { className: "w-16 h-16" }),
     duration: '6 ամիս',
     price: '68,000 ֏',
     buttonText: 'Դիտել',
@@ -156,7 +157,7 @@ export const useCourseManagement = () => {
     id: '',
     title: '',
     subtitle: 'ԴԱՍԸՆԹԱՑ',
-    icon: <Code className="w-16 h-16" />,
+    icon: React.createElement(Code, { className: "w-16 h-16" }),
     duration: '',
     price: '',
     buttonText: 'Դիտել',
@@ -300,7 +301,7 @@ export const useCourseManagement = () => {
       id: '',
       title: '',
       subtitle: 'ԴԱՍԸՆԹԱՑ',
-      icon: <Code className="w-16 h-16" />,
+      icon: React.createElement(Code, { className: "w-16 h-16" }),
       duration: '',
       price: '',
       buttonText: 'Դիտել',
