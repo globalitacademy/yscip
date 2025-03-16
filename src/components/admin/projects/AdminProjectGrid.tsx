@@ -3,8 +3,8 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { FadeIn } from '@/components/LocalTransitions';
-import { projectThemes } from '@/data/projectThemes';
-import ProjectCard from '@/components/ProjectCard';
+import { projectThemes, ProjectTheme } from '@/data/projectThemes';
+import ProjectCard from '@/components/projects/ProjectCard';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { useProjectPermissions } from '@/hooks/useProjectPermissions';
@@ -31,7 +31,6 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-  DialogTrigger,
 } from "@/components/ui/dialog";
 import { toast } from "@/components/ui/use-toast";
 
@@ -40,7 +39,7 @@ const AdminProjectGrid: React.FC = () => {
   const { user } = useAuth();
   const [displayLimit, setDisplayLimit] = useState(12);
   const [activeCategory, setActiveCategory] = useState("all");
-  const [selectedProject, setSelectedProject] = useState<any>(null);
+  const [selectedProject, setSelectedProject] = useState<ProjectTheme | null>(null);
   const [isAssignDialogOpen, setIsAssignDialogOpen] = useState(false);
   const [isApproveDialogOpen, setIsApproveDialogOpen] = useState(false);
   const [filterStatus, setFilterStatus] = useState("all");
@@ -58,8 +57,7 @@ const AdminProjectGrid: React.FC = () => {
       filtered = filtered.filter(project => project.category === activeCategory);
     }
     
-    // Additional status filtering would go here
-    // This is a placeholder for actual database integration
+    // Additional status filtering
     if (filterStatus === "assigned") {
       filtered = filtered.filter(project => project.status === "assigned");
     } else if (filterStatus === "pending") {
@@ -102,6 +100,21 @@ const AdminProjectGrid: React.FC = () => {
       setIsApproveDialogOpen(false);
       setSelectedProject(null);
     }
+  };
+
+  const handleEditProject = (project: ProjectTheme) => {
+    // Placeholder for edit action
+    console.log("Edit project:", project);
+  };
+
+  const handleImageChange = (project: ProjectTheme) => {
+    // Placeholder for image change action
+    console.log("Change image for project:", project);
+  };
+
+  const handleDeleteProject = (project: ProjectTheme) => {
+    // Placeholder for delete action
+    console.log("Delete project:", project);
   };
   
   return (
@@ -187,7 +200,9 @@ const AdminProjectGrid: React.FC = () => {
             <div key={project.id} className="relative">
               <ProjectCard
                 project={project}
-                onClick={() => navigate(`/admin/projects/${project.id}`)}
+                onEdit={handleEditProject}
+                onImageChange={handleImageChange}
+                onDelete={handleDeleteProject}
               />
               
               {/* Action buttons overlay */}
