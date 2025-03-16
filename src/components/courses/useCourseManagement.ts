@@ -66,6 +66,29 @@ const getIconComponent = (iconName: string) => {
   }
 };
 
+// Extract icon name from React element for storage
+const extractIconName = (iconElement: React.ReactElement | null): string => {
+  if (!iconElement) return 'Code'; // Default icon
+  
+  const iconType = iconElement.type;
+  let iconName = 'Code'; // Default icon
+
+  if (!iconType) return iconName;
+
+  if (typeof iconType === 'function' && 'name' in iconType) {
+    // It's a function component with a name property
+    iconName = iconType.name;
+  } else if (typeof iconType === 'string') {
+    // It's a string (e.g., for native elements like 'div')
+    iconName = iconType;
+  } else if (typeof iconType === 'object' && 'name' in iconType) {
+    // It's an object with a name property
+    iconName = iconType.name;
+  }
+
+  return iconName;
+};
+
 export const useCourseManagement = () => {
   const { user } = useAuth();
   const [courses, setCourses] = useState<Course[]>(initializeCourses());
@@ -270,25 +293,8 @@ export const useCourseManagement = () => {
     }
 
     try {
-      // Extract icon name for storage
-      let iconName = 'Code'; // Default icon
-
-      // Check if icon is a React element and extract its type name
-      if (newProfessionalCourse.icon) {
-        const iconType = newProfessionalCourse.icon.type;
-        
-        // Handle the different possible types of the icon
-        if (iconType && typeof iconType === 'function' && 'name' in iconType) {
-          // It's a function component with a name property
-          iconName = iconType.name;
-        } else if (iconType && typeof iconType === 'string') {
-          // It's a string (e.g., for native elements like 'div')
-          iconName = iconType;
-        } else if (iconType && typeof iconType === 'object' && 'name' in iconType) {
-          // It's an object with a name property
-          iconName = iconType.name;
-        }
-      }
+      // Extract icon name for storage using the new helper function
+      const iconName = extractIconName(newProfessionalCourse.icon as React.ReactElement);
 
       const { data, error } = await supabase
         .from('courses')
@@ -363,25 +369,8 @@ export const useCourseManagement = () => {
     }
 
     try {
-      // Extract icon name for storage
-      let iconName = 'Code'; // Default icon
-
-      // Check if icon is a React element and extract its type name
-      if (selectedProfessionalCourse.icon) {
-        const iconType = selectedProfessionalCourse.icon.type;
-        
-        // Handle the different possible types of the icon
-        if (iconType && typeof iconType === 'function' && 'name' in iconType) {
-          // It's a function component with a name property
-          iconName = iconType.name;
-        } else if (iconType && typeof iconType === 'string') {
-          // It's a string (e.g., for native elements like 'div')
-          iconName = iconType;
-        } else if (iconType && typeof iconType === 'object' && 'name' in iconType) {
-          // It's an object with a name property
-          iconName = iconType.name;
-        }
-      }
+      // Extract icon name for storage using the new helper function
+      const iconName = extractIconName(selectedProfessionalCourse.icon as React.ReactElement);
 
       const { error } = await supabase
         .from('courses')
