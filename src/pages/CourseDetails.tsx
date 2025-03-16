@@ -4,10 +4,12 @@ import { useParams, Link } from 'react-router-dom';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import { Button } from '@/components/ui/button';
-import { ArrowLeft, User, Clock, Ban, Check, ExternalLink } from 'lucide-react';
+import { ArrowLeft, User, Clock, Ban, Check, ExternalLink, Pencil } from 'lucide-react';
 import { FadeIn } from '@/components/LocalTransitions';
 import { toast } from 'sonner';
 import { ProfessionalCourse } from '@/components/courses/types/ProfessionalCourse';
+import EditProfessionalCourseDialog from '@/components/courses/EditProfessionalCourseDialog';
+import { useAuth } from '@/contexts/AuthContext';
 
 // This is a mock function to get course data by ID, using local storage
 const getCourseById = (id: string): ProfessionalCourse | undefined => {
@@ -103,6 +105,8 @@ const CourseDetails: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const [course, setCourse] = useState<ProfessionalCourse | null>(null);
   const [loading, setLoading] = useState(true);
+  const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
+  const { user } = useAuth();
 
   useEffect(() => {
     if (id) {
@@ -118,6 +122,30 @@ const CourseDetails: React.FC = () => {
       duration: 5000,
     });
   };
+
+  const handleEditCourse = () => {
+    if (!course) return;
+
+    // Update the course in localStorage
+    try {
+      const storedCourses = localStorage.getItem('professionalCourses');
+      if (storedCourses) {
+        const courses: ProfessionalCourse[] = JSON.parse(storedCourses);
+        const updatedCourses = courses.map(c => 
+          c.id === course.id ? course : c
+        );
+        localStorage.setItem('professionalCourses', JSON.stringify(updatedCourses));
+        toast.success('Դասընթացը հաջողությամբ թարմացվել է');
+        setIsEditDialogOpen(false);
+      }
+    } catch (error) {
+      console.error('Error updating course:', error);
+      toast.error('Դասընթացի թարմացման ժամանակ սխալ է տեղի ունեցել');
+    }
+  };
+
+  // Check if user can edit this course
+  const canEdit = user && (user.role === 'admin' || course?.createdBy === user.name);
 
   if (loading) {
     return <div className="min-h-screen flex items-center justify-center">Բեռնում...</div>;
@@ -146,9 +174,22 @@ const CourseDetails: React.FC = () => {
       
       <main className="flex-grow">
         <div className="container mx-auto px-4 py-8">
-          <Link to="/" className="inline-flex items-center text-sm text-muted-foreground mb-6 hover:text-primary transition-colors">
-            <ArrowLeft size={16} className="mr-1" /> Վերադառնալ գլխավոր էջ
-          </Link>
+          <div className="flex justify-between items-center mb-6">
+            <Link to="/" className="inline-flex items-center text-sm text-muted-foreground hover:text-primary transition-colors">
+              <ArrowLeft size={16} className="mr-1" /> Վերադառնալ գլխավոր էջ
+            </Link>
+            
+            {canEdit && (
+              <Button 
+                variant="outline"
+                onClick={() => setIsEditDialogOpen(true)}
+                className="flex items-center gap-2"
+              >
+                <Pencil size={16} />
+                Խմբագրել դասընթացը
+              </Button>
+            )}
+          </div>
           
           <FadeIn>
             <div className="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-xl p-8 mb-10">
@@ -288,6 +329,16 @@ const CourseDetails: React.FC = () => {
       </main>
       
       <Footer />
+
+      {course && (
+        <EditProfessionalCourseDialog
+          isOpen={isEditDialogOpen}
+          setIsOpen={setIsEditDialogOpen}
+          selectedCourse={course}
+          setSelectedCourse={setCourse}
+          handleEditCourse={handleEditCourse}
+        />
+      )}
     </div>
   );
 };
