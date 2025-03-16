@@ -16,7 +16,8 @@ const ProfessionalCourseTabView: React.FC = () => {
     setIsEditDialogOpen,
     handleEditProfessionalCourse,
     handleEditProfessionalCourseInit,
-    handleDeleteProfessionalCourse
+    handleDeleteProfessionalCourse,
+    loading
   } = useCourses();
 
   const isAdmin = user?.role === 'admin';
@@ -29,6 +30,7 @@ const ProfessionalCourseTabView: React.FC = () => {
         isAdmin={isAdmin}
         onEdit={handleEditProfessionalCourseInit}
         onDelete={handleDeleteProfessionalCourse}
+        loading={loading}
       />
 
       <EditProfessionalCourseDialog

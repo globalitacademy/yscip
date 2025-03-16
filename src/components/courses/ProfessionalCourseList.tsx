@@ -1,9 +1,8 @@
 
 import React from 'react';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import ProfessionalCourseCard from './ProfessionalCourseCard';
 import { ProfessionalCourse } from './types/ProfessionalCourse';
-import { useAuth } from '@/contexts/AuthContext';
+import ProfessionalCourseCard from './ProfessionalCourseCard';
+import { Skeleton } from "@/components/ui/skeleton";
 
 interface ProfessionalCourseListProps {
   courses: ProfessionalCourse[];
@@ -11,66 +10,57 @@ interface ProfessionalCourseListProps {
   isAdmin: boolean;
   onEdit: (course: ProfessionalCourse) => void;
   onDelete: (id: string) => void;
+  loading?: boolean;
 }
 
-const ProfessionalCourseList: React.FC<ProfessionalCourseListProps> = ({ 
-  courses, 
-  userCourses, 
-  isAdmin, 
-  onEdit, 
-  onDelete 
+const ProfessionalCourseList: React.FC<ProfessionalCourseListProps> = ({
+  courses,
+  userCourses,
+  isAdmin,
+  onEdit,
+  onDelete,
+  loading = false
 }) => {
-  const { user } = useAuth();
+  if (loading) {
+    return (
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        {Array.from({ length: 6 }).map((_, index) => (
+          <div key={index} className="border rounded-lg p-4 space-y-3">
+            <Skeleton className="h-16 w-16 rounded-lg" />
+            <Skeleton className="h-8 w-3/4" />
+            <Skeleton className="h-4 w-1/2" />
+            <Skeleton className="h-4 w-2/3" />
+            <Skeleton className="h-4 w-1/4" />
+            <Skeleton className="h-10 w-full rounded-md" />
+          </div>
+        ))}
+      </div>
+    );
+  }
+
+  if (courses.length === 0) {
+    return (
+      <div className="text-center p-6 bg-muted/50 rounded-lg">
+        <h3 className="text-xl font-medium">Դասընթացներ չկան</h3>
+        <p className="text-muted-foreground mt-2">
+          Այս պահին դասընթացներ չկան։ Նոր դասընթաց ավելացնելու համար օգտագործեք "Ավելացնել նոր դասընթաց" կոճակը։
+        </p>
+      </div>
+    );
+  }
 
   return (
-    <Tabs defaultValue="all" className="w-full">
-      <TabsList>
-        <TabsTrigger value="all">Բոլոր դասընթացները</TabsTrigger>
-        {isAdmin && (
-          <TabsTrigger value="my">Իմ դասընթացները</TabsTrigger>
-        )}
-      </TabsList>
-      
-      <TabsContent value="all" className="space-y-4 mt-4">
-        {courses.length === 0 ? (
-          <p className="text-center text-gray-500">Դասընթացներ չկան</p>
-        ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {courses.map((course) => (
-              <ProfessionalCourseCard 
-                key={course.id} 
-                course={course} 
-                isAdmin={isAdmin}
-                canEdit={isAdmin || course.createdBy === user?.id}
-                onEdit={onEdit} 
-                onDelete={onDelete} 
-              />
-            ))}
-          </div>
-        )}
-      </TabsContent>
-      
-      {isAdmin && (
-        <TabsContent value="my" className="space-y-4 mt-4">
-          {userCourses.length === 0 ? (
-            <p className="text-center text-gray-500">Դուք դեռ չունեք ավելացված դասընթացներ</p>
-          ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {userCourses.map((course) => (
-                <ProfessionalCourseCard 
-                  key={course.id} 
-                  course={course} 
-                  isAdmin={isAdmin}
-                  canEdit={true}
-                  onEdit={onEdit} 
-                  onDelete={onDelete} 
-                />
-              ))}
-            </div>
-          )}
-        </TabsContent>
-      )}
-    </Tabs>
+    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+      {courses.map(course => (
+        <ProfessionalCourseCard
+          key={course.id}
+          course={course}
+          isAdmin={isAdmin}
+          onEdit={() => onEdit(course)}
+          onDelete={() => onDelete(course.id)}
+        />
+      ))}
+    </div>
   );
 };
 

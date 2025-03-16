@@ -6,126 +6,10 @@ import { ProfessionalCourse } from './types/ProfessionalCourse';
 import { useAuth } from '@/contexts/AuthContext';
 import { Code, BookText, BrainCircuit, Database, FileCode, Globe } from 'lucide-react';
 import React from 'react';
+import { supabase } from '@/integrations/supabase/client';
 
-// Mock professional courses data
-const mockProfessionalCourses: ProfessionalCourse[] = [
-  {
-    id: '1',
-    title: 'WEB Front-End',
-    subtitle: 'ԴԱՍԸՆԹԱՑ',
-    icon: React.createElement(Code, { className: "w-16 h-16" }),
-    duration: '9 ամիս',
-    price: '58,000 ֏',
-    buttonText: 'Դիտել',
-    color: 'text-amber-500',
-    createdBy: 'Արամ Հակոբյան',
-    institution: 'ՀՊՏՀ',
-    description: 'Սովորեք Web կայքերի մշակում՝ օգտագործելով արդի տեխնոլոգիաներ ինչպիսիք են HTML5, CSS3, JavaScript, React և Node.js։ Այս դասընթացը նախատեսված է սկսնակների համար և կօգնի ձեզ դառնալ պրոֆեսիոնալ Front-End ծրագրավորող։',
-    lessons: [
-      { title: 'Ներածություն Web ծրագրավորման մեջ', duration: '3 ժամ' },
-      { title: 'HTML5 հիմունքներ', duration: '6 ժամ' },
-      { title: 'CSS3 և ձևավորում', duration: '8 ժամ' },
-      { title: 'JavaScript հիմունքներ', duration: '12 ժամ' }
-    ],
-    requirements: [
-      'Համակարգչային հիմնական գիտելիքներ',
-      'Տրամաբանական մտածելակերպ'
-    ],
-    outcomes: [
-      'Մշակել ամբողջական ինտերակտիվ վեբ կայքեր',
-      'Աշխատել React-ով միաէջանի հավելվածների հետ'
-    ]
-  },
-  {
-    id: '2',
-    title: 'Python (ML / AI)',
-    subtitle: 'ԴԱՍԸՆԹԱՑ',
-    icon: React.createElement(BrainCircuit, { className: "w-16 h-16" }),
-    duration: '7 ամիս',
-    price: '68,000 ֏',
-    buttonText: 'Դիտել',
-    color: 'text-blue-500',
-    createdBy: 'Լիլիթ Մարտիրոսյան',
-    institution: 'ԵՊՀ',
-    description: 'Սովորեք Python ծրագրավորում՝ մեքենայական ուսուցման և արհեստական բանականության հիմունքներով։ Այս ինտենսիվ դասընթացը կօգնի ձեզ ծանոթանալ AI/ML ժամանակակից գործիքների հետ։',
-    lessons: [
-      { title: 'Python հիմունքներ', duration: '10 ժամ' },
-      { title: 'Տվյալների վերլուծություն NumPy-ով և Pandas-ով', duration: '12 ժամ' },
-      { title: 'Մեքենայական ուսուցման ներածություն', duration: '6 ժամ' }
-    ],
-    requirements: [
-      'Ծրագրավորման բազային իմացություն',
-      'Մաթեմատիկայի և վիճակագրության հիմունքներ'
-    ],
-    outcomes: [
-      'Մշակել մեքենայական ուսուցման մոդելներ',
-      'Վերլուծել և վիզուալիզացնել մեծ տվյալներ'
-    ]
-  },
-  {
-    id: '3',
-    title: 'Java',
-    subtitle: 'ԴԱՍԸՆԹԱՑ',
-    icon: React.createElement(BookText, { className: "w-16 h-16" }),
-    duration: '6 ամիս',
-    price: '68,000 ֏',
-    buttonText: 'Դիտել',
-    color: 'text-red-500',
-    createdBy: 'Գարիկ Սարգսյան',
-    institution: 'ՀԱՊՀ'
-  },
-  {
-    id: '4',
-    title: 'JavaScript',
-    subtitle: 'ԴԱՍԸՆԹԱՑ',
-    icon: React.createElement(FileCode, { className: "w-16 h-16" }),
-    duration: '3.5 ամիս',
-    price: '58,000 ֏',
-    buttonText: 'Դիտել',
-    color: 'text-yellow-500',
-    createdBy: 'Անի Մուրադյան',
-    institution: 'ՀԱՀ'
-  },
-  {
-    id: '5',
-    title: 'PHP',
-    subtitle: 'ԴԱՍԸՆԹԱՑ',
-    icon: React.createElement(Database, { className: "w-16 h-16" }),
-    duration: '5 ամիս',
-    price: '58,000 ֏',
-    buttonText: 'Դիտել',
-    color: 'text-purple-500',
-    createdBy: 'Վահե Ղազարյան',
-    institution: 'ՀՊՄՀ'
-  },
-  {
-    id: '6',
-    title: 'C#/.NET',
-    subtitle: 'ԴԱՍԸՆԹԱՑ',
-    icon: React.createElement(Globe, { className: "w-16 h-16" }),
-    duration: '6 ամիս',
-    price: '68,000 ֏',
-    buttonText: 'Դիտել',
-    color: 'text-green-500',
-    createdBy: 'Տիգրան Դավթյան',
-    institution: 'ՀՌԱՀ'
-  }
-];
-
+// Mock specializations data
 export const mockSpecializations = ['Ծրագրավորում', 'Տվյալագիտություն', 'Դիզայն', 'Մարկետինգ', 'Բիզնես վերլուծություն'];
-
-// Initialize professional courses with mock data if localStorage is empty
-const initializeProfessionalCourses = (): ProfessionalCourse[] => {
-  const storedCourses = localStorage.getItem('professionalCourses');
-  if (storedCourses) {
-    try {
-      return JSON.parse(storedCourses);
-    } catch (e) {
-      console.error('Error parsing stored professional courses:', e);
-    }
-  }
-  return mockProfessionalCourses;
-};
 
 // Old mock data kept for reference
 const mockCourses: Course[] = [
@@ -162,10 +46,31 @@ const initializeCourses = (): Course[] => {
   return mockCourses;
 };
 
+// Helper function to map icon name to React component
+const getIconComponent = (iconName: string) => {
+  switch (iconName) {
+    case 'Code':
+      return React.createElement(Code, { className: "w-16 h-16" });
+    case 'BookText':
+      return React.createElement(BookText, { className: "w-16 h-16" });
+    case 'BrainCircuit':
+      return React.createElement(BrainCircuit, { className: "w-16 h-16" });
+    case 'Database':
+      return React.createElement(Database, { className: "w-16 h-16" });
+    case 'FileCode':
+      return React.createElement(FileCode, { className: "w-16 h-16" });
+    case 'Globe':
+      return React.createElement(Globe, { className: "w-16 h-16" });
+    default:
+      return React.createElement(Code, { className: "w-16 h-16" });
+  }
+};
+
 export const useCourseManagement = () => {
   const { user } = useAuth();
   const [courses, setCourses] = useState<Course[]>(initializeCourses());
-  const [professionalCourses, setProfessionalCourses] = useState<ProfessionalCourse[]>(initializeProfessionalCourses());
+  const [professionalCourses, setProfessionalCourses] = useState<ProfessionalCourse[]>([]);
+  const [loading, setLoading] = useState(true);
   
   const [selectedCourse, setSelectedCourse] = useState<Course | null>(null);
   const [selectedProfessionalCourse, setSelectedProfessionalCourse] = useState<ProfessionalCourse | null>(null);
@@ -200,6 +105,50 @@ export const useCourseManagement = () => {
   });
   
   const [newModule, setNewModule] = useState('');
+
+  // Fetch professional courses from Supabase
+  useEffect(() => {
+    const fetchProfessionalCourses = async () => {
+      try {
+        setLoading(true);
+        const { data, error } = await supabase
+          .from('courses')
+          .select('*');
+          
+        if (error) {
+          throw error;
+        }
+        
+        if (data) {
+          const formattedCourses: ProfessionalCourse[] = data.map(course => ({
+            id: course.id,
+            title: course.title,
+            subtitle: course.subtitle,
+            icon: getIconComponent(course.icon_name),
+            duration: course.duration,
+            price: course.price,
+            buttonText: course.button_text,
+            color: course.color,
+            createdBy: course.created_by || 'Unknown',
+            institution: course.institution || 'Unknown',
+            description: course.description,
+            lessons: [], // These would need to be stored in a separate table or as JSON
+            requirements: [],
+            outcomes: []
+          }));
+          
+          setProfessionalCourses(formattedCourses);
+        }
+      } catch (error) {
+        console.error('Error fetching courses:', error);
+        toast.error('Դասընթացները հնարավոր չէ բեռնել');
+      } finally {
+        setLoading(false);
+      }
+    };
+    
+    fetchProfessionalCourses();
+  }, []);
 
   // Get user's courses
   const userCourses = courses.filter(course => course.createdBy === user?.id);
@@ -313,48 +262,85 @@ export const useCourseManagement = () => {
     }
   };
 
-  // Professional Courses Functions
-  const handleAddProfessionalCourse = () => {
+  // Professional Courses Functions using Supabase
+  const handleAddProfessionalCourse = async () => {
     if (!newProfessionalCourse.title || !newProfessionalCourse.duration || !newProfessionalCourse.price) {
       toast.error('Լրացրեք բոլոր պարտադիր դաշտերը');
       return;
     }
 
-    const courseToAdd: ProfessionalCourse = {
-      ...(newProfessionalCourse as ProfessionalCourse),
-      id: uuidv4(),
-      createdBy: user?.name || 'Unknown',
-      buttonText: newProfessionalCourse.buttonText || 'Դիտել',
-      subtitle: newProfessionalCourse.subtitle || 'ԴԱՍԸՆԹԱՑ',
-      color: newProfessionalCourse.color || 'text-amber-500',
-      institution: newProfessionalCourse.institution || 'ՀՊՏՀ',
-    };
+    try {
+      // Extract icon name for storage
+      const iconName = 
+        newProfessionalCourse.icon?.type?.name || 
+        newProfessionalCourse.icon?.type || 
+        'Code';
 
-    const updatedCourses = [...professionalCourses, courseToAdd];
-    setProfessionalCourses(updatedCourses);
-    localStorage.setItem('professionalCourses', JSON.stringify(updatedCourses));
-    
-    setNewProfessionalCourse({
-      title: '',
-      subtitle: 'ԴԱՍԸՆԹԱՑ',
-      icon: React.createElement(Code, { className: "w-16 h-16" }),
-      duration: '',
-      price: '',
-      buttonText: 'Դիտել',
-      color: 'text-amber-500',
-      createdBy: user?.name || '',
-      institution: 'ՀՊՏՀ',
-      imageUrl: undefined,
-      description: '',
-      lessons: [],
-      requirements: [],
-      outcomes: []
-    });
-    setIsAddDialogOpen(false);
-    toast.success('Դասընթացը հաջողությամբ ավելացվել է');
+      const { data, error } = await supabase
+        .from('courses')
+        .insert({
+          title: newProfessionalCourse.title,
+          subtitle: newProfessionalCourse.subtitle || 'ԴԱՍԸՆԹԱՑ',
+          duration: newProfessionalCourse.duration,
+          price: newProfessionalCourse.price,
+          color: newProfessionalCourse.color || 'text-amber-500',
+          institution: newProfessionalCourse.institution || 'ՀՊՏՀ',
+          created_by: user?.name || 'Unknown',
+          button_text: newProfessionalCourse.buttonText || 'Դիտել',
+          icon_name: iconName,
+          description: newProfessionalCourse.description
+        })
+        .select();
+
+      if (error) throw error;
+
+      if (data && data[0]) {
+        // Convert the returned data to ProfessionalCourse format
+        const newCourse: ProfessionalCourse = {
+          id: data[0].id,
+          title: data[0].title,
+          subtitle: data[0].subtitle,
+          icon: getIconComponent(data[0].icon_name),
+          duration: data[0].duration,
+          price: data[0].price,
+          buttonText: data[0].button_text,
+          color: data[0].color,
+          createdBy: data[0].created_by || 'Unknown',
+          institution: data[0].institution || 'Unknown',
+          description: data[0].description,
+          lessons: [],
+          requirements: [],
+          outcomes: []
+        };
+
+        setProfessionalCourses(prev => [...prev, newCourse]);
+        
+        setNewProfessionalCourse({
+          title: '',
+          subtitle: 'ԴԱՍԸՆԹԱՑ',
+          icon: React.createElement(Code, { className: "w-16 h-16" }),
+          duration: '',
+          price: '',
+          buttonText: 'Դիտել',
+          color: 'text-amber-500',
+          createdBy: user?.name || '',
+          institution: 'ՀՊՏՀ',
+          imageUrl: undefined,
+          description: '',
+          lessons: [],
+          requirements: [],
+          outcomes: []
+        });
+        setIsAddDialogOpen(false);
+        toast.success('Դասընթացը հաջողությամբ ավելացվել է');
+      }
+    } catch (error) {
+      console.error('Error adding course:', error);
+      toast.error('Դասընթացը հնարավոր չէ ավելացնել');
+    }
   };
 
-  const handleEditProfessionalCourse = () => {
+  const handleEditProfessionalCourse = async () => {
     if (!selectedProfessionalCourse) return;
     
     if (!selectedProfessionalCourse.title || !selectedProfessionalCourse.duration || !selectedProfessionalCourse.price) {
@@ -362,14 +348,44 @@ export const useCourseManagement = () => {
       return;
     }
 
-    const updatedCourses = professionalCourses.map(course => 
-      course.id === selectedProfessionalCourse.id ? selectedProfessionalCourse : course
-    );
-    
-    setProfessionalCourses(updatedCourses);
-    localStorage.setItem('professionalCourses', JSON.stringify(updatedCourses));
-    setIsEditDialogOpen(false);
-    toast.success('Դասընթացը հաջողությամբ թարմացվել է');
+    try {
+      // Extract icon name for storage
+      const iconName = 
+        selectedProfessionalCourse.icon?.type?.name || 
+        selectedProfessionalCourse.icon?.type || 
+        'Code';
+
+      const { error } = await supabase
+        .from('courses')
+        .update({
+          title: selectedProfessionalCourse.title,
+          subtitle: selectedProfessionalCourse.subtitle,
+          duration: selectedProfessionalCourse.duration,
+          price: selectedProfessionalCourse.price,
+          color: selectedProfessionalCourse.color,
+          institution: selectedProfessionalCourse.institution,
+          button_text: selectedProfessionalCourse.buttonText,
+          icon_name: iconName,
+          description: selectedProfessionalCourse.description,
+          updated_at: new Date().toISOString()
+        })
+        .eq('id', selectedProfessionalCourse.id);
+
+      if (error) throw error;
+
+      // Update local state
+      setProfessionalCourses(prev => 
+        prev.map(course => 
+          course.id === selectedProfessionalCourse.id ? selectedProfessionalCourse : course
+        )
+      );
+      
+      setIsEditDialogOpen(false);
+      toast.success('Դասընթացը հաջողությամբ թարմացվել է');
+    } catch (error) {
+      console.error('Error updating course:', error);
+      toast.error('Դասընթացը հնարավոր չէ թարմացնել');
+    }
   };
 
   const handleEditProfessionalCourseInit = (course: ProfessionalCourse) => {
@@ -377,17 +393,27 @@ export const useCourseManagement = () => {
     setIsEditDialogOpen(true);
   };
 
-  const handleDeleteProfessionalCourse = (id: string) => {
-    const courseToDelete = professionalCourses.find(course => course.id === id);
-    
+  const handleDeleteProfessionalCourse = async (id: string) => {
     // Only allow admins to delete courses
-    if (courseToDelete && user?.role === 'admin') {
-      const updatedCourses = professionalCourses.filter(course => course.id !== id);
-      setProfessionalCourses(updatedCourses);
-      localStorage.setItem('professionalCourses', JSON.stringify(updatedCourses));
-      toast.success('Դասընթացը հաջողությամբ հեռացվել է');
-    } else {
+    if (user?.role !== 'admin') {
       toast.error('Դուք չունեք իրավունք ջնջելու այս դասընթացը');
+      return;
+    }
+    
+    try {
+      const { error } = await supabase
+        .from('courses')
+        .delete()
+        .eq('id', id);
+        
+      if (error) throw error;
+      
+      // Update local state
+      setProfessionalCourses(prev => prev.filter(course => course.id !== id));
+      toast.success('Դասընթացը հաջողությամբ հեռացվել է');
+    } catch (error) {
+      console.error('Error deleting course:', error);
+      toast.error('Դասընթացը հնարավոր չէ հեռացնել');
     }
   };
 
@@ -405,6 +431,7 @@ export const useCourseManagement = () => {
     newCourse,
     newProfessionalCourse,
     newModule,
+    loading,
     setNewCourse,
     setNewProfessionalCourse,
     setNewModule,
