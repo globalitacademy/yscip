@@ -1,8 +1,7 @@
-
 import React from 'react';
 import { FadeIn } from '@/components/LocalTransitions';
 import { Button } from '@/components/ui/button';
-import { Code, BookText, BrainCircuit, Database, FileCode, Globe, User, ExternalLink } from 'lucide-react';
+import { Code, BookText, BrainCircuit, Database, FileCode, Globe, User } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { Card, CardContent, CardFooter, CardHeader } from '@/components/ui/card';
 
@@ -127,18 +126,8 @@ const ProfessionalCoursesSection: React.FC = () => {
                   </div>
                 </CardContent>
                 
-                <CardFooter className="flex flex-col gap-2 pt-4">
+                <CardFooter className="pt-4">
                   <Button 
-                    asChild
-                    className="w-full"
-                  >
-                    <Link to={`/course/${course.id}`}>
-                      {course.buttonText} <ExternalLink className="ml-2 h-4 w-4" />
-                    </Link>
-                  </Button>
-                  
-                  <Button 
-                    variant="outline" 
                     className="w-full"
                   >
                     Դիմել
