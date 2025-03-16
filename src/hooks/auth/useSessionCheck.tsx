@@ -33,28 +33,6 @@ export const useSessionCheck = (
             setIsLoading(false);
             return;
           }
-          
-          // For non-admin users, verify with Supabase if possible
-          try {
-            const { data: { session } } = await supabase.auth.getSession();
-            if (session?.user) {
-              console.log('Supabase session exists, using that instead');
-              // Continue with Supabase session below
-            } else {
-              // Just use the stored user if no Supabase session exists
-              console.log('No Supabase session, using stored user');
-              setUser(parsedUser);
-              setIsAuthenticated(true);
-              setIsLoading(false);
-              return;
-            }
-          } catch (error) {
-            console.log('Error checking Supabase session, falling back to stored user');
-            setUser(parsedUser);
-            setIsAuthenticated(true);
-            setIsLoading(false);
-            return;
-          }
         }
         
         // Check Supabase session
@@ -71,6 +49,15 @@ export const useSessionCheck = (
               
             if (error) {
               console.error('Error fetching user data:', error);
+              
+              // If we have a stored user and there's an error with Supabase, use the stored user
+              if (storedUser) {
+                const parsedUser = JSON.parse(storedUser);
+                console.log('Falling back to stored user');
+                setUser(parsedUser);
+                setIsAuthenticated(true);
+              }
+              
               setIsLoading(false);
               return;
             }
@@ -93,12 +80,36 @@ export const useSessionCheck = (
             }
           } catch (error) {
             console.error('Error fetching user data from Supabase:', error);
+            
+            // Fall back to stored user if available
+            if (storedUser) {
+              const parsedUser = JSON.parse(storedUser);
+              console.log('Error occurred, falling back to stored user');
+              setUser(parsedUser);
+              setIsAuthenticated(true);
+            }
           }
+        } else if (storedUser) {
+          // If no Supabase session but we have a stored user, use that
+          const parsedUser = JSON.parse(storedUser);
+          console.log('No Supabase session, using stored user');
+          setUser(parsedUser);
+          setIsAuthenticated(true);
         }
         
         setIsLoading(false);
       } catch (error) {
         console.error('Error in initSession:', error);
+        
+        // Fall back to stored user if available in case of exception
+        const storedUser = localStorage.getItem('currentUser');
+        if (storedUser) {
+          const parsedUser = JSON.parse(storedUser);
+          console.log('Exception occurred, falling back to stored user');
+          setUser(parsedUser);
+          setIsAuthenticated(true);
+        }
+        
         setIsLoading(false);
       }
     };
