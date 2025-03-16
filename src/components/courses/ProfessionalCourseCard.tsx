@@ -10,13 +10,15 @@ interface ProfessionalCourseCardProps {
   onEdit?: (course: ProfessionalCourse) => void;
   onDelete?: (id: string) => void;
   isAdmin?: boolean;
+  canEdit?: boolean;
 }
 
 const ProfessionalCourseCard: React.FC<ProfessionalCourseCardProps> = ({
   course,
   onEdit,
   onDelete,
-  isAdmin = false
+  isAdmin = false,
+  canEdit = false
 }) => {
   return (
     <Card className="h-full overflow-hidden shadow-md hover:shadow-lg transition-shadow">
@@ -48,7 +50,7 @@ const ProfessionalCourseCard: React.FC<ProfessionalCourseCardProps> = ({
             <Eye className="h-4 w-4 mr-2" /> {course.buttonText}
           </Button>
           
-          {isAdmin && (
+          {(isAdmin || canEdit) && (
             <>
               <Button
                 variant="outline" 
