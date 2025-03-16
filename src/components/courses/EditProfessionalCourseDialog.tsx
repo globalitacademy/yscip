@@ -34,6 +34,7 @@ const EditProfessionalCourseDialog: React.FC<EditProfessionalCourseDialogProps> 
         <ProfessionalCourseForm
           course={selectedCourse}
           setCourse={(newCourse) => setSelectedCourse(newCourse as ProfessionalCourse)}
+          isEdit={true}
         />
         <DialogFooter>
           <Button type="submit" onClick={handleEditCourse}>

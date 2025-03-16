@@ -8,8 +8,8 @@ import { ProfessionalCourse } from './types/ProfessionalCourse';
 interface AddProfessionalCourseDialogProps {
   isOpen: boolean;
   setIsOpen: (isOpen: boolean) => void;
-  newCourse: ProfessionalCourse;
-  setNewCourse: React.Dispatch<React.SetStateAction<ProfessionalCourse>>;
+  newCourse: Partial<ProfessionalCourse>;
+  setNewCourse: React.Dispatch<React.SetStateAction<Partial<ProfessionalCourse>>>;
   handleAddCourse: () => void;
 }
 
