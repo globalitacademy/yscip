@@ -49,7 +49,7 @@ const AdminSidebar: React.FC<AdminSidebarProps> = ({
   
   return (
     <aside className="w-64 bg-card border-r border-border h-screen sticky top-0 overflow-y-auto py-6 px-0">
-      <div className="flex justify-between items-center mb-8 px-2">
+      <div className="flex justify-between items-center mb-8 px-4">
         <div className="text-xl font-bold">Ադմինիստրացիա</div>
         {onCloseMenu && <Button variant="ghost" size="icon" onClick={onCloseMenu} className="md:hidden">
             <X className="h-5 w-5" />

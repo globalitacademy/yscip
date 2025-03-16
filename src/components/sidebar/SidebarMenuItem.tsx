@@ -20,7 +20,7 @@ const SidebarMenuItem: React.FC<SidebarMenuItemProps> = ({
   const isActive = location.pathname === path;
   
   return (
-    <Link to={path}>
+    <Link to={path} className="block w-full">
       <Button 
         variant={isActive ? "default" : "ghost"} 
         className={`w-full justify-start ${isActive ? "" : "text-muted-foreground"}`} 
