@@ -7,7 +7,7 @@ const DashboardHeader: React.FC = () => {
   
   return (
     <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-6">
-      <h1 className="text-2xl md:text-3xl font-bold">Ադմինիստրատորի վահանակ</h1>
+      {/* Remove the duplicate title since AdminLayout already provides it */}
     </div>
   );
 };
