@@ -1,12 +1,12 @@
 
 import React from 'react';
 import AdminLayout from '@/components/AdminLayout';
-import AdminProjectGrid from '@/components/admin/projects/AdminProjectGrid';
+import ProjectManagement from '@/components/ProjectManagement';
 
 const ProjectManagementPage: React.FC = () => {
   return (
     <AdminLayout pageTitle="Նախագծերի կառավարում">
-      <AdminProjectGrid />
+      <ProjectManagement />
     </AdminLayout>
   );
 };

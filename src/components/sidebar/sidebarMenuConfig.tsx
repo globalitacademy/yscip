@@ -1,19 +1,13 @@
 
-import { baseMenuItems } from './menus/baseMenu';
-import { adminMenuItems } from './menus/adminMenu';
-import { lecturerMenuItems } from './menus/lecturerMenu';
-import { supervisorMenuItems } from './menus/supervisorMenu';
-import { employerMenuItems } from './menus/employerMenu';
-import { studentMenuItems } from './menus/studentMenu';
-import { SidebarMenuGroup, SidebarMenuItemType } from './types';
+import { SidebarMenuItemType } from './types';
 
-export { 
-  baseMenuItems, 
-  adminMenuItems, 
-  lecturerMenuItems, 
-  supervisorMenuItems,
-  employerMenuItems,
-  studentMenuItems 
-};
+// Import all menu items from separate files
+export { baseMenuItems } from './menus/baseMenu';
+export { adminMenuItems } from './menus/adminMenu';
+export { lecturerMenuItems } from './menus/lecturerMenu';
+export { supervisorMenuItems } from './menus/supervisorMenu';
+export { employerMenuItems } from './menus/employerMenu';
+export { studentMenuItems } from './menus/studentMenu';
 
-export type { SidebarMenuGroup, SidebarMenuItemType };
+// Re-export the type for use in other components
+export type { SidebarMenuItemType };
