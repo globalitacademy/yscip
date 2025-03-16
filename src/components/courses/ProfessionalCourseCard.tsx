@@ -1,8 +1,7 @@
 
 import React from 'react';
-import { Card, CardContent, CardFooter } from '@/components/ui/card';
+import { Card, CardFooter } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Clock } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { FadeIn } from '@/components/LocalTransitions';
 import { ProfessionalCourse } from './types/ProfessionalCourse';
@@ -18,18 +17,18 @@ const ProfessionalCourseCard: React.FC<ProfessionalCourseCardProps> = ({ course 
 
   return (
     <FadeIn key={course.id} delay="delay-200" className="flex">
-      <Card className="flex flex-col w-full overflow-hidden hover:shadow-lg transition-all duration-300 relative group">
-        <div className="flex flex-col items-center text-center p-8">
-          <div className="mb-6">
+      <Card className="flex flex-col w-full overflow-hidden transition-all duration-300 border border-gray-200 hover:border-gray-300 rounded-md">
+        <div className="flex flex-col items-center text-center p-8 pt-10">
+          <div className="mb-5">
             {icon}
           </div>
           
           <h3 className={`font-bold text-xl mb-1 ${course.color}`}>{course.title}</h3>
-          <p className="text-sm text-muted-foreground uppercase tracking-wider mb-6">{course.subtitle}</p>
+          <p className="text-sm text-muted-foreground uppercase tracking-wider mb-6">ԴԱՍԸՆԹԱՑ</p>
           
           <Button 
             variant="outline"
-            className="px-10 rounded-full border-gray-300 hover:bg-white hover:text-primary hover:border-primary transition-colors duration-300 mb-6"
+            className="px-10 rounded-full border-gray-300 hover:border-gray-400 hover:bg-transparent transition-all duration-300"
             asChild
           >
             <Link to={`/course/${course.id}`}>
@@ -38,12 +37,11 @@ const ProfessionalCourseCard: React.FC<ProfessionalCourseCardProps> = ({ course 
           </Button>
         </div>
         
-        <CardFooter className="flex items-center justify-between p-4 border-t bg-gray-50 mt-auto">
-          <div className="flex items-center">
-            <Clock size={14} className="mr-1 text-muted-foreground" />
-            <span className="text-sm">{course.duration}</span>
+        <CardFooter className="flex items-center justify-between py-3 px-6 border-t mt-auto">
+          <div className="text-sm text-muted-foreground">
+            {course.duration}
           </div>
-          <div className="text-sm font-semibold">
+          <div className="text-sm font-medium">
             {course.price}
           </div>
         </CardFooter>

@@ -4,7 +4,6 @@ import { Button } from '@/components/ui/button';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { useCourseManagement } from './useCourseManagement';
-import { Course } from './types';
 import { toast } from 'sonner';
 import { ProfessionalCourse } from './types/ProfessionalCourse';
 import { defaultProfessionalCourses } from './data/defaultCourses';
@@ -60,7 +59,7 @@ const ProfessionalCoursesSection: React.FC = () => {
 
         {professionalCourses.length > 4 && (
           <div className="flex justify-center mt-12">
-            <Button asChild variant="outline" className="px-6 py-2 rounded-full hover:bg-primary/10">
+            <Button asChild variant="outline" className="px-6 py-2 rounded-full hover:bg-transparent border-gray-300 hover:border-gray-400">
               <Link to="/courses">
                 Դիտել բոլոր դասընթացները
               </Link>
