@@ -1,75 +1,99 @@
 
 import React from 'react';
-import { Card, CardContent } from '@/components/ui/card';
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
+import { MoreHorizontal, Calendar, DollarSign, Trash2, Edit, User, Building } from 'lucide-react';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { ProfessionalCourse } from './types/ProfessionalCourse';
-import { Eye, Pencil, Trash } from 'lucide-react';
 
 interface ProfessionalCourseCardProps {
   course: ProfessionalCourse;
-  onEdit?: (course: ProfessionalCourse) => void;
-  onDelete?: (id: string) => void;
-  isAdmin?: boolean;
-  canEdit?: boolean;
+  isAdmin: boolean;
+  canEdit: boolean;
+  onEdit: (course: ProfessionalCourse) => void;
+  onDelete: (id: string) => void;
 }
 
-const ProfessionalCourseCard: React.FC<ProfessionalCourseCardProps> = ({
-  course,
-  onEdit,
-  onDelete,
-  isAdmin = false,
-  canEdit = false
+const ProfessionalCourseCard: React.FC<ProfessionalCourseCardProps> = ({ 
+  course, 
+  isAdmin, 
+  canEdit, 
+  onEdit, 
+  onDelete 
 }) => {
   return (
-    <Card className="h-full overflow-hidden shadow-md hover:shadow-lg transition-shadow">
-      <div className="px-6 py-4 flex flex-col items-center text-center">
-        {course.imageUrl ? (
-          <img 
-            src={course.imageUrl} 
-            alt={course.title}
-            className="w-16 h-16 mb-4 object-contain"
-            onError={(e) => {
-              // Fallback to icon if image fails to load
-              e.currentTarget.style.display = 'none';
-              document.getElementById(`course-icon-${course.id}`)?.style.setProperty('display', 'block');
-            }}
-          />
-        ) : (
-          <div id={`course-icon-${course.id}`} className={`${course.color} mb-4`}>
-            {course.icon}
+    <Card className="h-full flex flex-col">
+      <CardHeader className="pb-2 relative">
+        {(isAdmin || canEdit) && (
+          <div className="absolute right-4 top-4">
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="ghost" size="icon">
+                  <MoreHorizontal className="h-5 w-5" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end">
+                {canEdit && (
+                  <DropdownMenuItem onClick={() => onEdit(course)}>
+                    <Edit className="mr-2 h-4 w-4" />
+                    Խմբագրել
+                  </DropdownMenuItem>
+                )}
+                {isAdmin && (
+                  <DropdownMenuItem 
+                    className="text-destructive" 
+                    onClick={() => onDelete(course.id)}
+                  >
+                    <Trash2 className="mr-2 h-4 w-4" />
+                    Ջնջել
+                  </DropdownMenuItem>
+                )}
+              </DropdownMenuContent>
+            </DropdownMenu>
           </div>
         )}
-        <div className="mb-2 text-xs uppercase tracking-wide text-gray-500">{course.subtitle}</div>
-        <h3 className="text-xl font-semibold mb-2">{course.title}</h3>
-        <div className="text-sm text-gray-600 mb-1">Տևողություն: {course.duration}</div>
-        <div className="text-sm text-gray-600 mb-1">Արժեք: {course.price}</div>
-        <div className="text-sm text-gray-600 mb-4">Հաստատություն: {course.institution}</div>
         
-        <div className="flex space-x-2">
-          <Button variant="outline" size="sm">
-            <Eye className="h-4 w-4 mr-2" /> {course.buttonText}
-          </Button>
-          
-          {(isAdmin || canEdit) && (
-            <>
-              <Button
-                variant="outline" 
-                size="sm"
-                onClick={() => onEdit && onEdit(course)}
-              >
-                <Pencil className="h-4 w-4" />
-              </Button>
-              <Button
-                variant="outline" 
-                size="sm"
-                onClick={() => onDelete && onDelete(course.id)}
-              >
-                <Trash className="h-4 w-4" />
-              </Button>
-            </>
-          )}
+        <div className="flex justify-center">
+          <div className={`${course.color} rounded-full p-3 mb-2`}>
+            {course.icon}
+          </div>
         </div>
-      </div>
+        <CardTitle className="text-center">{course.title}</CardTitle>
+        <CardDescription className="text-center">{course.subtitle}</CardDescription>
+      </CardHeader>
+      
+      <CardContent className="space-y-4 flex-grow">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2 text-sm text-muted-foreground">
+            <Calendar size={16} />
+            <span>{course.duration}</span>
+          </div>
+          <div className="flex items-center gap-2 text-sm font-medium">
+            <DollarSign size={16} />
+            <span>{course.price}</span>
+          </div>
+        </div>
+        
+        <div className="flex items-center gap-2 text-sm text-muted-foreground">
+          <User size={16} />
+          <span>Դասախոս՝ {course.createdBy}</span>
+        </div>
+        
+        <div className="flex items-center gap-2 text-sm text-muted-foreground">
+          <Building size={16} />
+          <span>Ուս․ հաստատություն՝ {course.institution}</span>
+        </div>
+        
+        {course.description && (
+          <p className="text-sm mt-2">{course.description}</p>
+        )}
+      </CardContent>
+      
+      <CardFooter>
+        <Button className="w-full" variant="outline">
+          Մանրամասն
+        </Button>
+      </CardFooter>
     </Card>
   );
 };

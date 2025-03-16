@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import { toast } from 'sonner';
 import { v4 as uuidv4 } from 'uuid';
@@ -6,6 +7,23 @@ import { ProfessionalCourse } from './types/ProfessionalCourse';
 import { useAuth } from '@/contexts/AuthContext';
 import { Code, BookText, BrainCircuit, Database, FileCode, Globe } from 'lucide-react';
 import React from 'react';
+
+// Helper function to safely extract icon name
+const getIconName = (icon: React.ReactElement | undefined): string => {
+  if (!icon || !icon.type) {
+    return 'Code';
+  }
+  
+  // Handle different ways to access the name property
+  const iconType = icon.type as any;
+  if (typeof iconType === 'object' && iconType.name) {
+    return iconType.name;
+  } else if (typeof iconType === 'function' && iconType.name) {
+    return iconType.name;
+  }
+  
+  return 'Code'; // Default fallback
+};
 
 // Mock professional courses data
 const mockProfessionalCourses: ProfessionalCourse[] = [
@@ -320,6 +338,8 @@ export const useCourseManagement = () => {
       return;
     }
 
+    const iconName = getIconName(newProfessionalCourse.icon as React.ReactElement);
+
     const courseToAdd: ProfessionalCourse = {
       ...(newProfessionalCourse as ProfessionalCourse),
       id: uuidv4(),
@@ -361,6 +381,8 @@ export const useCourseManagement = () => {
       toast.error('Լրացրեք բոլոր պարտադիր դաշտերը');
       return;
     }
+
+    const iconName = getIconName(selectedProfessionalCourse.icon as React.ReactElement);
 
     const updatedCourses = professionalCourses.map(course => 
       course.id === selectedProfessionalCourse.id ? selectedProfessionalCourse : course
