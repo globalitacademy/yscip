@@ -71,18 +71,6 @@ export const useAuthStateChange = (
         setUser(null);
         setIsAuthenticated(false);
         localStorage.removeItem('currentUser');
-      } else if (event === 'TOKEN_REFRESHED') {
-        // Handle token refresh - don't disturb the current session
-        console.log('Token refreshed, maintaining session');
-        
-        // If we have a stored user, ensure we're still using it
-        const storedUser = localStorage.getItem('currentUser');
-        if (storedUser && !isAuthenticated) {
-          const parsedUser = JSON.parse(storedUser);
-          console.log('Restoring user from localStorage after token refresh');
-          setUser(parsedUser);
-          setIsAuthenticated(true);
-        }
       }
     });
 
