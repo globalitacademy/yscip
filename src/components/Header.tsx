@@ -1,11 +1,12 @@
 
-import React from 'react';
-import { Link } from 'react-router-dom';
+import React, { useEffect, useState } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
 import { cn } from '@/lib/utils';
 import UserMenu from '@/components/UserMenu';
 import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
-import { LayoutDashboard, GraduationCap, BookOpen, Code } from 'lucide-react';
+import { LayoutDashboard, GraduationCap, BookOpen, Code, List } from 'lucide-react';
+import { ScrollArea } from '@/components/ui/scroll-area';
 import {
   NavigationMenu,
   NavigationMenuContent,
@@ -23,9 +24,33 @@ interface HeaderProps {
 const Header: React.FC<HeaderProps> = ({
   className
 }) => {
-  const {
-    user
-  } = useAuth();
+  const { user } = useAuth();
+  const navigate = useNavigate();
+  const [categories, setCategories] = useState<string[]>([]);
+
+  useEffect(() => {
+    const fetchCategories = async () => {
+      try {
+        // Import the project themes dynamically
+        const { projectThemes } = await import('@/data/projectThemes');
+        // Extract unique categories
+        const uniqueCategories = [...new Set(projectThemes.map(project => project.category))].sort();
+        setCategories(uniqueCategories);
+      } catch (error) {
+        console.error("Error loading categories:", error);
+        setCategories([]);
+      }
+    };
+    
+    fetchCategories();
+  }, []);
+
+  const handleCategorySelect = (category: string) => {
+    const url = new URL(window.location.origin);
+    url.pathname = '/admin/student-projects';
+    url.searchParams.set('category', category);
+    navigate(url.pathname + url.search);
+  };
 
   // Define role-based navigation
   const getRoleNavigation = () => {
@@ -76,12 +101,37 @@ const Header: React.FC<HeaderProps> = ({
           <NavigationMenu className="hidden md:flex">
             <NavigationMenuList>
               <NavigationMenuItem>
-                <Link to="/admin/student-projects">
-                  <NavigationMenuLink className={navigationMenuTriggerStyle()}>
-                    <Code className="mr-2 h-4 w-4" />
-                    Նախագծեր
-                  </NavigationMenuLink>
-                </Link>
+                <NavigationMenuTrigger className="flex items-center gap-2">
+                  <Code className="h-4 w-4" />
+                  Նախագծեր
+                </NavigationMenuTrigger>
+                <NavigationMenuContent>
+                  <div className="p-4 w-[220px]">
+                    <div className="font-medium mb-2 text-sm">Ծրագրի թեմաներն ըստ կատեգորիաների</div>
+                    <ScrollArea className="h-[300px]">
+                      <div className="flex flex-col gap-1">
+                        <NavigationMenuLink 
+                          asChild
+                          className="block p-2 hover:bg-muted rounded text-sm cursor-pointer"
+                          onClick={() => navigate('/admin/student-projects')}
+                        >
+                          <div>Բոլոր նախագծերը</div>
+                        </NavigationMenuLink>
+                        
+                        {categories.map((category) => (
+                          <NavigationMenuLink 
+                            key={category}
+                            asChild
+                            className="block p-2 hover:bg-muted rounded text-sm cursor-pointer"
+                            onClick={() => handleCategorySelect(category)}
+                          >
+                            <div>{category}</div>
+                          </NavigationMenuLink>
+                        ))}
+                      </div>
+                    </ScrollArea>
+                  </div>
+                </NavigationMenuContent>
               </NavigationMenuItem>
               <NavigationMenuItem>
                 <Link to="/admin/courses">
