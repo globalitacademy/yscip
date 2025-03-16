@@ -278,10 +278,10 @@ export const useCourseManagement = () => {
         const iconType = newProfessionalCourse.icon.type;
         
         // Handle the different possible types of the icon
-        if (typeof iconType === 'function' && iconType.name) {
+        if (iconType && typeof iconType === 'function' && 'name' in iconType) {
           // It's a function component with a name property
           iconName = iconType.name;
-        } else if (typeof iconType === 'string') {
+        } else if (iconType && typeof iconType === 'string') {
           // It's a string (e.g., for native elements like 'div')
           iconName = iconType;
         } else if (iconType && typeof iconType === 'object' && 'name' in iconType) {
@@ -371,10 +371,10 @@ export const useCourseManagement = () => {
         const iconType = selectedProfessionalCourse.icon.type;
         
         // Handle the different possible types of the icon
-        if (typeof iconType === 'function' && iconType.name) {
+        if (iconType && typeof iconType === 'function' && 'name' in iconType) {
           // It's a function component with a name property
           iconName = iconType.name;
-        } else if (typeof iconType === 'string') {
+        } else if (iconType && typeof iconType === 'string') {
           // It's a string (e.g., for native elements like 'div')
           iconName = iconType;
         } else if (iconType && typeof iconType === 'object' && 'name' in iconType) {
