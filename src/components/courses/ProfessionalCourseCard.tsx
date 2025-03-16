@@ -1,8 +1,8 @@
 
 import React from 'react';
-import { Card, CardContent, CardFooter, CardHeader } from '@/components/ui/card';
+import { Card, CardContent, CardFooter } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Building, User, Clock, CalendarDays } from 'lucide-react';
+import { Clock } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { FadeIn } from '@/components/LocalTransitions';
 import { ProfessionalCourse } from './types/ProfessionalCourse';
@@ -18,48 +18,34 @@ const ProfessionalCourseCard: React.FC<ProfessionalCourseCardProps> = ({ course 
 
   return (
     <FadeIn key={course.id} delay="delay-200" className="flex">
-      <Card className="flex flex-col w-full overflow-hidden hover:shadow-lg transition-all duration-300 border-t-4 relative group" style={{ borderTopColor: course.color.replace('text-', '').includes('-') ? `var(--${course.color.replace('text-', '')})` : '#8B5CF6' }}>
-        <div className="absolute top-4 left-4 flex items-center text-xs bg-gray-100 px-2 py-1 rounded-full z-10">
-          <Building size={12} className="mr-1" />
-          <span>{course.institution}</span>
-        </div>
-        
-        <CardHeader className="pb-2 text-center pt-14">
-          <div className={`${course.color} mx-auto p-4 rounded-full bg-gray-50 shadow-sm w-20 h-20 flex items-center justify-center mb-4 transform group-hover:scale-110 transition-transform duration-300`}>
+      <Card className="flex flex-col w-full overflow-hidden hover:shadow-lg transition-all duration-300 relative group">
+        <div className="flex flex-col items-center text-center p-8">
+          <div className="mb-6">
             {icon}
           </div>
-          <h3 className="font-bold text-xl mb-1">{course.title}</h3>
-          <p className="text-sm text-muted-foreground uppercase tracking-wider">{course.subtitle}</p>
-        </CardHeader>
-        
-        <CardContent className="flex-grow pb-2">
-          <div className="flex items-center gap-2 text-sm text-muted-foreground mb-4">
-            <User size={16} />
-            <span>Դասախոս՝ {course.createdBy}</span>
-          </div>
           
-          <div className="flex flex-col space-y-2 w-full text-sm mt-auto">
-            <div className="flex items-center">
-              <Clock size={15} className="mr-2 text-muted-foreground" />
-              <span>{course.duration}</span>
-            </div>
-            <div className="flex items-center">
-              <CalendarDays size={15} className="mr-2 text-muted-foreground" />
-              <span className="font-semibold">{course.price}</span>
-            </div>
-          </div>
-        </CardContent>
-        
-        <CardFooter className="pt-4">
+          <h3 className={`font-bold text-xl mb-1 ${course.color}`}>{course.title}</h3>
+          <p className="text-sm text-muted-foreground uppercase tracking-wider mb-6">{course.subtitle}</p>
+          
           <Button 
-            variant="default"
-            className="w-full rounded-md group-hover:bg-primary transition-colors duration-300"
+            variant="outline"
+            className="px-10 rounded-full border-gray-300 hover:bg-white hover:text-primary hover:border-primary transition-colors duration-300 mb-6"
             asChild
           >
             <Link to={`/course/${course.id}`}>
-              Մանրամասն
+              Դիտել
             </Link>
           </Button>
+        </div>
+        
+        <CardFooter className="flex items-center justify-between p-4 border-t bg-gray-50 mt-auto">
+          <div className="flex items-center">
+            <Clock size={14} className="mr-1 text-muted-foreground" />
+            <span className="text-sm">{course.duration}</span>
+          </div>
+          <div className="text-sm font-semibold">
+            {course.price}
+          </div>
         </CardFooter>
       </Card>
     </FadeIn>
