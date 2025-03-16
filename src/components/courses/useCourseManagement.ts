@@ -271,10 +271,24 @@ export const useCourseManagement = () => {
 
     try {
       // Extract icon name for storage
-      const iconName = 
-        newProfessionalCourse.icon?.type?.name || 
-        newProfessionalCourse.icon?.type || 
-        'Code';
+      let iconName = 'Code'; // Default icon
+
+      // Check if icon is a React element and extract its type name
+      if (newProfessionalCourse.icon) {
+        const iconType = newProfessionalCourse.icon.type;
+        
+        // Handle the different possible types of the icon
+        if (typeof iconType === 'function' && iconType.name) {
+          // It's a function component with a name property
+          iconName = iconType.name;
+        } else if (typeof iconType === 'string') {
+          // It's a string (e.g., for native elements like 'div')
+          iconName = iconType;
+        } else if (iconType && typeof iconType === 'object' && 'name' in iconType) {
+          // It's an object with a name property
+          iconName = iconType.name;
+        }
+      }
 
       const { data, error } = await supabase
         .from('courses')
@@ -350,10 +364,24 @@ export const useCourseManagement = () => {
 
     try {
       // Extract icon name for storage
-      const iconName = 
-        selectedProfessionalCourse.icon?.type?.name || 
-        selectedProfessionalCourse.icon?.type || 
-        'Code';
+      let iconName = 'Code'; // Default icon
+
+      // Check if icon is a React element and extract its type name
+      if (selectedProfessionalCourse.icon) {
+        const iconType = selectedProfessionalCourse.icon.type;
+        
+        // Handle the different possible types of the icon
+        if (typeof iconType === 'function' && iconType.name) {
+          // It's a function component with a name property
+          iconName = iconType.name;
+        } else if (typeof iconType === 'string') {
+          // It's a string (e.g., for native elements like 'div')
+          iconName = iconType;
+        } else if (iconType && typeof iconType === 'object' && 'name' in iconType) {
+          // It's an object with a name property
+          iconName = iconType.name;
+        }
+      }
 
       const { error } = await supabase
         .from('courses')
