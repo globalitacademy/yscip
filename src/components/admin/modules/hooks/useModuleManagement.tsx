@@ -6,19 +6,19 @@ import type { EducationalModule } from '@/components/educationalCycle';
 
 export function useModuleManagement() {
   const [modules, setModules] = useState<EducationalModule[]>([
-    { id: 1, title: "Ալգորիթմների տարրերի կիրառում", icon: Plus, status: 'completed', progress: 100 },
-    { id: 2, title: "Ծրագրավորման հիմունքներ", icon: Plus, status: 'completed', progress: 100 },
-    { id: 3, title: "Օբյեկտ կողմնորոշված ծրագրավորում", icon: Plus, status: 'in-progress', progress: 75 },
-    { id: 4, title: "Համակարգչային ցանցեր", icon: Plus, status: 'in-progress', progress: 40 },
-    { id: 5, title: "Ստատրիկ վեբ կայքերի նախագծում", icon: Plus, status: 'not-started', progress: 0 },
-    { id: 6, title: "Ջավասկրիպտի կիրառումը", icon: Plus, status: 'not-started', progress: 0 },
-    { id: 7, title: "Ռելյացիոն տվյալների բազաների նախագծում", icon: Plus, status: 'not-started', progress: 0 },
-    { id: 8, title: "Ոչ Ռելյացիոն տվյալների բազաների նախագծում", icon: Plus, status: 'not-started', progress: 0 },
-    { id: 9, title: "Դինաﬕկ վեբ կայքերի նախագծում", icon: Plus, status: 'not-started', progress: 0 },
-    { id: 10, title: "Վեկտորային գրաֆիկա", icon: Plus, status: 'not-started', progress: 0 },
-    { id: 11, title: "Կետային գրաֆիկա", icon: Plus, status: 'not-started', progress: 0 },
-    { id: 12, title: "Գրաֆիկական ինտերֆեյսի ծրագրավորում", icon: Plus, status: 'not-started', progress: 0 },
-    { id: 13, title: "Տեղեկատվության անվտանգություն", icon: Plus, status: 'not-started', progress: 0 },
+    { id: 1, title: "Ալգորիթմների տարրերի կիրառում", icon: Plus, status: 'completed', progress: 100, description: "Ծանոթացում ալգորիթմների հետ, որոնք տեղեկատվական տեխնոլոգիաների հիմնաքարն են։" },
+    { id: 2, title: "Ծրագրավորման հիմունքներ", icon: Plus, status: 'completed', progress: 100, description: "Ծրագրավորման հիմնական սկզբունքների ուսումնասիրություն և կիրառում։" },
+    { id: 3, title: "Օբյեկտ կողմնորոշված ծրագրավորում", icon: Plus, status: 'in-progress', progress: 75, description: "Օբյեկտային մոտեցման կիրառմամբ ծրագրային ապահովման նախագծում։" },
+    { id: 4, title: "Համակարգչային ցանցեր", icon: Plus, status: 'in-progress', progress: 40, description: "Ցանցային տեխնոլոգիաների և արձանագրությունների ուսումնասիրություն։" },
+    { id: 5, title: "Ստատրիկ վեբ կայքերի նախագծում", icon: Plus, status: 'not-started', progress: 0, description: "HTML, CSS և JavaScript-ի կիրառմամբ ստատիկ կայքերի ստեղծում։" },
+    { id: 6, title: "Ջավասկրիպտի կիրառումը", icon: Plus, status: 'not-started', progress: 0, description: "JavaScript լեզվի խորացված ուսումնասիրություն վեբ կայքերում։" },
+    { id: 7, title: "Ռելյացիոն տվյալների բազաների նախագծում", icon: Plus, status: 'not-started', progress: 0, description: "SQL հարցումների և տվյալների բազաների նախագծման հիմունքներ։" },
+    { id: 8, title: "Ոչ Ռելյացիոն տվյալների բազաների նախագծում", icon: Plus, status: 'not-started', progress: 0, description: "NoSQL տվյալների բազաների ուսումնասիրություն և կիրառում։" },
+    { id: 9, title: "Դինաﬕկ վեբ կայքերի նախագծում", icon: Plus, status: 'not-started', progress: 0, description: "Վեբ հավելվածների ստեղծում ժամանակակից ֆրեյմվորկներով։" },
+    { id: 10, title: "Վեկտորային գրաֆիկա", icon: Plus, status: 'not-started', progress: 0, description: "Վեկտորային պատկերների ստեղծում և խմբագրում։" },
+    { id: 11, title: "Կետային գրաֆիկա", icon: Plus, status: 'not-started', progress: 0, description: "Կետային պատկերների մշակում և խմբագրում։" },
+    { id: 12, title: "Գրաֆիկական ինտերֆեյսի ծրագրավորում", icon: Plus, status: 'not-started', progress: 0, description: "Աշխատանք գրաֆիկական ինտերֆեյսների հետ և դրանց ստեղծում։" },
+    { id: 13, title: "Տեղեկատվության անվտանգություն", icon: Plus, status: 'not-started', progress: 0, description: "Տեղեկատվական համակարգերի պաշտպանության մեթոդների ուսումնասիրություն։" },
   ]);
 
   const [isDialogOpen, setIsDialogOpen] = useState(false);
