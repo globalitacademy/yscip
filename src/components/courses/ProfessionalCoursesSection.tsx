@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState } from 'react';
 import { FadeIn } from '@/components/LocalTransitions';
 import { Button } from '@/components/ui/button';
@@ -6,21 +5,15 @@ import { Code, BookText, BrainCircuit, Database, FileCode, Globe, User, Building
 import { Link } from 'react-router-dom';
 import { Card, CardContent, CardFooter, CardHeader } from '@/components/ui/card';
 import { ProfessionalCourse } from './types/ProfessionalCourse';
+import { initializeProfessionalCourses } from './utils/storageUtils';
 
 const ProfessionalCoursesSection: React.FC = () => {
   const [professionalCourses, setProfessionalCourses] = useState<ProfessionalCourse[]>([]);
   
   useEffect(() => {
     // Load professional courses from localStorage
-    const storedCourses = localStorage.getItem('professionalCourses');
-    if (storedCourses) {
-      try {
-        const parsedCourses = JSON.parse(storedCourses);
-        setProfessionalCourses(parsedCourses);
-      } catch (e) {
-        console.error('Error parsing stored professional courses:', e);
-      }
-    }
+    const courses = initializeProfessionalCourses();
+    setProfessionalCourses(courses);
   }, []);
   
   // If no courses are available, use these default courses
