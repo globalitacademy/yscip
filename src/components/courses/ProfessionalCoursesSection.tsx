@@ -52,14 +52,14 @@ const ProfessionalCoursesSection: React.FC = () => {
           onAddCourse={handleAddCourse}
         />
         
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5 md:gap-6">
           {professionalCourses.map((course) => (
             <ProfessionalCourseCard key={course.id} course={course} />
           ))}
         </div>
 
         <div className="flex justify-center mt-12">
-          <Button asChild variant="outline">
+          <Button asChild variant="outline" className="px-6 py-2 rounded-full hover:bg-primary/10">
             <Link to="/courses">
               Դիտել բոլոր դասընթացները
             </Link>
