@@ -2,8 +2,9 @@
 import React from 'react';
 import { FadeIn } from '@/components/LocalTransitions';
 import { Button } from '@/components/ui/button';
-import { Code, BookText, BrainCircuit, Database, FileCode, Globe } from 'lucide-react';
+import { Code, BookText, BrainCircuit, Database, FileCode, Globe, User, ExternalLink } from 'lucide-react';
 import { Link } from 'react-router-dom';
+import { Card, CardContent, CardFooter, CardHeader } from '@/components/ui/card';
 
 interface ProfessionalCourse {
   id: string;
@@ -14,6 +15,7 @@ interface ProfessionalCourse {
   price: string;
   buttonText: string;
   color: string;
+  createdBy: string;
 }
 
 const professionalCourses: ProfessionalCourse[] = [
@@ -25,7 +27,8 @@ const professionalCourses: ProfessionalCourse[] = [
     duration: '9 ամիս',
     price: '58,000 ֏',
     buttonText: 'Դիտել',
-    color: 'text-amber-500'
+    color: 'text-amber-500',
+    createdBy: 'Արամ Հակոբյան'
   },
   {
     id: '2',
@@ -35,7 +38,8 @@ const professionalCourses: ProfessionalCourse[] = [
     duration: '7 ամիս',
     price: '68,000 ֏',
     buttonText: 'Դիտել',
-    color: 'text-blue-500'
+    color: 'text-blue-500',
+    createdBy: 'Լիլիթ Մարտիրոսյան'
   },
   {
     id: '3',
@@ -45,7 +49,8 @@ const professionalCourses: ProfessionalCourse[] = [
     duration: '6 ամիս',
     price: '68,000 ֏',
     buttonText: 'Դիտել',
-    color: 'text-red-500'
+    color: 'text-red-500',
+    createdBy: 'Գարիկ Սարգսյան'
   },
   {
     id: '4',
@@ -55,7 +60,8 @@ const professionalCourses: ProfessionalCourse[] = [
     duration: '3.5 ամիս',
     price: '58,000 ֏',
     buttonText: 'Դիտել',
-    color: 'text-yellow-500'
+    color: 'text-yellow-500',
+    createdBy: 'Անի Մուրադյան'
   },
   {
     id: '5',
@@ -65,7 +71,8 @@ const professionalCourses: ProfessionalCourse[] = [
     duration: '5 ամիս',
     price: '58,000 ֏',
     buttonText: 'Դիտել',
-    color: 'text-purple-500'
+    color: 'text-purple-500',
+    createdBy: 'Վահե Ղազարյան'
   },
   {
     id: '6',
@@ -75,7 +82,8 @@ const professionalCourses: ProfessionalCourse[] = [
     duration: '6 ամիս',
     price: '68,000 ֏',
     buttonText: 'Դիտել',
-    color: 'text-green-500'
+    color: 'text-green-500',
+    createdBy: 'Տիգրան Դավթյան'
   }
 ];
 
@@ -95,29 +103,48 @@ const ProfessionalCoursesSection: React.FC = () => {
           </p>
         </FadeIn>
         
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {professionalCourses.map((course) => (
             <FadeIn key={course.id} delay="delay-200" className="flex">
-              <div className="bg-white rounded-lg border border-gray-100 p-8 flex flex-col items-center text-center hover:shadow-md transition-shadow flex-1">
-                <div className={`mb-6 ${course.color}`}>
-                  {course.icon}
-                </div>
+              <Card className="flex flex-col w-full hover:shadow-md transition-shadow">
+                <CardHeader className="pb-2 text-center">
+                  <div className={`mb-4 ${course.color} mx-auto`}>
+                    {course.icon}
+                  </div>
+                  <h3 className="font-bold text-xl">{course.title}</h3>
+                  <p className="text-sm text-muted-foreground">{course.subtitle}</p>
+                </CardHeader>
                 
-                <h3 className="font-bold text-xl mb-1">{course.title}</h3>
-                <p className="text-sm text-muted-foreground mb-6">{course.subtitle}</p>
+                <CardContent className="flex-grow pb-2">
+                  <div className="flex items-center gap-2 text-sm text-muted-foreground mb-4">
+                    <User size={16} />
+                    <span>Դասախոս՝ {course.createdBy}</span>
+                  </div>
+                  
+                  <div className="flex justify-between w-full text-sm mt-auto">
+                    <span>{course.duration}</span>
+                    <span className="font-semibold">{course.price}</span>
+                  </div>
+                </CardContent>
                 
-                <Button 
-                  variant="outline" 
-                  className="rounded-full mb-6"
-                >
-                  {course.buttonText}
-                </Button>
-                
-                <div className="mt-auto flex justify-between w-full text-sm">
-                  <span>{course.duration}</span>
-                  <span className="font-semibold">{course.price}</span>
-                </div>
-              </div>
+                <CardFooter className="flex flex-col gap-2 pt-4">
+                  <Button 
+                    asChild
+                    className="w-full"
+                  >
+                    <Link to={`/course/${course.id}`}>
+                      {course.buttonText} <ExternalLink className="ml-2 h-4 w-4" />
+                    </Link>
+                  </Button>
+                  
+                  <Button 
+                    variant="outline" 
+                    className="w-full"
+                  >
+                    Դիմել
+                  </Button>
+                </CardFooter>
+              </Card>
             </FadeIn>
           ))}
         </div>

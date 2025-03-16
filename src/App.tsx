@@ -5,6 +5,7 @@ import Index from '@/pages/Index';
 import Login from '@/pages/Login';
 import VerifyEmail from '@/pages/VerifyEmail';
 import ProjectDetails from '@/pages/ProjectDetails';
+import CourseDetails from '@/pages/CourseDetails';
 import AdminDashboard from '@/pages/AdminDashboard';
 import UserManagementPage from '@/pages/UserManagementPage';
 import GroupsPage from '@/pages/GroupsPage';
@@ -40,6 +41,7 @@ function App() {
             <Route path="/login" element={<Login />} />
             <Route path="/verify" element={<VerifyEmail />} />
             <Route path="/project/:id" element={<ProjectDetails />} />
+            <Route path="/course/:id" element={<CourseDetails />} />
             
             {/* Redirect /admin to /admin/dashboard */}
             <Route path="/admin" element={<Navigate to="/admin/dashboard" replace />} />
