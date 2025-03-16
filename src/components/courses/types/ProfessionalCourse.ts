@@ -12,5 +12,9 @@ export interface ProfessionalCourse {
   color: string;
   createdBy: string;
   institution: string;
-  imageUrl?: string; // Ավելացնում ենք նկարի URL-ը
+  imageUrl?: string;
+  description?: string;
+  lessons?: { title: string; duration: string }[];
+  requirements?: string[];
+  outcomes?: string[];
 }

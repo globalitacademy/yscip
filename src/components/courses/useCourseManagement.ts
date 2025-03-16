@@ -19,7 +19,22 @@ const mockProfessionalCourses: ProfessionalCourse[] = [
     buttonText: 'Դիտել',
     color: 'text-amber-500',
     createdBy: 'Արամ Հակոբյան',
-    institution: 'ՀՊՏՀ'
+    institution: 'ՀՊՏՀ',
+    description: 'Սովորեք Web կայքերի մշակում՝ օգտագործելով արդի տեխնոլոգիաներ ինչպիսիք են HTML5, CSS3, JavaScript, React և Node.js։ Այս դասընթացը նախատեսված է սկսնակների համար և կօգնի ձեզ դառնալ պրոֆեսիոնալ Front-End ծրագրավորող։',
+    lessons: [
+      { title: 'Ներածություն Web ծրագրավորման մեջ', duration: '3 ժամ' },
+      { title: 'HTML5 հիմունքներ', duration: '6 ժամ' },
+      { title: 'CSS3 և ձևավորում', duration: '8 ժամ' },
+      { title: 'JavaScript հիմունքներ', duration: '12 ժամ' }
+    ],
+    requirements: [
+      'Համակարգչային հիմնական գիտելիքներ',
+      'Տրամաբանական մտածելակերպ'
+    ],
+    outcomes: [
+      'Մշակել ամբողջական ինտերակտիվ վեբ կայքեր',
+      'Աշխատել React-ով միաէջանի հավելվածների հետ'
+    ]
   },
   {
     id: '2',
@@ -31,7 +46,21 @@ const mockProfessionalCourses: ProfessionalCourse[] = [
     buttonText: 'Դիտել',
     color: 'text-blue-500',
     createdBy: 'Լիլիթ Մարտիրոսյան',
-    institution: 'ԵՊՀ'
+    institution: 'ԵՊՀ',
+    description: 'Սովորեք Python ծրագրավորում՝ մեքենայական ուսուցման և արհեստական բանականության հիմունքներով։ Այս ինտենսիվ դասընթացը կօգնի ձեզ ծանոթանալ AI/ML ժամանակակից գործիքների հետ։',
+    lessons: [
+      { title: 'Python հիմունքներ', duration: '10 ժամ' },
+      { title: 'Տվյալների վերլուծություն NumPy-ով և Pandas-ով', duration: '12 ժամ' },
+      { title: 'Մեքենայական ուսուցման ներածություն', duration: '6 ժամ' }
+    ],
+    requirements: [
+      'Ծրագրավորման բազային իմացություն',
+      'Մաթեմատիկայի և վիճակագրության հիմունքներ'
+    ],
+    outcomes: [
+      'Մշակել մեքենայական ուսուցման մոդելներ',
+      'Վերլուծել և վիզուալիզացնել մեծ տվյալներ'
+    ]
   },
   {
     id: '3',
@@ -164,7 +193,11 @@ export const useCourseManagement = () => {
     color: 'text-amber-500',
     createdBy: user?.name || '',
     institution: 'ՀՊՏՀ',
-    imageUrl: undefined
+    imageUrl: undefined,
+    description: '',
+    lessons: [],
+    requirements: [],
+    outcomes: []
   });
   
   const [newModule, setNewModule] = useState('');
@@ -309,7 +342,11 @@ export const useCourseManagement = () => {
       color: 'text-amber-500',
       createdBy: user?.name || '',
       institution: 'ՀՊՏՀ',
-      imageUrl: undefined
+      imageUrl: undefined,
+      description: '',
+      lessons: [],
+      requirements: [],
+      outcomes: []
     });
     setIsAddDialogOpen(false);
     toast.success('Դասընթացը հաջողությամբ ավելացվել է');

@@ -1,3 +1,4 @@
+
 import React, { useEffect, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import Header from '@/components/Header';
@@ -6,10 +7,22 @@ import { Button } from '@/components/ui/button';
 import { ArrowLeft, User, Clock, Ban, Check, ExternalLink } from 'lucide-react';
 import { FadeIn } from '@/components/LocalTransitions';
 import { toast } from 'sonner';
+import { ProfessionalCourse } from '@/components/courses/types/ProfessionalCourse';
 
-// This is a mock of the course data which would ideally come from a DB
-const getCourseById = (id: string) => {
-  const courses = [
+// This is a mock function to get course data by ID, using local storage
+const getCourseById = (id: string): ProfessionalCourse | undefined => {
+  try {
+    const storedCourses = localStorage.getItem('professionalCourses');
+    if (storedCourses) {
+      const courses: ProfessionalCourse[] = JSON.parse(storedCourses);
+      return courses.find(course => course.id === id);
+    }
+  } catch (error) {
+    console.error('Error fetching course:', error);
+  }
+  
+  // Fallback to mock data if not found in localStorage
+  const mockCourses = [
     {
       id: '1',
       title: 'WEB Front-End',
@@ -18,6 +31,10 @@ const getCourseById = (id: string) => {
       duration: '9 ամիս',
       price: '58,000 ֏',
       createdBy: 'Արամ Հակոբյան',
+      institution: 'ՀՊՏՀ',
+      color: 'text-amber-500',
+      buttonText: 'Դիտել',
+      icon: null,
       lessons: [
         { title: 'Ներածություն Web ծրագրավորման մեջ', duration: '3 ժամ' },
         { title: 'HTML5 հիմունքներ', duration: '6 ժամ' },
@@ -50,6 +67,10 @@ const getCourseById = (id: string) => {
       duration: '7 ամիս',
       price: '68,000 ֏',
       createdBy: 'Լիլիթ Մարտիրոսյան',
+      institution: 'ԵՊՀ',
+      color: 'text-blue-500',
+      buttonText: 'Դիտել',
+      icon: null,
       lessons: [
         { title: 'Python հիմունքներ', duration: '10 ժամ' },
         { title: 'Տվյալների վերլուծություն NumPy-ով և Pandas-ով', duration: '12 ժամ' },
@@ -72,23 +93,21 @@ const getCourseById = (id: string) => {
         'Իրականացնել խորը ուսուցման ալգորիթմներ',
         'Ստեղծել AI հիմքով հավելվածներ'
       ]
-    },
-    // Other courses would be added here in a real application
+    }
   ];
-
-  return courses.find(course => course.id === id);
+  
+  return mockCourses.find(course => course.id === id) as ProfessionalCourse;
 };
 
 const CourseDetails: React.FC = () => {
   const { id } = useParams<{ id: string }>();
-  const [course, setCourse] = useState<any>(null);
+  const [course, setCourse] = useState<ProfessionalCourse | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     if (id) {
-      // In a real app, this would be an API call
       const courseData = getCourseById(id);
-      setCourse(courseData);
+      setCourse(courseData || null);
       setLoading(false);
     }
   }, [id]);
@@ -164,7 +183,7 @@ const CourseDetails: React.FC = () => {
                 <div className="mb-10">
                   <h2 className="text-2xl font-bold mb-6">Դասընթացի ծրագիր</h2>
                   <div className="space-y-4">
-                    {course.lessons.map((lesson: any, index: number) => (
+                    {(course.lessons || []).map((lesson, index) => (
                       <div key={index} className="border rounded-lg p-4 hover:bg-gray-50 transition-colors">
                         <div className="flex items-center justify-between">
                           <div className="flex items-center gap-3">
@@ -177,6 +196,12 @@ const CourseDetails: React.FC = () => {
                         </div>
                       </div>
                     ))}
+                    
+                    {(!course.lessons || course.lessons.length === 0) && (
+                      <div className="text-center p-6 border rounded-lg bg-gray-50">
+                        <p className="text-muted-foreground">Դասընթացի ծրագիրը հասանելի չէ</p>
+                      </div>
+                    )}
                   </div>
                 </div>
               </FadeIn>
@@ -185,12 +210,18 @@ const CourseDetails: React.FC = () => {
                 <div className="mb-10">
                   <h2 className="text-2xl font-bold mb-6">Ինչ կսովորեք</h2>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    {course.outcomes.map((outcome: string, index: number) => (
+                    {(course.outcomes || []).map((outcome, index) => (
                       <div key={index} className="flex items-start gap-2">
                         <Check size={20} className="text-green-500 mt-0.5 shrink-0" />
                         <span>{outcome}</span>
                       </div>
                     ))}
+                    
+                    {(!course.outcomes || course.outcomes.length === 0) && (
+                      <div className="col-span-2 text-center p-6 border rounded-lg bg-gray-50">
+                        <p className="text-muted-foreground">Տեղեկատվությունը հասանելի չէ</p>
+                      </div>
+                    )}
                   </div>
                 </div>
               </FadeIn>
@@ -199,12 +230,18 @@ const CourseDetails: React.FC = () => {
                 <div>
                   <h2 className="text-2xl font-bold mb-6">Պահանջներ</h2>
                   <div className="space-y-2">
-                    {course.requirements.map((req: string, index: number) => (
+                    {(course.requirements || []).map((req, index) => (
                       <div key={index} className="flex items-start gap-2">
                         <Ban size={20} className="text-red-500 mt-0.5 shrink-0" />
                         <span>{req}</span>
                       </div>
                     ))}
+                    
+                    {(!course.requirements || course.requirements.length === 0) && (
+                      <div className="text-center p-6 border rounded-lg bg-gray-50">
+                        <p className="text-muted-foreground">Պահանջները սահմանված չեն</p>
+                      </div>
+                    )}
                   </div>
                 </div>
               </FadeIn>
@@ -226,7 +263,11 @@ const CourseDetails: React.FC = () => {
                     </div>
                     <div className="flex justify-between">
                       <span className="text-muted-foreground">Դասերի քանակ</span>
-                      <span>{course.lessons.length}</span>
+                      <span>{course.lessons ? course.lessons.length : 0}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-muted-foreground">Հաստատություն</span>
+                      <span>{course.institution}</span>
                     </div>
                   </div>
                   
