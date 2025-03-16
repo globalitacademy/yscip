@@ -1,97 +1,73 @@
 
 import React from 'react';
-import { Card, CardContent, CardFooter, CardHeader } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { MoreHorizontal, Pencil, Trash2, Building, User } from 'lucide-react';
 import { ProfessionalCourse } from './types/ProfessionalCourse';
-import { Link } from 'react-router-dom';
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
+import { Eye, Pencil, Trash } from 'lucide-react';
 
 interface ProfessionalCourseCardProps {
   course: ProfessionalCourse;
-  isAdmin: boolean;
-  canEdit: boolean;
-  onEdit: (course: ProfessionalCourse) => void;
-  onDelete: (id: string) => void;
+  onEdit?: (course: ProfessionalCourse) => void;
+  onDelete?: (id: string) => void;
+  isAdmin?: boolean;
 }
 
 const ProfessionalCourseCard: React.FC<ProfessionalCourseCardProps> = ({
   course,
-  isAdmin,
-  canEdit,
   onEdit,
   onDelete,
+  isAdmin = false
 }) => {
   return (
-    <Card className="flex flex-col w-full hover:shadow-md transition-shadow relative">
-      {canEdit && (
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button
-              variant="ghost"
-              size="icon"
-              className="absolute top-2 right-2 z-10"
-            >
-              <MoreHorizontal className="h-4 w-4" />
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="end">
-            <DropdownMenuItem onClick={() => onEdit(course)}>
-              <Pencil className="mr-2 h-4 w-4" />
-              Խմբագրել
-            </DropdownMenuItem>
-            <DropdownMenuItem
-              onClick={() => onDelete(course.id)}
-              className="text-destructive"
-            >
-              <Trash2 className="mr-2 h-4 w-4" />
-              Ջնջել
-            </DropdownMenuItem>
-          </DropdownMenuContent>
-        </DropdownMenu>
-      )}
-
-      <div className="absolute top-4 left-4 flex items-center text-xs bg-gray-100 px-2 py-1 rounded-full z-10">
-        <Building size={12} className="mr-1" />
-        <span>{course.institution}</span>
-      </div>
-
-      <CardHeader className="pb-2 text-center pt-12">
-        <div className={`mb-4 ${course.color} mx-auto`}>
-          {course.icon}
-        </div>
-        <h3 className="font-bold text-xl">{course.title}</h3>
-        <p className="text-sm text-muted-foreground">{course.subtitle}</p>
-      </CardHeader>
-      
-      <CardContent className="flex-grow pb-2">
-        <div className="flex items-center gap-2 text-sm text-muted-foreground mb-4">
-          <User size={16} />
-          <span>Դասախոս՝ {course.createdBy}</span>
-        </div>
+    <Card className="h-full overflow-hidden shadow-md hover:shadow-lg transition-shadow">
+      <div className="px-6 py-4 flex flex-col items-center text-center">
+        {course.imageUrl ? (
+          <img 
+            src={course.imageUrl} 
+            alt={course.title}
+            className="w-16 h-16 mb-4 object-contain"
+            onError={(e) => {
+              // Fallback to icon if image fails to load
+              e.currentTarget.style.display = 'none';
+              document.getElementById(`course-icon-${course.id}`)?.style.setProperty('display', 'block');
+            }}
+          />
+        ) : (
+          <div id={`course-icon-${course.id}`} className={`${course.color} mb-4`}>
+            {course.icon}
+          </div>
+        )}
+        <div className="mb-2 text-xs uppercase tracking-wide text-gray-500">{course.subtitle}</div>
+        <h3 className="text-xl font-semibold mb-2">{course.title}</h3>
+        <div className="text-sm text-gray-600 mb-1">Տևողություն: {course.duration}</div>
+        <div className="text-sm text-gray-600 mb-1">Արժեք: {course.price}</div>
+        <div className="text-sm text-gray-600 mb-4">Հաստատություն: {course.institution}</div>
         
-        <div className="flex justify-between w-full text-sm mt-auto">
-          <span>{course.duration}</span>
-          <span className="font-semibold">{course.price}</span>
+        <div className="flex space-x-2">
+          <Button variant="outline" size="sm">
+            <Eye className="h-4 w-4 mr-2" /> {course.buttonText}
+          </Button>
+          
+          {isAdmin && (
+            <>
+              <Button
+                variant="outline" 
+                size="sm"
+                onClick={() => onEdit && onEdit(course)}
+              >
+                <Pencil className="h-4 w-4" />
+              </Button>
+              <Button
+                variant="outline" 
+                size="sm"
+                onClick={() => onDelete && onDelete(course.id)}
+              >
+                <Trash className="h-4 w-4" />
+              </Button>
+            </>
+          )}
         </div>
-      </CardContent>
-      
-      <CardFooter className="pt-4">
-        <Button 
-          variant="outline"
-          className="w-full"
-          asChild
-        >
-          <Link to={`/course/${course.id}`}>
-            Մանրամասն
-          </Link>
-        </Button>
-      </CardFooter>
+      </div>
     </Card>
   );
 };

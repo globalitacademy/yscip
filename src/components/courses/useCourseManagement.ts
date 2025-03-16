@@ -163,7 +163,8 @@ export const useCourseManagement = () => {
     buttonText: 'Դիտել',
     color: 'text-amber-500',
     createdBy: user?.name || '',
-    institution: 'ՀՊՏՀ'
+    institution: 'ՀՊՏՀ',
+    imageUrl: undefined
   });
   
   const [newModule, setNewModule] = useState('');
@@ -307,7 +308,8 @@ export const useCourseManagement = () => {
       buttonText: 'Դիտել',
       color: 'text-amber-500',
       createdBy: user?.name || '',
-      institution: 'ՀՊՏՀ'
+      institution: 'ՀՊՏՀ',
+      imageUrl: undefined
     });
     setIsAddDialogOpen(false);
     toast.success('Դասընթացը հաջողությամբ ավելացվել է');

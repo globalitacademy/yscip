@@ -25,7 +25,7 @@ const AddProfessionalCourseDialog: React.FC<AddProfessionalCourseDialogProps> = 
       <DialogTrigger asChild>
         <Button>Ավելացնել նոր դասընթաց</Button>
       </DialogTrigger>
-      <DialogContent className="sm:max-w-[500px]">
+      <DialogContent className="sm:max-w-[600px]">
         <DialogHeader>
           <DialogTitle>Նոր դասընթացի ավելացում</DialogTitle>
           <DialogDescription>
