@@ -47,7 +47,8 @@ const UserManagement: React.FC<UserManagementProps> = () => {
   return (
     <div className="space-y-8 text-left">
       <div className="flex justify-between items-center">
-        <Button className="ml-auto gap-2" onClick={() => setOpenNewUser(true)}>
+        <h2 className="text-2xl font-bold">Օգտատերերի կառավարում</h2>
+        <Button className="gap-2" onClick={() => setOpenNewUser(true)}>
           <UserPlus size={16} />
           Ավելացնել օգտատեր
         </Button>

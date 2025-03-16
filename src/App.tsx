@@ -26,7 +26,6 @@ import ReportsPage from '@/pages/ReportsPage';
 import ProjectSubmissionPage from '@/pages/ProjectSubmissionPage';
 import NotFound from '@/pages/NotFound';
 import ModulesPage from './pages/ModulesPage';
-import AdminProjectsPage from './pages/AdminProjectsPage';
 import { AuthProvider } from '@/contexts/AuthContext';
 import { ProjectProvider } from '@/contexts/ProjectContext';
 import { Toaster } from "@/components/ui/toaster"
@@ -58,7 +57,6 @@ function App() {
             <Route path="/admin/specializations" element={<SpecializationsPage />} />
             <Route path="/admin/organizations" element={<OrganizationsPage />} />
             <Route path="/admin/projects" element={<ProjectManagementPage />} />
-            <Route path="/admin/admin-projects" element={<AdminProjectsPage />} />
             <Route path="/admin/courses" element={<CoursesPage />} />
             <Route path="/admin/modules" element={<ModulesPage />} />
             <Route path="/admin/project-proposals" element={<ProjectProposalsPage />} />
