@@ -21,19 +21,19 @@ const EditProfessionalCourseDialog: React.FC<EditProfessionalCourseDialogProps> 
   handleEditCourse
 }) => {
   if (!selectedCourse) return null;
-
+  
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
       <DialogContent className="sm:max-w-[600px]">
         <DialogHeader>
           <DialogTitle>Դասընթացի խմբագրում</DialogTitle>
           <DialogDescription>
-            Փոփոխեք դասընթացի տվյալները ներքևում: Պատրաստ լինելուց հետո սեղմեք "Պահպանել" կոճակը:
+            Խմբագրեք դասընթացի տվյալները: Պատրաստ լինելուց հետո սեղմեք "Պահպանել" կոճակը:
           </DialogDescription>
         </DialogHeader>
         <ProfessionalCourseForm
           course={selectedCourse}
-          setCourse={(newCourse) => setSelectedCourse(newCourse as ProfessionalCourse)}
+          setCourse={(updatedCourse) => setSelectedCourse({...selectedCourse, ...updatedCourse})}
           isEdit={true}
         />
         <DialogFooter>

@@ -182,8 +182,7 @@ export const useCourseManagement = () => {
     createdBy: user?.id || ''
   });
   
-  const [newProfessionalCourse, setNewProfessionalCourse] = useState<ProfessionalCourse>({
-    id: '',
+  const [newProfessionalCourse, setNewProfessionalCourse] = useState<Partial<ProfessionalCourse>>({
     title: '',
     subtitle: 'ԴԱՍԸՆԹԱՑ',
     icon: React.createElement(Code, { className: "w-16 h-16" }),
@@ -322,9 +321,13 @@ export const useCourseManagement = () => {
     }
 
     const courseToAdd: ProfessionalCourse = {
-      ...newProfessionalCourse,
+      ...(newProfessionalCourse as ProfessionalCourse),
       id: uuidv4(),
       createdBy: user?.name || 'Unknown',
+      buttonText: newProfessionalCourse.buttonText || 'Դիտել',
+      subtitle: newProfessionalCourse.subtitle || 'ԴԱՍԸՆԹԱՑ',
+      color: newProfessionalCourse.color || 'text-amber-500',
+      institution: newProfessionalCourse.institution || 'ՀՊՏՀ',
     };
 
     const updatedCourses = [...professionalCourses, courseToAdd];
@@ -332,7 +335,6 @@ export const useCourseManagement = () => {
     localStorage.setItem('professionalCourses', JSON.stringify(updatedCourses));
     
     setNewProfessionalCourse({
-      id: '',
       title: '',
       subtitle: 'ԴԱՍԸՆԹԱՑ',
       icon: React.createElement(Code, { className: "w-16 h-16" }),

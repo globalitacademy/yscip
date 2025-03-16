@@ -29,7 +29,7 @@ const iconOptions = [
 ];
 
 interface ProfessionalCourseFormProps {
-  course: ProfessionalCourse;
+  course: Partial<ProfessionalCourse>;
   setCourse: (course: Partial<ProfessionalCourse>) => void;
   isEdit?: boolean;
 }
@@ -46,7 +46,7 @@ const ProfessionalCourseForm: React.FC<ProfessionalCourseFormProps> = ({
   const [newOutcome, setNewOutcome] = useState('');
   const [imageOption, setImageOption] = useState(course.imageUrl ? 'url' : 'icon');
   const [useCustomInstitution, setUseCustomInstitution] = useState(
-    !['ՀՊՏՀ', 'ԵՊՀ', 'ՀԱՊՀ', 'ՀԱՀ', 'ՀՊՄՀ', 'ՀՌԱՀ'].includes(course.institution)
+    !['ՀՊՏՀ', 'ԵՊՀ', 'ՀԱՊՀ', 'ՀԱՀ', 'ՀՊՄՀ', 'ՀՌԱՀ'].includes(course.institution || '')
   );
 
   const handleIconSelect = (iconName: string) => {
