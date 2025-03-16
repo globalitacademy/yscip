@@ -33,7 +33,7 @@ export const useSpecializationManagement = () => {
   const [showConfirmDialog, setShowConfirmDialog] = useState(false);
   const [confirmTitle, setConfirmTitle] = useState('');
   const [confirmDescription, setConfirmDescription] = useState('');
-  const [confirmAction, setConfirmAction] = useState<() => void>(() => {});
+  const [confirmAction, setConfirmAction] = useState<() => Promise<void>>(() => Promise.resolve());
   const [isConfirming, setIsConfirming] = useState(false);
 
   const handleCreateSpecialization = useCallback(() => {
@@ -110,15 +110,18 @@ export const useSpecializationManagement = () => {
     setConfirmTitle('Հաստատեք ջնջումը');
     setConfirmDescription(`Դուք իսկապե՞ս ցանկանում եք ջնջել "${specialization.name}" մասնագիտացումը: Այս գործողությունը հետադարձելի չէ։`);
     
-    setConfirmAction(() => () => {
+    setConfirmAction(() => async () => {
       setIsConfirming(true);
       // Simulate API call
-      setTimeout(() => {
-        setSpecializations(prev => prev.filter(s => s.id !== id));
-        setShowConfirmDialog(false);
-        setIsConfirming(false);
-        toast.success('Մասնագիտացումը հաջողությամբ ջնջվեց');
-      }, 500);
+      return new Promise<void>((resolve) => {
+        setTimeout(() => {
+          setSpecializations(prev => prev.filter(s => s.id !== id));
+          setShowConfirmDialog(false);
+          setIsConfirming(false);
+          toast.success('Մասնագիտացումը հաջողությամբ ջնջվեց');
+          resolve();
+        }, 500);
+      });
     });
     
     setShowConfirmDialog(true);
