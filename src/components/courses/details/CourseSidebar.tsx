@@ -30,29 +30,39 @@ const CourseSidebar: React.FC<CourseSidebarProps> = ({
   const courseInstitution = displayCourse?.institution || 'Նշված չէ';
   const courseCreator = displayCourse?.createdBy || 'Անանուն դասախոս';
   const courseButtonText = displayCourse?.buttonText || 'Դիմել դասընթացին';
+  const courseColor = displayCourse?.color || 'text-blue-500';
   
   return (
     <FadeIn delay="delay-200">
       <div className="border rounded-lg overflow-hidden shadow-sm hover:shadow-md transition-shadow">
-        {courseImageUrl && (
+        {courseImageUrl ? (
           <div className="w-full h-48 relative">
             <img 
               src={courseImageUrl} 
               alt={courseTitle}
               className="w-full h-full object-cover"
+              onError={(e) => {
+                // If image fails to load and we have an icon, display it instead
+                if (displayCourse.icon) {
+                  e.currentTarget.style.display = 'none';
+                  const iconContainer = e.currentTarget.parentElement?.querySelector('.course-icon-fallback');
+                  if (iconContainer) {
+                    iconContainer.className = `course-icon-fallback flex items-center justify-center h-full w-full ${courseColor}`;
+                  }
+                }
+              }}
             />
-            {isEditing && (
-              <div className="absolute inset-0 bg-black bg-opacity-50 flex items-center justify-center">
-                <Input 
-                  value={editedCourse?.imageUrl || ''}
-                  onChange={(e) => setEditedCourse(prev => prev ? {...prev, imageUrl: e.target.value} : prev)}
-                  placeholder="Նկարի URL հղումը"
-                  className="w-full max-w-[90%] bg-white"
-                />
+            {displayCourse.icon && (
+              <div className="course-icon-fallback hidden items-center justify-center h-full w-full absolute top-0 left-0">
+                {displayCourse.icon}
               </div>
             )}
           </div>
-        )}
+        ) : displayCourse.icon ? (
+          <div className={`w-full h-48 flex items-center justify-center ${courseColor}`}>
+            {displayCourse.icon}
+          </div>
+        ) : null}
         
         <div className="p-6">
           <h3 className="text-xl font-bold mb-4">Դասընթացի մանրամասներ</h3>

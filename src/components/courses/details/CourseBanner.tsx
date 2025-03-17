@@ -34,7 +34,7 @@ const CourseBanner: React.FC<CourseBannerProps> = ({
   return (
     <FadeIn>
       <div className="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-xl p-8 mb-10 relative overflow-hidden">
-        {courseImageUrl && (
+        {courseImageUrl ? (
           <div className="absolute right-0 top-0 h-full overflow-hidden rounded-r-xl w-2/5">
             <img 
               src={courseImageUrl} 
@@ -42,6 +42,12 @@ const CourseBanner: React.FC<CourseBannerProps> = ({
               className="object-cover h-full w-full opacity-30"
             />
             <div className="absolute inset-0 bg-gradient-to-l from-transparent to-blue-50"></div>
+          </div>
+        ) : displayCourse.icon && (
+          <div className="absolute right-0 top-0 h-full flex items-center justify-center rounded-r-xl w-2/5">
+            <div className={`${displayCourse.color || 'text-blue-500'} opacity-10 transform scale-150`}>
+              {displayCourse.icon}
+            </div>
           </div>
         )}
         
