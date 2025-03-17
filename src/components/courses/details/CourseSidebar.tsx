@@ -21,14 +21,24 @@ const CourseSidebar: React.FC<CourseSidebarProps> = ({
   setEditedCourse,
   handleApply
 }) => {
+  // Create safe fallback values
+  const courseImageUrl = displayCourse?.imageUrl || '';
+  const courseTitle = displayCourse?.title || 'Դասընթաց';
+  const coursePrice = displayCourse?.price || 'Անվճար';
+  const courseDuration = displayCourse?.duration || 'Նշված չէ';
+  const courseLessonsCount = displayCourse?.lessons ? displayCourse.lessons.length : 0;
+  const courseInstitution = displayCourse?.institution || 'Նշված չէ';
+  const courseCreator = displayCourse?.createdBy || 'Անանուն դասախոս';
+  const courseButtonText = displayCourse?.buttonText || 'Դիմել դասընթացին';
+  
   return (
     <FadeIn delay="delay-200">
       <div className="border rounded-lg overflow-hidden shadow-sm hover:shadow-md transition-shadow">
-        {displayCourse.imageUrl && (
+        {courseImageUrl && (
           <div className="w-full h-48 relative">
             <img 
-              src={displayCourse.imageUrl} 
-              alt={displayCourse.title}
+              src={courseImageUrl} 
+              alt={courseTitle}
               className="w-full h-full object-cover"
             />
             {isEditing && (
@@ -62,7 +72,7 @@ const CourseSidebar: React.FC<CourseSidebarProps> = ({
               ) : (
                 <div className="flex flex-1 justify-between">
                   <span className="text-muted-foreground">Արժեք</span>
-                  <span className="font-bold">{displayCourse?.price}</span>
+                  <span className="font-bold">{coursePrice}</span>
                 </div>
               )}
             </div>
@@ -81,7 +91,7 @@ const CourseSidebar: React.FC<CourseSidebarProps> = ({
               ) : (
                 <div className="flex flex-1 justify-between">
                   <span className="text-muted-foreground">Տևողություն</span>
-                  <span>{displayCourse?.duration}</span>
+                  <span>{courseDuration}</span>
                 </div>
               )}
             </div>
@@ -90,7 +100,7 @@ const CourseSidebar: React.FC<CourseSidebarProps> = ({
               <BookOpen size={18} className="text-blue-500" />
               <div className="flex flex-1 justify-between">
                 <span className="text-muted-foreground">Դասերի քանակ</span>
-                <span>{displayCourse?.lessons ? displayCourse.lessons.length : 0}</span>
+                <span>{courseLessonsCount}</span>
               </div>
             </div>
             
@@ -108,7 +118,7 @@ const CourseSidebar: React.FC<CourseSidebarProps> = ({
               ) : (
                 <div className="flex flex-1 justify-between">
                   <span className="text-muted-foreground">Հաստատություն</span>
-                  <span>{displayCourse?.institution}</span>
+                  <span>{courseInstitution}</span>
                 </div>
               )}
             </div>
@@ -127,7 +137,7 @@ const CourseSidebar: React.FC<CourseSidebarProps> = ({
               ) : (
                 <div className="flex flex-1 justify-between">
                   <span className="text-muted-foreground">Դասախոս</span>
-                  <span>{displayCourse?.createdBy}</span>
+                  <span>{courseCreator}</span>
                 </div>
               )}
             </div>
@@ -135,8 +145,8 @@ const CourseSidebar: React.FC<CourseSidebarProps> = ({
           
           {!isEditing && (
             <>
-              <Button onClick={handleApply} className="w-full mb-3">
-                {displayCourse?.buttonText || 'Դիմել դասընթացին'}
+              <Button onClick={handleApply} className="w-full mb-3 bg-blue-600 hover:bg-blue-700">
+                {courseButtonText}
               </Button>
               
               <Button asChild variant="outline" className="w-full">
