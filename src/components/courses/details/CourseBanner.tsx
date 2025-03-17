@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { User, Clock, Building } from 'lucide-react';
+import { User, Clock, Building, DollarSign } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Button } from '@/components/ui/button';
@@ -104,13 +104,25 @@ const CourseBanner: React.FC<CourseBannerProps> = ({
                 <span>Հաստատություն՝ {displayCourse?.institution}</span>
               )}
             </div>
+            <div className="flex items-center gap-2">
+              <DollarSign size={18} className="text-blue-500" />
+              {isEditing ? (
+                <Input 
+                  value={editedCourse?.price || ''}
+                  onChange={(e) => setEditedCourse(prev => prev ? {...prev, price: e.target.value} : prev)}
+                  className="w-48"
+                />
+              ) : (
+                <span>Արժեք՝ {displayCourse?.price}</span>
+              )}
+            </div>
           </div>
           
           <div className="flex gap-4 mt-6">
             {!isEditing && (
               <>
                 <Button onClick={handleApply} size="lg">
-                  Դիմել դասընթացին
+                  {displayCourse?.buttonText || "Դիմել դասընթացին"}
                 </Button>
                 <Button variant="outline" size="lg">
                   Կապ հաստատել

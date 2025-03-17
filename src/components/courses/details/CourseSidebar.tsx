@@ -1,7 +1,7 @@
 
 import React from 'react';
 import { FadeIn } from '@/components/LocalTransitions';
-import { ExternalLink, User, Clock, Building } from 'lucide-react';
+import { ExternalLink, User, Clock, Building, DollarSign, BookOpen } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { ProfessionalCourse } from '../types/ProfessionalCourse';
@@ -48,56 +48,87 @@ const CourseSidebar: React.FC<CourseSidebarProps> = ({
           <h3 className="text-xl font-bold mb-4">Դասընթացի մանրամասներ</h3>
           
           <div className="space-y-4 mb-6">
-            <div className="flex justify-between">
-              <span className="text-muted-foreground">Արժեք</span>
+            <div className="flex items-center gap-2">
+              <DollarSign size={18} className="text-blue-500" />
               {isEditing ? (
-                <Input 
-                  value={editedCourse?.price || ''}
-                  onChange={(e) => setEditedCourse(prev => prev ? {...prev, price: e.target.value} : prev)}
-                  className="w-32 text-right"
-                />
+                <div className="flex flex-1 justify-between">
+                  <span className="text-muted-foreground">Արժեք</span>
+                  <Input 
+                    value={editedCourse?.price || ''}
+                    onChange={(e) => setEditedCourse(prev => prev ? {...prev, price: e.target.value} : prev)}
+                    className="w-32 text-right"
+                  />
+                </div>
               ) : (
-                <span className="font-bold">{displayCourse?.price}</span>
+                <div className="flex flex-1 justify-between">
+                  <span className="text-muted-foreground">Արժեք</span>
+                  <span className="font-bold">{displayCourse?.price}</span>
+                </div>
               )}
             </div>
-            <div className="flex justify-between">
-              <span className="text-muted-foreground">Տևողություն</span>
+            
+            <div className="flex items-center gap-2">
+              <Clock size={18} className="text-blue-500" />
               {isEditing ? (
-                <Input 
-                  value={editedCourse?.duration || ''}
-                  onChange={(e) => setEditedCourse(prev => prev ? {...prev, duration: e.target.value} : prev)}
-                  className="w-32 text-right"
-                />
+                <div className="flex flex-1 justify-between">
+                  <span className="text-muted-foreground">Տևողություն</span>
+                  <Input 
+                    value={editedCourse?.duration || ''}
+                    onChange={(e) => setEditedCourse(prev => prev ? {...prev, duration: e.target.value} : prev)}
+                    className="w-32 text-right"
+                  />
+                </div>
               ) : (
-                <span>{displayCourse?.duration}</span>
+                <div className="flex flex-1 justify-between">
+                  <span className="text-muted-foreground">Տևողություն</span>
+                  <span>{displayCourse?.duration}</span>
+                </div>
               )}
             </div>
-            <div className="flex justify-between">
-              <span className="text-muted-foreground">Դասերի քանակ</span>
-              <span>{displayCourse?.lessons ? displayCourse.lessons.length : 0}</span>
+            
+            <div className="flex items-center gap-2">
+              <BookOpen size={18} className="text-blue-500" />
+              <div className="flex flex-1 justify-between">
+                <span className="text-muted-foreground">Դասերի քանակ</span>
+                <span>{displayCourse?.lessons ? displayCourse.lessons.length : 0}</span>
+              </div>
             </div>
-            <div className="flex justify-between">
-              <span className="text-muted-foreground">Հաստատություն</span>
+            
+            <div className="flex items-center gap-2">
+              <Building size={18} className="text-blue-500" />
               {isEditing ? (
-                <Input 
-                  value={editedCourse?.institution || ''}
-                  onChange={(e) => setEditedCourse(prev => prev ? {...prev, institution: e.target.value} : prev)}
-                  className="w-32 text-right"
-                />
+                <div className="flex flex-1 justify-between">
+                  <span className="text-muted-foreground">Հաստատություն</span>
+                  <Input 
+                    value={editedCourse?.institution || ''}
+                    onChange={(e) => setEditedCourse(prev => prev ? {...prev, institution: e.target.value} : prev)}
+                    className="w-32 text-right"
+                  />
+                </div>
               ) : (
-                <span>{displayCourse?.institution}</span>
+                <div className="flex flex-1 justify-between">
+                  <span className="text-muted-foreground">Հաստատություն</span>
+                  <span>{displayCourse?.institution}</span>
+                </div>
               )}
             </div>
-            <div className="flex justify-between">
-              <span className="text-muted-foreground">Դասախոս</span>
+            
+            <div className="flex items-center gap-2">
+              <User size={18} className="text-blue-500" />
               {isEditing ? (
-                <Input 
-                  value={editedCourse?.createdBy || ''}
-                  onChange={(e) => setEditedCourse(prev => prev ? {...prev, createdBy: e.target.value} : prev)}
-                  className="w-32 text-right"
-                />
+                <div className="flex flex-1 justify-between">
+                  <span className="text-muted-foreground">Դասախոս</span>
+                  <Input 
+                    value={editedCourse?.createdBy || ''}
+                    onChange={(e) => setEditedCourse(prev => prev ? {...prev, createdBy: e.target.value} : prev)}
+                    className="w-32 text-right"
+                  />
+                </div>
               ) : (
-                <span>{displayCourse?.createdBy}</span>
+                <div className="flex flex-1 justify-between">
+                  <span className="text-muted-foreground">Դասախոս</span>
+                  <span>{displayCourse?.createdBy}</span>
+                </div>
               )}
             </div>
           </div>
