@@ -126,7 +126,7 @@ const getLocalCourseById = (id: string): ProfessionalCourse | null => {
 const convertIconNameToComponent = (iconName: string): React.ReactElement => {
   // This is a placeholder - you'd need to implement proper icon conversion
   // based on your application's icon system
-  return <Book className="w-16 h-16" />;
+  return React.createElement(Book, { className: "w-16 h-16" });
 };
 
 // Helper function to save to localStorage
