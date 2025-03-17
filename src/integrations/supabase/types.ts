@@ -36,6 +36,105 @@ export type Database = {
         }
         Relationships: []
       }
+      course_lessons: {
+        Row: {
+          course_id: string
+          created_at: string | null
+          duration: string
+          id: string
+          title: string
+          updated_at: string | null
+        }
+        Insert: {
+          course_id: string
+          created_at?: string | null
+          duration: string
+          id?: string
+          title: string
+          updated_at?: string | null
+        }
+        Update: {
+          course_id?: string
+          created_at?: string | null
+          duration?: string
+          id?: string
+          title?: string
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "course_lessons_course_id_fkey"
+            columns: ["course_id"]
+            isOneToOne: false
+            referencedRelation: "courses"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      course_outcomes: {
+        Row: {
+          course_id: string
+          created_at: string | null
+          id: string
+          outcome: string
+          updated_at: string | null
+        }
+        Insert: {
+          course_id: string
+          created_at?: string | null
+          id?: string
+          outcome: string
+          updated_at?: string | null
+        }
+        Update: {
+          course_id?: string
+          created_at?: string | null
+          id?: string
+          outcome?: string
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "course_outcomes_course_id_fkey"
+            columns: ["course_id"]
+            isOneToOne: false
+            referencedRelation: "courses"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      course_requirements: {
+        Row: {
+          course_id: string
+          created_at: string | null
+          id: string
+          requirement: string
+          updated_at: string | null
+        }
+        Insert: {
+          course_id: string
+          created_at?: string | null
+          id?: string
+          requirement: string
+          updated_at?: string | null
+        }
+        Update: {
+          course_id?: string
+          created_at?: string | null
+          id?: string
+          requirement?: string
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "course_requirements_course_id_fkey"
+            columns: ["course_id"]
+            isOneToOne: false
+            referencedRelation: "courses"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       courses: {
         Row: {
           button_text: string | null
@@ -46,6 +145,7 @@ export type Database = {
           duration: string
           icon_name: string
           id: string
+          image_url: string | null
           institution: string | null
           price: string
           subtitle: string
@@ -61,6 +161,7 @@ export type Database = {
           duration: string
           icon_name: string
           id?: string
+          image_url?: string | null
           institution?: string | null
           price: string
           subtitle?: string
@@ -76,6 +177,7 @@ export type Database = {
           duration?: string
           icon_name?: string
           id?: string
+          image_url?: string | null
           institution?: string | null
           price?: string
           subtitle?: string

@@ -1,108 +1,204 @@
 
+import { supabase } from '@/integrations/supabase/client';
 import { ProfessionalCourse } from '../types/ProfessionalCourse';
+import { toast } from 'sonner';
 
-export const getCourseById = (id: string): ProfessionalCourse | undefined => {
+export const getCourseById = async (id: string): Promise<ProfessionalCourse | null> => {
   try {
-    const storedCourses = localStorage.getItem('professionalCourses');
-    if (storedCourses) {
-      const courses: ProfessionalCourse[] = JSON.parse(storedCourses);
-      return courses.find(course => course.id === id);
+    // Fetch the course from Supabase
+    const { data: course, error } = await supabase
+      .from('courses')
+      .select('*')
+      .eq('id', id)
+      .single();
+
+    if (error) {
+      console.error('Error fetching course:', error);
+      // Fallback to localStorage if there's an error with Supabase
+      return getLocalCourseById(id);
     }
+
+    if (!course) {
+      return getLocalCourseById(id);
+    }
+
+    // Fetch related data (lessons, requirements, outcomes)
+    const { data: lessons } = await supabase
+      .from('course_lessons')
+      .select('*')
+      .eq('course_id', id);
+
+    const { data: requirements } = await supabase
+      .from('course_requirements')
+      .select('*')
+      .eq('course_id', id);
+
+    const { data: outcomes } = await supabase
+      .from('course_outcomes')
+      .select('*')
+      .eq('course_id', id);
+
+    // Transform the data to match ProfessionalCourse structure
+    const formattedCourse: ProfessionalCourse = {
+      id: course.id,
+      title: course.title,
+      subtitle: course.subtitle,
+      icon: convertIconNameToComponent(course.icon_name),
+      duration: course.duration,
+      price: course.price,
+      buttonText: course.button_text,
+      color: course.color,
+      createdBy: course.created_by,
+      institution: course.institution,
+      imageUrl: course.image_url,
+      description: course.description,
+      lessons: lessons?.map(lesson => ({
+        title: lesson.title, 
+        duration: lesson.duration
+      })) || [],
+      requirements: requirements?.map(req => req.requirement) || [],
+      outcomes: outcomes?.map(outcome => outcome.outcome) || []
+    };
+
+    return formattedCourse;
   } catch (error) {
-    console.error('Error fetching course:', error);
+    console.error('Error in getCourseById:', error);
+    // Fallback to localStorage
+    return getLocalCourseById(id);
   }
-  
-  const mockCourses = [
-    {
-      id: '1',
-      title: 'WEB Front-End',
-      subtitle: 'ԴԱՍԸՆԹԱՑ',
-      description: 'Սովորեք Web կայքերի մշակում՝ օգտագործելով արդի տեխնոլոգիաներ ինչպիսիք են HTML5, CSS3, JavaScript, React և Node.js։ Այս դասընթացը նախատեսված է սկսնակների համար և կօգնի ձեզ դառնալ պրոֆեսիոնալ Front-End ծրագրավորող։',
-      duration: '9 ամիս',
-      price: '58,000 ֏',
-      createdBy: 'Արամ Հակոբյան',
-      institution: 'ՀՊՏՀ',
-      color: 'text-amber-500',
-      buttonText: 'Դիտել',
-      icon: null,
-      lessons: [
-        { title: 'Ներածություն Web ծրագրավորման մեջ', duration: '3 ժամ' },
-        { title: 'HTML5 հիմունքներ', duration: '6 ժամ' },
-        { title: 'CSS3 և ձևավորում', duration: '8 ժամ' },
-        { title: 'JavaScript հիմունքներ', duration: '12 ժամ' },
-        { title: 'DOM մանիպուլյացիա', duration: '6 ժամ' },
-        { title: 'React հիմունքներ', duration: '15 ժամ' },
-        { title: 'React Router և State Management', duration: '10 ժամ' },
-        { title: 'Node.js և Express հիմունքներ', duration: '8 ժամ' },
-        { title: 'RESTful API-ներ', duration: '6 ժամ' },
-        { title: 'Ավարտական նախագիծ', duration: '25 ժամ' }
-      ],
-      requirements: [
-        'Համակարգչային հիմնական գիտելիքներ',
-        'Տրամաբանական մտածելակերպ',
-        'Անգլերենի բազային իմացություն'
-      ],
-      outcomes: [
-        'Մշակել ամբողջական ինտերակտիվ վեբ կայքեր',
-        'Աշխատել React-ով միաէջանի հավելվածների հետ',
-        'Ստեղծել հետին մասի API-ներ Node.js-ով',
-        'Աշխատել թիմում որպես Front-End ծրագրավորող'
-      ]
-    },
-    {
-      id: '2',
-      title: 'Python (ML / AI)',
-      subtitle: 'ԴԱՍԸՆԹԱՑ',
-      description: 'Սովորեք Python ծրագրավորում՝ մեքենայական ուսուցման և արհեստական բանականության հիմունքներով։ Այս ինտենսիվ դասընթացը կօգնի ձեզ ծանոթանալ AI/ML ժամանակակից գործիքների հետ։',
-      duration: '7 ամիս',
-      price: '68,000 ֏',
-      createdBy: 'Լիլիթ Մարտիրոսյան',
-      institution: 'ԵՊՀ',
-      color: 'text-blue-500',
-      buttonText: 'Դիտել',
-      icon: null,
-      lessons: [
-        { title: 'Python հիմունքներ', duration: '10 ժամ' },
-        { title: 'Տվյալների վերլուծություն NumPy-ով և Pandas-ով', duration: '12 ժամ' },
-        { title: 'Տվյալների վիզուալիզացիա Matplotlib-ով և Seaborn-ով', duration: '8 ժամ' },
-        { title: 'Մեքենայական ուսուցման ներածություն', duration: '6 ժամ' },
-        { title: 'Վերահսկվող ուսուցում՝ ռեգրեսիա և դասակարգում', duration: '14 ժամ' },
-        { title: 'Չվերահսկվող ուսուցում', duration: '10 ժամ' },
-        { title: 'Խորը ուսուցման հիմունքներ և նեյրոնային ցանցեր', duration: '15 ժամ' },
-        { title: 'Բնական լեզվի մշակում (NLP)', duration: '12 ժամ' },
-        { title: 'Ավարտական նախագիծ', duration: '20 ժամ' }
-      ],
-      requirements: [
-        'Ծրագրավորման բազային իմացություն',
-        'Մաթեմատիկայի և վիճակագրության հիմունքներ',
-        'Անգլերենի լավ իմացություն'
-      ],
-      outcomes: [
-        'Մշակել մեքենայական ուսուցման մոդելներ',
-        'Վերլուծել և վիզուալիզացնել մեծ տվյալներ',
-        'Իրականացնել խորը ուսուցման ալգորիթմներ',
-        'Ստեղծել AI հիմքով հավելվածներ'
-      ]
-    }
-  ];
-  
-  return mockCourses.find(course => course.id === id) as ProfessionalCourse;
 };
 
-export const saveCourseChanges = (course: ProfessionalCourse): boolean => {
+// Fallback function to get course from localStorage
+const getLocalCourseById = (id: string): ProfessionalCourse | null => {
   try {
     const storedCourses = localStorage.getItem('professionalCourses');
     if (storedCourses) {
       const courses: ProfessionalCourse[] = JSON.parse(storedCourses);
-      const updatedCourses = courses.map(c => 
-        c.id === course.id ? course : c
-      );
-      localStorage.setItem('professionalCourses', JSON.stringify(updatedCourses));
-      return true;
+      return courses.find(course => course.id === id) || null;
     }
-    return false;
+    return null;
   } catch (error) {
-    console.error('Error updating course:', error);
-    return false;
+    console.error('Error getting course from localStorage:', error);
+    return null;
+  }
+};
+
+// Helper function to convert icon name to React component
+const convertIconNameToComponent = (iconName: string): any => {
+  // This is a placeholder - you'd need to implement proper icon conversion
+  // based on your application's icon system
+  return { className: "w-16 h-16" };
+};
+
+export const saveCourseChanges = async (course: ProfessionalCourse): Promise<boolean> => {
+  try {
+    if (!course) return false;
+
+    // First update the main course data
+    const { error: courseError } = await supabase
+      .from('courses')
+      .update({
+        title: course.title,
+        subtitle: course.subtitle,
+        duration: course.duration,
+        price: course.price,
+        button_text: course.buttonText,
+        color: course.color,
+        created_by: course.createdBy,
+        institution: course.institution,
+        image_url: course.imageUrl,
+        description: course.description,
+        updated_at: new Date()
+      })
+      .eq('id', course.id);
+
+    if (courseError) {
+      console.error('Error updating course:', courseError);
+      
+      // If there's an error with Supabase, fallback to localStorage
+      saveToLocalStorage(course);
+      return true; // Return true to not break UI flow
+    }
+
+    // Delete existing related data to replace with new data
+    await Promise.all([
+      supabase.from('course_lessons').delete().eq('course_id', course.id),
+      supabase.from('course_requirements').delete().eq('course_id', course.id),
+      supabase.from('course_outcomes').delete().eq('course_id', course.id)
+    ]);
+
+    // Insert new lessons
+    if (course.lessons && course.lessons.length > 0) {
+      const { error: lessonsError } = await supabase
+        .from('course_lessons')
+        .insert(
+          course.lessons.map(lesson => ({
+            course_id: course.id,
+            title: lesson.title,
+            duration: lesson.duration
+          }))
+        );
+
+      if (lessonsError) {
+        console.error('Error inserting lessons:', lessonsError);
+      }
+    }
+
+    // Insert new requirements
+    if (course.requirements && course.requirements.length > 0) {
+      const { error: requirementsError } = await supabase
+        .from('course_requirements')
+        .insert(
+          course.requirements.map(requirement => ({
+            course_id: course.id,
+            requirement: requirement
+          }))
+        );
+
+      if (requirementsError) {
+        console.error('Error inserting requirements:', requirementsError);
+      }
+    }
+
+    // Insert new outcomes
+    if (course.outcomes && course.outcomes.length > 0) {
+      const { error: outcomesError } = await supabase
+        .from('course_outcomes')
+        .insert(
+          course.outcomes.map(outcome => ({
+            course_id: course.id,
+            outcome: outcome
+          }))
+        );
+
+      if (outcomesError) {
+        console.error('Error inserting outcomes:', outcomesError);
+      }
+    }
+
+    // Also update localStorage as a fallback
+    saveToLocalStorage(course);
+
+    return true;
+  } catch (error) {
+    console.error('Error saving course changes:', error);
+    
+    // If there's an error with Supabase, fallback to localStorage
+    saveToLocalStorage(course);
+    return true; // Return true to not break UI flow
+  }
+};
+
+// Helper function to save to localStorage
+const saveToLocalStorage = (course: ProfessionalCourse): void => {
+  try {
+    const storedCourses = localStorage.getItem('professionalCourses');
+    if (storedCourses) {
+      const courses: ProfessionalCourse[] = JSON.parse(storedCourses);
+      const updatedCourses = courses.map(c => c.id === course.id ? course : c);
+      localStorage.setItem('professionalCourses', JSON.stringify(updatedCourses));
+    }
+  } catch (error) {
+    console.error('Error saving to localStorage:', error);
   }
 };

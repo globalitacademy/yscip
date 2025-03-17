@@ -29,10 +29,14 @@ const CourseDetails: React.FC = () => {
 
   useEffect(() => {
     if (id) {
-      const courseData = getCourseById(id);
-      setCourse(courseData || null);
-      setEditedCourse(courseData || null);
-      setLoading(false);
+      const fetchCourse = async () => {
+        const courseData = await getCourseById(id);
+        setCourse(courseData || null);
+        setEditedCourse(courseData || null);
+        setLoading(false);
+      };
+      
+      fetchCourse();
     }
   }, [id]);
 
@@ -46,17 +50,13 @@ const CourseDetails: React.FC = () => {
   const handleEditCourse = () => {
     if (!course) return;
 
-    // Update the course in localStorage
+    // Update the course in Supabase and localStorage
     try {
-      const storedCourses = localStorage.getItem('professionalCourses');
-      if (storedCourses) {
-        const courses: ProfessionalCourse[] = JSON.parse(storedCourses);
-        const updatedCourses = courses.map(c => 
-          c.id === course.id ? course : c
-        );
-        localStorage.setItem('professionalCourses', JSON.stringify(updatedCourses));
+      if (saveCourseChanges(course)) {
         toast.success('Դասընթացը հաջողությամբ թարմացվել է');
         setIsEditDialogOpen(false);
+      } else {
+        toast.error('Դասընթացի թարմացման ժամանակ սխալ է տեղի ունեցել');
       }
     } catch (error) {
       console.error('Error updating course:', error);
@@ -64,12 +64,13 @@ const CourseDetails: React.FC = () => {
     }
   };
 
-  const toggleEditMode = () => {
+  const toggleEditMode = async () => {
     if (isEditing) {
       // Save changes
       if (!editedCourse) return;
       
-      if (saveCourseChanges(editedCourse)) {
+      const success = await saveCourseChanges(editedCourse);
+      if (success) {
         setCourse(editedCourse);
         toast.success('Դասընթացը հաջողությամբ թարմացվել է');
       } else {

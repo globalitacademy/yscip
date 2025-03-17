@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import ProfessionalCourseForm from './ProfessionalCourseForm';
 import { ProfessionalCourse } from './types/ProfessionalCourse';
 import { toast } from 'sonner';
-import { supabase } from '@/integrations/supabase/client';
+import { saveCourseChanges } from './utils/courseUtils';
 
 interface EditProfessionalCourseDialogProps {
   isOpen: boolean;
@@ -24,26 +24,22 @@ const EditProfessionalCourseDialog: React.FC<EditProfessionalCourseDialogProps> 
 }) => {
   if (!selectedCourse) return null;
   
-  const saveChanges = () => {
+  const saveChanges = async () => {
     if (!selectedCourse) return;
     
     try {
-      // Update the course in localStorage
-      const storedCourses = localStorage.getItem('professionalCourses');
-      if (storedCourses) {
-        const courses: ProfessionalCourse[] = JSON.parse(storedCourses);
-        const updatedCourses = courses.map(course => 
-          course.id === selectedCourse.id ? selectedCourse : course
-        );
+      // Save course to Supabase
+      const success = await saveCourseChanges(selectedCourse);
+      
+      if (success) {
+        // Call the provided edit handler from the parent component
+        handleEditCourse();
         
-        localStorage.setItem('professionalCourses', JSON.stringify(updatedCourses));
+        toast.success('Դասընթացը հաջողությամբ թարմացվել է');
+        setIsOpen(false);
+      } else {
+        toast.error('Դասընթացի պահպանման ժամանակ սխալ է տեղի ունեցել');
       }
-      
-      // Call the provided edit handler from the parent component
-      handleEditCourse();
-      
-      toast.success('Դասընթացը հաջողությամբ թարմացվել է');
-      setIsOpen(false);
     } catch (error) {
       console.error('Error saving course changes:', error);
       toast.error('Դասընթացի պահպանման ժամանակ սխալ է տեղի ունեցել');
