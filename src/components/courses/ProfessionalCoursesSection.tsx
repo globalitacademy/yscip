@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { FadeIn } from '@/components/LocalTransitions';
 import { Button } from '@/components/ui/button';
 import { Code, BookText, BrainCircuit, Database, FileCode, Globe, User, Building, Pencil } from 'lucide-react';
@@ -8,10 +8,10 @@ import { Card, CardContent, CardFooter, CardHeader } from '@/components/ui/card'
 import { ProfessionalCourse } from './types/ProfessionalCourse';
 import EditProfessionalCourseDialog from './EditProfessionalCourseDialog';
 import { useAuth } from '@/contexts/AuthContext';
-import { saveCourseChanges } from './utils/courseUtils';
+import { saveCourseChanges, COURSE_UPDATED_EVENT, getAllCoursesFromLocalStorage } from './utils/courseUtils';
 import { toast } from 'sonner';
 
-const professionalCourses: ProfessionalCourse[] = [
+const initialProfessionalCourses: ProfessionalCourse[] = [
   {
     id: '1',
     title: 'WEB Front-End',
@@ -22,7 +22,8 @@ const professionalCourses: ProfessionalCourse[] = [
     buttonText: 'Դիտել',
     color: 'text-amber-500',
     createdBy: 'Արամ Հակոբյան',
-    institution: 'ՀՊՏՀ'
+    institution: 'ՀՊՏՀ',
+    imageUrl: 'https://images.unsplash.com/photo-1547658719-da2b51169166?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=2000&q=80'
   },
   {
     id: '2',
@@ -34,7 +35,8 @@ const professionalCourses: ProfessionalCourse[] = [
     buttonText: 'Դիտել',
     color: 'text-blue-500',
     createdBy: 'Լիլիթ Մարտիրոսյան',
-    institution: 'ԵՊՀ'
+    institution: 'ԵՊՀ',
+    imageUrl: 'https://images.unsplash.com/photo-1526379879527-8559ecfd8bf7?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=2000&q=80'
   },
   {
     id: '3',
@@ -46,7 +48,8 @@ const professionalCourses: ProfessionalCourse[] = [
     buttonText: 'Դիտել',
     color: 'text-red-500',
     createdBy: 'Գարիկ Սարգսյան',
-    institution: 'ՀԱՊՀ'
+    institution: 'ՀԱՊՀ',
+    imageUrl: 'https://images.unsplash.com/photo-1516116216624-53e697fedbea?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=2000&q=80'
   },
   {
     id: '4',
@@ -58,7 +61,8 @@ const professionalCourses: ProfessionalCourse[] = [
     buttonText: 'Դիտել',
     color: 'text-yellow-500',
     createdBy: 'Անի Մուրադյան',
-    institution: 'ՀԱՀ'
+    institution: 'ՀԱՀ',
+    imageUrl: 'https://images.unsplash.com/photo-1555066931-4365d14bab8c?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=2000&q=80'
   },
   {
     id: '5',
@@ -70,7 +74,8 @@ const professionalCourses: ProfessionalCourse[] = [
     buttonText: 'Դիտել',
     color: 'text-purple-500',
     createdBy: 'Վահե Ղազարյան',
-    institution: 'ՀՊՄՀ'
+    institution: 'ՀՊՄՀ',
+    imageUrl: 'https://images.unsplash.com/photo-1599507593499-a3f7d7d97667?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=2000&q=80'
   },
   {
     id: '6',
@@ -82,7 +87,8 @@ const professionalCourses: ProfessionalCourse[] = [
     buttonText: 'Դիտել',
     color: 'text-green-500',
     createdBy: 'Տիգրան Դավթյան',
-    institution: 'ՀՌԱՀ'
+    institution: 'ՀՌԱՀ',
+    imageUrl: 'https://images.unsplash.com/photo-1587620962725-abab7fe55159?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=2000&q=80'
   }
 ];
 
@@ -90,7 +96,57 @@ const ProfessionalCoursesSection: React.FC = () => {
   const { user } = useAuth();
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [selectedCourse, setSelectedCourse] = useState<ProfessionalCourse | null>(null);
-  const [courses, setCourses] = useState<ProfessionalCourse[]>(professionalCourses);
+  const [courses, setCourses] = useState<ProfessionalCourse[]>([]);
+
+  // Initialize courses from localStorage or fall back to initial data
+  useEffect(() => {
+    const storedCourses = localStorage.getItem('professionalCourses');
+    
+    if (storedCourses) {
+      try {
+        const parsedCourses = JSON.parse(storedCourses);
+        if (Array.isArray(parsedCourses) && parsedCourses.length > 0) {
+          setCourses(parsedCourses);
+        } else {
+          // Initialize with default data if stored data is empty or invalid
+          setCourses(initialProfessionalCourses);
+          localStorage.setItem('professionalCourses', JSON.stringify(initialProfessionalCourses));
+        }
+      } catch (e) {
+        console.error('Error parsing stored courses:', e);
+        setCourses(initialProfessionalCourses);
+        localStorage.setItem('professionalCourses', JSON.stringify(initialProfessionalCourses));
+      }
+    } else {
+      // No stored courses yet, initialize
+      setCourses(initialProfessionalCourses);
+      localStorage.setItem('professionalCourses', JSON.stringify(initialProfessionalCourses));
+    }
+  }, []);
+
+  // Listen for course update events
+  useEffect(() => {
+    const handleCourseUpdated = (event: CustomEvent<ProfessionalCourse>) => {
+      const updatedCourse = event.detail;
+      
+      console.log('Course updated event received:', updatedCourse);
+      
+      setCourses(prevCourses => {
+        const updated = prevCourses.map(course => 
+          course.id === updatedCourse.id ? updatedCourse : course
+        );
+        return updated;
+      });
+    };
+
+    // Add event listener
+    window.addEventListener(COURSE_UPDATED_EVENT, handleCourseUpdated as EventListener);
+    
+    // Clean up
+    return () => {
+      window.removeEventListener(COURSE_UPDATED_EVENT, handleCourseUpdated as EventListener);
+    };
+  }, []);
 
   const handleEditCourse = async () => {
     if (!selectedCourse) return;
@@ -98,16 +154,7 @@ const ProfessionalCoursesSection: React.FC = () => {
     try {
       const success = await saveCourseChanges(selectedCourse);
       if (success) {
-        // Update the course in the local array to ensure synchronization
-        const updatedCourses = courses.map(course => 
-          course.id === selectedCourse.id ? { ...selectedCourse } : course
-        );
-        
-        setCourses(updatedCourses);
-        
-        // Also update the localStorage to ensure data persistence
-        localStorage.setItem('professionalCourses', JSON.stringify(updatedCourses));
-        
+        // Update was successful and event was dispatched via saveCourseChanges
         toast.success('Դասընթացը հաջողությամբ թարմացվել է');
         setIsEditDialogOpen(false);
       } else {
@@ -120,7 +167,7 @@ const ProfessionalCoursesSection: React.FC = () => {
   };
 
   const openEditDialog = (course: ProfessionalCourse) => {
-    setSelectedCourse(course);
+    setSelectedCourse({...course});
     setIsEditDialogOpen(true);
   };
   

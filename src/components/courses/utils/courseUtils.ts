@@ -1,8 +1,12 @@
+
 import { supabase } from '@/integrations/supabase/client';
 import { ProfessionalCourse } from '../types/ProfessionalCourse';
 import { toast } from 'sonner';
 import { Book, BrainCircuit, Code, Database, FileCode, Globe } from 'lucide-react';
 import React from 'react';
+
+// Define the event name as a constant
+export const COURSE_UPDATED_EVENT = 'courseUpdated';
 
 export const getCourseById = async (id: string): Promise<ProfessionalCourse | null> => {
   try {
@@ -96,6 +100,19 @@ export const getCourseById = async (id: string): Promise<ProfessionalCourse | nu
   }
 };
 
+export const getAllCoursesFromLocalStorage = (): ProfessionalCourse[] => {
+  try {
+    const storedCourses = localStorage.getItem('professionalCourses');
+    if (storedCourses) {
+      return JSON.parse(storedCourses);
+    }
+    return [];
+  } catch (error) {
+    console.error('Error getting courses from localStorage:', error);
+    return [];
+  }
+};
+
 const getLocalCourseById = (id: string): ProfessionalCourse | null => {
   try {
     const storedCourses = localStorage.getItem('professionalCourses');
@@ -156,6 +173,8 @@ const saveToLocalStorage = (course: ProfessionalCourse): void => {
 export const saveCourseChanges = async (course: ProfessionalCourse): Promise<boolean> => {
   try {
     if (!course) return false;
+
+    console.log('Saving course changes:', course);
 
     // First save to localStorage to ensure local synchronization
     saveToLocalStorage(course);
@@ -241,8 +260,8 @@ export const saveCourseChanges = async (course: ProfessionalCourse): Promise<boo
       // We've already saved to localStorage, so we can still return true
     }
 
-    // Notify any listeners about the course change
-    const event = new CustomEvent('courseUpdated', { detail: course });
+    // Notify any listeners about the course change with a custom event
+    const event = new CustomEvent(COURSE_UPDATED_EVENT, { detail: course });
     window.dispatchEvent(event);
 
     return true;
