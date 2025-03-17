@@ -1,70 +1,106 @@
-
 import { supabase } from '@/integrations/supabase/client';
 import { ProfessionalCourse } from '../types/ProfessionalCourse';
 import { toast } from 'sonner';
 
 export const getCourseById = async (id: string): Promise<ProfessionalCourse | null> => {
   try {
-    // Fetch the course from Supabase
-    const { data: course, error } = await supabase
-      .from('courses')
-      .select('*')
-      .eq('id', id)
-      .single();
+    // First, check localStorage for the course data
+    const localCourse = getLocalCourseById(id);
+    
+    // Try to fetch from Supabase, but handle any errors gracefully
+    try {
+      // Fetch the course from Supabase
+      const { data: course, error } = await supabase
+        .from('courses')
+        .select('*')
+        .eq('id', id)
+        .single();
 
-    if (error) {
-      console.error('Error fetching course:', error);
-      // Fallback to localStorage if there's an error with Supabase
-      return getLocalCourseById(id);
+      if (error) {
+        console.error('Error fetching course:', error);
+        // If we have local data, return it
+        if (localCourse) return localCourse;
+        // Otherwise return null
+        return null;
+      }
+
+      if (!course) {
+        // If no course found in Supabase but we have local data, return it
+        if (localCourse) return localCourse;
+        return null;
+      }
+
+      // Try to fetch related data
+      let lessons = [], requirements = [], outcomes = [];
+      
+      try {
+        const { data: lessonsData } = await supabase
+          .from('course_lessons')
+          .select('*')
+          .eq('course_id', id);
+          
+        if (lessonsData) lessons = lessonsData;
+      } catch (e) {
+        console.error('Error fetching lessons:', e);
+      }
+      
+      try {
+        const { data: requirementsData } = await supabase
+          .from('course_requirements')
+          .select('*')
+          .eq('course_id', id);
+          
+        if (requirementsData) requirements = requirementsData;
+      } catch (e) {
+        console.error('Error fetching requirements:', e);
+      }
+      
+      try {
+        const { data: outcomesData } = await supabase
+          .from('course_outcomes')
+          .select('*')
+          .eq('course_id', id);
+          
+        if (outcomesData) outcomes = outcomesData;
+      } catch (e) {
+        console.error('Error fetching outcomes:', e);
+      }
+
+      // Transform the data to match ProfessionalCourse structure
+      const formattedCourse: ProfessionalCourse = {
+        id: course.id,
+        title: course.title,
+        subtitle: course.subtitle,
+        icon: convertIconNameToComponent(course.icon_name),
+        duration: course.duration,
+        price: course.price,
+        buttonText: course.button_text,
+        color: course.color,
+        createdBy: course.created_by,
+        institution: course.institution,
+        imageUrl: course.image_url,
+        description: course.description,
+        lessons: lessons?.map(lesson => ({
+          title: lesson.title, 
+          duration: lesson.duration
+        })) || [],
+        requirements: requirements?.map(req => req.requirement) || [],
+        outcomes: outcomes?.map(outcome => outcome.outcome) || []
+      };
+
+      // Save to localStorage as a backup for offline use
+      saveToLocalStorage(formattedCourse);
+      
+      return formattedCourse;
+    } catch (supabaseError) {
+      console.error('Error in Supabase fetching:', supabaseError);
+      // If we have local data, return it
+      if (localCourse) return localCourse;
+      return null;
     }
-
-    if (!course) {
-      return getLocalCourseById(id);
-    }
-
-    // Fetch related data (lessons, requirements, outcomes)
-    const { data: lessons } = await supabase
-      .from('course_lessons')
-      .select('*')
-      .eq('course_id', id);
-
-    const { data: requirements } = await supabase
-      .from('course_requirements')
-      .select('*')
-      .eq('course_id', id);
-
-    const { data: outcomes } = await supabase
-      .from('course_outcomes')
-      .select('*')
-      .eq('course_id', id);
-
-    // Transform the data to match ProfessionalCourse structure
-    const formattedCourse: ProfessionalCourse = {
-      id: course.id,
-      title: course.title,
-      subtitle: course.subtitle,
-      icon: convertIconNameToComponent(course.icon_name),
-      duration: course.duration,
-      price: course.price,
-      buttonText: course.button_text,
-      color: course.color,
-      createdBy: course.created_by,
-      institution: course.institution,
-      imageUrl: course.image_url,
-      description: course.description,
-      lessons: lessons?.map(lesson => ({
-        title: lesson.title, 
-        duration: lesson.duration
-      })) || [],
-      requirements: requirements?.map(req => req.requirement) || [],
-      outcomes: outcomes?.map(outcome => outcome.outcome) || []
-    };
-
-    return formattedCourse;
   } catch (error) {
     console.error('Error in getCourseById:', error);
-    // Fallback to localStorage
-    return getLocalCourseById(id);
+    return null;
   }
 };
 
@@ -88,6 +124,32 @@ const convertIconNameToComponent = (iconName: string): any => {
   // This is a placeholder - you'd need to implement proper icon conversion
   // based on your application's icon system
   return { className: "w-16 h-16" };
+};
+
+// Helper function to save to localStorage
+const saveToLocalStorage = (course: ProfessionalCourse): void => {
+  try {
+    const storedCourses = localStorage.getItem('professionalCourses');
+    if (storedCourses) {
+      const courses: ProfessionalCourse[] = JSON.parse(storedCourses);
+      const existingCourseIndex = courses.findIndex(c => c.id === course.id);
+      
+      if (existingCourseIndex !== -1) {
+        // Update existing course
+        courses[existingCourseIndex] = course;
+      } else {
+        // Add new course
+        courses.push(course);
+      }
+      
+      localStorage.setItem('professionalCourses', JSON.stringify(courses));
+    } else {
+      // Create new courses array with this course
+      localStorage.setItem('professionalCourses', JSON.stringify([course]));
+    }
+  } catch (error) {
+    console.error('Error saving to localStorage:', error);
+  }
 };
 
 export const saveCourseChanges = async (course: ProfessionalCourse): Promise<boolean> => {
@@ -186,19 +248,5 @@ export const saveCourseChanges = async (course: ProfessionalCourse): Promise<boo
     // If there's an error with Supabase, fallback to localStorage
     saveToLocalStorage(course);
     return true; // Return true to not break UI flow
-  }
-};
-
-// Helper function to save to localStorage
-const saveToLocalStorage = (course: ProfessionalCourse): void => {
-  try {
-    const storedCourses = localStorage.getItem('professionalCourses');
-    if (storedCourses) {
-      const courses: ProfessionalCourse[] = JSON.parse(storedCourses);
-      const updatedCourses = courses.map(c => c.id === course.id ? course : c);
-      localStorage.setItem('professionalCourses', JSON.stringify(updatedCourses));
-    }
-  } catch (error) {
-    console.error('Error saving to localStorage:', error);
   }
 };
