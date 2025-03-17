@@ -27,15 +27,6 @@ const iconOptions = [
   { label: 'Բջջային', value: 'smartphone', icon: <Smartphone className="h-5 w-5" /> }
 ];
 
-const colorOptions = [
-  { label: 'Ամբերային', value: 'text-amber-500' },
-  { label: 'Կապույտ', value: 'text-blue-500' },
-  { label: 'Կարմիր', value: 'text-red-500' },
-  { label: 'Դեղին', value: 'text-yellow-500' },
-  { label: 'Մանուշակագույն', value: 'text-purple-500' },
-  { label: 'Կանաչ', value: 'text-green-500' },
-];
-
 interface ProfessionalCourseFormProps {
   course: Partial<ProfessionalCourse>;
   setCourse: (course: Partial<ProfessionalCourse>) => void;
