@@ -17,4 +17,5 @@ export interface ProfessionalCourse {
   lessons?: { title: string; duration: string }[];
   requirements?: string[];
   outcomes?: string[];
+  isPersistent?: boolean;
 }

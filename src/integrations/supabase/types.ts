@@ -36,6 +36,51 @@ export type Database = {
         }
         Relationships: []
       }
+      course_enrollments: {
+        Row: {
+          course_id: string
+          created_at: string | null
+          enrollment_date: string | null
+          id: string
+          status: string
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          course_id: string
+          created_at?: string | null
+          enrollment_date?: string | null
+          id?: string
+          status?: string
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          course_id?: string
+          created_at?: string | null
+          enrollment_date?: string | null
+          id?: string
+          status?: string
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "course_enrollments_course_id_fkey"
+            columns: ["course_id"]
+            isOneToOne: false
+            referencedRelation: "courses"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "course_enrollments_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       course_lessons: {
         Row: {
           course_id: string
@@ -147,6 +192,7 @@ export type Database = {
           id: string
           image_url: string | null
           institution: string | null
+          is_persistent: boolean | null
           price: string
           subtitle: string
           title: string
@@ -163,6 +209,7 @@ export type Database = {
           id?: string
           image_url?: string | null
           institution?: string | null
+          is_persistent?: boolean | null
           price: string
           subtitle?: string
           title: string
@@ -179,6 +226,7 @@ export type Database = {
           id?: string
           image_url?: string | null
           institution?: string | null
+          is_persistent?: boolean | null
           price?: string
           subtitle?: string
           title?: string

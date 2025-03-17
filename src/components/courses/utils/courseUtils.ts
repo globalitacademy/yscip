@@ -1,3 +1,4 @@
+
 import { supabase } from '@/integrations/supabase/client';
 import { ProfessionalCourse } from '../types/ProfessionalCourse';
 import { toast } from 'sonner';
@@ -74,6 +75,7 @@ export const getCourseById = async (id: string): Promise<ProfessionalCourse | nu
         institution: course.institution,
         imageUrl: course.image_url,
         description: course.description,
+        isPersistent: course.is_persistent,
         lessons: lessons?.map(lesson => ({
           title: lesson.title, 
           duration: lesson.duration
@@ -159,6 +161,14 @@ export const saveCourseChanges = async (course: ProfessionalCourse): Promise<boo
 
     // First save to localStorage to ensure local synchronization
     saveToLocalStorage(course);
+
+    // Skip updating persistent courses in Supabase
+    if (course.isPersistent) {
+      // Just notify listeners about the course
+      const event = new CustomEvent('courseUpdated', { detail: course });
+      window.dispatchEvent(event);
+      return true;
+    }
 
     // Then try to save to Supabase if available
     try {
@@ -249,5 +259,54 @@ export const saveCourseChanges = async (course: ProfessionalCourse): Promise<boo
   } catch (error) {
     console.error('Error saving course changes:', error);
     return false;
+  }
+};
+
+export const fetchAllCourses = async (): Promise<ProfessionalCourse[]> => {
+  try {
+    const { data: coursesData, error } = await supabase
+      .from('courses')
+      .select('*')
+      .order('created_at', { ascending: false });
+    
+    if (error) {
+      console.error('Error fetching courses:', error);
+      return [];
+    }
+    
+    if (!coursesData || coursesData.length === 0) {
+      return [];
+    }
+    
+    const courses: ProfessionalCourse[] = coursesData.map(course => ({
+      id: course.id,
+      title: course.title,
+      subtitle: course.subtitle || 'ԴԱՍԸՆԹԱՑ',
+      icon: convertIconNameToComponent(course.icon_name),
+      duration: course.duration,
+      price: course.price,
+      buttonText: course.button_text || 'Դիտել',
+      color: course.color || 'text-amber-500',
+      createdBy: course.created_by || '',
+      institution: course.institution || '',
+      imageUrl: course.image_url,
+      description: course.description,
+      isPersistent: course.is_persistent
+    }));
+    
+    // Save to localStorage for offline access
+    localStorage.setItem('professionalCourses', JSON.stringify(courses));
+    
+    return courses;
+  } catch (error) {
+    console.error('Error in fetchAllCourses:', error);
+    
+    // Try to load from localStorage if available
+    const storedCourses = localStorage.getItem('professionalCourses');
+    if (storedCourses) {
+      return JSON.parse(storedCourses);
+    }
+    
+    return [];
   }
 };

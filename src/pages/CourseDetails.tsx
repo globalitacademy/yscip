@@ -1,3 +1,4 @@
+
 import React, { useEffect, useState } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import Header from '@/components/Header';
@@ -140,6 +141,12 @@ const CourseDetails: React.FC = () => {
     if (isEditing) {
       if (!editedCourse) return;
       
+      // Don't allow editing persistent courses
+      if (editedCourse.isPersistent) {
+        setIsEditing(false);
+        return;
+      }
+      
       const success = await saveCourseChanges(editedCourse);
       if (success) {
         setCourse(editedCourse);
@@ -226,6 +233,12 @@ const CourseDetails: React.FC = () => {
   };
 
   const handleDeleteCourse = () => {
+    // Don't allow deleting persistent courses
+    if (course?.isPersistent) {
+      toast.error('Հիմնական դասընթացները չեն կարող ջնջվել');
+      return;
+    }
+    
     setIsDeleteDialogOpen(true);
   };
 
@@ -300,6 +313,7 @@ const CourseDetails: React.FC = () => {
             cancelEditing={cancelEditing}
             onDelete={handleDeleteCourse}
             courseId={course.id}
+            isPersistentCourse={course.isPersistent}
           />
           
           <CourseBanner 
@@ -314,7 +328,7 @@ const CourseDetails: React.FC = () => {
             <div className="lg:col-span-2">
               <CourseCurriculum 
                 displayCourse={displayCourse} 
-                isEditing={isEditing} 
+                isEditing={isEditing && !course.isPersistent} 
                 newLesson={newLesson} 
                 setNewLesson={setNewLesson} 
                 handleAddLesson={handleAddLesson} 
@@ -323,7 +337,7 @@ const CourseDetails: React.FC = () => {
               
               <CourseLearningOutcomes 
                 displayCourse={displayCourse} 
-                isEditing={isEditing} 
+                isEditing={isEditing && !course.isPersistent} 
                 newOutcome={newOutcome} 
                 setNewOutcome={setNewOutcome} 
                 handleAddOutcome={handleAddOutcome} 
@@ -332,7 +346,7 @@ const CourseDetails: React.FC = () => {
               
               <CourseRequirements 
                 displayCourse={displayCourse} 
-                isEditing={isEditing} 
+                isEditing={isEditing && !course.isPersistent} 
                 newRequirement={newRequirement} 
                 setNewRequirement={setNewRequirement} 
                 handleAddRequirement={handleAddRequirement} 
@@ -343,7 +357,7 @@ const CourseDetails: React.FC = () => {
             <div>
               <CourseSidebar 
                 displayCourse={displayCourse} 
-                isEditing={isEditing} 
+                isEditing={isEditing && !course.isPersistent} 
                 editedCourse={editedCourse} 
                 setEditedCourse={setEditedCourse} 
                 handleApply={handleApply} 
