@@ -1,7 +1,8 @@
+
 import { supabase } from '@/integrations/supabase/client';
 import { ProfessionalCourse } from '../types/ProfessionalCourse';
 import { toast } from 'sonner';
-import { Book, BrainCircuit, Code, Database, FileCode, Globe } from 'lucide-react';
+import { Book, BrainCircuit, Code, Database, FileCode, Globe, Smartphone } from 'lucide-react';
 import React from 'react';
 
 // Define the event name as a constant
@@ -161,6 +162,10 @@ export const convertIconNameToComponent = (iconName: string): React.ReactElement
     case 'globe':
     case 'web':
       return React.createElement(Globe, { className: "w-16 h-16" });
+    case 'smartphone':
+    case 'android':
+    case 'mobile':
+      return React.createElement(Smartphone, { className: "w-16 h-16" });
     default:
       return React.createElement(Book, { className: "w-16 h-16" });
   }
@@ -179,6 +184,7 @@ export const getIconNameFromComponent = (component: React.ReactElement | undefin
   if (componentType === Database) return 'database';
   if (componentType === FileCode) return 'files';
   if (componentType === Globe) return 'web';
+  if (componentType === Smartphone) return 'smartphone';
   
   // If we can't determine the icon name from the component, return a default
   return 'book';

@@ -2,7 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import { FadeIn } from '@/components/LocalTransitions';
 import { Button } from '@/components/ui/button';
-import { Book, BrainCircuit, Building, Code, Database, FileCode, Globe, Pencil, User } from 'lucide-react';
+import { Book, BrainCircuit, Building, Code, Database, FileCode, Globe, Pencil, User, Smartphone } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { Card, CardContent, CardFooter, CardHeader } from '@/components/ui/card';
 import { ProfessionalCourse } from './types/ProfessionalCourse';
@@ -14,81 +14,207 @@ import { toast } from 'sonner';
 const initialProfessionalCourses: ProfessionalCourse[] = [
   {
     id: '1',
-    title: 'WEB Front-End',
+    title: 'Web Front-End',
     subtitle: 'ԴԱՍԸՆԹԱՑ',
-    icon: <Code className="w-16 h-16" />,
+    icon: <Globe className="w-16 h-16" />,
+    iconName: 'web',
     duration: '9 ամիս',
     price: '58,000 ֏',
     buttonText: 'Դիտել',
     color: 'text-amber-500',
     createdBy: 'Արամ Հակոբյան',
     institution: 'ՀՊՏՀ',
-    imageUrl: 'https://images.unsplash.com/photo-1547658719-da2b51169166?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=2000&q=80'
+    imageUrl: 'https://images.unsplash.com/photo-1547658719-da2b51169166?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=2000&q=80',
+    description: 'Սովորեք HTML, CSS, և JavaScript հիմունքներ, ինչպես նաև ժամանակակից Front-End շրջանակներ՝ ինչպիսիք են React, Angular և Vue:',
+    lessons: [
+      { title: 'HTML և CSS հիմունքներ', duration: '20 ժամ' },
+      { title: 'JavaScript ինտենսիվ', duration: '30 ժամ' },
+      { title: 'React ծրագրավորում', duration: '40 ժամ' }
+    ],
+    requirements: [
+      'Համակարգչային բազային գիտելիքներ',
+      'Տրամաբանական մտածելակերպ'
+    ],
+    outcomes: [
+      'Կարողանալ մշակել բարդ ինտերակտիվ կայքեր',
+      'Աշխատել ժամանակակից JavaScript շրջանակներով',
+      'Ստեղծել մասշտաբավորվող կայքեր'
+    ]
   },
   {
     id: '2',
-    title: 'Python (ML / AI)',
+    title: 'Python (ML)',
     subtitle: 'ԴԱՍԸՆԹԱՑ',
     icon: <BrainCircuit className="w-16 h-16" />,
+    iconName: 'ai',
     duration: '7 ամիս',
     price: '68,000 ֏',
     buttonText: 'Դիտել',
     color: 'text-blue-500',
     createdBy: 'Լիլիթ Մարտիրոսյան',
     institution: 'ԵՊՀ',
-    imageUrl: 'https://images.unsplash.com/photo-1526379879527-8559ecfd8bf7?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=2000&q=80'
+    imageUrl: 'https://images.unsplash.com/photo-1526379879527-8559ecfd8bf7?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=2000&q=80',
+    description: 'Սովորեք մեքենայական ուսուցման հիմնական սկզբունքները և ալգորիթմները Python-ով։ Ծանոթացեք տվյալների վերլուծության և կանխատեսման մեթոդներին։',
+    lessons: [
+      { title: 'Python հիմունքներ', duration: '25 ժամ' },
+      { title: 'Թվային վերլուծություն NumPy և Pandas', duration: '30 ժամ' },
+      { title: 'Մեքենայական ուսուցման մոդելներ', duration: '40 ժամ' },
+      { title: 'Խորը ուսուցում (Deep Learning)', duration: '45 ժամ' }
+    ],
+    requirements: [
+      'Ծրագրավորման հիմնական գիտելիքներ',
+      'Մաթեմատիկական վիճակագրության տարրական իմացություն'
+    ],
+    outcomes: [
+      'Կառուցել և ուսուցանել մեքենայական ուսուցման մոդելներ',
+      'Վերլուծել մեծ տվյալների բազաներ',
+      'Մշակել տվյալների վիզուալիզացիաներ'
+    ]
   },
   {
     id: '3',
     title: 'Java',
     subtitle: 'ԴԱՍԸՆԹԱՑ',
     icon: <Book className="w-16 h-16" />,
+    iconName: 'book',
     duration: '6 ամիս',
     price: '68,000 ֏',
     buttonText: 'Դիտել',
     color: 'text-red-500',
     createdBy: 'Գարիկ Սարգսյան',
     institution: 'ՀԱՊՀ',
-    imageUrl: 'https://images.unsplash.com/photo-1516116216624-53e697fedbea?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=2000&q=80'
+    imageUrl: 'https://images.unsplash.com/photo-1516116216624-53e697fedbea?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=2000&q=80',
+    description: 'Ուսումնասիրեք Java ծրագրավորման լեզուն և օբյեկտ-կողմնորոշված ծրագրավորման սկզբունքները։ Կառուցեք բազմապլատֆորմ հավելվածներ և աշխատեք տվյալների բազաների հետ։',
+    lessons: [
+      { title: 'Java հիմունքներ և սինտաքս', duration: '25 ժամ' },
+      { title: 'Java OOP սկզբունքներ', duration: '30 ժամ' },
+      { title: 'Java Spring շրջանակ', duration: '40 ժամ' }
+    ],
+    requirements: [
+      'Ծրագրավորման հիմնական գիտելիքներ'
+    ],
+    outcomes: [
+      'Մշակել Java սերվերային հավելվածներ',
+      'Աշխատել տվյալների բազաների հետ',
+      'Կառուցել բազմաշերտ Java հավելվածներ'
+    ]
   },
   {
     id: '4',
     title: 'JavaScript',
     subtitle: 'ԴԱՍԸՆԹԱՑ',
     icon: <FileCode className="w-16 h-16" />,
+    iconName: 'files',
     duration: '3.5 ամիս',
     price: '58,000 ֏',
     buttonText: 'Դիտել',
     color: 'text-yellow-500',
     createdBy: 'Անի Մուրադյան',
     institution: 'ՀԱՀ',
-    imageUrl: 'https://images.unsplash.com/photo-1555066931-4365d14bab8c?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=2000&q=80'
+    imageUrl: 'https://images.unsplash.com/photo-1555066931-4365d14bab8c?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=2000&q=80',
+    description: 'Խորացեք JavaScript լեզվի մեջ և սովորեք մշակել ինտերակտիվ վեբ կայքեր։ Ծանոթացեք ժամանակակից JavaScript շրջանակների հետ։',
+    lessons: [
+      { title: 'JavaScript հիմունքներ', duration: '20 ժամ' },
+      { title: 'DOM մանիպուլյացիա', duration: '15 ժամ' },
+      { title: 'JavaScript շրջանակներ (React, Vue)', duration: '30 ժամ' }
+    ],
+    requirements: [
+      'HTML և CSS հիմնական գիտելիքներ'
+    ],
+    outcomes: [
+      'Մշակել ինտերակտիվ վեբ կայքեր',
+      'Ստեղծել միաէջանի հավելվածներ (SPA)',
+      'Աշխատել API-ների հետ'
+    ]
   },
   {
     id: '5',
-    title: 'PHP',
+    title: 'C++',
     subtitle: 'ԴԱՍԸՆԹԱՑ',
-    icon: <Database className="w-16 h-16" />,
+    icon: <Code className="w-16 h-16" />,
+    iconName: 'code',
     duration: '5 ամիս',
-    price: '58,000 ֏',
+    price: '62,000 ֏',
     buttonText: 'Դիտել',
     color: 'text-purple-500',
     createdBy: 'Վահե Ղազարյան',
     institution: 'ՀՊՄՀ',
-    imageUrl: 'https://images.unsplash.com/photo-1599507593499-a3f7d7d97667?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=2000&q=80'
+    imageUrl: 'https://images.unsplash.com/photo-1599507593499-a3f7d7d97667?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=2000&q=80',
+    description: 'Սովորեք C++ լեզուն՝ բարձր արդյունավետությամբ ծրագրեր և համակարգեր մշակելու համար։ Ուսումնասիրեք դասերը, օբյեկտները և արդյունավետ կոդավորման տեխնիկաները։',
+    lessons: [
+      { title: 'C++ հիմունքներ և սինտաքս', duration: '25 ժամ' },
+      { title: 'C++ OOP և շաբլոններ', duration: '30 ժամ' },
+      { title: 'Տվյալների կառուցվածքներ և ալգորիթմներ', duration: '35 ժամ' }
+    ],
+    requirements: [
+      'Ծրագրավորման բազային գիտելիքներ',
+      'Ալգորիթմական մտածելակերպ'
+    ],
+    outcomes: [
+      'Մշակել օպտիմիզացված C++ ծրագրեր',
+      'Կառուցել բարդ համակարգեր',
+      'Աշխատել մեծածավալ տվյալների հետ'
+    ]
   },
   {
     id: '6',
     title: 'C#/.NET',
     subtitle: 'ԴԱՍԸՆԹԱՑ',
-    icon: <Globe className="w-16 h-16" />,
+    icon: <Database className="w-16 h-16" />,
+    iconName: 'database',
     duration: '6 ամիս',
     price: '68,000 ֏',
     buttonText: 'Դիտել',
     color: 'text-green-500',
     createdBy: 'Տիգրան Դավթյան',
     institution: 'ՀՌԱՀ',
-    imageUrl: 'https://images.unsplash.com/photo-1587620962725-abab7fe55159?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=2000&q=80'
+    imageUrl: 'https://images.unsplash.com/photo-1587620962725-abab7fe55159?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=2000&q=80',
+    description: 'Ուսումնասիրեք C# լեզուն և .NET շրջանակը՝ թվային և վեբ հավելվածներ մշակելու համար։ Սովորեք ASP.NET Core և աշխատեք տվյալների բազաների հետ։',
+    lessons: [
+      { title: 'C# հիմունքներ', duration: '25 ժամ' },
+      { title: 'C# OOP սկզբունքներ', duration: '20 ժամ' },
+      { title: 'ASP.NET Core ներածություն', duration: '30 ժամ' },
+      { title: 'Entity Framework և SQL', duration: '30 ժամ' }
+    ],
+    requirements: [
+      'Ծրագրավորման տարրական իմացություն',
+      'Windows միջավայրի օգտագործման փորձ'
+    ],
+    outcomes: [
+      'Մշակել .NET հավելվածներ',
+      'Ստեղծել վեբ հավելվածներ ASP.NET-ով',
+      'Աշխատել SQL տվյալների բազաների հետ'
+    ]
+  },
+  {
+    id: '7',
+    title: 'Android',
+    subtitle: 'ԴԱՍԸՆԹԱՑ',
+    icon: <Smartphone className="w-16 h-16" />,
+    iconName: 'smartphone',
+    duration: '5 ամիս',
+    price: '65,000 ֏',
+    buttonText: 'Դիտել',
+    color: 'text-green-600',
+    createdBy: 'Արման Պետրոսյան',
+    institution: 'ԵՊՀ',
+    imageUrl: 'https://images.unsplash.com/photo-1607252650355-f7fd0460ccdb?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=2000&q=80',
+    description: 'Սովորեք Android բջջային հավելվածների մշակում Kotlin և Java լեզուներով։ Ուսումնասիրեք Android Studio, UI դիզայն և տվյալների պահպանում։',
+    lessons: [
+      { title: 'Kotlin հիմունքներ ծրագրավորողների համար', duration: '20 ժամ' },
+      { title: 'Android UI դիզայն և լայաուտներ', duration: '25 ժամ' },
+      { title: 'Android տվյալների պահպանում և ցանցային հարցումներ', duration: '30 ժամ' },
+      { title: 'Android-ի համար Material Design', duration: '20 ժամ' }
+    ],
+    requirements: [
+      'Java կամ Kotlin հիմնական գիտելիքներ',
+      'Օբյեկտ-կողմնորոշված ծրագրավորման հասկացություններ'
+    ],
+    outcomes: [
+      'Մշակել հարմարավետ Android հավելվածներ',
+      'Աշխատել API-ների և տվյալների բազաների հետ',
+      'Հրապարակել հավելվածներ Google Play Store-ում'
+    ]
   }
 ];
 

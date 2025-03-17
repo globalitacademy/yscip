@@ -1,23 +1,21 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect } from "react";
 import { Input } from "@/components/ui/input";
-import { ProfessionalCourse } from './types/ProfessionalCourse';
 import { Label } from "@/components/ui/label";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { Button } from "../ui/button";
-import { ChevronDown, X, PlusCircle, Upload, Link, Code, Book, BrainCircuit, Database, FileCode, Globe } from 'lucide-react';
+import { ChevronDown, X, PlusCircle, Upload, Link, Code, Book, BrainCircuit, Database, FileCode, Globe, Smartphone } from 'lucide-react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Textarea } from "@/components/ui/textarea";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "../ui/accordion";
-import { convertIconNameToComponent } from './utils/courseUtils';
-
-const colorOptions = [
-  { label: 'Ամբերային', value: 'text-amber-500' },
-  { label: 'Կապույտ', value: 'text-blue-500' },
-  { label: 'Կարմիր', value: 'text-red-500' },
-  { label: 'Դեղին', value: 'text-yellow-500' },
-  { label: 'Մանուշակագույն', value: 'text-purple-500' },
-  { label: 'Կանաչ', value: 'text-green-500' },
-];
+import { ProfessionalCourse, CourseLesson } from "./types/ProfessionalCourse";
+import { Badge } from "../ui/badge";
+import { colorOptions } from "./constants";
+import { Separator } from "../ui/separator";
+import { Select, SelectContent, SelectGroup, SelectItem, SelectLabel, SelectTrigger, SelectValue } from "../ui/select";
+import { ToggleGroup, ToggleGroupItem } from "../ui/toggle-group";
+import { Avatar } from "../ui/avatar";
+import { Card, CardContent } from "../ui/card";
+import { convertIconNameToComponent, getIconNameFromComponent } from "./utils/courseUtils";
 
 const iconOptions = [
   { label: 'Կոդ', value: 'code', icon: <Code className="h-5 w-5" /> },
@@ -26,6 +24,16 @@ const iconOptions = [
   { label: 'Տվյալներ', value: 'database', icon: <Database className="h-5 w-5" /> },
   { label: 'Ֆայլեր', value: 'files', icon: <FileCode className="h-5 w-5" /> },
   { label: 'Վեբ', value: 'web', icon: <Globe className="h-5 w-5" /> },
+  { label: 'Բջջային', value: 'smartphone', icon: <Smartphone className="h-5 w-5" /> }
+];
+
+const colorOptions = [
+  { label: 'Ամբերային', value: 'text-amber-500' },
+  { label: 'Կապույտ', value: 'text-blue-500' },
+  { label: 'Կարմիր', value: 'text-red-500' },
+  { label: 'Դեղին', value: 'text-yellow-500' },
+  { label: 'Մանուշակագույն', value: 'text-purple-500' },
+  { label: 'Կանաչ', value: 'text-green-500' },
 ];
 
 interface ProfessionalCourseFormProps {
