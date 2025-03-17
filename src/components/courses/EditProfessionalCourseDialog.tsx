@@ -48,7 +48,7 @@ const EditProfessionalCourseDialog: React.FC<EditProfessionalCourseDialogProps> 
   
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
-      <DialogContent className="sm:max-w-[600px]">
+      <DialogContent className="sm:max-w-[600px] max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>Դասընթացի խմբագրում</DialogTitle>
           <DialogDescription>
