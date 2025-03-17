@@ -1,3 +1,4 @@
+
 import { useEffect } from 'react';
 import { User, UserRole } from '@/types/user';
 import { supabase } from '@/integrations/supabase/client';
@@ -29,9 +30,63 @@ export const useSessionCheck = (
           setUser(parsedUser);
           setIsAuthenticated(true);
           
-          // Check if this is the admin user first - handle admin separately
+          // Check if this is the admin user first - handle admin specially
           if (parsedUser.email === 'gitedu@bk.ru') {
-            console.log('Admin user found in localStorage');
+            console.log('Admin user found in localStorage, syncing with database');
+            
+            // Try to get the latest admin data from the database
+            try {
+              const { data: adminData, error } = await supabase
+                .from('users')
+                .select('*')
+                .eq('email', 'gitedu@bk.ru')
+                .single();
+              
+              if (!error && adminData) {
+                // Update admin data with the latest from database
+                const updatedAdmin = mapDatabaseUserToUserModel(adminData);
+                
+                // Preserve the isPersistentAdmin flag
+                updatedAdmin.isPersistentAdmin = true;
+                
+                // Update stored user with fresh data
+                setUser(updatedAdmin);
+                localStorage.setItem('currentUser', JSON.stringify(updatedAdmin));
+                console.log('Admin data synchronized with database during session check');
+              } else {
+                console.log('Admin not found in database, activating admin account');
+                // If admin not in database, try to activate admin account
+                try {
+                  await supabase.functions.invoke('ensure-admin-activation');
+                  console.log('Admin activation function called');
+                  
+                  // Try to get admin data after activation
+                  const { data: refreshedAdminData } = await supabase
+                    .from('users')
+                    .select('*')
+                    .eq('email', 'gitedu@bk.ru')
+                    .single();
+                  
+                  if (refreshedAdminData) {
+                    // Update admin data with the latest from database
+                    const updatedAdmin = mapDatabaseUserToUserModel(refreshedAdminData);
+                    
+                    // Preserve the isPersistentAdmin flag
+                    updatedAdmin.isPersistentAdmin = true;
+                    
+                    // Update stored user with fresh data
+                    setUser(updatedAdmin);
+                    localStorage.setItem('currentUser', JSON.stringify(updatedAdmin));
+                    console.log('Admin data synchronized after activation');
+                  }
+                } catch (activationError) {
+                  console.error('Error activating admin account:', activationError);
+                }
+              }
+            } catch (adminSyncError) {
+              console.error('Error syncing admin data:', adminSyncError);
+            }
+            
             setIsLoading(false);
             return;
           }
@@ -120,6 +175,11 @@ export const useSessionCheck = (
                   // Don't sign out - just don't authenticate them
                   setIsLoading(false);
                   return;
+                }
+                
+                // Special handling for admin user
+                if (loggedInUser.email === 'gitedu@bk.ru') {
+                  loggedInUser.isPersistentAdmin = true;
                 }
                 
                 console.log('User authenticated:', loggedInUser.email, loggedInUser.role);

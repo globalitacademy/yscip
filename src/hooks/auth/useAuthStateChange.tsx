@@ -22,7 +22,32 @@ export const useAuthStateChange = (
       if (storedUser) {
         const parsedUser = JSON.parse(storedUser);
         if (parsedUser.email === 'gitedu@bk.ru' && isAuthenticated) {
-          console.log('Admin already logged in, ignoring auth state change');
+          console.log('Admin already logged in, checking for data updates');
+          
+          // For admin, periodically check for updates from the database
+          try {
+            const { data: adminData, error } = await supabase
+              .from('users')
+              .select('*')
+              .eq('email', 'gitedu@bk.ru')
+              .single();
+            
+            if (!error && adminData) {
+              // Update admin data if it exists in database
+              const updatedAdmin = mapDatabaseUserToUserModel(adminData);
+              
+              // Preserve the isPersistentAdmin flag
+              updatedAdmin.isPersistentAdmin = true;
+              
+              // Update stored user with fresh data
+              setUser(updatedAdmin);
+              localStorage.setItem('currentUser', JSON.stringify(updatedAdmin));
+              console.log('Admin data synchronized with database');
+            }
+          } catch (error) {
+            console.error('Error syncing admin data:', error);
+          }
+          
           return;
         }
       }
@@ -38,6 +63,31 @@ export const useAuthStateChange = (
           const parsedUser = JSON.parse(storedUser);
           if (parsedUser.email === 'gitedu@bk.ru') {
             console.log('Admin user sign out prevented - keeping admin session active');
+            
+            // Ensure admin data is synced with database periodically
+            try {
+              const { data: adminData, error } = await supabase
+                .from('users')
+                .select('*')
+                .eq('email', 'gitedu@bk.ru')
+                .single();
+              
+              if (!error && adminData) {
+                // Update admin data if it exists in database
+                const updatedAdmin = mapDatabaseUserToUserModel(adminData);
+                
+                // Preserve the isPersistentAdmin flag
+                updatedAdmin.isPersistentAdmin = true;
+                
+                // Update stored user with fresh data
+                setUser(updatedAdmin);
+                localStorage.setItem('currentUser', JSON.stringify(updatedAdmin));
+                console.log('Admin data synchronized with database');
+              }
+            } catch (error) {
+              console.error('Error syncing admin data:', error);
+            }
+            
             return;
           }
         }
@@ -92,6 +142,12 @@ export const useAuthStateChange = (
             }
             
             console.log('User signed in:', loggedInUser.email, loggedInUser.role);
+            
+            // Special handling for admin user
+            if (loggedInUser.email === 'gitedu@bk.ru') {
+              loggedInUser.isPersistentAdmin = true;
+            }
+            
             setUser(loggedInUser);
             setIsAuthenticated(true);
             localStorage.setItem('currentUser', JSON.stringify(loggedInUser));
@@ -117,6 +173,36 @@ export const useAuthStateChange = (
           expires_at: session.expires_at,
           user: session.user
         }));
+        
+        // For admin, also ensure their session is kept active
+        const storedUser = localStorage.getItem('currentUser');
+        if (storedUser) {
+          const parsedUser = JSON.parse(storedUser);
+          if (parsedUser.email === 'gitedu@bk.ru') {
+            try {
+              const { data: adminData, error } = await supabase
+                .from('users')
+                .select('*')
+                .eq('email', 'gitedu@bk.ru')
+                .single();
+              
+              if (!error && adminData) {
+                // Update admin data if it exists in database
+                const updatedAdmin = mapDatabaseUserToUserModel(adminData);
+                
+                // Preserve the isPersistentAdmin flag
+                updatedAdmin.isPersistentAdmin = true;
+                
+                // Update stored user with fresh data
+                setUser(updatedAdmin);
+                localStorage.setItem('currentUser', JSON.stringify(updatedAdmin));
+                console.log('Admin data synchronized with database during token refresh');
+              }
+            } catch (error) {
+              console.error('Error syncing admin data during token refresh:', error);
+            }
+          }
+        }
       }
     });
 

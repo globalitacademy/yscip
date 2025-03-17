@@ -65,7 +65,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         verifyEmail,
         approveRegistration,
         getPendingUsers,
-        resetAdminAccount
+        resetAdminAccount,
+        setUser // Expose the setUser method for admin data synchronization
       }}
     >
       {children}

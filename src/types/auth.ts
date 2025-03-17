@@ -1,4 +1,3 @@
-
 import { User, UserRole } from '@/types/user';
 
 export interface PendingUser extends Partial<User> {
@@ -13,7 +12,7 @@ export interface AuthContextType {
   isAuthenticated: boolean;
   isLoading: boolean;
   login: (email: string, password: string) => Promise<boolean>;
-  logout: () => void;
+  logout: () => Promise<void>;
   switchRole: (role: UserRole) => void;
   registerUser: (userData: Partial<User> & { password: string }) => Promise<{success: boolean, token?: string}>;
   sendVerificationEmail: (email: string) => Promise<{success: boolean, token?: string}>;
@@ -21,4 +20,5 @@ export interface AuthContextType {
   approveRegistration: (userId: string) => Promise<boolean>;
   getPendingUsers: () => PendingUser[];
   resetAdminAccount: () => Promise<boolean>;
+  setUser?: (user: User | null) => void;
 }
