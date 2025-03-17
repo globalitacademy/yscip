@@ -1,23 +1,15 @@
 
-import React from 'react';
+import React, { useState } from 'react';
 import { FadeIn } from '@/components/LocalTransitions';
 import { Button } from '@/components/ui/button';
-import { Code, BookText, BrainCircuit, Database, FileCode, Globe, User, Building } from 'lucide-react';
+import { Code, BookText, BrainCircuit, Database, FileCode, Globe, User, Building, Pencil } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { Card, CardContent, CardFooter, CardHeader } from '@/components/ui/card';
-
-interface ProfessionalCourse {
-  id: string;
-  title: string;
-  subtitle: string;
-  icon: React.ReactNode;
-  duration: string;
-  price: string;
-  buttonText: string;
-  color: string;
-  createdBy: string;
-  institution: string;
-}
+import { ProfessionalCourse } from './types/ProfessionalCourse';
+import EditProfessionalCourseDialog from './EditProfessionalCourseDialog';
+import { useAuth } from '@/contexts/AuthContext';
+import { saveCourseChanges } from './utils/courseUtils';
+import { toast } from 'sonner';
 
 const professionalCourses: ProfessionalCourse[] = [
   {
@@ -95,6 +87,37 @@ const professionalCourses: ProfessionalCourse[] = [
 ];
 
 const ProfessionalCoursesSection: React.FC = () => {
+  const { user } = useAuth();
+  const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
+  const [selectedCourse, setSelectedCourse] = useState<ProfessionalCourse | null>(null);
+
+  const handleEditCourse = async () => {
+    if (!selectedCourse) return;
+
+    try {
+      const success = await saveCourseChanges(selectedCourse);
+      if (success) {
+        toast.success('Դասընթացը հաջողությամբ թարմացվել է');
+        setIsEditDialogOpen(false);
+      } else {
+        toast.error('Դասընթացի թարմացման ժամանակ սխալ է տեղի ունեցել');
+      }
+    } catch (error) {
+      console.error('Error updating course:', error);
+      toast.error('Դասընթացի թարմացման ժամանակ սխալ է տեղի ունեցել');
+    }
+  };
+
+  const openEditDialog = (course: ProfessionalCourse) => {
+    setSelectedCourse(course);
+    setIsEditDialogOpen(true);
+  };
+  
+  // Check if user can edit a course
+  const canEditCourse = (course: ProfessionalCourse) => {
+    return user && (user.role === 'admin' || course.createdBy === user.name);
+  };
+
   return (
     <section className="py-16 bg-white">
       <div className="container mx-auto px-4">
@@ -118,6 +141,23 @@ const ProfessionalCoursesSection: React.FC = () => {
                   <Building size={12} className="mr-1" />
                   <span>{course.institution}</span>
                 </div>
+
+                {canEditCourse(course) && (
+                  <div className="absolute top-4 right-4 z-10">
+                    <Button 
+                      variant="outline" 
+                      size="icon" 
+                      className="h-6 w-6 rounded-full" 
+                      onClick={(e) => {
+                        e.preventDefault();
+                        openEditDialog(course);
+                      }}
+                    >
+                      <Pencil size={12} />
+                    </Button>
+                  </div>
+                )}
+
                 <CardHeader className="pb-2 text-center pt-12">
                   <div className={`mb-4 ${course.color} mx-auto`}>
                     {course.icon}
@@ -162,6 +202,16 @@ const ProfessionalCoursesSection: React.FC = () => {
           </Button>
         </div>
       </div>
+
+      {selectedCourse && (
+        <EditProfessionalCourseDialog
+          isOpen={isEditDialogOpen}
+          setIsOpen={setIsEditDialogOpen}
+          selectedCourse={selectedCourse}
+          setSelectedCourse={setSelectedCourse}
+          handleEditCourse={handleEditCourse}
+        />
+      )}
     </section>
   );
 };
