@@ -122,7 +122,7 @@ const AddProfessionalCourseDialog: React.FC<AddProfessionalCourseDialogProps> = 
 
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
-      <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
+      <DialogContent className="max-w-3xl">
         <DialogHeader>
           <DialogTitle>Ավելացնել նոր դասընթաց</DialogTitle>
         </DialogHeader>
