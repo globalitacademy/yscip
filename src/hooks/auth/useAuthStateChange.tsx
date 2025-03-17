@@ -27,7 +27,51 @@ export const useAuthStateChange = (
         }
       }
       
-      if (event === 'SIGNED_IN' && session) {
+      // For SIGNED_OUT events, only process them if they were triggered by the user explicitly
+      // clicking the logout button, which is tracked by a flag in localStorage
+      if (event === 'SIGNED_OUT') {
+        const userInitiatedLogout = localStorage.getItem('user_initiated_logout') === 'true';
+        
+        // Don't sign out admin user if this is just a Supabase session timeout
+        const storedUser = localStorage.getItem('currentUser');
+        if (storedUser) {
+          const parsedUser = JSON.parse(storedUser);
+          if (parsedUser.email === 'gitedu@bk.ru') {
+            console.log('Admin user sign out prevented - keeping admin session active');
+            return;
+          }
+        }
+        
+        if (!userInitiatedLogout) {
+          console.log('Ignoring automatic sign out event - user did not initiate logout');
+          // Try to refresh the token instead
+          try {
+            const storedSession = localStorage.getItem('supabase.auth.token');
+            if (storedSession) {
+              const session = JSON.parse(storedSession);
+              if (session.refresh_token) {
+                console.log('Attempting to refresh token...');
+                await supabase.auth.refreshSession({
+                  refresh_token: session.refresh_token,
+                });
+                console.log('Token refreshed');
+              }
+            }
+          } catch (error) {
+            console.error('Error refreshing token:', error);
+          }
+          return;
+        }
+        
+        // Reset the flag after processing
+        localStorage.removeItem('user_initiated_logout');
+        
+        console.log('User signed out');
+        setUser(null);
+        setIsAuthenticated(false);
+        localStorage.removeItem('currentUser');
+        localStorage.removeItem('supabase.auth.token');
+      } else if (event === 'SIGNED_IN' && session) {
         try {
           const { data: userData, error } = await supabase
             .from('users')
@@ -64,22 +108,6 @@ export const useAuthStateChange = (
           console.error('Error fetching user profile:', error);
           toast.error('Սխալ է տեղի ունեցել օգտատիրոջ տվյալները բեռնելիս');
         }
-      } else if (event === 'SIGNED_OUT') {
-        // Don't sign out admin user if this is just a Supabase session timeout
-        const storedUser = localStorage.getItem('currentUser');
-        if (storedUser) {
-          const parsedUser = JSON.parse(storedUser);
-          if (parsedUser.email === 'gitedu@bk.ru') {
-            console.log('Admin user sign out prevented - keeping admin session active');
-            return;
-          }
-        }
-        
-        console.log('User signed out');
-        setUser(null);
-        setIsAuthenticated(false);
-        localStorage.removeItem('currentUser');
-        localStorage.removeItem('supabase.auth.token');
       } else if (event === 'TOKEN_REFRESHED' && session) {
         // When token is refreshed, update the stored token
         console.log('Token refreshed, updating stored session');

@@ -1,4 +1,3 @@
-
 import { useEffect } from 'react';
 import { User, UserRole } from '@/types/user';
 import { supabase } from '@/integrations/supabase/client';
@@ -25,11 +24,14 @@ export const useSessionCheck = (
           console.log('Found stored user');
           const parsedUser = JSON.parse(storedUser);
           
+          // Always set the user from localStorage first to ensure UI is responsive
+          // even if token refresh takes time
+          setUser(parsedUser);
+          setIsAuthenticated(true);
+          
           // Check if this is the admin user first - handle admin separately
           if (parsedUser.email === 'gitedu@bk.ru') {
             console.log('Admin user found in localStorage');
-            setUser(parsedUser);
-            setIsAuthenticated(true);
             setIsLoading(false);
             return;
           }
@@ -47,32 +49,42 @@ export const useSessionCheck = (
             if (isExpired) {
               console.log('Session has expired, attempting to refresh token');
               // Try to refresh the token
-              const { data, error } = await supabase.auth.refreshSession({
-                refresh_token: session.refresh_token,
-              });
-              
-              if (error) {
-                console.error('Error refreshing token:', error);
-                // Continue with regular session check
-              } else if (data.session) {
-                // Update stored token with refreshed session
-                localStorage.setItem('supabase.auth.token', JSON.stringify({
-                  access_token: data.session.access_token,
-                  refresh_token: data.session.refresh_token,
-                  expires_at: data.session.expires_at,
-                  user: data.session.user
-                }));
+              if (session.refresh_token) {
+                const { data, error } = await supabase.auth.refreshSession({
+                  refresh_token: session.refresh_token,
+                });
                 
-                console.log('Token refreshed successfully');
+                if (error) {
+                  console.error('Error refreshing token:', error);
+                  // Don't sign out the user - keep using the stored user data
+                  // We'll try to authenticate again on the next page load
+                } else if (data.session) {
+                  // Update stored token with refreshed session
+                  localStorage.setItem('supabase.auth.token', JSON.stringify({
+                    access_token: data.session.access_token,
+                    refresh_token: data.session.refresh_token,
+                    expires_at: data.session.expires_at,
+                    user: data.session.user
+                  }));
+                  
+                  console.log('Token refreshed successfully');
+                }
               }
             } else {
               // Set the session in Supabase
-              await supabase.auth.setSession({
-                access_token: session.access_token,
-                refresh_token: session.refresh_token
-              });
-              
-              console.log('Restored session from localStorage');
+              if (session.access_token && session.refresh_token) {
+                try {
+                  await supabase.auth.setSession({
+                    access_token: session.access_token,
+                    refresh_token: session.refresh_token
+                  });
+                  
+                  console.log('Restored session from localStorage');
+                } catch (sessionError) {
+                  console.error('Error setting session:', sessionError);
+                  // Continue using stored user data
+                }
+              }
             }
           } catch (error) {
             console.error('Error restoring session from localStorage:', error);
@@ -80,59 +92,55 @@ export const useSessionCheck = (
           }
         }
         
-        // Check Supabase session
-        const { data: { session } } = await supabase.auth.getSession();
-        if (session?.user) {
-          console.log('Session found, fetching user data');
-          
-          try {
-            const { data: userData, error } = await supabase
-              .from('users')
-              .select('*')
-              .eq('id', session.user.id)
-              .single();
-              
-            if (error) {
-              console.error('Error fetching user data:', error);
-              setIsLoading(false);
-              return;
-            }
+        // Always check Supabase session as a backup
+        try {
+          const { data: { session } } = await supabase.auth.getSession();
+          if (session?.user) {
+            console.log('Session found, fetching user data');
             
-            if (userData) {
-              const loggedInUser = mapDatabaseUserToUserModel(userData);
-              
-              if (!userData.registration_approved) {
-                console.log('User not approved yet:', loggedInUser.email);
-                toast.error('Ձեր հաշիվը սպասում է ադմինիստրատորի հաստատման։');
-                await supabase.auth.signOut();
+            try {
+              const { data: userData, error } = await supabase
+                .from('users')
+                .select('*')
+                .eq('id', session.user.id)
+                .single();
+                
+              if (error) {
+                console.error('Error fetching user data:', error);
                 setIsLoading(false);
                 return;
               }
               
-              console.log('User authenticated:', loggedInUser.email, loggedInUser.role);
-              setUser(loggedInUser);
-              setIsAuthenticated(true);
-              localStorage.setItem('currentUser', JSON.stringify(loggedInUser));
-              
-              // Store complete session for better persistence
-              localStorage.setItem('supabase.auth.token', JSON.stringify({
-                access_token: session.access_token,
-                refresh_token: session.refresh_token,
-                expires_at: session.expires_at,
-                user: session.user
-              }));
+              if (userData) {
+                const loggedInUser = mapDatabaseUserToUserModel(userData);
+                
+                if (!userData.registration_approved) {
+                  console.log('User not approved yet:', loggedInUser.email);
+                  toast.error('Ձեր հաշիվը սպասում է ադմինիստրատորի հաստատման։');
+                  // Don't sign out - just don't authenticate them
+                  setIsLoading(false);
+                  return;
+                }
+                
+                console.log('User authenticated:', loggedInUser.email, loggedInUser.role);
+                setUser(loggedInUser);
+                setIsAuthenticated(true);
+                localStorage.setItem('currentUser', JSON.stringify(loggedInUser));
+                
+                // Store complete session for better persistence
+                localStorage.setItem('supabase.auth.token', JSON.stringify({
+                  access_token: session.access_token,
+                  refresh_token: session.refresh_token,
+                  expires_at: session.expires_at,
+                  user: session.user
+                }));
+              }
+            } catch (error) {
+              console.error('Error fetching user data from Supabase:', error);
             }
-          } catch (error) {
-            console.error('Error fetching user data from Supabase:', error);
           }
-        } else {
-          // Try fallback to stored user if no active session
-          if (storedUser) {
-            const parsedUser = JSON.parse(storedUser);
-            console.log('No active session, using stored user as fallback');
-            setUser(parsedUser);
-            setIsAuthenticated(true);
-          }
+        } catch (sessionError) {
+          console.error('Error checking Supabase session:', sessionError);
         }
         
         setIsLoading(false);

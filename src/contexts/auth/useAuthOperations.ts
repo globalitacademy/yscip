@@ -210,6 +210,8 @@ export const useAuthOperations = (
   const logout = async () => {
     try {
       console.log('Logging out user');
+      // Set a flag to indicate this is a user-initiated logout
+      localStorage.setItem('user_initiated_logout', 'true');
       await supabase.auth.signOut();
       toast.info('Դուք դուրս եք եկել համակարգից։');
     } catch (error) {
