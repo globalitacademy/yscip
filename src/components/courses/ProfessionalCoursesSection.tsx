@@ -2,7 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import { FadeIn } from '@/components/LocalTransitions';
 import { Button } from '@/components/ui/button';
-import { Building, Pencil, User } from 'lucide-react';
+import { Book, BrainCircuit, Building, Code, Database, FileCode, Globe, Pencil, User } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { Card, CardContent, CardFooter, CardHeader } from '@/components/ui/card';
 import { ProfessionalCourse } from './types/ProfessionalCourse';

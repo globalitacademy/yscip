@@ -170,14 +170,16 @@ export const convertIconNameToComponent = (iconName: string): React.ReactElement
 export const getIconNameFromComponent = (component: React.ReactElement | undefined): string => {
   if (!component) return 'book';
   
-  // Extract the component display name if available
+  // Extract the component type
   const componentType = component.type;
-  if (typeof componentType === 'function' && componentType.displayName) {
-    const name = componentType.displayName.toLowerCase();
-    if (name === 'braincircuit') return 'ai';
-    if (name === 'filecode') return 'files';
-    return name;
-  }
+  
+  // Check icon type by comparing with known icon components
+  if (componentType === Book) return 'book';
+  if (componentType === Code) return 'code';
+  if (componentType === BrainCircuit) return 'ai';
+  if (componentType === Database) return 'database';
+  if (componentType === FileCode) return 'files';
+  if (componentType === Globe) return 'web';
   
   // If we can't determine the icon name from the component, return a default
   return 'book';
