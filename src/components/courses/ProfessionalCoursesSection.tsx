@@ -117,12 +117,6 @@ const ProfessionalCoursesSection: React.FC<ProfessionalCoursesSectionProps> = ({
   const handleEditCourse = async () => {
     if (!selectedCourse) return;
 
-    if (selectedCourse.isPersistent) {
-      toast.error('Հիմնական դասընթացները չեն կարող խմբագրվել');
-      setIsEditDialogOpen(false);
-      return;
-    }
-
     try {
       const success = await saveCourseChanges(selectedCourse);
       if (success) {
@@ -157,12 +151,6 @@ const ProfessionalCoursesSection: React.FC<ProfessionalCoursesSectionProps> = ({
   };
   
   const handleDeleteCourse = async (id: string) => {
-    const courseToDelete = courses.find(course => course.id === id);
-    if (courseToDelete?.isPersistent) {
-      toast.error('Հիմնական դասընթացները չեն կարող ջնջվել');
-      return;
-    }
-    
     try {
       const updatedCourses = courses.filter(course => course.id !== id);
       setCourses(updatedCourses);
@@ -238,7 +226,7 @@ const ProfessionalCoursesSection: React.FC<ProfessionalCoursesSectionProps> = ({
                   </div>
                 )}
 
-                {canEditCourse(course) && !course.isPersistent && (
+                {canEditCourse(course) && (
                   <div className="absolute top-4 right-4 z-10">
                     <Button 
                       variant="outline" 
@@ -290,7 +278,7 @@ const ProfessionalCoursesSection: React.FC<ProfessionalCoursesSectionProps> = ({
                 </CardContent>
                 
                 <CardFooter className="pt-4">
-                  {isAdminView && user && (user.role === 'admin' || user.role === 'instructor') && !course.isPersistent && (
+                  {isAdminView && user && (user.role === 'admin' || user.role === 'instructor') && (
                     <div className="w-full flex justify-between gap-2">
                       <Button 
                         variant="outline"

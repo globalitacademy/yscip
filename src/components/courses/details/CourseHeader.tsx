@@ -1,7 +1,7 @@
 
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { ArrowLeft, Pencil, Save, X, Trash, Lock } from 'lucide-react';
+import { ArrowLeft, Pencil, Save, X, Trash } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
 interface CourseHeaderProps {
@@ -52,34 +52,23 @@ const CourseHeader: React.FC<CourseHeaderProps> = ({
             </>
           ) : (
             <>
-              {!isPersistentCourse && (
-                <>
-                  <Button 
-                    variant="outline"
-                    onClick={toggleEditMode}
-                    className="flex items-center gap-2"
-                  >
-                    <Pencil size={16} />
-                    Խմբագրել դասընթացը
-                  </Button>
-                  {onDelete && (
-                    <Button 
-                      variant="outline"
-                      onClick={onDelete}
-                      className="flex items-center gap-2 text-red-500 hover:text-red-700 hover:bg-red-50"
-                    >
-                      <Trash size={16} />
-                      Ջնջել
-                    </Button>
-                  )}
-                </>
-              )}
-              
-              {isPersistentCourse && (
-                <div className="flex items-center gap-1 text-blue-500">
-                  <Lock size={16} />
-                  <span className="text-sm">Հիմնական դասընթաց</span>
-                </div>
+              <Button 
+                variant="outline"
+                onClick={toggleEditMode}
+                className="flex items-center gap-2"
+              >
+                <Pencil size={16} />
+                Խմբագրել դասընթացը
+              </Button>
+              {onDelete && (
+                <Button 
+                  variant="outline"
+                  onClick={onDelete}
+                  className="flex items-center gap-2 text-red-500 hover:text-red-700 hover:bg-red-50"
+                >
+                  <Trash size={16} />
+                  Ջնջել
+                </Button>
               )}
             </>
           )}

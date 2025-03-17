@@ -141,11 +141,6 @@ const CourseDetails: React.FC = () => {
     if (isEditing) {
       if (!editedCourse) return;
       
-      if (editedCourse.isPersistent) {
-        setIsEditing(false);
-        return;
-      }
-      
       const success = await saveCourseChanges(editedCourse);
       if (success) {
         setCourse(editedCourse);
@@ -232,11 +227,6 @@ const CourseDetails: React.FC = () => {
   };
 
   const handleDeleteCourse = () => {
-    if (course?.isPersistent) {
-      toast.error('Հիմնական դասընթացները չեն կարող ջնջվել');
-      return;
-    }
-    
     setIsDeleteDialogOpen(true);
   };
 
@@ -307,8 +297,8 @@ const CourseDetails: React.FC = () => {
             toggleEditMode={toggleEditMode} 
             cancelEditing={cancelEditing}
             onDelete={handleDeleteCourse}
-            courseId={course.id}
-            isPersistentCourse={course.isPersistent}
+            courseId={course?.id || ''}
+            isPersistentCourse={false}
           />
           
           <CourseBanner 
