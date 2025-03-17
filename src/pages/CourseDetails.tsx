@@ -52,12 +52,14 @@ const CourseDetails: React.FC = () => {
 
     // Update the course in Supabase and localStorage
     try {
-      if (saveCourseChanges(course)) {
-        toast.success('Դասընթացը հաջողությամբ թարմացվել է');
-        setIsEditDialogOpen(false);
-      } else {
-        toast.error('Դասընթացի թարմացման ժամանակ սխալ է տեղի ունեցել');
-      }
+      saveCourseChanges(course).then(success => {
+        if (success) {
+          toast.success('Դասընթացը հաջողությամբ թարմացվել է');
+          setIsEditDialogOpen(false);
+        } else {
+          toast.error('Դասընթացի թարմացման ժամանակ սխալ է տեղի ունեցել');
+        }
+      });
     } catch (error) {
       console.error('Error updating course:', error);
       toast.error('Դասընթացի թարմացման ժամանակ սխալ է տեղի ունեցել');

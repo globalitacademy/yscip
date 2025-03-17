@@ -108,7 +108,7 @@ export const saveCourseChanges = async (course: ProfessionalCourse): Promise<boo
         institution: course.institution,
         image_url: course.imageUrl,
         description: course.description,
-        updated_at: new Date().toISOString() // Fix: Convert Date to ISO string
+        updated_at: new Date().toISOString() // Convert Date to ISO string
       })
       .eq('id', course.id);
 
