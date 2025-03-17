@@ -1,18 +1,14 @@
-
 import { supabase } from '@/integrations/supabase/client';
 import { ProfessionalCourse } from '../types/ProfessionalCourse';
 import { toast } from 'sonner';
-import { Book } from 'lucide-react';
+import { Book, BrainCircuit, Code, Database, FileCode, Globe } from 'lucide-react';
 import React from 'react';
 
 export const getCourseById = async (id: string): Promise<ProfessionalCourse | null> => {
   try {
-    // First, check localStorage for the course data
     const localCourse = getLocalCourseById(id);
     
-    // Try to fetch from Supabase, but handle any errors gracefully
     try {
-      // Fetch the course from Supabase
       const { data: course, error } = await supabase
         .from('courses')
         .select('*')
@@ -21,19 +17,15 @@ export const getCourseById = async (id: string): Promise<ProfessionalCourse | nu
 
       if (error) {
         console.error('Error fetching course:', error);
-        // If we have local data, return it
         if (localCourse) return localCourse;
-        // Otherwise return null
         return null;
       }
 
       if (!course) {
-        // If no course found in Supabase but we have local data, return it
         if (localCourse) return localCourse;
         return null;
       }
 
-      // Try to fetch related data
       let lessons = [], requirements = [], outcomes = [];
       
       try {
@@ -69,7 +61,6 @@ export const getCourseById = async (id: string): Promise<ProfessionalCourse | nu
         console.error('Error fetching outcomes:', e);
       }
 
-      // Transform the data to match ProfessionalCourse structure
       const formattedCourse: ProfessionalCourse = {
         id: course.id,
         title: course.title,
@@ -91,13 +82,11 @@ export const getCourseById = async (id: string): Promise<ProfessionalCourse | nu
         outcomes: outcomes?.map(outcome => outcome.outcome) || []
       };
 
-      // Save to localStorage as a backup for offline use
       saveToLocalStorage(formattedCourse);
       
       return formattedCourse;
     } catch (supabaseError) {
       console.error('Error in Supabase fetching:', supabaseError);
-      // If we have local data, return it
       if (localCourse) return localCourse;
       return null;
     }
@@ -107,7 +96,6 @@ export const getCourseById = async (id: string): Promise<ProfessionalCourse | nu
   }
 };
 
-// Fallback function to get course from localStorage
 const getLocalCourseById = (id: string): ProfessionalCourse | null => {
   try {
     const storedCourses = localStorage.getItem('professionalCourses');
@@ -122,14 +110,27 @@ const getLocalCourseById = (id: string): ProfessionalCourse | null => {
   }
 };
 
-// Helper function to convert icon name to React component
 const convertIconNameToComponent = (iconName: string): React.ReactElement => {
-  // This is a placeholder - you'd need to implement proper icon conversion
-  // based on your application's icon system
-  return React.createElement(Book, { className: "w-16 h-16" });
+  switch (iconName.toLowerCase()) {
+    case 'book':
+      return React.createElement(Book, { className: "w-16 h-16" });
+    case 'code':
+      return React.createElement(Code, { className: "w-16 h-16" });
+    case 'braincircuit':
+    case 'brain':
+      return React.createElement(BrainCircuit, { className: "w-16 h-16" });
+    case 'database':
+      return React.createElement(Database, { className: "w-16 h-16" });
+    case 'filecode':
+    case 'file':
+      return React.createElement(FileCode, { className: "w-16 h-16" });
+    case 'globe':
+      return React.createElement(Globe, { className: "w-16 h-16" });
+    default:
+      return React.createElement(Book, { className: "w-16 h-16" });
+  }
 };
 
-// Helper function to save to localStorage
 const saveToLocalStorage = (course: ProfessionalCourse): void => {
   try {
     const storedCourses = localStorage.getItem('professionalCourses');
@@ -138,16 +139,13 @@ const saveToLocalStorage = (course: ProfessionalCourse): void => {
       const existingCourseIndex = courses.findIndex(c => c.id === course.id);
       
       if (existingCourseIndex !== -1) {
-        // Update existing course
         courses[existingCourseIndex] = course;
       } else {
-        // Add new course
         courses.push(course);
       }
       
       localStorage.setItem('professionalCourses', JSON.stringify(courses));
     } else {
-      // Create new courses array with this course
       localStorage.setItem('professionalCourses', JSON.stringify([course]));
     }
   } catch (error) {
@@ -159,7 +157,6 @@ export const saveCourseChanges = async (course: ProfessionalCourse): Promise<boo
   try {
     if (!course) return false;
 
-    // First update the main course data
     const { error: courseError } = await supabase
       .from('courses')
       .update({
@@ -173,26 +170,23 @@ export const saveCourseChanges = async (course: ProfessionalCourse): Promise<boo
         institution: course.institution,
         image_url: course.imageUrl,
         description: course.description,
-        updated_at: new Date().toISOString() // Convert Date to ISO string
+        updated_at: new Date().toISOString()
       })
       .eq('id', course.id);
 
     if (courseError) {
       console.error('Error updating course:', courseError);
       
-      // If there's an error with Supabase, fallback to localStorage
       saveToLocalStorage(course);
-      return true; // Return true to not break UI flow
+      return true;
     }
 
-    // Delete existing related data to replace with new data
     await Promise.all([
       supabase.from('course_lessons').delete().eq('course_id', course.id),
       supabase.from('course_requirements').delete().eq('course_id', course.id),
       supabase.from('course_outcomes').delete().eq('course_id', course.id)
     ]);
 
-    // Insert new lessons
     if (course.lessons && course.lessons.length > 0) {
       const { error: lessonsError } = await supabase
         .from('course_lessons')
@@ -209,7 +203,6 @@ export const saveCourseChanges = async (course: ProfessionalCourse): Promise<boo
       }
     }
 
-    // Insert new requirements
     if (course.requirements && course.requirements.length > 0) {
       const { error: requirementsError } = await supabase
         .from('course_requirements')
@@ -225,7 +218,6 @@ export const saveCourseChanges = async (course: ProfessionalCourse): Promise<boo
       }
     }
 
-    // Insert new outcomes
     if (course.outcomes && course.outcomes.length > 0) {
       const { error: outcomesError } = await supabase
         .from('course_outcomes')
@@ -241,15 +233,13 @@ export const saveCourseChanges = async (course: ProfessionalCourse): Promise<boo
       }
     }
 
-    // Also update localStorage as a fallback
     saveToLocalStorage(course);
 
     return true;
   } catch (error) {
     console.error('Error saving course changes:', error);
     
-    // If there's an error with Supabase, fallback to localStorage
     saveToLocalStorage(course);
-    return true; // Return true to not break UI flow
+    return true;
   }
 };

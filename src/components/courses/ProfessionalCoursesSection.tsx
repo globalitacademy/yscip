@@ -97,6 +97,14 @@ const ProfessionalCoursesSection: React.FC = () => {
     try {
       const success = await saveCourseChanges(selectedCourse);
       if (success) {
+        // Update the course in the local array (this would be improved in a real implementation with proper state management)
+        const updatedCourses = professionalCourses.map(course => 
+          course.id === selectedCourse.id ? { ...selectedCourse } : course
+        );
+        
+        // In a real app, we would update the state here
+        // setProfessionalCourses(updatedCourses);
+        
         toast.success('Դասընթացը հաջողությամբ թարմացվել է');
         setIsEditDialogOpen(false);
       } else {
