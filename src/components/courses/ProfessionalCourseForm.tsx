@@ -9,7 +9,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "../ui/accordion";
 import { ProfessionalCourse, CourseLesson } from "./types/ProfessionalCourse";
 import { Badge } from "../ui/badge";
-import { colorOptions } from "./constants";
+import { colorOptions, iconOptions as importedIconOptions } from "./constants";
 import { Separator } from "../ui/separator";
 import { Select, SelectContent, SelectGroup, SelectItem, SelectLabel, SelectTrigger, SelectValue } from "../ui/select";
 import { ToggleGroup, ToggleGroupItem } from "../ui/toggle-group";
@@ -17,7 +17,6 @@ import { Avatar } from "../ui/avatar";
 import { Card, CardContent } from "../ui/card";
 import { convertIconNameToComponent, getIconNameFromComponent } from "./utils/courseUtils";
 
-// We're using the local iconOptions definition here but it could be imported from constants.ts as well
 const iconOptions = [
   { label: 'Կոդ', value: 'code', icon: <Code className="h-5 w-5" /> },
   { label: 'Գիրք', value: 'book', icon: <Book className="h-5 w-5" /> },
