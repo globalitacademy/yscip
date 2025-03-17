@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { User, Clock } from 'lucide-react';
+import { User, Clock, Building } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Button } from '@/components/ui/button';
@@ -90,6 +90,18 @@ const CourseBanner: React.FC<CourseBannerProps> = ({
                 />
               ) : (
                 <span>Տևողություն՝ {displayCourse?.duration}</span>
+              )}
+            </div>
+            <div className="flex items-center gap-2">
+              <Building size={18} className="text-blue-500" />
+              {isEditing ? (
+                <Input 
+                  value={editedCourse?.institution || ''}
+                  onChange={(e) => setEditedCourse(prev => prev ? {...prev, institution: e.target.value} : prev)}
+                  className="w-48"
+                />
+              ) : (
+                <span>Հաստատություն՝ {displayCourse?.institution}</span>
               )}
             </div>
           </div>

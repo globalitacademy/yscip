@@ -1,7 +1,7 @@
 
 import React from 'react';
 import { FadeIn } from '@/components/LocalTransitions';
-import { ExternalLink } from 'lucide-react';
+import { ExternalLink, User, Clock, Building } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { ProfessionalCourse } from '../types/ProfessionalCourse';
@@ -23,7 +23,7 @@ const CourseSidebar: React.FC<CourseSidebarProps> = ({
 }) => {
   return (
     <FadeIn delay="delay-200">
-      <div className="border rounded-lg overflow-hidden">
+      <div className="border rounded-lg overflow-hidden shadow-sm hover:shadow-md transition-shadow">
         {displayCourse.imageUrl && (
           <div className="w-full h-48 relative">
             <img 
@@ -105,7 +105,7 @@ const CourseSidebar: React.FC<CourseSidebarProps> = ({
           {!isEditing && (
             <>
               <Button onClick={handleApply} className="w-full mb-3">
-                Դիմել դասընթացին
+                {displayCourse?.buttonText || 'Դիմել դասընթացին'}
               </Button>
               
               <Button asChild variant="outline" className="w-full">

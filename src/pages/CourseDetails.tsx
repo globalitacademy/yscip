@@ -313,7 +313,7 @@ const CourseDetails: React.FC = () => {
             <div className="lg:col-span-2">
               <CourseCurriculum 
                 displayCourse={displayCourse} 
-                isEditing={isEditing && !course.isPersistent} 
+                isEditing={isEditing} 
                 newLesson={newLesson} 
                 setNewLesson={setNewLesson} 
                 handleAddLesson={handleAddLesson} 
@@ -322,7 +322,7 @@ const CourseDetails: React.FC = () => {
               
               <CourseLearningOutcomes 
                 displayCourse={displayCourse} 
-                isEditing={isEditing && !course.isPersistent} 
+                isEditing={isEditing} 
                 newOutcome={newOutcome} 
                 setNewOutcome={setNewOutcome} 
                 handleAddOutcome={handleAddOutcome} 
@@ -331,7 +331,7 @@ const CourseDetails: React.FC = () => {
               
               <CourseRequirements 
                 displayCourse={displayCourse} 
-                isEditing={isEditing && !course.isPersistent} 
+                isEditing={isEditing} 
                 newRequirement={newRequirement} 
                 setNewRequirement={setNewRequirement} 
                 handleAddRequirement={handleAddRequirement} 
@@ -342,7 +342,7 @@ const CourseDetails: React.FC = () => {
             <div>
               <CourseSidebar 
                 displayCourse={displayCourse} 
-                isEditing={isEditing && !course.isPersistent} 
+                isEditing={isEditing} 
                 editedCourse={editedCourse} 
                 setEditedCourse={setEditedCourse} 
                 handleApply={handleApply} 
