@@ -17,6 +17,7 @@ import { Avatar } from "../ui/avatar";
 import { Card, CardContent } from "../ui/card";
 import { convertIconNameToComponent, getIconNameFromComponent } from "./utils/courseUtils";
 
+// We're using the local iconOptions definition here but it could be imported from constants.ts as well
 const iconOptions = [
   { label: 'Կոդ', value: 'code', icon: <Code className="h-5 w-5" /> },
   { label: 'Գիրք', value: 'book', icon: <Book className="h-5 w-5" /> },
