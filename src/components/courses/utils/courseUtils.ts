@@ -1,6 +1,9 @@
+
 import { supabase } from '@/integrations/supabase/client';
 import { ProfessionalCourse } from '../types/ProfessionalCourse';
 import { toast } from 'sonner';
+import { Book } from 'lucide-react';
+import React from 'react';
 
 export const getCourseById = async (id: string): Promise<ProfessionalCourse | null> => {
   try {
@@ -120,10 +123,10 @@ const getLocalCourseById = (id: string): ProfessionalCourse | null => {
 };
 
 // Helper function to convert icon name to React component
-const convertIconNameToComponent = (iconName: string): any => {
+const convertIconNameToComponent = (iconName: string): React.ReactElement => {
   // This is a placeholder - you'd need to implement proper icon conversion
   // based on your application's icon system
-  return { className: "w-16 h-16" };
+  return <Book className="w-16 h-16" />;
 };
 
 // Helper function to save to localStorage

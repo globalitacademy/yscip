@@ -14,6 +14,7 @@ import CourseCurriculum from '@/components/courses/details/CourseCurriculum';
 import CourseLearningOutcomes from '@/components/courses/details/CourseLearningOutcomes';
 import CourseRequirements from '@/components/courses/details/CourseRequirements';
 import CourseSidebar from '@/components/courses/details/CourseSidebar';
+import { Book } from 'lucide-react';
 
 const CourseDetails: React.FC = () => {
   const { id } = useParams<{ id: string }>();
@@ -41,7 +42,7 @@ const CourseDetails: React.FC = () => {
               id: id,
               title: "Web Development Fundamentals",
               subtitle: "ԴԱՍԸՆԹԱՑ",
-              icon: { className: "w-16 h-16" },
+              icon: <Book className="w-16 h-16" />,
               duration: "8 շաբաթ",
               price: "65,000 ֏",
               buttonText: "Դիմել",
