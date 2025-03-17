@@ -1,6 +1,5 @@
-
 import React, { useEffect, useState } from 'react';
-import { useParams, Link } from 'react-router-dom';
+import { useParams, Link, useNavigate } from 'react-router-dom';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import { toast } from 'sonner';
@@ -15,9 +14,20 @@ import CourseLearningOutcomes from '@/components/courses/details/CourseLearningO
 import CourseRequirements from '@/components/courses/details/CourseRequirements';
 import CourseSidebar from '@/components/courses/details/CourseSidebar';
 import { Book } from 'lucide-react';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 
 const CourseDetails: React.FC = () => {
   const { id } = useParams<{ id: string }>();
+  const navigate = useNavigate();
   const [course, setCourse] = useState<ProfessionalCourse | null>(null);
   const [loading, setLoading] = useState(true);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
@@ -26,9 +36,9 @@ const CourseDetails: React.FC = () => {
   const [newLesson, setNewLesson] = useState({ title: '', duration: '' });
   const [newRequirement, setNewRequirement] = useState('');
   const [newOutcome, setNewOutcome] = useState('');
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const { user } = useAuth();
 
-  // Listen for course updates from other components
   useEffect(() => {
     const handleCourseUpdate = (event: CustomEvent<ProfessionalCourse>) => {
       const updatedCourse = event.detail;
@@ -52,9 +62,7 @@ const CourseDetails: React.FC = () => {
         try {
           const courseData = await getCourseById(id);
           
-          // Try to create a sample course in localStorage if none found
           if (!courseData) {
-            // Create a sample course for testing if we can't fetch one
             const sampleCourse: ProfessionalCourse = {
               id: id,
               title: "Web Development Fundamentals",
@@ -84,7 +92,6 @@ const CourseDetails: React.FC = () => {
               ]
             };
             
-            // Save to localStorage
             saveToLocalStorage(sampleCourse);
             
             setCourse(sampleCourse);
@@ -114,7 +121,6 @@ const CourseDetails: React.FC = () => {
   const handleEditCourse = () => {
     if (!course) return;
 
-    // Update the course in Supabase and localStorage
     try {
       saveCourseChanges(course).then(success => {
         if (success) {
@@ -132,7 +138,6 @@ const CourseDetails: React.FC = () => {
 
   const toggleEditMode = async () => {
     if (isEditing) {
-      // Save changes
       if (!editedCourse) return;
       
       const success = await saveCourseChanges(editedCourse);
@@ -143,7 +148,6 @@ const CourseDetails: React.FC = () => {
         toast.error('Դասընթացի թարմացման ժամանակ սխալ է տեղի ունեցել');
       }
     } else {
-      // Enter edit mode
       setEditedCourse(course);
     }
     
@@ -221,7 +225,42 @@ const CourseDetails: React.FC = () => {
     });
   };
 
-  // Check if user can edit this course
+  const handleDeleteCourse = () => {
+    setIsDeleteDialogOpen(true);
+  };
+
+  const confirmDeleteCourse = () => {
+    if (!course) return;
+    
+    try {
+      const storedCourses = localStorage.getItem('professionalCourses');
+      if (storedCourses) {
+        const courses: ProfessionalCourse[] = JSON.parse(storedCourses);
+        const updatedCourses = courses.filter(c => c.id !== course.id);
+        localStorage.setItem('professionalCourses', JSON.stringify(updatedCourses));
+      }
+      
+      const supabase = window.supabase;
+      if (supabase) {
+        Promise.all([
+          supabase.from('course_lessons').delete().eq('course_id', course.id),
+          supabase.from('course_requirements').delete().eq('course_id', course.id),
+          supabase.from('course_outcomes').delete().eq('course_id', course.id)
+        ]).then(() => {
+          supabase.from('courses').delete().eq('id', course.id);
+        });
+      }
+      
+      toast.success('Դասընթացը հաջողությամբ ջնջվել է');
+      navigate('/admin/courses');
+    } catch (e) {
+      console.error('Error deleting from Supabase:', e);
+      toast.error('Սխալ դասընթացի ջնջման ժամանակ');
+    } finally {
+      setIsDeleteDialogOpen(false);
+    }
+  };
+
   const canEdit = user && (user.role === 'admin' || course?.createdBy === user.name);
 
   if (loading) {
@@ -235,8 +274,8 @@ const CourseDetails: React.FC = () => {
         <main className="flex-grow container mx-auto px-4 py-8">
           <div className="text-center py-20">
             <h2 className="text-2xl font-bold mb-4">Դասընթացը չի գտնվել</h2>
-            <Link to="/" className="inline-flex items-center bg-blue-500 text-white px-4 py-2 rounded">
-              Վերադառնալ գլխավոր էջ
+            <Link to="/admin/courses" className="inline-flex items-center bg-blue-500 text-white px-4 py-2 rounded">
+              Վերադառնալ դասընթացների ցանկ
             </Link>
           </div>
         </main>
@@ -258,7 +297,9 @@ const CourseDetails: React.FC = () => {
             canEdit={canEdit} 
             isEditing={isEditing} 
             toggleEditMode={toggleEditMode} 
-            cancelEditing={cancelEditing} 
+            cancelEditing={cancelEditing}
+            onDelete={handleDeleteCourse}
+            courseId={course.id}
           />
           
           <CourseBanner 
@@ -323,11 +364,27 @@ const CourseDetails: React.FC = () => {
           handleEditCourse={handleEditCourse}
         />
       )}
+      
+      <AlertDialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Համոզվա՞ծ եք, որ ցանկանում եք ջնջել դասընթացը</AlertDialogTitle>
+            <AlertDialogDescription>
+              Այս գործողությունը անդառնալի է։ Դասընթացը կջնջվի համակարգից և այլևս հասանելի չի լինի։
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Չեղարկել</AlertDialogCancel>
+            <AlertDialogAction onClick={confirmDeleteCourse} className="bg-red-500 hover:bg-red-600">
+              Ջնջել
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 };
 
-// Helper function to add the missing saveToLocalStorage function
 const saveToLocalStorage = (course: ProfessionalCourse): void => {
   try {
     const storedCourses = localStorage.getItem('professionalCourses');

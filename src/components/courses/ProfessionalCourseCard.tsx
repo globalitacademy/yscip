@@ -4,6 +4,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { ProfessionalCourse } from './types/ProfessionalCourse';
 import { Eye, Pencil, Trash } from 'lucide-react';
+import { Link } from 'react-router-dom';
 
 interface ProfessionalCourseCardProps {
   course: ProfessionalCourse;
@@ -46,8 +47,10 @@ const ProfessionalCourseCard: React.FC<ProfessionalCourseCardProps> = ({
         <div className="text-sm text-gray-600 mb-4">Հաստատություն: {course.institution}</div>
         
         <div className="flex space-x-2">
-          <Button variant="outline" size="sm">
-            <Eye className="h-4 w-4 mr-2" /> {course.buttonText}
+          <Button variant="outline" size="sm" asChild>
+            <Link to={`/courses/${course.id}`}>
+              <Eye className="h-4 w-4 mr-2" /> {course.buttonText}
+            </Link>
           </Button>
           
           {(isAdmin || canEdit) && (
@@ -55,9 +58,11 @@ const ProfessionalCourseCard: React.FC<ProfessionalCourseCardProps> = ({
               <Button
                 variant="outline" 
                 size="sm"
-                onClick={() => onEdit && onEdit(course)}
+                asChild
               >
-                <Pencil className="h-4 w-4" />
+                <Link to={`/courses/${course.id}`}>
+                  <Pencil className="h-4 w-4" />
+                </Link>
               </Button>
               <Button
                 variant="outline" 
