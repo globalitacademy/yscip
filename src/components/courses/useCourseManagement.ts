@@ -272,10 +272,21 @@ export const useCourseManagement = () => {
   const getIconNameFromComponent = (icon: React.ReactElement): string => {
     if (!icon || !icon.type) return 'book';
     
-    // Fix the property access to handle both string and function types
-    const iconType = typeof icon.type === 'function' ? icon.type.displayName || 'book' : 'book';
+    // Use a safer approach to get the icon type name
+    let iconTypeName = 'book';
     
-    switch (iconType.toLowerCase()) {
+    if (typeof icon.type === 'function') {
+      // For function components, try to get the name property
+      iconTypeName = icon.type.name || 'book';
+    } else if (typeof icon.type === 'object') {
+      // For object components, try a different approach
+      iconTypeName = String(icon.type) || 'book';
+    } else if (typeof icon.type === 'string') {
+      // For string components like 'div', 'span', etc.
+      iconTypeName = icon.type;
+    }
+    
+    switch (iconTypeName.toLowerCase()) {
       case 'code':
         return 'code';
       case 'braincircuit':
