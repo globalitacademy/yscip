@@ -1,6 +1,6 @@
 
 import React, { createContext, useContext, ReactNode } from 'react';
-import { useCourseManagement } from './useCourseManagement';
+import { useCourseManagement } from './hooks/useCourseManagement';
 import { Course } from './types';
 import { ProfessionalCourse } from './types/ProfessionalCourse';
 

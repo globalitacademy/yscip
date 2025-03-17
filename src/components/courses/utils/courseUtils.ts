@@ -2,8 +2,7 @@
 import { supabase } from '@/integrations/supabase/client';
 import { ProfessionalCourse } from '../types/ProfessionalCourse';
 import { toast } from 'sonner';
-import { Book, BrainCircuit, Code, Database, FileCode, Globe } from 'lucide-react';
-import React from 'react';
+import { convertIconNameToComponent } from './courseIconUtils';
 
 export const getCourseById = async (id: string): Promise<ProfessionalCourse | null> => {
   try {
@@ -109,27 +108,6 @@ const getLocalCourseById = (id: string): ProfessionalCourse | null => {
   } catch (error) {
     console.error('Error getting course from localStorage:', error);
     return null;
-  }
-};
-
-const convertIconNameToComponent = (iconName: string): React.ReactElement => {
-  switch (iconName.toLowerCase()) {
-    case 'book':
-      return React.createElement(Book, { className: "w-16 h-16" });
-    case 'code':
-      return React.createElement(Code, { className: "w-16 h-16" });
-    case 'braincircuit':
-    case 'brain':
-      return React.createElement(BrainCircuit, { className: "w-16 h-16" });
-    case 'database':
-      return React.createElement(Database, { className: "w-16 h-16" });
-    case 'filecode':
-    case 'file':
-      return React.createElement(FileCode, { className: "w-16 h-16" });
-    case 'globe':
-      return React.createElement(Globe, { className: "w-16 h-16" });
-    default:
-      return React.createElement(Book, { className: "w-16 h-16" });
   }
 };
 
