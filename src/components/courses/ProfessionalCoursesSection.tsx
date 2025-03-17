@@ -42,7 +42,7 @@ const initialProfessionalCourses: ProfessionalCourse[] = [
     id: '3',
     title: 'Java',
     subtitle: 'ԴԱՍԸՆԹԱՑ',
-    icon: <BookText className="w-16 h-16" />,
+    icon: <Book className="w-16 h-16" />,
     duration: '6 ամիս',
     price: '68,000 ֏',
     buttonText: 'Դիտել',
