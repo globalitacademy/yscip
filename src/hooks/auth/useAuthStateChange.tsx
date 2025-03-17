@@ -51,6 +51,9 @@ export const useAuthStateChange = (
             setUser(loggedInUser);
             setIsAuthenticated(true);
             localStorage.setItem('currentUser', JSON.stringify(loggedInUser));
+            
+            // Store session for persistence
+            localStorage.setItem('supabase.auth.token', JSON.stringify(session));
           }
         } catch (error) {
           console.error('Error fetching user profile:', error);
@@ -71,6 +74,7 @@ export const useAuthStateChange = (
         setUser(null);
         setIsAuthenticated(false);
         localStorage.removeItem('currentUser');
+        localStorage.removeItem('supabase.auth.token');
       }
     });
 

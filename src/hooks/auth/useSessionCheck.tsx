@@ -33,27 +33,24 @@ export const useSessionCheck = (
             setIsLoading(false);
             return;
           }
-          
-          // For non-admin users, verify with Supabase if possible
+        }
+        
+        // Try to restore stored session
+        const storedSession = localStorage.getItem('supabase.auth.token');
+        if (storedSession) {
           try {
-            const { data: { session } } = await supabase.auth.getSession();
-            if (session?.user) {
-              console.log('Supabase session exists, using that instead');
-              // Continue with Supabase session below
-            } else {
-              // Just use the stored user if no Supabase session exists
-              console.log('No Supabase session, using stored user');
-              setUser(parsedUser);
-              setIsAuthenticated(true);
-              setIsLoading(false);
-              return;
-            }
+            const session = JSON.parse(storedSession);
+            // Set the session in Supabase
+            await supabase.auth.setSession({
+              access_token: session.access_token,
+              refresh_token: session.refresh_token
+            });
+            
+            // If session set was successful, continue with regular session check
+            console.log('Restored session from localStorage');
           } catch (error) {
-            console.log('Error checking Supabase session, falling back to stored user');
-            setUser(parsedUser);
-            setIsAuthenticated(true);
-            setIsLoading(false);
-            return;
+            console.error('Error restoring session from localStorage:', error);
+            // Continue with regular session check
           }
         }
         
@@ -90,9 +87,20 @@ export const useSessionCheck = (
               setUser(loggedInUser);
               setIsAuthenticated(true);
               localStorage.setItem('currentUser', JSON.stringify(loggedInUser));
+              
+              // Store session for persistence
+              localStorage.setItem('supabase.auth.token', JSON.stringify(session));
             }
           } catch (error) {
             console.error('Error fetching user data from Supabase:', error);
+          }
+        } else {
+          // Try fallback to stored user if no active session
+          if (storedUser) {
+            const parsedUser = JSON.parse(storedUser);
+            console.log('No active session, using stored user as fallback');
+            setUser(parsedUser);
+            setIsAuthenticated(true);
           }
         }
         

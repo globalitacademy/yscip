@@ -70,6 +70,9 @@ export const useAuthOperations = (
       }
       
       if (data.user) {
+        // Store the session in localStorage for persistence
+        localStorage.setItem('supabase.auth.token', JSON.stringify(data.session));
+        
         const { data: userData, error: userError } = await supabase
           .from('users')
           .select('*')
