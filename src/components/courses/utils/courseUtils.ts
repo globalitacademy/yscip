@@ -69,7 +69,8 @@ export const getCourseById = async (id: string): Promise<ProfessionalCourse | nu
         id: course.id,
         title: course.title,
         subtitle: course.subtitle,
-        icon: convertIconNameToComponent(course.icon_name),
+        icon: course.icon_name ? convertIconNameToComponent(course.icon_name) : undefined,
+        iconName: course.icon_name || '',
         duration: course.duration,
         price: course.price,
         buttonText: course.button_text,
@@ -104,7 +105,14 @@ export const getAllCoursesFromLocalStorage = (): ProfessionalCourse[] => {
   try {
     const storedCourses = localStorage.getItem('professionalCourses');
     if (storedCourses) {
-      return JSON.parse(storedCourses);
+      const courses = JSON.parse(storedCourses);
+      // Make sure each course has proper icon component
+      return courses.map((course: ProfessionalCourse) => {
+        if (course.iconName && !course.icon) {
+          course.icon = convertIconNameToComponent(course.iconName);
+        }
+        return course;
+      });
     }
     return [];
   } catch (error) {
@@ -118,7 +126,15 @@ const getLocalCourseById = (id: string): ProfessionalCourse | null => {
     const storedCourses = localStorage.getItem('professionalCourses');
     if (storedCourses) {
       const courses: ProfessionalCourse[] = JSON.parse(storedCourses);
-      return courses.find(course => course.id === id) || null;
+      const course = courses.find(course => course.id === id);
+      if (course) {
+        // Ensure the icon is properly converted to a React component
+        if (course.iconName && !course.icon) {
+          course.icon = convertIconNameToComponent(course.iconName);
+        }
+        return course;
+      }
+      return null;
     }
     return null;
   } catch (error) {
@@ -127,7 +143,7 @@ const getLocalCourseById = (id: string): ProfessionalCourse | null => {
   }
 };
 
-const convertIconNameToComponent = (iconName: string): React.ReactElement => {
+export const convertIconNameToComponent = (iconName: string): React.ReactElement => {
   switch (iconName.toLowerCase()) {
     case 'book':
       return React.createElement(Book, { className: "w-16 h-16" });
@@ -135,35 +151,60 @@ const convertIconNameToComponent = (iconName: string): React.ReactElement => {
       return React.createElement(Code, { className: "w-16 h-16" });
     case 'braincircuit':
     case 'brain':
+    case 'ai':
       return React.createElement(BrainCircuit, { className: "w-16 h-16" });
     case 'database':
       return React.createElement(Database, { className: "w-16 h-16" });
     case 'filecode':
     case 'file':
+    case 'files':
       return React.createElement(FileCode, { className: "w-16 h-16" });
     case 'globe':
+    case 'web':
       return React.createElement(Globe, { className: "w-16 h-16" });
     default:
       return React.createElement(Book, { className: "w-16 h-16" });
   }
 };
 
+export const getIconNameFromComponent = (component: React.ReactElement | undefined): string => {
+  if (!component) return 'book';
+  
+  // Extract the component display name if available
+  const componentType = component.type;
+  if (typeof componentType === 'function' && componentType.displayName) {
+    const name = componentType.displayName.toLowerCase();
+    if (name === 'braincircuit') return 'ai';
+    if (name === 'filecode') return 'files';
+    return name;
+  }
+  
+  // If we can't determine the icon name from the component, return a default
+  return 'book';
+};
+
 const saveToLocalStorage = (course: ProfessionalCourse): void => {
   try {
+    // Store the icon name to ensure it can be recreated later
+    const courseToSave = {
+      ...course,
+      iconName: course.iconName || getIconNameFromComponent(course.icon)
+    };
+    
     const storedCourses = localStorage.getItem('professionalCourses');
     if (storedCourses) {
       const courses: ProfessionalCourse[] = JSON.parse(storedCourses);
       const existingCourseIndex = courses.findIndex(c => c.id === course.id);
       
       if (existingCourseIndex !== -1) {
-        courses[existingCourseIndex] = course;
+        courses[existingCourseIndex] = courseToSave;
       } else {
-        courses.push(course);
+        courses.push(courseToSave);
       }
       
       localStorage.setItem('professionalCourses', JSON.stringify(courses));
     } else {
-      localStorage.setItem('professionalCourses', JSON.stringify([course]));
+      localStorage.setItem('professionalCourses', JSON.stringify([courseToSave]));
     }
   } catch (error) {
     console.error('Error saving to localStorage:', error);
@@ -175,6 +216,11 @@ export const saveCourseChanges = async (course: ProfessionalCourse): Promise<boo
     if (!course) return false;
 
     console.log('Saving course changes:', course);
+
+    // Ensure the course has an iconName for storage
+    if (!course.iconName && course.icon) {
+      course.iconName = getIconNameFromComponent(course.icon);
+    }
 
     // First save to localStorage to ensure local synchronization
     saveToLocalStorage(course);
@@ -193,6 +239,7 @@ export const saveCourseChanges = async (course: ProfessionalCourse): Promise<boo
           created_by: course.createdBy,
           institution: course.institution,
           image_url: course.imageUrl,
+          icon_name: course.iconName,
           description: course.description,
           updated_at: new Date().toISOString()
         })

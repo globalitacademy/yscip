@@ -2,13 +2,13 @@
 import React, { useState, useEffect } from 'react';
 import { FadeIn } from '@/components/LocalTransitions';
 import { Button } from '@/components/ui/button';
-import { Code, BookText, BrainCircuit, Database, FileCode, Globe, User, Building, Pencil } from 'lucide-react';
+import { Building, Pencil, User } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { Card, CardContent, CardFooter, CardHeader } from '@/components/ui/card';
 import { ProfessionalCourse } from './types/ProfessionalCourse';
 import EditProfessionalCourseDialog from './EditProfessionalCourseDialog';
 import { useAuth } from '@/contexts/AuthContext';
-import { saveCourseChanges, COURSE_UPDATED_EVENT, getAllCoursesFromLocalStorage } from './utils/courseUtils';
+import { saveCourseChanges, COURSE_UPDATED_EVENT, getAllCoursesFromLocalStorage, convertIconNameToComponent } from './utils/courseUtils';
 import { toast } from 'sonner';
 
 const initialProfessionalCourses: ProfessionalCourse[] = [
@@ -106,7 +106,17 @@ const ProfessionalCoursesSection: React.FC = () => {
       try {
         const parsedCourses = JSON.parse(storedCourses);
         if (Array.isArray(parsedCourses) && parsedCourses.length > 0) {
-          setCourses(parsedCourses);
+          // Ensure each course has a properly rendered icon based on iconName
+          const processedCourses = parsedCourses.map((course: ProfessionalCourse) => {
+            if (course.iconName && !course.icon) {
+              return {
+                ...course,
+                icon: convertIconNameToComponent(course.iconName)
+              };
+            }
+            return course;
+          });
+          setCourses(processedCourses);
         } else {
           // Initialize with default data if stored data is empty or invalid
           setCourses(initialProfessionalCourses);
@@ -233,7 +243,7 @@ const ProfessionalCoursesSection: React.FC = () => {
                     </div>
                   ) : (
                     <div id={`course-icon-${course.id}`} className={`mb-4 ${course.color} mx-auto`}>
-                      {course.icon}
+                      {course.icon || (course.iconName ? convertIconNameToComponent(course.iconName) : null)}
                     </div>
                   )}
                   <h3 className="font-bold text-xl">{course.title}</h3>

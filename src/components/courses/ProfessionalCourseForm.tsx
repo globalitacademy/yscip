@@ -1,5 +1,4 @@
-
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Input } from "@/components/ui/input";
 import { ProfessionalCourse } from './types/ProfessionalCourse';
 import { Label } from "@/components/ui/label";
@@ -9,6 +8,7 @@ import { ChevronDown, X, PlusCircle, Upload, Link, Code, BookText, BrainCircuit,
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Textarea } from "@/components/ui/textarea";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "../ui/accordion";
+import { convertIconNameToComponent } from './utils/courseUtils';
 
 const colorOptions = [
   { label: 'Ամբերային', value: 'text-amber-500' },
@@ -50,30 +50,12 @@ const ProfessionalCourseForm: React.FC<ProfessionalCourseFormProps> = ({
   );
 
   const handleIconSelect = (iconName: string) => {
-    let newIcon;
-    switch (iconName) {
-      case 'code':
-        newIcon = <Code className="w-16 h-16" />;
-        break;
-      case 'book':
-        newIcon = <BookText className="w-16 h-16" />;
-        break;
-      case 'ai':
-        newIcon = <BrainCircuit className="w-16 h-16" />;
-        break;
-      case 'database':
-        newIcon = <Database className="w-16 h-16" />;
-        break;
-      case 'files':
-        newIcon = <FileCode className="w-16 h-16" />;
-        break;
-      case 'web':
-        newIcon = <Globe className="w-16 h-16" />;
-        break;
-      default:
-        newIcon = <Code className="w-16 h-16" />;
-    }
-    setCourse({ ...course, icon: newIcon });
+    const newIcon = convertIconNameToComponent(iconName);
+    setCourse({ 
+      ...course, 
+      icon: newIcon,
+      iconName: iconName 
+    });
     setIsIconsOpen(false);
   };
 
