@@ -166,10 +166,26 @@ const ProfessionalCoursesSection: React.FC = () => {
                   </div>
                 )}
 
-                <CardHeader className="pb-2 text-center pt-12">
-                  <div className={`mb-4 ${course.color} mx-auto`}>
-                    {course.icon}
-                  </div>
+                <CardHeader className="pb-2 text-center pt-12 relative">
+                  {course.imageUrl ? (
+                    <div className="w-full h-32 mb-4 overflow-hidden rounded-md">
+                      <img 
+                        src={course.imageUrl} 
+                        alt={course.title}
+                        className="w-full h-full object-cover"
+                        onError={(e) => {
+                          // Fallback to icon if image fails to load
+                          e.currentTarget.style.display = 'none';
+                          const iconElement = document.getElementById(`course-icon-${course.id}`);
+                          if (iconElement) iconElement.style.display = 'block';
+                        }}
+                      />
+                    </div>
+                  ) : (
+                    <div id={`course-icon-${course.id}`} className={`mb-4 ${course.color} mx-auto`}>
+                      {course.icon}
+                    </div>
+                  )}
                   <h3 className="font-bold text-xl">{course.title}</h3>
                   <p className="text-sm text-muted-foreground">{course.subtitle}</p>
                 </CardHeader>

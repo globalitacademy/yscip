@@ -49,7 +49,7 @@ const CourseDetails: React.FC = () => {
               color: "text-blue-500",
               createdBy: "John Smith",
               institution: "Web Academy",
-              imageUrl: "/placeholder.svg",
+              imageUrl: "https://images.unsplash.com/photo-1461749280684-dccba630e2f6?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=2069&q=80",
               description: "Learn the fundamentals of web development including HTML, CSS and JavaScript.",
               lessons: [
                 { title: "HTML Basics", duration: "2 ժամ" },
