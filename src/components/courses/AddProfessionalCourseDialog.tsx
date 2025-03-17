@@ -21,8 +21,7 @@ const AddProfessionalCourseDialog: React.FC<AddProfessionalCourseDialogProps> = 
   onAddCourse,
 }) => {
   const { user } = useAuth();
-  const [newCourse, setNewCourse] = useState<ProfessionalCourse>({
-    id: '',
+  const [newCourse, setNewCourse] = useState<Partial<ProfessionalCourse>>({
     title: '',
     subtitle: 'ԴԱՍԸՆԹԱՑ',
     icon: <Code className="w-16 h-16" />,
@@ -40,7 +39,7 @@ const AddProfessionalCourseDialog: React.FC<AddProfessionalCourseDialogProps> = 
     try {
       const newId = uuidv4();
       const courseToAdd: ProfessionalCourse = {
-        ...newCourse,
+        ...newCourse as ProfessionalCourse,
         id: newId,
         createdBy: user.name,
       };
@@ -71,7 +70,6 @@ const AddProfessionalCourseDialog: React.FC<AddProfessionalCourseDialogProps> = 
       
       // Reset the form
       setNewCourse({
-        id: '',
         title: '',
         subtitle: 'ԴԱՍԸՆԹԱՑ',
         icon: <Code className="w-16 h-16" />,
@@ -117,6 +115,11 @@ const AddProfessionalCourseDialog: React.FC<AddProfessionalCourseDialogProps> = 
     }
   };
 
+  // Update the setCourse prop type to match ProfessionalCourseForm expectations
+  const handleCourseChange = (courseUpdates: Partial<ProfessionalCourse>) => {
+    setNewCourse(prev => ({ ...prev, ...courseUpdates }));
+  };
+
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
       <DialogContent className="max-w-3xl">
@@ -126,7 +129,7 @@ const AddProfessionalCourseDialog: React.FC<AddProfessionalCourseDialogProps> = 
         
         <ProfessionalCourseForm 
           course={newCourse}
-          setCourse={setNewCourse}
+          setCourse={handleCourseChange}
         />
         
         <DialogFooter>
