@@ -4,7 +4,7 @@ import { ProfessionalCourse } from './types/ProfessionalCourse';
 import { Label } from "@/components/ui/label";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { Button } from "../ui/button";
-import { ChevronDown, X, PlusCircle, Upload, Link, Code, BookText, BrainCircuit, Database, FileCode, Globe } from 'lucide-react';
+import { ChevronDown, X, PlusCircle, Upload, Link, Code, Book, BrainCircuit, Database, FileCode, Globe } from 'lucide-react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Textarea } from "@/components/ui/textarea";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "../ui/accordion";
@@ -21,7 +21,7 @@ const colorOptions = [
 
 const iconOptions = [
   { label: 'Կոդ', value: 'code', icon: <Code className="h-5 w-5" /> },
-  { label: 'Գիրք', value: 'book', icon: <BookText className="h-5 w-5" /> },
+  { label: 'Գիրք', value: 'book', icon: <Book className="h-5 w-5" /> },
   { label: 'ԻԻ', value: 'ai', icon: <BrainCircuit className="h-5 w-5" /> },
   { label: 'Տվյալներ', value: 'database', icon: <Database className="h-5 w-5" /> },
   { label: 'Ֆայլեր', value: 'files', icon: <FileCode className="h-5 w-5" /> },

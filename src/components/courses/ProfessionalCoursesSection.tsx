@@ -8,7 +8,7 @@ import { Card, CardContent, CardFooter, CardHeader } from '@/components/ui/card'
 import { ProfessionalCourse } from './types/ProfessionalCourse';
 import EditProfessionalCourseDialog from './EditProfessionalCourseDialog';
 import { useAuth } from '@/contexts/AuthContext';
-import { saveCourseChanges, COURSE_UPDATED_EVENT, getAllCoursesFromLocalStorage, convertIconNameToComponent } from './utils/courseUtils';
+import { saveCourseChanges, COURSE_UPDATED_EVENT, getAllCoursesFromLocalStorage, convertIconNameToComponent, getIconNameFromComponent } from './utils/courseUtils';
 import { toast } from 'sonner';
 
 const initialProfessionalCourses: ProfessionalCourse[] = [
@@ -162,6 +162,11 @@ const ProfessionalCoursesSection: React.FC = () => {
     if (!selectedCourse) return;
 
     try {
+      // Ensure the course has iconName set before saving
+      if (selectedCourse.icon && !selectedCourse.iconName) {
+        selectedCourse.iconName = getIconNameFromComponent(selectedCourse.icon);
+      }
+      
       const success = await saveCourseChanges(selectedCourse);
       if (success) {
         // Update was successful and event was dispatched via saveCourseChanges
