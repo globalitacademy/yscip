@@ -3,7 +3,6 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import { ArrowLeft, Pencil, Save, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { ProfessionalCourse } from '../types/ProfessionalCourse';
 
 interface CourseHeaderProps {
   canEdit: boolean;

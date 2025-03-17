@@ -43,6 +43,7 @@ const EditProfessionalCourseDialog: React.FC<EditProfessionalCourseDialogProps> 
       handleEditCourse();
       
       toast.success('Դասընթացը հաջողությամբ թարմացվել է');
+      setIsOpen(false);
     } catch (error) {
       console.error('Error saving course changes:', error);
       toast.error('Դասընթացի պահպանման ժամանակ սխալ է տեղի ունեցել');
