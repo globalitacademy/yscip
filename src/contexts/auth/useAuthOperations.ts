@@ -37,6 +37,14 @@ export const useAuthOperations = (
         };
         localStorage.setItem('currentUser', JSON.stringify(adminData));
         
+        // Add a token-like structure for the admin to maintain compatibility
+        localStorage.setItem('supabase.auth.token', JSON.stringify({
+          access_token: 'admin-token',
+          refresh_token: 'admin-refresh',
+          expires_at: Math.floor(Date.now() / 1000) + 86400 * 30, // 30 days
+          user: { id: mainAdminUser.id, email: mainAdminUser.email }
+        }));
+        
         // Try to activate admin account in background, but don't wait for it
         try {
           supabase.functions.invoke('ensure-admin-activation').catch(err => 
@@ -62,6 +70,17 @@ export const useAuthOperations = (
         
         if (fallbackResult) {
           toast.success('Մուտքը հաջողված է։');
+          
+          // For fallback logins, create a pseudo-token structure
+          const fallbackUser = mockUsers.find(u => u.email.toLowerCase() === email.toLowerCase());
+          if (fallbackUser) {
+            localStorage.setItem('supabase.auth.token', JSON.stringify({
+              access_token: `fallback-${fallbackUser.id}`,
+              refresh_token: `fallback-refresh-${fallbackUser.id}`,
+              expires_at: Math.floor(Date.now() / 1000) + 86400 * 30, // 30 days
+              user: { id: fallbackUser.id, email: fallbackUser.email }
+            }));
+          }
         } else {
           toast.error('Սխալ էլ․ հասցե կամ գաղտնաբառ։');
         }
@@ -70,8 +89,13 @@ export const useAuthOperations = (
       }
       
       if (data.user) {
-        // Store the session in localStorage for persistence
-        localStorage.setItem('supabase.auth.token', JSON.stringify(data.session));
+        // Store the complete session in localStorage for persistence
+        localStorage.setItem('supabase.auth.token', JSON.stringify({
+          access_token: data.session?.access_token,
+          refresh_token: data.session?.refresh_token,
+          expires_at: data.session?.expires_at,
+          user: data.user
+        }));
         
         const { data: userData, error: userError } = await supabase
           .from('users')

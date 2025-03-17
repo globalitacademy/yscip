@@ -52,8 +52,13 @@ export const useAuthStateChange = (
             setIsAuthenticated(true);
             localStorage.setItem('currentUser', JSON.stringify(loggedInUser));
             
-            // Store session for persistence
-            localStorage.setItem('supabase.auth.token', JSON.stringify(session));
+            // Store complete session for better persistence
+            localStorage.setItem('supabase.auth.token', JSON.stringify({
+              access_token: session.access_token,
+              refresh_token: session.refresh_token,
+              expires_at: session.expires_at,
+              user: session.user
+            }));
           }
         } catch (error) {
           console.error('Error fetching user profile:', error);
@@ -75,6 +80,15 @@ export const useAuthStateChange = (
         setIsAuthenticated(false);
         localStorage.removeItem('currentUser');
         localStorage.removeItem('supabase.auth.token');
+      } else if (event === 'TOKEN_REFRESHED' && session) {
+        // When token is refreshed, update the stored token
+        console.log('Token refreshed, updating stored session');
+        localStorage.setItem('supabase.auth.token', JSON.stringify({
+          access_token: session.access_token,
+          refresh_token: session.refresh_token,
+          expires_at: session.expires_at,
+          user: session.user
+        }));
       }
     });
 

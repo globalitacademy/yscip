@@ -40,14 +40,40 @@ export const useSessionCheck = (
         if (storedSession) {
           try {
             const session = JSON.parse(storedSession);
-            // Set the session in Supabase
-            await supabase.auth.setSession({
-              access_token: session.access_token,
-              refresh_token: session.refresh_token
-            });
             
-            // If session set was successful, continue with regular session check
-            console.log('Restored session from localStorage');
+            // Check if session has expired
+            const isExpired = session.expires_at && new Date(session.expires_at * 1000) < new Date();
+            
+            if (isExpired) {
+              console.log('Session has expired, attempting to refresh token');
+              // Try to refresh the token
+              const { data, error } = await supabase.auth.refreshSession({
+                refresh_token: session.refresh_token,
+              });
+              
+              if (error) {
+                console.error('Error refreshing token:', error);
+                // Continue with regular session check
+              } else if (data.session) {
+                // Update stored token with refreshed session
+                localStorage.setItem('supabase.auth.token', JSON.stringify({
+                  access_token: data.session.access_token,
+                  refresh_token: data.session.refresh_token,
+                  expires_at: data.session.expires_at,
+                  user: data.session.user
+                }));
+                
+                console.log('Token refreshed successfully');
+              }
+            } else {
+              // Set the session in Supabase
+              await supabase.auth.setSession({
+                access_token: session.access_token,
+                refresh_token: session.refresh_token
+              });
+              
+              console.log('Restored session from localStorage');
+            }
           } catch (error) {
             console.error('Error restoring session from localStorage:', error);
             // Continue with regular session check
@@ -88,8 +114,13 @@ export const useSessionCheck = (
               setIsAuthenticated(true);
               localStorage.setItem('currentUser', JSON.stringify(loggedInUser));
               
-              // Store session for persistence
-              localStorage.setItem('supabase.auth.token', JSON.stringify(session));
+              // Store complete session for better persistence
+              localStorage.setItem('supabase.auth.token', JSON.stringify({
+                access_token: session.access_token,
+                refresh_token: session.refresh_token,
+                expires_at: session.expires_at,
+                user: session.user
+              }));
             }
           } catch (error) {
             console.error('Error fetching user data from Supabase:', error);
