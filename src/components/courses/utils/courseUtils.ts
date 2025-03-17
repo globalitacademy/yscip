@@ -157,89 +157,97 @@ export const saveCourseChanges = async (course: ProfessionalCourse): Promise<boo
   try {
     if (!course) return false;
 
-    const { error: courseError } = await supabase
-      .from('courses')
-      .update({
-        title: course.title,
-        subtitle: course.subtitle,
-        duration: course.duration,
-        price: course.price,
-        button_text: course.buttonText,
-        color: course.color,
-        created_by: course.createdBy,
-        institution: course.institution,
-        image_url: course.imageUrl,
-        description: course.description,
-        updated_at: new Date().toISOString()
-      })
-      .eq('id', course.id);
-
-    if (courseError) {
-      console.error('Error updating course:', courseError);
-      
-      saveToLocalStorage(course);
-      return true;
-    }
-
-    await Promise.all([
-      supabase.from('course_lessons').delete().eq('course_id', course.id),
-      supabase.from('course_requirements').delete().eq('course_id', course.id),
-      supabase.from('course_outcomes').delete().eq('course_id', course.id)
-    ]);
-
-    if (course.lessons && course.lessons.length > 0) {
-      const { error: lessonsError } = await supabase
-        .from('course_lessons')
-        .insert(
-          course.lessons.map(lesson => ({
-            course_id: course.id,
-            title: lesson.title,
-            duration: lesson.duration
-          }))
-        );
-
-      if (lessonsError) {
-        console.error('Error inserting lessons:', lessonsError);
-      }
-    }
-
-    if (course.requirements && course.requirements.length > 0) {
-      const { error: requirementsError } = await supabase
-        .from('course_requirements')
-        .insert(
-          course.requirements.map(requirement => ({
-            course_id: course.id,
-            requirement: requirement
-          }))
-        );
-
-      if (requirementsError) {
-        console.error('Error inserting requirements:', requirementsError);
-      }
-    }
-
-    if (course.outcomes && course.outcomes.length > 0) {
-      const { error: outcomesError } = await supabase
-        .from('course_outcomes')
-        .insert(
-          course.outcomes.map(outcome => ({
-            course_id: course.id,
-            outcome: outcome
-          }))
-        );
-
-      if (outcomesError) {
-        console.error('Error inserting outcomes:', outcomesError);
-      }
-    }
-
+    // First save to localStorage to ensure local synchronization
     saveToLocalStorage(course);
+
+    // Then try to save to Supabase if available
+    try {
+      const { error: courseError } = await supabase
+        .from('courses')
+        .update({
+          title: course.title,
+          subtitle: course.subtitle,
+          duration: course.duration,
+          price: course.price,
+          button_text: course.buttonText,
+          color: course.color,
+          created_by: course.createdBy,
+          institution: course.institution,
+          image_url: course.imageUrl,
+          description: course.description,
+          updated_at: new Date().toISOString()
+        })
+        .eq('id', course.id);
+
+      if (courseError) {
+        console.error('Error updating course in Supabase:', courseError);
+        // Continue with local storage only
+      } else {
+        // If course update was successful, also update related tables
+        await Promise.all([
+          supabase.from('course_lessons').delete().eq('course_id', course.id),
+          supabase.from('course_requirements').delete().eq('course_id', course.id),
+          supabase.from('course_outcomes').delete().eq('course_id', course.id)
+        ]);
+
+        if (course.lessons && course.lessons.length > 0) {
+          const { error: lessonsError } = await supabase
+            .from('course_lessons')
+            .insert(
+              course.lessons.map(lesson => ({
+                course_id: course.id,
+                title: lesson.title,
+                duration: lesson.duration
+              }))
+            );
+
+          if (lessonsError) {
+            console.error('Error inserting lessons:', lessonsError);
+          }
+        }
+
+        if (course.requirements && course.requirements.length > 0) {
+          const { error: requirementsError } = await supabase
+            .from('course_requirements')
+            .insert(
+              course.requirements.map(requirement => ({
+                course_id: course.id,
+                requirement: requirement
+              }))
+            );
+
+          if (requirementsError) {
+            console.error('Error inserting requirements:', requirementsError);
+          }
+        }
+
+        if (course.outcomes && course.outcomes.length > 0) {
+          const { error: outcomesError } = await supabase
+            .from('course_outcomes')
+            .insert(
+              course.outcomes.map(outcome => ({
+                course_id: course.id,
+                outcome: outcome
+              }))
+            );
+
+          if (outcomesError) {
+            console.error('Error inserting outcomes:', outcomesError);
+          }
+        }
+      }
+    } catch (supabaseError) {
+      console.error('Error with Supabase operations:', supabaseError);
+      // We've already saved to localStorage, so we can still return true
+    }
+
+    // Notify any listeners about the course change
+    const event = new CustomEvent('courseUpdated', { detail: course });
+    window.dispatchEvent(event);
 
     return true;
   } catch (error) {
     console.error('Error saving course changes:', error);
-    
-    saveToLocalStorage(course);
-    return true;
+    return false;
   }
 };

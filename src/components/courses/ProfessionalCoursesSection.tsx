@@ -90,6 +90,7 @@ const ProfessionalCoursesSection: React.FC = () => {
   const { user } = useAuth();
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [selectedCourse, setSelectedCourse] = useState<ProfessionalCourse | null>(null);
+  const [courses, setCourses] = useState<ProfessionalCourse[]>(professionalCourses);
 
   const handleEditCourse = async () => {
     if (!selectedCourse) return;
@@ -97,13 +98,15 @@ const ProfessionalCoursesSection: React.FC = () => {
     try {
       const success = await saveCourseChanges(selectedCourse);
       if (success) {
-        // Update the course in the local array (this would be improved in a real implementation with proper state management)
-        const updatedCourses = professionalCourses.map(course => 
+        // Update the course in the local array to ensure synchronization
+        const updatedCourses = courses.map(course => 
           course.id === selectedCourse.id ? { ...selectedCourse } : course
         );
         
-        // In a real app, we would update the state here
-        // setProfessionalCourses(updatedCourses);
+        setCourses(updatedCourses);
+        
+        // Also update the localStorage to ensure data persistence
+        localStorage.setItem('professionalCourses', JSON.stringify(updatedCourses));
         
         toast.success('Դասընթացը հաջողությամբ թարմացվել է');
         setIsEditDialogOpen(false);
@@ -142,7 +145,7 @@ const ProfessionalCoursesSection: React.FC = () => {
         </FadeIn>
         
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {professionalCourses.map((course) => (
+          {courses.map((course) => (
             <FadeIn key={course.id} delay="delay-200" className="flex">
               <Card className="flex flex-col w-full hover:shadow-md transition-shadow relative">
                 <div className="absolute top-4 left-4 flex items-center text-xs bg-gray-100 px-2 py-1 rounded-full z-10">

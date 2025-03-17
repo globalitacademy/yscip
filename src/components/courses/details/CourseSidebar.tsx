@@ -62,7 +62,15 @@ const CourseSidebar: React.FC<CourseSidebarProps> = ({
             </div>
             <div className="flex justify-between">
               <span className="text-muted-foreground">Տևողություն</span>
-              <span>{displayCourse?.duration}</span>
+              {isEditing ? (
+                <Input 
+                  value={editedCourse?.duration || ''}
+                  onChange={(e) => setEditedCourse(prev => prev ? {...prev, duration: e.target.value} : prev)}
+                  className="w-32 text-right"
+                />
+              ) : (
+                <span>{displayCourse?.duration}</span>
+              )}
             </div>
             <div className="flex justify-between">
               <span className="text-muted-foreground">Դասերի քանակ</span>
@@ -78,6 +86,18 @@ const CourseSidebar: React.FC<CourseSidebarProps> = ({
                 />
               ) : (
                 <span>{displayCourse?.institution}</span>
+              )}
+            </div>
+            <div className="flex justify-between">
+              <span className="text-muted-foreground">Դասախոս</span>
+              {isEditing ? (
+                <Input 
+                  value={editedCourse?.createdBy || ''}
+                  onChange={(e) => setEditedCourse(prev => prev ? {...prev, createdBy: e.target.value} : prev)}
+                  className="w-32 text-right"
+                />
+              ) : (
+                <span>{displayCourse?.createdBy}</span>
               )}
             </div>
           </div>

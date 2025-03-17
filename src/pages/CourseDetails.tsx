@@ -28,6 +28,23 @@ const CourseDetails: React.FC = () => {
   const [newOutcome, setNewOutcome] = useState('');
   const { user } = useAuth();
 
+  // Listen for course updates from other components
+  useEffect(() => {
+    const handleCourseUpdate = (event: CustomEvent<ProfessionalCourse>) => {
+      const updatedCourse = event.detail;
+      if (updatedCourse && updatedCourse.id === id) {
+        setCourse(updatedCourse);
+        setEditedCourse(updatedCourse);
+      }
+    };
+
+    window.addEventListener('courseUpdated', handleCourseUpdate as EventListener);
+    
+    return () => {
+      window.removeEventListener('courseUpdated', handleCourseUpdate as EventListener);
+    };
+  }, [id]);
+
   useEffect(() => {
     const fetchCourse = async () => {
       setLoading(true);
@@ -42,7 +59,7 @@ const CourseDetails: React.FC = () => {
               id: id,
               title: "Web Development Fundamentals",
               subtitle: "ԴԱՍԸՆԹԱՑ",
-              icon: <Book className="w-16 h-16" />,
+              icon: React.createElement(Book, { className: "w-16 h-16" }),
               duration: "8 շաբաթ",
               price: "65,000 ֏",
               buttonText: "Դիմել",
@@ -68,14 +85,7 @@ const CourseDetails: React.FC = () => {
             };
             
             // Save to localStorage
-            const storedCourses = localStorage.getItem('professionalCourses');
-            if (storedCourses) {
-              const courses: ProfessionalCourse[] = JSON.parse(storedCourses);
-              courses.push(sampleCourse);
-              localStorage.setItem('professionalCourses', JSON.stringify(courses));
-            } else {
-              localStorage.setItem('professionalCourses', JSON.stringify([sampleCourse]));
-            }
+            saveToLocalStorage(sampleCourse);
             
             setCourse(sampleCourse);
             setEditedCourse(sampleCourse);
@@ -315,6 +325,29 @@ const CourseDetails: React.FC = () => {
       )}
     </div>
   );
+};
+
+// Helper function to add the missing saveToLocalStorage function
+const saveToLocalStorage = (course: ProfessionalCourse): void => {
+  try {
+    const storedCourses = localStorage.getItem('professionalCourses');
+    if (storedCourses) {
+      const courses: ProfessionalCourse[] = JSON.parse(storedCourses);
+      const existingCourseIndex = courses.findIndex(c => c.id === course.id);
+      
+      if (existingCourseIndex !== -1) {
+        courses[existingCourseIndex] = course;
+      } else {
+        courses.push(course);
+      }
+      
+      localStorage.setItem('professionalCourses', JSON.stringify(courses));
+    } else {
+      localStorage.setItem('professionalCourses', JSON.stringify([course]));
+    }
+  } catch (error) {
+    console.error('Error saving to localStorage:', error);
+  }
 };
 
 export default CourseDetails;
