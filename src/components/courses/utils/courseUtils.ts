@@ -1,12 +1,8 @@
-
 import { supabase } from '@/integrations/supabase/client';
 import { ProfessionalCourse } from '../types/ProfessionalCourse';
 import { toast } from 'sonner';
-import { Book, BrainCircuit, Code, Database, FileCode, Globe, Smartphone } from 'lucide-react';
+import { Book, BrainCircuit, Code, Database, FileCode, Globe } from 'lucide-react';
 import React from 'react';
-
-// Define the event name as a constant
-export const COURSE_UPDATED_EVENT = 'courseUpdated';
 
 export const getCourseById = async (id: string): Promise<ProfessionalCourse | null> => {
   try {
@@ -69,8 +65,7 @@ export const getCourseById = async (id: string): Promise<ProfessionalCourse | nu
         id: course.id,
         title: course.title,
         subtitle: course.subtitle,
-        icon: course.icon_name ? convertIconNameToComponent(course.icon_name) : undefined,
-        iconName: course.icon_name || '',
+        icon: convertIconNameToComponent(course.icon_name),
         duration: course.duration,
         price: course.price,
         buttonText: course.button_text,
@@ -101,40 +96,12 @@ export const getCourseById = async (id: string): Promise<ProfessionalCourse | nu
   }
 };
 
-export const getAllCoursesFromLocalStorage = (): ProfessionalCourse[] => {
-  try {
-    const storedCourses = localStorage.getItem('professionalCourses');
-    if (storedCourses) {
-      const courses = JSON.parse(storedCourses);
-      // Make sure each course has proper icon component
-      return courses.map((course: ProfessionalCourse) => {
-        if (course.iconName && !course.icon) {
-          course.icon = convertIconNameToComponent(course.iconName);
-        }
-        return course;
-      });
-    }
-    return [];
-  } catch (error) {
-    console.error('Error getting courses from localStorage:', error);
-    return [];
-  }
-};
-
 const getLocalCourseById = (id: string): ProfessionalCourse | null => {
   try {
     const storedCourses = localStorage.getItem('professionalCourses');
     if (storedCourses) {
       const courses: ProfessionalCourse[] = JSON.parse(storedCourses);
-      const course = courses.find(course => course.id === id);
-      if (course) {
-        // Ensure the icon is properly converted to a React component
-        if (course.iconName && !course.icon) {
-          course.icon = convertIconNameToComponent(course.iconName);
-        }
-        return course;
-      }
-      return null;
+      return courses.find(course => course.id === id) || null;
     }
     return null;
   } catch (error) {
@@ -143,7 +110,7 @@ const getLocalCourseById = (id: string): ProfessionalCourse | null => {
   }
 };
 
-export const convertIconNameToComponent = (iconName: string): React.ReactElement => {
+const convertIconNameToComponent = (iconName: string): React.ReactElement => {
   switch (iconName.toLowerCase()) {
     case 'book':
       return React.createElement(Book, { className: "w-16 h-16" });
@@ -151,67 +118,35 @@ export const convertIconNameToComponent = (iconName: string): React.ReactElement
       return React.createElement(Code, { className: "w-16 h-16" });
     case 'braincircuit':
     case 'brain':
-    case 'ai':
       return React.createElement(BrainCircuit, { className: "w-16 h-16" });
     case 'database':
       return React.createElement(Database, { className: "w-16 h-16" });
     case 'filecode':
     case 'file':
-    case 'files':
       return React.createElement(FileCode, { className: "w-16 h-16" });
     case 'globe':
-    case 'web':
       return React.createElement(Globe, { className: "w-16 h-16" });
-    case 'smartphone':
-    case 'android':
-    case 'mobile':
-      return React.createElement(Smartphone, { className: "w-16 h-16" });
     default:
       return React.createElement(Book, { className: "w-16 h-16" });
   }
 };
 
-export const getIconNameFromComponent = (component: React.ReactElement | undefined): string => {
-  if (!component) return 'book';
-  
-  // Extract the component type
-  const componentType = component.type;
-  
-  // Check icon type by comparing with known icon components
-  if (componentType === Book) return 'book';
-  if (componentType === Code) return 'code';
-  if (componentType === BrainCircuit) return 'ai';
-  if (componentType === Database) return 'database';
-  if (componentType === FileCode) return 'files';
-  if (componentType === Globe) return 'web';
-  if (componentType === Smartphone) return 'smartphone';
-  
-  // If we can't determine the icon name from the component, return a default
-  return 'book';
-};
-
 const saveToLocalStorage = (course: ProfessionalCourse): void => {
   try {
-    // Store the icon name to ensure it can be recreated later
-    const courseToSave = {
-      ...course,
-      iconName: course.iconName || getIconNameFromComponent(course.icon)
-    };
-    
     const storedCourses = localStorage.getItem('professionalCourses');
     if (storedCourses) {
       const courses: ProfessionalCourse[] = JSON.parse(storedCourses);
       const existingCourseIndex = courses.findIndex(c => c.id === course.id);
       
       if (existingCourseIndex !== -1) {
-        courses[existingCourseIndex] = courseToSave;
+        courses[existingCourseIndex] = course;
       } else {
-        courses.push(courseToSave);
+        courses.push(course);
       }
       
       localStorage.setItem('professionalCourses', JSON.stringify(courses));
     } else {
-      localStorage.setItem('professionalCourses', JSON.stringify([courseToSave]));
+      localStorage.setItem('professionalCourses', JSON.stringify([course]));
     }
   } catch (error) {
     console.error('Error saving to localStorage:', error);
@@ -221,13 +156,6 @@ const saveToLocalStorage = (course: ProfessionalCourse): void => {
 export const saveCourseChanges = async (course: ProfessionalCourse): Promise<boolean> => {
   try {
     if (!course) return false;
-
-    console.log('Saving course changes:', course);
-
-    // Ensure the course has an iconName for storage
-    if (!course.iconName && course.icon) {
-      course.iconName = getIconNameFromComponent(course.icon);
-    }
 
     // First save to localStorage to ensure local synchronization
     saveToLocalStorage(course);
@@ -246,7 +174,6 @@ export const saveCourseChanges = async (course: ProfessionalCourse): Promise<boo
           created_by: course.createdBy,
           institution: course.institution,
           image_url: course.imageUrl,
-          icon_name: course.iconName,
           description: course.description,
           updated_at: new Date().toISOString()
         })
@@ -314,8 +241,8 @@ export const saveCourseChanges = async (course: ProfessionalCourse): Promise<boo
       // We've already saved to localStorage, so we can still return true
     }
 
-    // Notify any listeners about the course change with a custom event
-    const event = new CustomEvent(COURSE_UPDATED_EVENT, { detail: course });
+    // Notify any listeners about the course change
+    const event = new CustomEvent('courseUpdated', { detail: course });
     window.dispatchEvent(event);
 
     return true;

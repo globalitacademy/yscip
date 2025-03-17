@@ -1,17 +1,11 @@
 
 import React from 'react';
 
-export interface CourseLesson {
-  title: string;
-  duration: string;
-}
-
 export interface ProfessionalCourse {
   id: string;
   title: string;
   subtitle: string;
-  icon?: React.ReactElement;
-  iconName?: string; // Add this to store the icon name string for serialization
+  icon: React.ReactElement;
   duration: string;
   price: string;
   buttonText: string;
@@ -20,7 +14,7 @@ export interface ProfessionalCourse {
   institution: string;
   imageUrl?: string;
   description?: string;
-  lessons?: CourseLesson[];
+  lessons?: { title: string; duration: string }[];
   requirements?: string[];
   outcomes?: string[];
 }

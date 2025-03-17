@@ -1,220 +1,88 @@
 
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { FadeIn } from '@/components/LocalTransitions';
 import { Button } from '@/components/ui/button';
-import { Book, BrainCircuit, Building, Code, Database, FileCode, Globe, Pencil, User, Smartphone } from 'lucide-react';
+import { Code, BookText, BrainCircuit, Database, FileCode, Globe, User, Building, Pencil } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { Card, CardContent, CardFooter, CardHeader } from '@/components/ui/card';
 import { ProfessionalCourse } from './types/ProfessionalCourse';
 import EditProfessionalCourseDialog from './EditProfessionalCourseDialog';
 import { useAuth } from '@/contexts/AuthContext';
-import { saveCourseChanges, COURSE_UPDATED_EVENT, getAllCoursesFromLocalStorage, convertIconNameToComponent, getIconNameFromComponent } from './utils/courseUtils';
+import { saveCourseChanges } from './utils/courseUtils';
 import { toast } from 'sonner';
 
-const initialProfessionalCourses: ProfessionalCourse[] = [
+const professionalCourses: ProfessionalCourse[] = [
   {
     id: '1',
-    title: 'Web Front-End',
+    title: 'WEB Front-End',
     subtitle: 'ԴԱՍԸՆԹԱՑ',
-    icon: <Globe className="w-16 h-16" />,
-    iconName: 'web',
+    icon: <Code className="w-16 h-16" />,
     duration: '9 ամիս',
     price: '58,000 ֏',
     buttonText: 'Դիտել',
     color: 'text-amber-500',
     createdBy: 'Արամ Հակոբյան',
-    institution: 'ՀՊՏՀ',
-    imageUrl: 'https://images.unsplash.com/photo-1547658719-da2b51169166?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=2000&q=80',
-    description: 'Սովորեք HTML, CSS, և JavaScript հիմունքներ, ինչպես նաև ժամանակակից Front-End շրջանակներ՝ ինչպիսիք են React, Angular և Vue:',
-    lessons: [
-      { title: 'HTML և CSS հիմունքներ', duration: '20 ժամ' },
-      { title: 'JavaScript ինտենսիվ', duration: '30 ժամ' },
-      { title: 'React ծրագրավորում', duration: '40 ժամ' }
-    ],
-    requirements: [
-      'Համակարգչային բազային գիտելիքներ',
-      'Տրամաբանական մտածելակերպ'
-    ],
-    outcomes: [
-      'Կարողանալ մշակել բարդ ինտերակտիվ կայքեր',
-      'Աշխատել ժամանակակից JavaScript շրջանակներով',
-      'Ստեղծել մասշտաբավորվող կայքեր'
-    ]
+    institution: 'ՀՊՏՀ'
   },
   {
     id: '2',
-    title: 'Python (ML)',
+    title: 'Python (ML / AI)',
     subtitle: 'ԴԱՍԸՆԹԱՑ',
     icon: <BrainCircuit className="w-16 h-16" />,
-    iconName: 'ai',
     duration: '7 ամիս',
     price: '68,000 ֏',
     buttonText: 'Դիտել',
     color: 'text-blue-500',
     createdBy: 'Լիլիթ Մարտիրոսյան',
-    institution: 'ԵՊՀ',
-    imageUrl: 'https://images.unsplash.com/photo-1526379879527-8559ecfd8bf7?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=2000&q=80',
-    description: 'Սովորեք մեքենայական ուսուցման հիմնական սկզբունքները և ալգորիթմները Python-ով։ Ծանոթացեք տվյալների վերլուծության և կանխատեսման մեթոդներին։',
-    lessons: [
-      { title: 'Python հիմունքներ', duration: '25 ժամ' },
-      { title: 'Թվային վերլուծություն NumPy և Pandas', duration: '30 ժամ' },
-      { title: 'Մեքենայական ուսուցման մոդելներ', duration: '40 ժամ' },
-      { title: 'Խորը ուսուցում (Deep Learning)', duration: '45 ժամ' }
-    ],
-    requirements: [
-      'Ծրագրավորման հիմնական գիտելիքներ',
-      'Մաթեմատիկական վիճակագրության տարրական իմացություն'
-    ],
-    outcomes: [
-      'Կառուցել և ուսուցանել մեքենայական ուսուցման մոդելներ',
-      'Վերլուծել մեծ տվյալների բազաներ',
-      'Մշակել տվյալների վիզուալիզացիաներ'
-    ]
+    institution: 'ԵՊՀ'
   },
   {
     id: '3',
     title: 'Java',
     subtitle: 'ԴԱՍԸՆԹԱՑ',
-    icon: <Book className="w-16 h-16" />,
-    iconName: 'book',
+    icon: <BookText className="w-16 h-16" />,
     duration: '6 ամիս',
     price: '68,000 ֏',
     buttonText: 'Դիտել',
     color: 'text-red-500',
     createdBy: 'Գարիկ Սարգսյան',
-    institution: 'ՀԱՊՀ',
-    imageUrl: 'https://images.unsplash.com/photo-1516116216624-53e697fedbea?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=2000&q=80',
-    description: 'Ուսումնասիրեք Java ծրագրավորման լեզուն և օբյեկտ-կողմնորոշված ծրագրավորման սկզբունքները։ Կառուցեք բազմապլատֆորմ հավելվածներ և աշխատեք տվյալների բազաների հետ։',
-    lessons: [
-      { title: 'Java հիմունքներ և սինտաքս', duration: '25 ժամ' },
-      { title: 'Java OOP սկզբունքներ', duration: '30 ժամ' },
-      { title: 'Java Spring շրջանակ', duration: '40 ժամ' }
-    ],
-    requirements: [
-      'Ծրագրավորման հիմնական գիտելիքներ'
-    ],
-    outcomes: [
-      'Մշակել Java սերվերային հավելվածներ',
-      'Աշխատել տվյալների բազաների հետ',
-      'Կառուցել բազմաշերտ Java հավելվածներ'
-    ]
+    institution: 'ՀԱՊՀ'
   },
   {
     id: '4',
     title: 'JavaScript',
     subtitle: 'ԴԱՍԸՆԹԱՑ',
     icon: <FileCode className="w-16 h-16" />,
-    iconName: 'files',
     duration: '3.5 ամիս',
     price: '58,000 ֏',
     buttonText: 'Դիտել',
     color: 'text-yellow-500',
     createdBy: 'Անի Մուրադյան',
-    institution: 'ՀԱՀ',
-    imageUrl: 'https://images.unsplash.com/photo-1555066931-4365d14bab8c?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=2000&q=80',
-    description: 'Խորացեք JavaScript լեզվի մեջ և սովորեք մշակել ինտերակտիվ վեբ կայքեր։ Ծանոթացեք ժամանակակից JavaScript շրջանակների հետ։',
-    lessons: [
-      { title: 'JavaScript հիմունքներ', duration: '20 ժամ' },
-      { title: 'DOM մանիպուլյացիա', duration: '15 ժամ' },
-      { title: 'JavaScript շրջանակներ (React, Vue)', duration: '30 ժամ' }
-    ],
-    requirements: [
-      'HTML և CSS հիմնական գիտելիքներ'
-    ],
-    outcomes: [
-      'Մշակել ինտերակտիվ վեբ կայքեր',
-      'Ստեղծել միաէջանի հավելվածներ (SPA)',
-      'Աշխատել API-ների հետ'
-    ]
+    institution: 'ՀԱՀ'
   },
   {
     id: '5',
-    title: 'C++',
+    title: 'PHP',
     subtitle: 'ԴԱՍԸՆԹԱՑ',
-    icon: <Code className="w-16 h-16" />,
-    iconName: 'code',
+    icon: <Database className="w-16 h-16" />,
     duration: '5 ամիս',
-    price: '62,000 ֏',
+    price: '58,000 ֏',
     buttonText: 'Դիտել',
     color: 'text-purple-500',
     createdBy: 'Վահե Ղազարյան',
-    institution: 'ՀՊՄՀ',
-    imageUrl: 'https://images.unsplash.com/photo-1599507593499-a3f7d7d97667?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=2000&q=80',
-    description: 'Սովորեք C++ լեզուն՝ բարձր արդյունավետությամբ ծրագրեր և համակարգեր մշակելու համար։ Ուսումնասիրեք դասերը, օբյեկտները և արդյունավետ կոդավորման տեխնիկաները։',
-    lessons: [
-      { title: 'C++ հիմունքներ և սինտաքս', duration: '25 ժամ' },
-      { title: 'C++ OOP և շաբլոններ', duration: '30 ժամ' },
-      { title: 'Տվյալների կառուցվածքներ և ալգորիթմներ', duration: '35 ժամ' }
-    ],
-    requirements: [
-      'Ծրագրավորման բազային գիտելիքներ',
-      'Ալգորիթմական մտածելակերպ'
-    ],
-    outcomes: [
-      'Մշակել օպտիմիզացված C++ ծրագրեր',
-      'Կառուցել բարդ համակարգեր',
-      'Աշխատել մեծածավալ տվյալների հետ'
-    ]
+    institution: 'ՀՊՄՀ'
   },
   {
     id: '6',
     title: 'C#/.NET',
     subtitle: 'ԴԱՍԸՆԹԱՑ',
-    icon: <Database className="w-16 h-16" />,
-    iconName: 'database',
+    icon: <Globe className="w-16 h-16" />,
     duration: '6 ամիս',
     price: '68,000 ֏',
     buttonText: 'Դիտել',
     color: 'text-green-500',
     createdBy: 'Տիգրան Դավթյան',
-    institution: 'ՀՌԱՀ',
-    imageUrl: 'https://images.unsplash.com/photo-1587620962725-abab7fe55159?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=2000&q=80',
-    description: 'Ուսումնասիրեք C# լեզուն և .NET շրջանակը՝ թվային և վեբ հավելվածներ մշակելու համար։ Սովորեք ASP.NET Core և աշխատեք տվյալների բազաների հետ։',
-    lessons: [
-      { title: 'C# հիմունքներ', duration: '25 ժամ' },
-      { title: 'C# OOP սկզբունքներ', duration: '20 ժամ' },
-      { title: 'ASP.NET Core ներածություն', duration: '30 ժամ' },
-      { title: 'Entity Framework և SQL', duration: '30 ժամ' }
-    ],
-    requirements: [
-      'Ծրագրավորման տարրական իմացություն',
-      'Windows միջավայրի օգտագործման փորձ'
-    ],
-    outcomes: [
-      'Մշակել .NET հավելվածներ',
-      'Ստեղծել վեբ հավելվածներ ASP.NET-ով',
-      'Աշխատել SQL տվյալների բազաների հետ'
-    ]
-  },
-  {
-    id: '7',
-    title: 'Android',
-    subtitle: 'ԴԱՍԸՆԹԱՑ',
-    icon: <Smartphone className="w-16 h-16" />,
-    iconName: 'smartphone',
-    duration: '5 ամիս',
-    price: '65,000 ֏',
-    buttonText: 'Դիտել',
-    color: 'text-green-600',
-    createdBy: 'Արման Պետրոսյան',
-    institution: 'ԵՊՀ',
-    imageUrl: 'https://images.unsplash.com/photo-1607252650355-f7fd0460ccdb?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=2000&q=80',
-    description: 'Սովորեք Android բջջային հավելվածների մշակում Kotlin և Java լեզուներով։ Ուսումնասիրեք Android Studio, UI դիզայն և տվյալների պահպանում։',
-    lessons: [
-      { title: 'Kotlin հիմունքներ ծրագրավորողների համար', duration: '20 ժամ' },
-      { title: 'Android UI դիզայն և լայաուտներ', duration: '25 ժամ' },
-      { title: 'Android տվյալների պահպանում և ցանցային հարցումներ', duration: '30 ժամ' },
-      { title: 'Android-ի համար Material Design', duration: '20 ժամ' }
-    ],
-    requirements: [
-      'Java կամ Kotlin հիմնական գիտելիքներ',
-      'Օբյեկտ-կողմնորոշված ծրագրավորման հասկացություններ'
-    ],
-    outcomes: [
-      'Մշակել հարմարավետ Android հավելվածներ',
-      'Աշխատել API-ների և տվյալների բազաների հետ',
-      'Հրապարակել հավելվածներ Google Play Store-ում'
-    ]
+    institution: 'ՀՌԱՀ'
   }
 ];
 
@@ -222,80 +90,24 @@ const ProfessionalCoursesSection: React.FC = () => {
   const { user } = useAuth();
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [selectedCourse, setSelectedCourse] = useState<ProfessionalCourse | null>(null);
-  const [courses, setCourses] = useState<ProfessionalCourse[]>([]);
-
-  // Initialize courses from localStorage or fall back to initial data
-  useEffect(() => {
-    const storedCourses = localStorage.getItem('professionalCourses');
-    
-    if (storedCourses) {
-      try {
-        const parsedCourses = JSON.parse(storedCourses);
-        if (Array.isArray(parsedCourses) && parsedCourses.length > 0) {
-          // Ensure each course has a properly rendered icon based on iconName
-          const processedCourses = parsedCourses.map((course: ProfessionalCourse) => {
-            if (course.iconName && !course.icon) {
-              return {
-                ...course,
-                icon: convertIconNameToComponent(course.iconName)
-              };
-            }
-            return course;
-          });
-          setCourses(processedCourses);
-        } else {
-          // Initialize with default data if stored data is empty or invalid
-          setCourses(initialProfessionalCourses);
-          localStorage.setItem('professionalCourses', JSON.stringify(initialProfessionalCourses));
-        }
-      } catch (e) {
-        console.error('Error parsing stored courses:', e);
-        setCourses(initialProfessionalCourses);
-        localStorage.setItem('professionalCourses', JSON.stringify(initialProfessionalCourses));
-      }
-    } else {
-      // No stored courses yet, initialize
-      setCourses(initialProfessionalCourses);
-      localStorage.setItem('professionalCourses', JSON.stringify(initialProfessionalCourses));
-    }
-  }, []);
-
-  // Listen for course update events
-  useEffect(() => {
-    const handleCourseUpdated = (event: CustomEvent<ProfessionalCourse>) => {
-      const updatedCourse = event.detail;
-      
-      console.log('Course updated event received:', updatedCourse);
-      
-      setCourses(prevCourses => {
-        const updated = prevCourses.map(course => 
-          course.id === updatedCourse.id ? updatedCourse : course
-        );
-        return updated;
-      });
-    };
-
-    // Add event listener
-    window.addEventListener(COURSE_UPDATED_EVENT, handleCourseUpdated as EventListener);
-    
-    // Clean up
-    return () => {
-      window.removeEventListener(COURSE_UPDATED_EVENT, handleCourseUpdated as EventListener);
-    };
-  }, []);
+  const [courses, setCourses] = useState<ProfessionalCourse[]>(professionalCourses);
 
   const handleEditCourse = async () => {
     if (!selectedCourse) return;
 
     try {
-      // Ensure the course has iconName set before saving
-      if (selectedCourse.icon && !selectedCourse.iconName) {
-        selectedCourse.iconName = getIconNameFromComponent(selectedCourse.icon);
-      }
-      
       const success = await saveCourseChanges(selectedCourse);
       if (success) {
-        // Update was successful and event was dispatched via saveCourseChanges
+        // Update the course in the local array to ensure synchronization
+        const updatedCourses = courses.map(course => 
+          course.id === selectedCourse.id ? { ...selectedCourse } : course
+        );
+        
+        setCourses(updatedCourses);
+        
+        // Also update the localStorage to ensure data persistence
+        localStorage.setItem('professionalCourses', JSON.stringify(updatedCourses));
+        
         toast.success('Դասընթացը հաջողությամբ թարմացվել է');
         setIsEditDialogOpen(false);
       } else {
@@ -308,7 +120,7 @@ const ProfessionalCoursesSection: React.FC = () => {
   };
 
   const openEditDialog = (course: ProfessionalCourse) => {
-    setSelectedCourse({...course});
+    setSelectedCourse(course);
     setIsEditDialogOpen(true);
   };
   
@@ -374,7 +186,7 @@ const ProfessionalCoursesSection: React.FC = () => {
                     </div>
                   ) : (
                     <div id={`course-icon-${course.id}`} className={`mb-4 ${course.color} mx-auto`}>
-                      {course.icon || (course.iconName ? convertIconNameToComponent(course.iconName) : null)}
+                      {course.icon}
                     </div>
                   )}
                   <h3 className="font-bold text-xl">{course.title}</h3>

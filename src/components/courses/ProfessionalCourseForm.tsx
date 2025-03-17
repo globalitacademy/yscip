@@ -1,30 +1,31 @@
-import React, { useState, useEffect } from "react";
+
+import React, { useState } from 'react';
 import { Input } from "@/components/ui/input";
+import { ProfessionalCourse } from './types/ProfessionalCourse';
 import { Label } from "@/components/ui/label";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { Button } from "../ui/button";
-import { ChevronDown, X, PlusCircle, Upload, Link, Code, Book, BrainCircuit, Database, FileCode, Globe, Smartphone } from 'lucide-react';
+import { ChevronDown, X, PlusCircle, Upload, Link, Code, BookText, BrainCircuit, Database, FileCode, Globe } from 'lucide-react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Textarea } from "@/components/ui/textarea";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "../ui/accordion";
-import { ProfessionalCourse, CourseLesson } from "./types/ProfessionalCourse";
-import { Badge } from "../ui/badge";
-import { colorOptions, iconOptions as importedIconOptions } from "./constants";
-import { Separator } from "../ui/separator";
-import { Select, SelectContent, SelectGroup, SelectItem, SelectLabel, SelectTrigger, SelectValue } from "../ui/select";
-import { ToggleGroup, ToggleGroupItem } from "../ui/toggle-group";
-import { Avatar } from "../ui/avatar";
-import { Card, CardContent } from "../ui/card";
-import { convertIconNameToComponent, getIconNameFromComponent } from "./utils/courseUtils";
+
+const colorOptions = [
+  { label: 'Ամբերային', value: 'text-amber-500' },
+  { label: 'Կապույտ', value: 'text-blue-500' },
+  { label: 'Կարմիր', value: 'text-red-500' },
+  { label: 'Դեղին', value: 'text-yellow-500' },
+  { label: 'Մանուշակագույն', value: 'text-purple-500' },
+  { label: 'Կանաչ', value: 'text-green-500' },
+];
 
 const iconOptions = [
   { label: 'Կոդ', value: 'code', icon: <Code className="h-5 w-5" /> },
-  { label: 'Գիրք', value: 'book', icon: <Book className="h-5 w-5" /> },
+  { label: 'Գիրք', value: 'book', icon: <BookText className="h-5 w-5" /> },
   { label: 'ԻԻ', value: 'ai', icon: <BrainCircuit className="h-5 w-5" /> },
   { label: 'Տվյալներ', value: 'database', icon: <Database className="h-5 w-5" /> },
   { label: 'Ֆայլեր', value: 'files', icon: <FileCode className="h-5 w-5" /> },
   { label: 'Վեբ', value: 'web', icon: <Globe className="h-5 w-5" /> },
-  { label: 'Բջջային', value: 'smartphone', icon: <Smartphone className="h-5 w-5" /> }
 ];
 
 interface ProfessionalCourseFormProps {
@@ -49,12 +50,30 @@ const ProfessionalCourseForm: React.FC<ProfessionalCourseFormProps> = ({
   );
 
   const handleIconSelect = (iconName: string) => {
-    const newIcon = convertIconNameToComponent(iconName);
-    setCourse({ 
-      ...course, 
-      icon: newIcon,
-      iconName: iconName 
-    });
+    let newIcon;
+    switch (iconName) {
+      case 'code':
+        newIcon = <Code className="w-16 h-16" />;
+        break;
+      case 'book':
+        newIcon = <BookText className="w-16 h-16" />;
+        break;
+      case 'ai':
+        newIcon = <BrainCircuit className="w-16 h-16" />;
+        break;
+      case 'database':
+        newIcon = <Database className="w-16 h-16" />;
+        break;
+      case 'files':
+        newIcon = <FileCode className="w-16 h-16" />;
+        break;
+      case 'web':
+        newIcon = <Globe className="w-16 h-16" />;
+        break;
+      default:
+        newIcon = <Code className="w-16 h-16" />;
+    }
+    setCourse({ ...course, icon: newIcon });
     setIsIconsOpen(false);
   };
 
