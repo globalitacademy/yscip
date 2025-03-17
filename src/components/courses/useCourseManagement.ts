@@ -1,3 +1,4 @@
+
 import { useState, useEffect, useCallback } from 'react';
 import { v4 as uuidv4 } from 'uuid';
 import { toast } from 'sonner';
@@ -271,7 +272,8 @@ export const useCourseManagement = () => {
   const getIconNameFromComponent = (icon: React.ReactElement): string => {
     if (!icon || !icon.type) return 'book';
     
-    const iconType = icon.type.name || '';
+    // Fix the property access to handle both string and function types
+    const iconType = typeof icon.type === 'function' ? icon.type.displayName || 'book' : 'book';
     
     switch (iconType.toLowerCase()) {
       case 'code':
@@ -292,10 +294,11 @@ export const useCourseManagement = () => {
   // Course state and handlers
   const [newCourse, setNewCourse] = useState<Course>({
     id: '',
-    title: '',
+    name: '',
     description: '',
     modules: [],
     createdBy: '',
+    duration: '',
   });
 
   const handleAddCourse = () => {
@@ -312,10 +315,11 @@ export const useCourseManagement = () => {
     setUserCourses([...userCourses, courseToAdd]);
     setNewCourse({
       id: '',
-      title: '',
+      name: '',
       description: '',
       modules: [],
       createdBy: '',
+      duration: '',
     });
   };
 

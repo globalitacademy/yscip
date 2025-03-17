@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import Header from '@/components/Header';
@@ -15,6 +14,7 @@ import CourseLearningOutcomes from '@/components/courses/details/CourseLearningO
 import CourseRequirements from '@/components/courses/details/CourseRequirements';
 import CourseSidebar from '@/components/courses/details/CourseSidebar';
 import { Book } from 'lucide-react';
+import { supabase } from '@/integrations/supabase/client';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -141,7 +141,6 @@ const CourseDetails: React.FC = () => {
     if (isEditing) {
       if (!editedCourse) return;
       
-      // Don't allow editing persistent courses
       if (editedCourse.isPersistent) {
         setIsEditing(false);
         return;
@@ -233,7 +232,6 @@ const CourseDetails: React.FC = () => {
   };
 
   const handleDeleteCourse = () => {
-    // Don't allow deleting persistent courses
     if (course?.isPersistent) {
       toast.error('Հիմնական դասընթացները չեն կարող ջնջվել');
       return;
@@ -253,16 +251,13 @@ const CourseDetails: React.FC = () => {
         localStorage.setItem('professionalCourses', JSON.stringify(updatedCourses));
       }
       
-      const supabase = window.supabase;
-      if (supabase) {
-        Promise.all([
-          supabase.from('course_lessons').delete().eq('course_id', course.id),
-          supabase.from('course_requirements').delete().eq('course_id', course.id),
-          supabase.from('course_outcomes').delete().eq('course_id', course.id)
-        ]).then(() => {
-          supabase.from('courses').delete().eq('id', course.id);
-        });
-      }
+      Promise.all([
+        supabase.from('course_lessons').delete().eq('course_id', course.id),
+        supabase.from('course_requirements').delete().eq('course_id', course.id),
+        supabase.from('course_outcomes').delete().eq('course_id', course.id)
+      ]).then(() => {
+        supabase.from('courses').delete().eq('id', course.id);
+      });
       
       toast.success('Դասընթացը հաջողությամբ ջնջվել է');
       navigate('/admin/courses');
