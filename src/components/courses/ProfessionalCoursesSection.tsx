@@ -1,8 +1,7 @@
-
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { FadeIn } from '@/components/LocalTransitions';
 import { Button } from '@/components/ui/button';
-import { Code, BookText, BrainCircuit, Database, FileCode, Globe, User, Building, Pencil } from 'lucide-react';
+import { Code, BookText, BrainCircuit, Database, FileCode, Globe, User, Building, Pencil, Plus, Lock } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { Card, CardContent, CardFooter, CardHeader } from '@/components/ui/card';
 import { ProfessionalCourse } from './types/ProfessionalCourse';
@@ -10,6 +9,12 @@ import EditProfessionalCourseDialog from './EditProfessionalCourseDialog';
 import { useAuth } from '@/contexts/AuthContext';
 import { saveCourseChanges } from './utils/courseUtils';
 import { toast } from 'sonner';
+import AddProfessionalCourseDialog from './AddProfessionalCourseDialog';
+import { fetchAllCourses } from './utils/courseUtils';
+
+interface ProfessionalCoursesSectionProps {
+  isAdminView?: boolean;
+}
 
 const professionalCourses: ProfessionalCourse[] = [
   {
@@ -22,7 +27,8 @@ const professionalCourses: ProfessionalCourse[] = [
     buttonText: 'Դիտել',
     color: 'text-amber-500',
     createdBy: 'Արամ Հակոբյան',
-    institution: 'ՀՊՏՀ'
+    institution: 'ՀՊՏՀ',
+    isPersistent: true
   },
   {
     id: '2',
@@ -86,26 +92,46 @@ const professionalCourses: ProfessionalCourse[] = [
   }
 ];
 
-const ProfessionalCoursesSection: React.FC = () => {
+const ProfessionalCoursesSection: React.FC<ProfessionalCoursesSectionProps> = ({ isAdminView = false }) => {
   const { user } = useAuth();
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
+  const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
   const [selectedCourse, setSelectedCourse] = useState<ProfessionalCourse | null>(null);
   const [courses, setCourses] = useState<ProfessionalCourse[]>(professionalCourses);
+
+  useEffect(() => {
+    const loadCourses = async () => {
+      try {
+        const fetchedCourses = await fetchAllCourses();
+        if (fetchedCourses.length > 0) {
+          setCourses(fetchedCourses);
+        }
+      } catch (error) {
+        console.error('Error loading courses:', error);
+      }
+    };
+    
+    loadCourses();
+  }, []);
 
   const handleEditCourse = async () => {
     if (!selectedCourse) return;
 
+    if (selectedCourse.isPersistent) {
+      toast.error('Հիմնական դասընթացները չեն կարող խմբագրվել');
+      setIsEditDialogOpen(false);
+      return;
+    }
+
     try {
       const success = await saveCourseChanges(selectedCourse);
       if (success) {
-        // Update the course in the local array to ensure synchronization
         const updatedCourses = courses.map(course => 
           course.id === selectedCourse.id ? { ...selectedCourse } : course
         );
         
         setCourses(updatedCourses);
         
-        // Also update the localStorage to ensure data persistence
         localStorage.setItem('professionalCourses', JSON.stringify(updatedCourses));
         
         toast.success('Դասընթացը հաջողությամբ թարմացվել է');
@@ -119,30 +145,81 @@ const ProfessionalCoursesSection: React.FC = () => {
     }
   };
 
+  const handleAddCourse = (newCourse: ProfessionalCourse) => {
+    setCourses([...courses, newCourse]);
+    setIsAddDialogOpen(false);
+    toast.success('Դասընթացը հաջողությամբ ավելացվել է');
+  };
+
   const openEditDialog = (course: ProfessionalCourse) => {
     setSelectedCourse(course);
     setIsEditDialogOpen(true);
   };
   
-  // Check if user can edit a course
+  const handleDeleteCourse = async (id: string) => {
+    const courseToDelete = courses.find(course => course.id === id);
+    if (courseToDelete?.isPersistent) {
+      toast.error('Հիմնական դասընթացները չեն կարող ջնջվել');
+      return;
+    }
+    
+    try {
+      const updatedCourses = courses.filter(course => course.id !== id);
+      setCourses(updatedCourses);
+      
+      const { error } = await fetch(`/api/courses/${id}`, {
+        method: 'DELETE',
+      })
+      .then(res => res.json());
+      
+      if (error) throw new Error(error);
+      
+      localStorage.setItem('professionalCourses', JSON.stringify(updatedCourses));
+      
+      toast.success('Դասընթացը հաջողությամբ ջնջվել է');
+    } catch (error) {
+      console.error('Error deleting course:', error);
+      toast.error('Դասընթացի ջնջման ժամանակ սխալ է տեղի ունեցել');
+      
+      const updatedCourses = await fetchAllCourses();
+      setCourses(updatedCourses);
+    }
+  };
+  
   const canEditCourse = (course: ProfessionalCourse) => {
     return user && (user.role === 'admin' || course.createdBy === user.name);
   };
 
   return (
-    <section className="py-16 bg-white">
+    <section className={`py-8 ${!isAdminView ? 'bg-white' : ''}`}>
       <div className="container mx-auto px-4">
-        <FadeIn>
-          <h2 className="text-3xl font-bold mb-2 text-center">
-            Ծրագրավորման դասընթացներ
-          </h2>
-        </FadeIn>
+        {!isAdminView && (
+          <>
+            <FadeIn>
+              <h2 className="text-3xl font-bold mb-2 text-center">
+                Ծրագրավորման դասընթացներ
+              </h2>
+            </FadeIn>
+            
+            <FadeIn delay="delay-100">
+              <p className="text-muted-foreground text-center max-w-2xl mx-auto mb-8">
+                Ծրագրավորման դասընթացներ նախատեսված սկսնակների համար
+              </p>
+            </FadeIn>
+          </>
+        )}
         
-        <FadeIn delay="delay-100">
-          <p className="text-muted-foreground text-center max-w-2xl mx-auto mb-8">
-            Ծրագրավորման դասընթացներ նախատեսված սկսնակների համար
-          </p>
-        </FadeIn>
+        {isAdminView && user && (user.role === 'admin' || user.role === 'instructor') && (
+          <div className="flex justify-end mb-6">
+            <Button 
+              onClick={() => setIsAddDialogOpen(true)}
+              className="flex items-center gap-2"
+            >
+              <Plus size={16} />
+              Ավելացնել դասընթաց
+            </Button>
+          </div>
+        )}
         
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {courses.map((course) => (
@@ -153,7 +230,15 @@ const ProfessionalCoursesSection: React.FC = () => {
                   <span>{course.institution}</span>
                 </div>
 
-                {canEditCourse(course) && (
+                {course.isPersistent && (
+                  <div className="absolute top-4 right-4 z-10">
+                    <div className="bg-gray-100 px-2 py-1 rounded-full flex items-center">
+                      <Lock size={12} className="text-gray-500" />
+                    </div>
+                  </div>
+                )}
+
+                {canEditCourse(course) && !course.isPersistent && (
                   <div className="absolute top-4 right-4 z-10">
                     <Button 
                       variant="outline" 
@@ -177,7 +262,6 @@ const ProfessionalCoursesSection: React.FC = () => {
                         alt={course.title}
                         className="w-full h-full object-cover"
                         onError={(e) => {
-                          // Fallback to icon if image fails to load
                           e.currentTarget.style.display = 'none';
                           const iconElement = document.getElementById(`course-icon-${course.id}`);
                           if (iconElement) iconElement.style.display = 'block';
@@ -206,28 +290,53 @@ const ProfessionalCoursesSection: React.FC = () => {
                 </CardContent>
                 
                 <CardFooter className="pt-4">
-                  <Button 
-                    variant="outline"
-                    className="w-full"
-                    asChild
-                  >
-                    <Link to={`/course/${course.id}`}>
-                      Մանրամասն
-                    </Link>
-                  </Button>
+                  {isAdminView && user && (user.role === 'admin' || user.role === 'instructor') && !course.isPersistent && (
+                    <div className="w-full flex justify-between gap-2">
+                      <Button 
+                        variant="outline"
+                        className="flex-1"
+                        asChild
+                      >
+                        <Link to={`/course/${course.id}`}>
+                          Դիտել
+                        </Link>
+                      </Button>
+                      <Button 
+                        variant="destructive"
+                        size="icon"
+                        onClick={() => handleDeleteCourse(course.id)}
+                      >
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 6h18"></path><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"></path><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"></path></svg>
+                      </Button>
+                    </div>
+                  )}
+                  
+                  {(!isAdminView || !(user && (user.role === 'admin' || user.role === 'instructor'))) && (
+                    <Button 
+                      variant="outline"
+                      className="w-full"
+                      asChild
+                    >
+                      <Link to={`/course/${course.id}`}>
+                        Մանրամասն
+                      </Link>
+                    </Button>
+                  )}
                 </CardFooter>
               </Card>
             </FadeIn>
           ))}
         </div>
 
-        <div className="flex justify-center mt-12">
-          <Button asChild variant="outline">
-            <Link to="/courses">
-              Դիտել բոլոր դասընթացները
-            </Link>
-          </Button>
-        </div>
+        {!isAdminView && (
+          <div className="flex justify-center mt-12">
+            <Button asChild variant="outline">
+              <Link to="/courses">
+                Դիտել բոլոր դասընթացները
+              </Link>
+            </Button>
+          </div>
+        )}
       </div>
 
       {selectedCourse && (
@@ -239,6 +348,12 @@ const ProfessionalCoursesSection: React.FC = () => {
           handleEditCourse={handleEditCourse}
         />
       )}
+      
+      <AddProfessionalCourseDialog 
+        isOpen={isAddDialogOpen}
+        setIsOpen={setIsAddDialogOpen}
+        onAddCourse={handleAddCourse}
+      />
     </section>
   );
 };
