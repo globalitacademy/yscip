@@ -1,203 +1,76 @@
-import { useState } from 'react';
-import { toast } from 'sonner';
-import { Course } from './types';
-import { useAuth } from '@/contexts/AuthContext';
-import { useSupabaseCourses } from './useSupabaseCourses';
-import { v4 as uuidv4 } from 'uuid';
-import { supabase } from '@/integrations/supabase/client';
 
-export const mockSpecializations = ['Ծրագրավորում', 'Տվյալագիտություն', 'Դիզայն', 'Մարկետինգ', 'Բիզնես վերլուծություն'];
+import { Course } from './types';
+import { useSupabaseCourses } from './useSupabaseCourses';
+import { useCourseState } from './hooks/useCourseState';
+import { useModuleManagement } from './hooks/useModuleManagement';
+import { useCourseOperations, mockSpecializations } from './hooks/useCourseOperations';
+
+export { mockSpecializations };
 
 export const useCourseManagement = () => {
-  const { user } = useAuth();
+  // Get course data and loading state from Supabase
   const { 
     courses, 
     userCourses, 
-    isLoading, 
-    addCourse: addSupabaseCourse, 
-    updateCourse: updateSupabaseCourse, 
-    deleteCourse: deleteSupabaseCourse 
+    isLoading
   } = useSupabaseCourses();
   
-  const [selectedCourse, setSelectedCourse] = useState<Course | null>(null);
-  const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
-  const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
-  const [newCourse, setNewCourse] = useState<Partial<Course>>({
-    title: '',
-    description: '',
-    specialization: '',
-    duration: '',
-    modules: [],
-    createdBy: user?.id || '',
-    price: '',
-    institution: 'Qolej',
-    subtitle: 'ԴԱՍԸՆԹԱՑ'
-  });
-  const [newModule, setNewModule] = useState('');
+  // Get course state from custom hook
+  const {
+    selectedCourse,
+    setSelectedCourse,
+    isAddDialogOpen,
+    setIsAddDialogOpen,
+    isEditDialogOpen,
+    setIsEditDialogOpen,
+    newCourse,
+    setNewCourse,
+    newModule,
+    setNewModule
+  } = useCourseState();
 
-  const handleAddCourse = async () => {
-    if (!newCourse.title || !newCourse.description || !newCourse.duration || !newCourse.price) {
-      toast.error('Լրացրեք բոլոր պարտադիր դաշտերը');
-      return;
-    }
+  // Get module management functions from custom hook
+  const {
+    handleAddModule: baseHandleAddModule,
+    handleRemoveModule,
+    handleAddModuleToEdit: baseHandleAddModuleToEdit,
+    handleRemoveModuleFromEdit
+  } = useModuleManagement(
+    newCourse,
+    setNewCourse,
+    selectedCourse,
+    setSelectedCourse
+  );
 
-    const courseId = uuidv4();
-    
-    const courseToAdd = {
-      id: courseId,
-      title: newCourse.title,
-      description: newCourse.description,
-      specialization: newCourse.specialization,
-      duration: newCourse.duration,
-      price: newCourse.price,
-      institution: newCourse.institution || 'Qolej',
-      subtitle: newCourse.subtitle || 'ԴԱՍԸՆԹԱՑ',
-      created_by: user?.id || 'admin',
-      color: 'text-amber-500', // Default color
-      icon_name: 'code',       // Default icon
-      button_text: 'Դիտել'
-    };
-
-    try {
-      const { error } = await supabase
-        .from('courses')
-        .insert(courseToAdd);
-      
-      if (error) throw error;
-      
-      if (newCourse.modules && newCourse.modules.length > 0) {
-        const { error: modulesError } = await supabase
-          .from('courses')
-          .update({ modules: newCourse.modules })
-          .eq('id', courseId);
-          
-        if (modulesError) {
-          console.error('Error adding modules:', modulesError);
-          // Continue anyway since the course was created
-        }
-      }
-      
-      toast.success('Դասընթացը հաջողությամբ ավելացվել է');
-      
-      setNewCourse({
-        title: '',
-        description: '',
-        specialization: '',
-        duration: '',
-        modules: [],
-        createdBy: user?.id || '',
-        price: '',
-        institution: 'Qolej',
-        subtitle: 'ԴԱՍԸՆԹԱՑ'
-      });
-      setIsAddDialogOpen(false);
-      
-      window.location.reload();
-    } catch (error) {
-      console.error('Error adding course:', error);
-      toast.error('Չհաջողվեց ավելացնել դասընթացը');
-    }
-  };
-
-  const handleEditCourse = async () => {
-    if (!selectedCourse) return;
-    
-    if (!selectedCourse.title || !selectedCourse.description || !selectedCourse.duration || !selectedCourse.price) {
-      toast.error('Լրացրեք բոլոր պարտադիր դաշտերը');
-      return;
-    }
-
-    try {
-      const { error } = await supabase
-        .from('courses')
-        .update({
-          title: selectedCourse.title,
-          description: selectedCourse.description,
-          specialization: selectedCourse.specialization,
-          duration: selectedCourse.duration,
-          price: selectedCourse.price,
-          institution: selectedCourse.institution,
-          modules: selectedCourse.modules,
-          updated_at: new Date().toISOString()
-        })
-        .eq('id', selectedCourse.id);
-        
-      if (error) throw error;
-      
-      toast.success('Դասընթացը հաջողությամբ թարմացվել է');
-      setIsEditDialogOpen(false);
-      
-      window.location.reload();
-    } catch (error) {
-      console.error('Error updating course:', error);
-      toast.error('Չհաջողվեց թարմացնել դասընթացը');
-    }
-  };
-
-  const handleEditInit = (course: Course) => {
-    setSelectedCourse({...course});
-    setIsEditDialogOpen(true);
-  };
-
+  // Wrapper functions that use the current newModule state
   const handleAddModule = () => {
-    if (!newModule) return;
-    setNewCourse({
-      ...newCourse,
-      modules: [...(newCourse.modules || []), newModule]
-    });
+    baseHandleAddModule(newModule);
     setNewModule('');
-  };
-
-  const handleRemoveModule = (index: number) => {
-    const updatedModules = [...(newCourse.modules || [])];
-    updatedModules.splice(index, 1);
-    setNewCourse({
-      ...newCourse,
-      modules: updatedModules
-    });
   };
 
   const handleAddModuleToEdit = () => {
-    if (!newModule || !selectedCourse) return;
-    setSelectedCourse({
-      ...selectedCourse,
-      modules: [...(selectedCourse.modules || []), newModule]
-    });
+    baseHandleAddModuleToEdit(newModule);
     setNewModule('');
   };
 
-  const handleRemoveModuleFromEdit = (index: number) => {
-    if (!selectedCourse) return;
-    const updatedModules = [...(selectedCourse.modules || [])];
-    updatedModules.splice(index, 1);
-    setSelectedCourse({
-      ...selectedCourse,
-      modules: updatedModules
-    });
-  };
+  // Get course CRUD operations from custom hook
+  const {
+    handleAddCourse,
+    handleEditCourse,
+    handleDeleteCourse
+  } = useCourseOperations(
+    courses,
+    setIsAddDialogOpen,
+    setIsEditDialogOpen,
+    newCourse,
+    setNewCourse,
+    selectedCourse
+  );
 
-  const handleDeleteCourse = async (id: string) => {
-    const courseToDelete = courses.find(course => course.id === id);
-    
-    if (courseToDelete && (user?.role === 'admin' || courseToDelete.createdBy === user?.id)) {
-      try {
-        const { error } = await supabase
-          .from('courses')
-          .delete()
-          .eq('id', id);
-          
-        if (error) throw error;
-        
-        toast.success('Դասընթացը հաջողությամբ հեռացվել է');
-        
-        window.location.reload();
-      } catch (error) {
-        console.error('Error deleting course:', error);
-        toast.error('Չհաջողվեց հեռացնել դասընթացը');
-      }
-    } else {
-      toast.error('Դուք չունեք իրավունք ջնջելու այս դասընթացը');
-    }
+  // Function to initialize edit mode for a course
+  const handleEditInit = (course: Course) => {
+    setSelectedCourse({...course});
+    setIsEditDialogOpen(true);
   };
 
   return {
