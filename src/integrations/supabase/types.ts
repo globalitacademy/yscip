@@ -273,6 +273,62 @@ export type Database = {
         }
         Relationships: []
       }
+      group_students: {
+        Row: {
+          created_at: string | null
+          group_id: string
+          id: string
+          student_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          group_id: string
+          id?: string
+          student_id: string
+        }
+        Update: {
+          created_at?: string | null
+          group_id?: string
+          id?: string
+          student_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "group_students_group_id_fkey"
+            columns: ["group_id"]
+            isOneToOne: false
+            referencedRelation: "groups"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      groups: {
+        Row: {
+          course: string
+          created_at: string | null
+          id: string
+          lecturer_id: string
+          name: string
+          updated_at: string | null
+        }
+        Insert: {
+          course: string
+          created_at?: string | null
+          id?: string
+          lecturer_id: string
+          name: string
+          updated_at?: string | null
+        }
+        Update: {
+          course?: string
+          created_at?: string | null
+          id?: string
+          lecturer_id?: string
+          name?: string
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
       notifications: {
         Row: {
           created_at: string

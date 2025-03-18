@@ -135,7 +135,7 @@ const GroupManagement: React.FC = () => {
       }
       
       if (data && data.length > 0) {
-        setGroups(prev => [...prev, data[0]]);
+        setGroups(prev => [...prev, data[0] as Group]);
         toast.success('Խումբը հաջողությամբ ավելացվել է');
         setNewGroup({
           name: '',
@@ -185,15 +185,21 @@ const GroupManagement: React.FC = () => {
         return;
       }
       
+      // Fetch the newly created record to get its ID
+      const { data: newRecordData } = await supabase
+        .from('group_students')
+        .select('*')
+        .eq('group_id', selectedGroup.id)
+        .eq('student_id', selectedStudent)
+        .single();
+      
       // Update local state
-      setGroupStudents(prev => [
-        ...prev, 
-        { 
-          id: `${Date.now()}`, 
-          group_id: selectedGroup.id, 
-          student_id: selectedStudent 
-        }
-      ]);
+      if (newRecordData) {
+        setGroupStudents(prev => [
+          ...prev, 
+          newRecordData as GroupStudent
+        ]);
+      }
       
       // Update user's group in users table
       await supabase
@@ -237,9 +243,7 @@ const GroupManagement: React.FC = () => {
       }
       
       // Update local state
-      setGroupStudents(prev => prev.filter(gs => 
-        !(gs.group_id === selectedGroup.id && gs.student_id === studentId)
-      ));
+      setGroupStudents(prev => prev.filter(gs => gs.id !== recordToDelete.id));
       
       // Update user's group in users table
       await supabase
