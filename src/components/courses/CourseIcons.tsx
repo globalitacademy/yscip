@@ -27,4 +27,4 @@ export const PythonLogo: React.FC<{ className?: string }> = ({ className }) => {
   );
 };
 
-export { CodeIcon as Code, FileCode as FileJs, Coffee };
+export { CodeIcon as Code, FileCode, Coffee };

@@ -39,7 +39,7 @@ const CourseDetailsPage: React.FC = () => {
           id: data.id,
           title: data.title,
           description: data.description || '',
-          specialization: data.specialization,
+          specialization: data.specialization || undefined,
           duration: data.duration,
           modules: data.modules || [],
           createdBy: data.created_by || 'unknown',

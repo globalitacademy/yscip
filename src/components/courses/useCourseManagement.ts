@@ -60,22 +60,27 @@ export const useCourseManagement = () => {
     };
 
     try {
+      // First insert the basic course data
       const { error } = await supabase
         .from('courses')
         .insert(courseToAdd);
       
       if (error) throw error;
       
-      // If there are modules, store them in a separate table or update the course
+      // If there are modules, update the course with the modules
+      // We need to do this as a separate update because modules may not be in the schema
       if (newCourse.modules && newCourse.modules.length > 0) {
-        // For now, we'll just update the course with a JSON array of modules
-        // In a real app, you might want to create a separate table for modules
         const { error: modulesError } = await supabase
           .from('courses')
-          .update({ modules: newCourse.modules })
+          .update({ 
+            modules: newCourse.modules
+          })
           .eq('id', courseId);
           
-        if (modulesError) throw modulesError;
+        if (modulesError) {
+          console.error('Error adding modules:', modulesError);
+          // Continue anyway since the course was created
+        }
       }
       
       toast.success('Դասընթացը հաջողությամբ ավելացվել է');

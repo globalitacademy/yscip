@@ -30,9 +30,9 @@ const CoursesSection: React.FC = () => {
           id: course.id,
           title: course.title,
           description: course.description || '',
-          specialization: course.specialization,
+          specialization: course.specialization || undefined,
           duration: course.duration,
-          modules: [], // This field doesn't exist in DB
+          modules: course.modules || [],
           createdBy: course.created_by || 'unknown',
           color: course.color,
           button_text: course.button_text,

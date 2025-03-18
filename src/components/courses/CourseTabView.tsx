@@ -52,7 +52,7 @@ const CourseTabView: React.FC = () => {
 
       <EditCourseDialog
         isOpen={isEditDialogOpen}
-        setIsOpen={setIsEditDialogOpen}
+        onClose={() => setIsEditDialogOpen(false)}
         selectedCourse={selectedCourse}
         setSelectedCourse={setSelectedCourse}
         newModule={newModule}

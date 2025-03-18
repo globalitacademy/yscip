@@ -4,7 +4,8 @@ import { Card, CardContent, CardFooter } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Course } from './types';
 import { useNavigate } from 'react-router-dom';
-import { Code, PythonLogo, Coffee, FileJs } from 'lucide-react';
+import { Code, Coffee, FileCode } from 'lucide-react';
+import { PythonLogo } from './CourseIcons';
 
 interface CourseCardProps {
   course: Course;
@@ -34,7 +35,7 @@ const CourseCard: React.FC<CourseCardProps> = ({
     } else if (title.includes('java') && !title.includes('javascript')) {
       return <Coffee className="h-16 w-16" />;
     } else if (title.includes('javascript') || title.includes('js')) {
-      return <FileJs className="h-16 w-16" />;
+      return <FileCode className="h-16 w-16" />;
     }
     
     // Default icon
