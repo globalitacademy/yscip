@@ -26,7 +26,7 @@ const CourseCard: React.FC<CourseCardProps> = ({ course, isAdmin, canEdit, onEdi
       <CardHeader>
         <div className="flex items-start justify-between">
           <div>
-            <CardTitle className="text-xl">{course.name}</CardTitle>
+            <CardTitle className="text-xl">{course.title}</CardTitle>
             {course.specialization && (
               <Badge variant="outline" className="mt-1">
                 {course.specialization}
@@ -41,14 +41,14 @@ const CourseCard: React.FC<CourseCardProps> = ({ course, isAdmin, canEdit, onEdi
       </CardHeader>
       <CardContent className="flex-grow">
         <div className="mt-2">
-          <h4 className="text-sm font-medium mb-2">Մոդուլներ ({course.modules.length})</h4>
+          <h4 className="text-sm font-medium mb-2">Մոդուլներ ({course.modules?.length || 0})</h4>
           <ul className="text-sm space-y-1">
-            {course.modules.slice(0, 3).map((module, index) => (
+            {course.modules?.slice(0, 3).map((module, index) => (
               <li key={index} className="text-muted-foreground">
                 • {module}
               </li>
             ))}
-            {course.modules.length > 3 && (
+            {course.modules && course.modules.length > 3 && (
               <li className="text-muted-foreground">
                 • ... և {course.modules.length - 3} այլ
               </li>

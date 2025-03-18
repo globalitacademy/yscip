@@ -184,11 +184,11 @@ const EducationalCycleInfographic: React.FC = () => {
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
               {courses.map((course) => (
                 <div key={course.id} className="bg-white border rounded-lg shadow-sm p-6 hover:shadow-md transition-shadow">
-                  <h3 className="text-xl font-semibold mb-2">{course.name}</h3>
+                  <h3 className="text-xl font-semibold mb-2">{course.title}</h3>
                   <p className="text-sm text-muted-foreground mb-4">{course.description}</p>
                   <div className="flex items-center text-sm text-muted-foreground">
                     <ClipboardCheck className="w-4 h-4 mr-1" />
-                    <span>{course.modules.length} մոդուլ</span>
+                    <span>{course.modules?.length || 0} մոդուլ</span>
                     <span className="mx-2">•</span>
                     <Clock className="w-4 h-4 mr-1" />
                     <span>{course.duration}</span>

@@ -1,12 +1,11 @@
 
 export interface Course {
   id: string;
-  title: string;  // Changed from name
+  title: string;
   description: string;
-  // specialization is not in DB schema, making it optional
   specialization?: string;
   duration: string;
-  modules?: string[];  // Not in DB schema, making it optional
+  modules?: string[];
   createdBy: string;
   color?: string;
   button_text?: string;
