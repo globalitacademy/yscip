@@ -9,6 +9,7 @@ import CoursePageLayout from '@/components/courses/CourseDetails/CoursePageLayou
 import CourseContent from '@/components/courses/CourseDetails/CourseContent';
 import CourseLoadingState from '@/components/courses/CourseDetails/CourseLoadingState';
 import CourseErrorState from '@/components/courses/CourseDetails/CourseErrorState';
+import { useAuth } from '@/contexts/AuthContext';
 
 // Import the custom hook
 import { useCourseDetails } from '@/components/courses/hooks/useCourseDetails';
@@ -16,12 +17,19 @@ import { useCourseDetails } from '@/components/courses/hooks/useCourseDetails';
 const CourseDetailsPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
+  const { user } = useAuth();
   
   // Use the custom hook
   const { course, isLoading, error, form, updateCourse } = useCourseDetails(id);
 
   const handleGoBack = () => {
-    navigate('/admin/courses');
+    const isAdminUser = user && ['admin', 'lecturer', 'instructor', 'supervisor', 'project_manager'].includes(user.role);
+    
+    if (isAdminUser) {
+      navigate('/admin/courses');
+    } else {
+      navigate('/'); // Navigate to homepage for regular users
+    }
   };
 
   if (isLoading) {
