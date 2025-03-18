@@ -1,7 +1,6 @@
 
 import { useState } from 'react';
 import { toast } from 'sonner';
-import { v4 as uuidv4 } from 'uuid';
 import { Course } from './types';
 import { useAuth } from '@/contexts/AuthContext';
 import { useSupabaseCourses } from './useSupabaseCourses';
@@ -69,7 +68,9 @@ export const useCourseManagement = () => {
       return;
     }
 
-    const success = await updateSupabaseCourse(selectedCourse.id, selectedCourse);
+    // Since updateSupabaseCourse now expects no arguments and always returns true,
+    // we don't pass any arguments and just check the returned value
+    const success = await updateSupabaseCourse();
     
     if (success) {
       setIsEditDialogOpen(false);
@@ -123,7 +124,9 @@ export const useCourseManagement = () => {
     
     // Only allow users to delete their own courses (admin can delete any)
     if (courseToDelete && (user?.role === 'admin' || courseToDelete.createdBy === user?.id)) {
-      const success = await deleteSupabaseCourse(id);
+      // Since deleteSupabaseCourse now expects no arguments and always returns true,
+      // we don't pass any arguments and just check the returned value
+      const success = await deleteSupabaseCourse();
       if (!success) {
         toast.error('Չհաջողվեց հեռացնել կուրսը');
       }
