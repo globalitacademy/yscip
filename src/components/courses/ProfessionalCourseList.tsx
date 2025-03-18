@@ -41,7 +41,7 @@ const ProfessionalCourseList: React.FC<ProfessionalCourseListProps> = ({
                 key={course.id} 
                 course={course} 
                 isAdmin={isAdmin}
-                canEdit={isAdmin || course.createdBy === user?.id}
+                canEdit={isAdmin || course.created_by === user?.name}
                 onEdit={onEdit} 
                 onDelete={onDelete} 
               />

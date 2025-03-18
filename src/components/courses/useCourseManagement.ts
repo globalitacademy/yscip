@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { toast } from 'sonner';
 import { v4 as uuidv4 } from 'uuid';
@@ -629,11 +628,11 @@ export const useCourseManagement = () => {
             icon_name: iconName,
             duration: course.duration,
             price: course.price,
-            button_text: course.buttonText || 'Դիտել',
+            button_text: course.button_text || 'Դիտել',
             color: course.color || 'text-amber-500',
-            created_by: course.createdBy || 'Unknown',
+            created_by: course.created_by || 'Unknown',
             institution: course.institution || 'ՀՊՏՀ',
-            image_url: course.imageUrl,
+            image_url: course.image_url,
             description: course.description,
             is_persistent: true
           })
