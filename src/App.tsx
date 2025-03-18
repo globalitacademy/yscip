@@ -5,7 +5,6 @@ import Index from '@/pages/Index';
 import Login from '@/pages/Login';
 import VerifyEmail from '@/pages/VerifyEmail';
 import ProjectDetails from '@/pages/ProjectDetails';
-import CourseDetails from '@/pages/CourseDetails';
 import AdminDashboard from '@/pages/AdminDashboard';
 import UserManagementPage from '@/pages/UserManagementPage';
 import GroupsPage from '@/pages/GroupsPage';
@@ -26,7 +25,6 @@ import ReportsPage from '@/pages/ReportsPage';
 import ProjectSubmissionPage from '@/pages/ProjectSubmissionPage';
 import NotFound from '@/pages/NotFound';
 import ModulesPage from './pages/ModulesPage';
-import AdminProjectsPage from './pages/AdminProjectsPage';
 import { AuthProvider } from '@/contexts/AuthContext';
 import { ProjectProvider } from '@/contexts/ProjectContext';
 import { Toaster } from "@/components/ui/toaster"
@@ -42,7 +40,6 @@ function App() {
             <Route path="/login" element={<Login />} />
             <Route path="/verify" element={<VerifyEmail />} />
             <Route path="/project/:id" element={<ProjectDetails />} />
-            <Route path="/course/:id" element={<CourseDetails />} />
             
             {/* Redirect /admin to /admin/dashboard */}
             <Route path="/admin" element={<Navigate to="/admin/dashboard" replace />} />
@@ -58,7 +55,6 @@ function App() {
             <Route path="/admin/specializations" element={<SpecializationsPage />} />
             <Route path="/admin/organizations" element={<OrganizationsPage />} />
             <Route path="/admin/projects" element={<ProjectManagementPage />} />
-            <Route path="/admin/admin-projects" element={<AdminProjectsPage />} />
             <Route path="/admin/courses" element={<CoursesPage />} />
             <Route path="/admin/modules" element={<ModulesPage />} />
             <Route path="/admin/project-proposals" element={<ProjectProposalsPage />} />

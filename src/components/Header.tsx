@@ -6,15 +6,6 @@ import UserMenu from '@/components/UserMenu';
 import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
 import { LayoutDashboard, GraduationCap } from 'lucide-react';
-import {
-  NavigationMenu,
-  NavigationMenuContent,
-  NavigationMenuItem,
-  NavigationMenuLink,
-  NavigationMenuList,
-  NavigationMenuTrigger,
-  navigationMenuTriggerStyle,
-} from "@/components/ui/navigation-menu";
 
 interface HeaderProps {
   className?: string;
@@ -23,7 +14,9 @@ interface HeaderProps {
 const Header: React.FC<HeaderProps> = ({
   className
 }) => {
-  const { user } = useAuth();
+  const {
+    user
+  } = useAuth();
 
   // Define role-based navigation
   const getRoleNavigation = () => {
@@ -70,12 +63,6 @@ const Header: React.FC<HeaderProps> = ({
               <span className="text-xl font-bold text-primary">ՈՒԿՀ</span>
             </div>
           </Link>
-          
-          <NavigationMenu className="hidden md:flex">
-            <NavigationMenuList>
-              {/* Navigation menu items for Projects and Courses have been removed */}
-            </NavigationMenuList>
-          </NavigationMenu>
           
           {getRoleNavigation()}
         </div>

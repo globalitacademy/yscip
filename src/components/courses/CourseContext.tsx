@@ -2,7 +2,6 @@
 import React, { createContext, useContext, ReactNode } from 'react';
 import { useCourseManagement } from './useCourseManagement';
 import { Course } from './types';
-import { ProfessionalCourse } from './types/ProfessionalCourse';
 
 type CourseContextType = ReturnType<typeof useCourseManagement>;
 
