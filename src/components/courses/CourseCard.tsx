@@ -24,8 +24,19 @@ const CourseCard: React.FC<CourseCardProps> = ({
 }) => {
   const navigate = useNavigate();
   
-  // Function to get icon based on course name or title
+  // Function to get icon based on course icon_name or title
   const getIcon = () => {
+    if (course.icon_name) {
+      if (course.icon_name.toLowerCase() === 'code') {
+        return <Code className="h-16 w-16" />;
+      } else if (course.icon_name.toLowerCase() === 'filecode') {
+        return <FileCode className="h-16 w-16" />;
+      } else if (course.icon_name.toLowerCase() === 'coffee') {
+        return <Coffee className="h-16 w-16" />;
+      }
+    }
+    
+    // Fallback based on title
     const title = course.title.toLowerCase();
     
     if (title.includes('web') || title.includes('front') || title.includes('html')) {
@@ -52,20 +63,20 @@ const CourseCard: React.FC<CourseCardProps> = ({
         {getIcon()}
         
         <h3 className="mt-4 text-xl font-semibold text-amber-500">{course.title}</h3>
-        <p className="text-sm uppercase text-gray-600 mt-1">ԴԱՍԸՆԹԱՑ</p>
+        <p className="text-sm uppercase text-gray-600 mt-1">{course.subtitle || 'ԴԱՍԸՆԹԱՑ'}</p>
         
         <Button 
           variant="outline" 
           className="mt-6 rounded-full border-gray-300 hover:bg-amber-50 hover:text-amber-600 hover:border-amber-300 transition-colors"
           onClick={handleViewDetails}
         >
-          Դիտել
+          {course.button_text || 'Դիտել'}
         </Button>
       </div>
       
       <CardFooter className="flex justify-between items-center p-4 border-t bg-gray-50">
-        <div className="text-sm text-gray-600">{course.duration} ամիս</div>
-        <div className="text-sm font-medium text-gray-800">{course.price} ֏</div>
+        <div className="text-sm text-gray-600">{course.duration}</div>
+        <div className="text-sm font-medium text-gray-800">{course.price}</div>
       </CardFooter>
       
       {isAdmin && canEdit && onEdit && onDelete && (
