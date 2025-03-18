@@ -456,6 +456,33 @@ export type Database = {
           },
         ]
       }
+      specializations: {
+        Row: {
+          courses: number | null
+          created_at: string | null
+          description: string
+          id: string
+          name: string
+          updated_at: string | null
+        }
+        Insert: {
+          courses?: number | null
+          created_at?: string | null
+          description: string
+          id?: string
+          name: string
+          updated_at?: string | null
+        }
+        Update: {
+          courses?: number | null
+          created_at?: string | null
+          description?: string
+          id?: string
+          name?: string
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
       tasks: {
         Row: {
           assigned_to: string | null

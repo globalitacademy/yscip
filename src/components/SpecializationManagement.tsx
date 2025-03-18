@@ -43,6 +43,7 @@ const SpecializationManagement: React.FC = () => {
   const fetchSpecializations = async () => {
     setIsLoading(true);
     try {
+      // Fetch from the specializations table we just created
       const { data, error } = await supabase
         .from('specializations')
         .select('*')
@@ -53,6 +54,7 @@ const SpecializationManagement: React.FC = () => {
       }
       
       if (data) {
+        // Type assertion after verification to handle the data properly
         setSpecializations(data as Specialization[]);
       }
     } catch (error) {
@@ -83,13 +85,14 @@ const SpecializationManagement: React.FC = () => {
       async () => {
         setIsConfirming(true);
         try {
-          const specializationToAdd: Specialization = {
+          const specializationToAdd = {
             id: uuidv4(),
             name: newSpecialization.name!,
             description: newSpecialization.description!,
             courses: newSpecialization.courses || 0
           };
 
+          // Insert into the specializations table
           const { error } = await supabase
             .from('specializations')
             .insert(specializationToAdd);
@@ -132,6 +135,7 @@ const SpecializationManagement: React.FC = () => {
       async () => {
         setIsConfirming(true);
         try {
+          // Delete from the specializations table
           const { error } = await supabase
             .from('specializations')
             .delete()
