@@ -10,7 +10,7 @@ import {
   CardTitle 
 } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { BookOpen, Clock, School, User, Edit } from 'lucide-react';
+import { BookOpen, Clock, School, User, Edit, Calendar } from 'lucide-react';
 import CourseEnrollment from './CourseEnrollment';
 
 interface CourseViewModeProps {
@@ -29,19 +29,27 @@ const CourseViewMode: React.FC<CourseViewModeProps> = ({
       <CardHeader className="pb-4">
         <div className="flex justify-between items-start">
           <div className="flex-1">
-            <CardTitle className="text-3xl font-bold">{course.title}</CardTitle>
-            <CardDescription className="mt-2 text-lg">{course.subtitle}</CardDescription>
-            
-            <div className="flex flex-wrap gap-2 mt-3">
+            <div className="flex items-center gap-2">
               {course.specialization && (
                 <Badge variant="outline" className="px-3 py-1 font-normal">
                   {course.specialization}
                 </Badge>
               )}
+            </div>
+            <CardTitle className="text-3xl font-bold mt-2">{course.title}</CardTitle>
+            <CardDescription className="mt-2 text-lg">{course.subtitle}</CardDescription>
+            
+            <div className="flex flex-wrap gap-2 mt-3">
               <Badge variant="secondary" className="px-3 py-1 font-normal">
                 <Clock className="h-4 w-4 mr-1" />
                 {course.duration}
               </Badge>
+              {course.institution && (
+                <Badge variant="secondary" className="px-3 py-1 font-normal">
+                  <School className="h-4 w-4 mr-1" />
+                  {course.institution}
+                </Badge>
+              )}
             </div>
           </div>
           
@@ -52,7 +60,9 @@ const CourseViewMode: React.FC<CourseViewModeProps> = ({
                 Խմբագրել
               </Button>
             )}
-            <div className="text-2xl font-bold text-primary">{course.price}</div>
+            {course.price && (
+              <div className="text-2xl font-bold text-primary">{course.price}</div>
+            )}
           </div>
         </div>
       </CardHeader>
@@ -79,6 +89,10 @@ const CourseViewMode: React.FC<CourseViewModeProps> = ({
                   <li className="flex items-center">
                     <User className="h-4 w-4 mr-2 text-muted-foreground" />
                     <span>Դասավանդող: {course.createdBy === 'admin' ? 'Qolej թիմ' : 'Դասախոս'}</span>
+                  </li>
+                  <li className="flex items-center">
+                    <Calendar className="h-4 w-4 mr-2 text-muted-foreground" />
+                    <span>Տևողություն: {course.duration}</span>
                   </li>
                 </ul>
               </CardContent>

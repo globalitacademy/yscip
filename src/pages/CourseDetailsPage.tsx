@@ -1,7 +1,7 @@
 
 import React from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { useAuth } from '@/contexts/AuthContext';
+import { toast } from 'sonner';
 
 // Import components
 import CourseHeader from '@/components/courses/CourseDetails/CourseHeader';
@@ -21,7 +21,7 @@ const CourseDetailsPage: React.FC = () => {
   const { course, isLoading, error, form, updateCourse } = useCourseDetails(id);
 
   const handleGoBack = () => {
-    navigate(-1);
+    navigate('/admin/courses');
   };
 
   if (isLoading) {

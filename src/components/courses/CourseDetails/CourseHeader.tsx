@@ -10,14 +10,16 @@ interface CourseHeaderProps {
 
 const CourseHeader: React.FC<CourseHeaderProps> = ({ handleGoBack }) => {
   return (
-    <Button 
-      variant="ghost" 
-      className="mb-6 pl-0 hover:bg-transparent hover:text-primary"
-      onClick={handleGoBack}
-    >
-      <ArrowLeft className="mr-2 h-4 w-4" />
-      Վերադառնալ
-    </Button>
+    <div className="mb-6">
+      <Button 
+        variant="ghost" 
+        className="pl-0 hover:bg-transparent hover:text-primary flex items-center"
+        onClick={handleGoBack}
+      >
+        <ArrowLeft className="mr-2 h-4 w-4" />
+        Վերադառնալ դասընթացներ
+      </Button>
+    </div>
   );
 };
 
