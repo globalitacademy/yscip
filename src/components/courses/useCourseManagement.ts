@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { toast } from 'sonner';
 import { v4 as uuidv4 } from 'uuid';
@@ -456,7 +455,7 @@ export const useCourseManagement = () => {
     try {
       console.log('Updating course with data:', selectedProfessionalCourse);
       
-      // Prepare the icon name
+      // Ensure we have the icon name
       const iconName = selectedProfessionalCourse.icon_name || 
                       getIconNameFromElement(selectedProfessionalCourse.icon as React.ReactElement);
 
@@ -485,6 +484,8 @@ export const useCourseManagement = () => {
         return;
       }
 
+      // First, delete all related data and then re-insert
+      
       // Handle lessons
       if (selectedProfessionalCourse.lessons) {
         // Delete existing lessons
@@ -573,7 +574,7 @@ export const useCourseManagement = () => {
         }
       }
 
-      // Refresh the courses list
+      // Refresh the courses list to get the updated data
       await fetchProfessionalCourses();
       
       setIsEditDialogOpen(false);
@@ -586,7 +587,13 @@ export const useCourseManagement = () => {
 
   const handleEditProfessionalCourseInit = (course: ProfessionalCourse) => {
     console.log('Editing course:', course);
-    setSelectedProfessionalCourse({...course});
+    // Create a deep copy to avoid reference issues
+    const courseCopy = JSON.parse(JSON.stringify(course));
+    
+    // Re-create the React element for the icon since it can't be stringified
+    courseCopy.icon = getIconFromName(course.icon_name);
+    
+    setSelectedProfessionalCourse(courseCopy);
     setIsEditDialogOpen(true);
   };
 

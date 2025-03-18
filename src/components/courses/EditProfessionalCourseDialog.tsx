@@ -1,5 +1,5 @@
 
-import React from 'react';
+import React, { useEffect } from 'react';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import ProfessionalCourseForm from './ProfessionalCourseForm';
@@ -20,7 +20,19 @@ const EditProfessionalCourseDialog: React.FC<EditProfessionalCourseDialogProps> 
   setSelectedCourse,
   handleEditCourse
 }) => {
+  // Ensure we have a deep copy of the course to prevent reference issues
+  useEffect(() => {
+    if (isOpen && selectedCourse) {
+      console.log("Dialog opened with course:", selectedCourse);
+    }
+  }, [isOpen, selectedCourse]);
+
   if (!selectedCourse) return null;
+  
+  const handleSave = () => {
+    console.log("Saving course with data:", selectedCourse);
+    handleEditCourse();
+  };
   
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
@@ -37,7 +49,7 @@ const EditProfessionalCourseDialog: React.FC<EditProfessionalCourseDialogProps> 
           isEdit={true}
         />
         <DialogFooter>
-          <Button type="submit" onClick={handleEditCourse}>
+          <Button type="submit" onClick={handleSave}>
             Պահպանել
           </Button>
         </DialogFooter>
