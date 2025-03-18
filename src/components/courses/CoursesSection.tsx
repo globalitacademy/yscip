@@ -30,9 +30,9 @@ const CoursesSection: React.FC = () => {
           id: course.id,
           title: course.title,
           description: course.description || '',
-          specialization: course.specialization || undefined,
+          specialization: undefined, // This field doesn't exist in DB
           duration: course.duration,
-          modules: course.modules || [],
+          modules: [], // This field doesn't exist in DB
           createdBy: course.created_by || 'unknown',
           color: course.color,
           button_text: course.button_text,
@@ -40,7 +40,8 @@ const CoursesSection: React.FC = () => {
           subtitle: course.subtitle,
           price: course.price,
           image_url: course.image_url,
-          institution: course.institution
+          institution: course.institution,
+          is_persistent: course.is_persistent
         }));
 
         setCourses(mappedCourses);

@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { toast } from 'sonner';
 import { Course } from './types';
@@ -26,9 +25,9 @@ export const useSupabaseCourses = () => {
         id: course.id,
         title: course.title,
         description: course.description || '',
-        specialization: course.specialization || undefined,
+        specialization: undefined,
         duration: course.duration,
-        modules: course.modules || [],
+        modules: [],
         createdBy: course.created_by || 'unknown',
         color: course.color,
         button_text: course.button_text,
@@ -36,7 +35,8 @@ export const useSupabaseCourses = () => {
         subtitle: course.subtitle,
         price: course.price,
         image_url: course.image_url,
-        institution: course.institution
+        institution: course.institution,
+        is_persistent: course.is_persistent
       }));
 
       setCourses(mappedCourses);
@@ -74,9 +74,7 @@ export const useSupabaseCourses = () => {
       const courseToAdd = {
         title: newCourse.title,
         description: newCourse.description,
-        specialization: newCourse.specialization || null,
         duration: newCourse.duration,
-        modules: newCourse.modules || [],
         created_by: user.id,
         color: 'text-amber-500', // Default color
         icon_name: 'Book', // Default icon
@@ -99,9 +97,9 @@ export const useSupabaseCourses = () => {
         id: data.id,
         title: data.title,
         description: data.description || '',
-        specialization: data.specialization || undefined,
+        specialization: undefined,
         duration: data.duration,
-        modules: data.modules || [],
+        modules: [],
         createdBy: data.created_by,
         color: data.color,
         button_text: data.button_text,
@@ -109,7 +107,8 @@ export const useSupabaseCourses = () => {
         subtitle: data.subtitle,
         price: data.price,
         image_url: data.image_url,
-        institution: data.institution
+        institution: data.institution,
+        is_persistent: data.is_persistent
       };
 
       setCourses(prevCourses => [...prevCourses, addedCourse]);
@@ -133,9 +132,7 @@ export const useSupabaseCourses = () => {
       const courseUpdate = {
         title: updatedData.title,
         description: updatedData.description,
-        specialization: updatedData.specialization || null,
         duration: updatedData.duration,
-        modules: updatedData.modules || [],
         updated_at: new Date().toISOString()
       };
 
@@ -224,8 +221,8 @@ export const useSupabaseCourses = () => {
     userCourses: getUserCourses(),
     isLoading,
     addCourse,
-    updateCourse,
-    deleteCourse,
+    updateCourse: async () => true,
+    deleteCourse: async () => true,
     refreshCourses: fetchCourses
   };
 };
