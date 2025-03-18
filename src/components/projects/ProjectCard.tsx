@@ -7,8 +7,6 @@ import { Edit, Trash, Image, User, Building } from 'lucide-react';
 import { ProjectTheme } from '@/data/projectThemes';
 import { useAuth } from '@/contexts/AuthContext';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
-import ProjectImageEditor from './ProjectImageEditor';
-import { getProjectImage } from '@/lib/getProjectImage';
 
 interface ProjectCardProps {
   project: ProjectTheme;
@@ -24,7 +22,6 @@ const ProjectCard: React.FC<ProjectCardProps> = ({
   onDelete 
 }) => {
   const { user } = useAuth();
-  const [isImageEditorOpen, setIsImageEditorOpen] = React.useState(false);
   
   // Check if the project was created by the current user
   const isCreatedByCurrentUser = project.createdBy === user?.id;
@@ -34,27 +31,11 @@ const ProjectCard: React.FC<ProjectCardProps> = ({
     : 'https://api.dicebear.com/7.x/avataaars/svg?seed=project';
   const creatorType = isCreatedByCurrentUser ? 'user' : 'organization';
 
-  const handleImageUpdate = (newImageUrl: string) => {
-    // Create a copy of the project with the new image
-    const updatedProject = { ...project, image: newImageUrl };
-    
-    // Call the parent component's image change handler
-    onImageChange(updatedProject);
-  };
-
-  const handleImageDelete = () => {
-    // Create a copy of the project with empty image
-    const updatedProject = { ...project, image: '' };
-    
-    // Call the parent component's image change handler
-    onImageChange(updatedProject);
-  };
-
   return (
     <Card key={project.id} className="overflow-hidden hover:shadow-md transition-shadow">
       <div className="h-40 sm:h-48 bg-gray-100 relative">
         <img 
-          src={project.image || getProjectImage(project)} 
+          src={project.image || 'https://via.placeholder.com/640x360?text=Նախագծի+նկար'} 
           alt={project.title} 
           className="w-full h-full object-cover"
         />
@@ -112,7 +93,7 @@ const ProjectCard: React.FC<ProjectCardProps> = ({
             className="text-xs"
             onClick={(e) => {
               e.stopPropagation();
-              setIsImageEditorOpen(true);
+              onImageChange(project);
             }}
           >
             <Image className="mr-1 h-3 w-3" />
@@ -132,14 +113,6 @@ const ProjectCard: React.FC<ProjectCardProps> = ({
           </Button>
         </div>
       </CardContent>
-
-      <ProjectImageEditor
-        open={isImageEditorOpen}
-        onOpenChange={setIsImageEditorOpen}
-        project={project}
-        onImageChange={handleImageUpdate}
-        onImageDelete={handleImageDelete}
-      />
     </Card>
   );
 };

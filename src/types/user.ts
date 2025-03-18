@@ -16,5 +16,4 @@ export interface User {
   specialization?: string;
   registrationApproved?: boolean;
   bio?: string;
-  isPersistentAdmin?: boolean; // Added property for admin persistence
 }

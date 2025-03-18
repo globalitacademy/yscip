@@ -6,12 +6,11 @@ import { RefreshCw, CheckCircle } from 'lucide-react';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { useAuth } from '@/contexts/AuthContext';
 import { toast } from 'sonner';
-import { supabase } from '@/integrations/supabase/client';
 
 const AdminReset: React.FC = () => {
   const [isResetting, setIsResetting] = useState(false);
   const [resetSuccess, setResetSuccess] = useState(false);
-  const { resetAdminAccount, user, setUser } = useAuth();
+  const { resetAdminAccount } = useAuth();
   
   const handleResetAdmin = async () => {
     setIsResetting(true);
@@ -22,38 +21,6 @@ const AdminReset: React.FC = () => {
         toast.success('Ադմինիստրատորի հաշիվը վերականգնված է', {
           description: 'Email: gitedu@bk.ru, Գաղտնաբառ: Qolej2025*'
         });
-        
-        // If current user is admin, refresh their data
-        if (user?.email === 'gitedu@bk.ru') {
-          try {
-            const { data: adminData, error } = await supabase
-              .from('users')
-              .select('*')
-              .eq('email', 'gitedu@bk.ru')
-              .single();
-            
-            if (!error && adminData && setUser) {
-              // Create updated admin user with the latest data
-              const updatedAdmin = {
-                id: adminData.id,
-                name: adminData.name,
-                email: adminData.email,
-                role: adminData.role,
-                avatar: adminData.avatar,
-                department: adminData.department,
-                registrationApproved: adminData.registration_approved,
-                isPersistentAdmin: true
-              };
-              
-              // Update current user with fresh data
-              setUser(updatedAdmin);
-              localStorage.setItem('currentUser', JSON.stringify(updatedAdmin));
-              console.log('Admin data updated after reset');
-            }
-          } catch (syncError) {
-            console.error('Error syncing admin data after reset:', syncError);
-          }
-        }
       } else {
         toast.error('Սխալ', {
           description: 'Չհաջողվեց վերականգնել ադմինիստրատորի հաշիվը'

@@ -4,8 +4,6 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import { Button } from '@/components/ui/button';
 import ProfessionalCourseForm from './ProfessionalCourseForm';
 import { ProfessionalCourse } from './types/ProfessionalCourse';
-import { toast } from 'sonner';
-import { saveCourseChanges } from './utils/courseUtils';
 
 interface EditProfessionalCourseDialogProps {
   isOpen: boolean;
@@ -24,31 +22,9 @@ const EditProfessionalCourseDialog: React.FC<EditProfessionalCourseDialogProps> 
 }) => {
   if (!selectedCourse) return null;
   
-  const saveChanges = async () => {
-    if (!selectedCourse) return;
-    
-    try {
-      // Save course to Supabase
-      const success = await saveCourseChanges(selectedCourse);
-      
-      if (success) {
-        // Call the provided edit handler from the parent component
-        handleEditCourse();
-        
-        toast.success('Դասընթացը հաջողությամբ թարմացվել է');
-        setIsOpen(false);
-      } else {
-        toast.error('Դասընթացի պահպանման ժամանակ սխալ է տեղի ունեցել');
-      }
-    } catch (error) {
-      console.error('Error saving course changes:', error);
-      toast.error('Դասընթացի պահպանման ժամանակ սխալ է տեղի ունեցել');
-    }
-  };
-  
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
-      <DialogContent className="sm:max-w-[600px] max-h-[90vh] overflow-y-auto">
+      <DialogContent className="sm:max-w-[600px]">
         <DialogHeader>
           <DialogTitle>Դասընթացի խմբագրում</DialogTitle>
           <DialogDescription>
@@ -61,7 +37,7 @@ const EditProfessionalCourseDialog: React.FC<EditProfessionalCourseDialogProps> 
           isEdit={true}
         />
         <DialogFooter>
-          <Button type="submit" onClick={saveChanges}>
+          <Button type="submit" onClick={handleEditCourse}>
             Պահպանել
           </Button>
         </DialogFooter>

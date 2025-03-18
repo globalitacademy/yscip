@@ -3,8 +3,7 @@ import React from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { ProfessionalCourse } from './types/ProfessionalCourse';
-import { Eye, Pencil, Trash, Lock } from 'lucide-react';
-import { Link } from 'react-router-dom';
+import { Eye, Pencil, Trash } from 'lucide-react';
 
 interface ProfessionalCourseCardProps {
   course: ProfessionalCourse;
@@ -41,22 +40,17 @@ const ProfessionalCourseCard: React.FC<ProfessionalCourseCardProps> = ({
           </div>
         )}
         <div className="mb-2 text-xs uppercase tracking-wide text-gray-500">{course.subtitle}</div>
-        <h3 className="text-xl font-semibold mb-2 flex items-center gap-1">
-          {course.title}
-          {course.isPersistent && <Lock className="h-3 w-3 text-blue-500" />}
-        </h3>
+        <h3 className="text-xl font-semibold mb-2">{course.title}</h3>
         <div className="text-sm text-gray-600 mb-1">Տևողություն: {course.duration}</div>
         <div className="text-sm text-gray-600 mb-1">Արժեք: {course.price}</div>
         <div className="text-sm text-gray-600 mb-4">Հաստատություն: {course.institution}</div>
         
         <div className="flex space-x-2">
-          <Button variant="outline" size="sm" asChild>
-            <Link to={`/courses/${course.id}`}>
-              <Eye className="h-4 w-4 mr-2" /> {course.buttonText}
-            </Link>
+          <Button variant="outline" size="sm">
+            <Eye className="h-4 w-4 mr-2" /> {course.buttonText}
           </Button>
           
-          {(isAdmin || canEdit) && !course.isPersistent && (
+          {(isAdmin || canEdit) && (
             <>
               <Button
                 variant="outline" 
@@ -73,18 +67,6 @@ const ProfessionalCourseCard: React.FC<ProfessionalCourseCardProps> = ({
                 <Trash className="h-4 w-4" />
               </Button>
             </>
-          )}
-          
-          {(isAdmin || canEdit) && course.isPersistent && (
-            <Button
-              variant="outline" 
-              size="sm"
-              asChild
-            >
-              <Link to={`/courses/${course.id}`}>
-                <Pencil className="h-4 w-4 mr-2" /> Տեսնել
-              </Link>
-            </Button>
           )}
         </div>
       </div>

@@ -33,7 +33,7 @@ const AddCourseDialog: React.FC<AddCourseDialogProps> = ({
       <DialogTrigger asChild>
         <Button>Ավելացնել նոր կուրս</Button>
       </DialogTrigger>
-      <DialogContent className="sm:max-w-[500px] max-h-[90vh] overflow-y-auto">
+      <DialogContent className="sm:max-w-[500px]">
         <DialogHeader>
           <DialogTitle>Նոր կուրսի ավելացում</DialogTitle>
           <DialogDescription>

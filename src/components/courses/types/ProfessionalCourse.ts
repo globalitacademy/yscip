@@ -1,11 +1,11 @@
 
-import { ReactElement } from 'react';
+import React from 'react';
 
 export interface ProfessionalCourse {
   id: string;
   title: string;
   subtitle: string;
-  icon: ReactElement;
+  icon: React.ReactElement;
   duration: string;
   price: string;
   buttonText: string;
@@ -14,7 +14,6 @@ export interface ProfessionalCourse {
   institution: string;
   imageUrl?: string;
   description?: string;
-  isPersistent?: boolean;
   lessons?: { title: string; duration: string }[];
   requirements?: string[];
   outcomes?: string[];

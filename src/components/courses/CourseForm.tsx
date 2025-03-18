@@ -5,17 +5,8 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { mockSpecializations } from './useCourseManagement';
 import { Course } from './types';
-
-// Define mockSpecializations locally since it's not exported from useCourseManagement
-const mockSpecializations = [
-  'Վեբ ծրագրավորում',
-  'Մոբայլ հավելվածներ',
-  'Արհեստական բանականություն',
-  'Տվյալների վերլուծություն',
-  'Տեղեկատվական անվտանգություն',
-  'Խաղերի մշակում'
-];
 
 interface CourseFormProps {
   course: Partial<Course>;
