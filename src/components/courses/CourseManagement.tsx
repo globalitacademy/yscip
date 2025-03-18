@@ -4,6 +4,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { CourseProvider } from './CourseContext';
 import CourseHeader from './CourseHeader';
 import CourseTabView from './CourseTabView';
+import { Skeleton } from '@/components/ui/skeleton';
 
 const CourseManagement: React.FC = () => {
   const { user } = useAuth();

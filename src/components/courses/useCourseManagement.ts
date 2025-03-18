@@ -1,50 +1,24 @@
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { toast } from 'sonner';
 import { v4 as uuidv4 } from 'uuid';
 import { Course } from './types';
 import { useAuth } from '@/contexts/AuthContext';
-
-// Mock data
-const mockCourses: Course[] = [
-  {
-    id: '1',
-    name: 'Վեբ ծրագրավորում',
-    description: 'HTML, CSS, JavaScript, React և Node.js օգտագործելով վեբ հավելվածների մշակում',
-    specialization: 'Ծրագրավորում',
-    duration: '4 ամիս',
-    modules: ['HTML/CSS հիմունքներ', 'JavaScript', 'React', 'Node.js/Express', 'Վերջնական նախագիծ'],
-    createdBy: 'admin'
-  },
-  {
-    id: '2',
-    name: 'Մեքենայական ուսուցում',
-    description: 'Ներածություն մեքենայական ուսուցման մեջ՝ օգտագործելով Python և TensorFlow',
-    specialization: 'Տվյալագիտություն',
-    duration: '6 ամիս',
-    modules: ['Python հիմունքներ', 'Տվյալների վերլուծություն', 'Վիճակագրություն', 'Մեքենայական ուսուցման մոդելներ', 'Խորը ուսուցում', 'Վերջնական նախագիծ'],
-    createdBy: 'admin'
-  }
-];
+import { useSupabaseCourses } from './useSupabaseCourses';
 
 export const mockSpecializations = ['Ծրագրավորում', 'Տվյալագիտություն', 'Դիզայն', 'Մարկետինգ', 'Բիզնես վերլուծություն'];
 
-// Initialize courses with mock data if localStorage is empty
-const initializeCourses = (): Course[] => {
-  const storedCourses = localStorage.getItem('courses');
-  if (storedCourses) {
-    try {
-      return JSON.parse(storedCourses);
-    } catch (e) {
-      console.error('Error parsing stored courses:', e);
-    }
-  }
-  return mockCourses;
-};
-
 export const useCourseManagement = () => {
   const { user } = useAuth();
-  const [courses, setCourses] = useState<Course[]>(initializeCourses());
+  const { 
+    courses, 
+    userCourses, 
+    isLoading, 
+    addCourse: addSupabaseCourse, 
+    updateCourse: updateSupabaseCourse, 
+    deleteCourse: deleteSupabaseCourse 
+  } = useSupabaseCourses();
+  
   const [selectedCourse, setSelectedCourse] = useState<Course | null>(null);
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
@@ -58,42 +32,36 @@ export const useCourseManagement = () => {
   });
   const [newModule, setNewModule] = useState('');
 
-  // Get user's courses
-  const userCourses = courses.filter(course => course.createdBy === user?.id);
-
-  const handleAddCourse = () => {
+  const handleAddCourse = async () => {
     if (!newCourse.name || !newCourse.description || !newCourse.duration) {
       toast.error('Լրացրեք բոլոր պարտադիր դաշտերը');
       return;
     }
 
-    const courseToAdd: Course = {
-      id: uuidv4(),
+    const courseToAdd = {
       name: newCourse.name,
       description: newCourse.description,
       specialization: newCourse.specialization,
       duration: newCourse.duration,
-      modules: newCourse.modules || [],
-      createdBy: user?.id || 'unknown'
+      modules: newCourse.modules || []
     };
 
-    const updatedCourses = [...courses, courseToAdd];
-    setCourses(updatedCourses);
-    localStorage.setItem('courses', JSON.stringify(updatedCourses));
+    const success = await addSupabaseCourse(courseToAdd);
     
-    setNewCourse({
-      name: '',
-      description: '',
-      specialization: '',
-      duration: '',
-      modules: [],
-      createdBy: user?.id || ''
-    });
-    setIsAddDialogOpen(false);
-    toast.success('Կուրսը հաջողությամբ ավելացվել է');
+    if (success) {
+      setNewCourse({
+        name: '',
+        description: '',
+        specialization: '',
+        duration: '',
+        modules: [],
+        createdBy: user?.id || ''
+      });
+      setIsAddDialogOpen(false);
+    }
   };
 
-  const handleEditCourse = () => {
+  const handleEditCourse = async () => {
     if (!selectedCourse) return;
     
     if (!selectedCourse.name || !selectedCourse.description || !selectedCourse.duration) {
@@ -101,14 +69,11 @@ export const useCourseManagement = () => {
       return;
     }
 
-    const updatedCourses = courses.map(course => 
-      course.id === selectedCourse.id ? selectedCourse : course
-    );
+    const success = await updateSupabaseCourse(selectedCourse.id, selectedCourse);
     
-    setCourses(updatedCourses);
-    localStorage.setItem('courses', JSON.stringify(updatedCourses));
-    setIsEditDialogOpen(false);
-    toast.success('Կուրսը հաջողությամբ թարմացվել է');
+    if (success) {
+      setIsEditDialogOpen(false);
+    }
   };
 
   const handleEditInit = (course: Course) => {
@@ -153,15 +118,15 @@ export const useCourseManagement = () => {
     });
   };
 
-  const handleDeleteCourse = (id: string) => {
+  const handleDeleteCourse = async (id: string) => {
     const courseToDelete = courses.find(course => course.id === id);
     
     // Only allow users to delete their own courses (admin can delete any)
     if (courseToDelete && (user?.role === 'admin' || courseToDelete.createdBy === user?.id)) {
-      const updatedCourses = courses.filter(course => course.id !== id);
-      setCourses(updatedCourses);
-      localStorage.setItem('courses', JSON.stringify(updatedCourses));
-      toast.success('Կուրսը հաջողությամբ հեռացվել է');
+      const success = await deleteSupabaseCourse(id);
+      if (!success) {
+        toast.error('Չհաջողվեց հեռացնել կուրսը');
+      }
     } else {
       toast.error('Դուք չունեք իրավունք ջնջելու այս կուրսը');
     }
@@ -170,6 +135,7 @@ export const useCourseManagement = () => {
   return {
     courses,
     userCourses,
+    isLoading,
     selectedCourse,
     setSelectedCourse,
     isAddDialogOpen,
