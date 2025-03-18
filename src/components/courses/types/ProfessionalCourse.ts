@@ -6,7 +6,7 @@ export interface ProfessionalCourse {
   title: string;
   subtitle: string;
   icon: React.ReactElement;
-  icon_name: string; // Added to store the icon name in the database
+  icon_name: string; // Used to store the icon name in the database
   duration: string;
   price: string;
   button_text: string;

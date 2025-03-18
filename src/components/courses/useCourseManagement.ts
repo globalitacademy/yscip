@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import { toast } from 'sonner';
 import { v4 as uuidv4 } from 'uuid';
@@ -453,6 +454,8 @@ export const useCourseManagement = () => {
     }
 
     try {
+      console.log('Updating course with data:', selectedProfessionalCourse);
+      
       // Prepare the icon name
       const iconName = selectedProfessionalCourse.icon_name || 
                       getIconNameFromElement(selectedProfessionalCourse.icon as React.ReactElement);
@@ -485,10 +488,14 @@ export const useCourseManagement = () => {
       // Handle lessons
       if (selectedProfessionalCourse.lessons) {
         // Delete existing lessons
-        await supabase
+        const { error: deleteLessonsError } = await supabase
           .from('course_lessons')
           .delete()
           .eq('course_id', selectedProfessionalCourse.id);
+        
+        if (deleteLessonsError) {
+          console.error('Error deleting lessons:', deleteLessonsError);
+        }
         
         // Add updated lessons
         if (selectedProfessionalCourse.lessons.length > 0) {
@@ -511,10 +518,14 @@ export const useCourseManagement = () => {
       // Handle requirements
       if (selectedProfessionalCourse.requirements) {
         // Delete existing requirements
-        await supabase
+        const { error: deleteRequirementsError } = await supabase
           .from('course_requirements')
           .delete()
           .eq('course_id', selectedProfessionalCourse.id);
+        
+        if (deleteRequirementsError) {
+          console.error('Error deleting requirements:', deleteRequirementsError);
+        }
         
         // Add updated requirements
         if (selectedProfessionalCourse.requirements.length > 0) {
@@ -536,10 +547,14 @@ export const useCourseManagement = () => {
       // Handle outcomes
       if (selectedProfessionalCourse.outcomes) {
         // Delete existing outcomes
-        await supabase
+        const { error: deleteOutcomesError } = await supabase
           .from('course_outcomes')
           .delete()
           .eq('course_id', selectedProfessionalCourse.id);
+        
+        if (deleteOutcomesError) {
+          console.error('Error deleting outcomes:', deleteOutcomesError);
+        }
         
         // Add updated outcomes
         if (selectedProfessionalCourse.outcomes.length > 0) {
@@ -570,6 +585,7 @@ export const useCourseManagement = () => {
   };
 
   const handleEditProfessionalCourseInit = (course: ProfessionalCourse) => {
+    console.log('Editing course:', course);
     setSelectedProfessionalCourse({...course});
     setIsEditDialogOpen(true);
   };
