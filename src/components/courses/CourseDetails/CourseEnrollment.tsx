@@ -1,9 +1,10 @@
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
-import { Check, Clock, AlertTriangle } from 'lucide-react';
+import { Check, Clock, AlertTriangle, Loader2 } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
+import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 
 interface CourseEnrollmentProps {
@@ -12,10 +13,63 @@ interface CourseEnrollmentProps {
 
 const CourseEnrollment: React.FC<CourseEnrollmentProps> = ({ courseId }) => {
   const { user } = useAuth();
+  const [isEnrolling, setIsEnrolling] = useState(false);
+  const [isEnrolled, setIsEnrolled] = useState(false);
   
-  const handleEnrollment = () => {
-    // This would typically call an API to enroll the user in the course
-    toast.success('Դուք հաջողությամբ գրանցվել եք դասընթացին');
+  // Check if user is already enrolled
+  useEffect(() => {
+    const checkEnrollment = async () => {
+      if (!user) return;
+      
+      try {
+        const { data, error } = await supabase
+          .from('course_enrollments')
+          .select('*')
+          .eq('course_id', courseId)
+          .eq('user_id', user.id)
+          .single();
+        
+        if (error && error.code !== 'PGRST116') {
+          console.error('Error checking enrollment:', error);
+          return;
+        }
+        
+        setIsEnrolled(!!data);
+      } catch (err) {
+        console.error('Error checking enrollment status:', err);
+      }
+    };
+    
+    checkEnrollment();
+  }, [courseId, user]);
+  
+  const handleEnrollment = async () => {
+    if (!user) {
+      toast.error('Խնդրում ենք մուտք գործել համակարգ՝ դասընթացին գրանցվելու համար');
+      return;
+    }
+    
+    setIsEnrolling(true);
+    
+    try {
+      const { error } = await supabase
+        .from('course_enrollments')
+        .insert({
+          course_id: courseId,
+          user_id: user.id,
+          status: 'enrolled'
+        });
+      
+      if (error) throw error;
+      
+      setIsEnrolled(true);
+      toast.success('Դուք հաջողությամբ գրանցվել եք դասընթացին');
+    } catch (err) {
+      console.error('Error enrolling in course:', err);
+      toast.error('Չհաջողվեց գրանցվել դասընթացին');
+    } finally {
+      setIsEnrolling(false);
+    }
   };
 
   const isStudent = user && user.role === 'student';
@@ -35,12 +89,27 @@ const CourseEnrollment: React.FC<CourseEnrollmentProps> = ({ courseId }) => {
             </div>
             
             <div className="mt-auto">
-              <Button 
-                onClick={handleEnrollment} 
-                className="w-full"
-              >
-                Գրանցվել դասընթացին
-              </Button>
+              {isEnrolled ? (
+                <div className="bg-green-50 text-green-700 p-3 rounded-md text-sm flex items-center">
+                  <Check className="h-4 w-4 mr-2" />
+                  Դուք արդեն գրանցված եք այս դասընթացին
+                </div>
+              ) : (
+                <Button 
+                  onClick={handleEnrollment} 
+                  className="w-full"
+                  disabled={isEnrolling}
+                >
+                  {isEnrolling ? (
+                    <>
+                      <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                      Գրանցում...
+                    </>
+                  ) : (
+                    'Գրանցվել դասընթացին'
+                  )}
+                </Button>
+              )}
             </div>
           </>
         ) : (
