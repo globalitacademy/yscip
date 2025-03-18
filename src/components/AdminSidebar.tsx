@@ -1,17 +1,9 @@
 
 import React from 'react';
 import { useAuth } from '@/contexts/AuthContext';
-import { 
-  Sidebar, 
-  SidebarContent, 
-  SidebarHeader,
-  SidebarMenu,
-  SidebarMenuItem,
-  SidebarMenuButton
-} from '@/components/ui/sidebar';
 import { Button } from '@/components/ui/button';
 import { X, Bell } from 'lucide-react';
-import { SidebarProvider } from '@/components/ui/sidebar/sidebar-context';
+import SidebarMenuGroup from './sidebar/SidebarMenuGroup';
 import { 
   baseMenuItems, 
   adminMenuItems, 
@@ -55,86 +47,54 @@ const AdminSidebar: React.FC<AdminSidebarProps> = ({
     return null;
   }
   
-  const renderMenuGroup = (groupTitle: string, menuItems: any[]) => (
-    <div className="mb-6" key={groupTitle}>
-      <h3 className="px-4 mb-2 text-xs font-semibold text-muted-foreground uppercase tracking-wider">
-        {groupTitle}
-      </h3>
-      <SidebarMenu>
-        {menuItems.map((item, index) => (
-          <SidebarMenuItem key={index}>
-            <SidebarMenuButton asChild isActive={window.location.pathname === item.href}>
-              <a href={item.href} onClick={onCloseMenu} className="flex items-center">
-                {item.icon}
-                <span className="ml-2">{item.title}</span>
-              </a>
-            </SidebarMenuButton>
-          </SidebarMenuItem>
-        ))}
-      </SidebarMenu>
-    </div>
-  );
-  
   return (
-    <SidebarProvider>
-      <Sidebar variant="inset" className="border-r border-border">
-        <SidebarHeader className="flex justify-between items-center p-4">
-          <div className="text-xl font-bold">Ադմինիստրացիա</div>
-          {onCloseMenu && 
-            <Button variant="ghost" size="icon" onClick={onCloseMenu} className="md:hidden">
-              <X className="h-5 w-5" />
-            </Button>
-          }
-        </SidebarHeader>
+    <aside className="w-64 bg-card border-r border-border h-screen sticky top-0 overflow-y-auto py-6 px-0">
+      <div className="flex justify-between items-center mb-8 px-2">
+        <div className="text-xl font-bold">Ադմինիստրացիա</div>
+        {onCloseMenu && <Button variant="ghost" size="icon" onClick={onCloseMenu} className="md:hidden">
+            <X className="h-5 w-5" />
+          </Button>}
+      </div>
+      
+      <nav className="space-y-6">
+        {/* Base menu items (common for all roles) */}
+        <SidebarMenuGroup menuItems={baseMenuItems} onCloseMenu={onCloseMenu} />
         
-        <SidebarContent className="px-2 py-4">
-          {/* Base menu items (common for all roles) */}
-          {baseMenuItems.map((group, index) => {
-            const filteredItems = group.items.filter(item => 
-              item.roles.includes(user.role)
-            );
-            
-            if (filteredItems.length === 0) return null;
-            
-            return renderMenuGroup(group.title, filteredItems);
-          })}
-          
-          {/* Pending approvals notification for supervisors */}
-          {(user.role === 'supervisor' || user.role === 'project_manager') && pendingCount > 0 && (
-            <div className="px-4 py-2 mx-2 mb-2 bg-amber-50 text-amber-800 rounded-md flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                <Bell className="h-4 w-4" />
-                <span className="text-sm">Նոր հարցումներ</span>
-              </div>
-              <Badge variant="secondary" className="bg-amber-200 text-amber-800">
-                {pendingCount}
-              </Badge>
+        {/* Pending approvals notification for supervisors */}
+        {(user.role === 'supervisor' || user.role === 'project_manager') && pendingCount > 0 && (
+          <div className="px-4 py-2 mx-2 mb-2 bg-amber-50 text-amber-800 rounded-md flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <Bell className="h-4 w-4" />
+              <span className="text-sm">Նոր հարցումներ</span>
             </div>
-          )}
-          
-          {/* Role-specific menu items */}
-          {user.role === 'admin' && 
-            adminMenuItems.map((group, index) => renderMenuGroup(group.title, group.items))
-          }
-          
-          {(user.role === 'lecturer' || user.role === 'instructor' || user.role === 'supervisor' || user.role === 'project_manager') && 
-            lecturerMenuItems.map((group, index) => renderMenuGroup(group.title, group.items))
-          }
-          
-          {(user.role === 'supervisor' || user.role === 'project_manager') && 
-            supervisorMenuItems.map((group, index) => renderMenuGroup(group.title, group.items))
-          }
+            <Badge variant="secondary" className="bg-amber-200 text-amber-800">
+              {pendingCount}
+            </Badge>
+          </div>
+        )}
+        
+        {/* Role-specific menu items */}
+        {user.role === 'admin' && 
+          <SidebarMenuGroup menuItems={adminMenuItems} onCloseMenu={onCloseMenu} />
+        }
+        
+        {(user.role === 'lecturer' || user.role === 'instructor' || user.role === 'supervisor' || user.role === 'project_manager') && 
+          <SidebarMenuGroup menuItems={lecturerMenuItems} onCloseMenu={onCloseMenu} />
+        }
+        
+        {(user.role === 'supervisor' || user.role === 'project_manager') && 
+          <SidebarMenuGroup menuItems={supervisorMenuItems} onCloseMenu={onCloseMenu} />
+        }
 
-          {user.role === 'employer' && 
-            employerMenuItems.map((group, index) => renderMenuGroup(group.title, group.items))
-          }
-          
-          {user.role === 'student' && 
-            studentMenuItems.map((group, index) => renderMenuGroup(group.title, group.items))
-          }
-        </SidebarContent>
-      </Sidebar>
-    </SidebarProvider>
+        {user.role === 'employer' && 
+          <SidebarMenuGroup menuItems={employerMenuItems} onCloseMenu={onCloseMenu} />
+        }
+        
+        {user.role === 'student' && 
+          <SidebarMenuGroup menuItems={studentMenuItems} onCloseMenu={onCloseMenu} />
+        }
+      </nav>
+    </aside>
   );
 };
 
