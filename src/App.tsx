@@ -12,6 +12,7 @@ import SpecializationsPage from '@/pages/SpecializationsPage';
 import OrganizationsPage from '@/pages/OrganizationsPage';
 import ProjectManagementPage from '@/pages/ProjectManagementPage';
 import CoursesPage from '@/pages/CoursesPage';
+import CourseDetailsPage from '@/pages/CourseDetailsPage';
 import ProjectProposalsPage from '@/pages/ProjectProposalsPage';
 import PendingApprovals from '@/pages/PendingApprovals';
 import SupervisedStudentsPage from '@/pages/SupervisedStudentsPage';
@@ -40,6 +41,7 @@ function App() {
             <Route path="/login" element={<Login />} />
             <Route path="/verify" element={<VerifyEmail />} />
             <Route path="/project/:id" element={<ProjectDetails />} />
+            <Route path="/course/:id" element={<CourseDetailsPage />} />
             
             {/* Redirect /admin to /admin/dashboard */}
             <Route path="/admin" element={<Navigate to="/admin/dashboard" replace />} />
@@ -47,6 +49,7 @@ function App() {
             {/* Student specific redirects */}
             <Route path="/projects/manage" element={<Navigate to="/admin/my-projects" replace />} />
             <Route path="/my-projects" element={<Navigate to="/admin/my-projects" replace />} />
+            <Route path="/courses" element={<Navigate to="/admin/courses" replace />} />
             
             {/* Admin routes */}
             <Route path="/admin/dashboard" element={<AdminDashboard />} />

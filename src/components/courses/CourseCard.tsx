@@ -1,82 +1,82 @@
 
 import React from 'react';
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardFooter } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Course } from './types';
-import { Edit, Trash2, User } from 'lucide-react';
-import { Badge } from '@/components/ui/badge';
-import { useAuth } from '@/contexts/AuthContext';
+import { useNavigate } from 'react-router-dom';
+import { Code, PythonLogo, Coffee, FileJs } from 'lucide-react';
 
 interface CourseCardProps {
   course: Course;
-  isAdmin: boolean;
-  canEdit: boolean;
-  onEdit: (course: Course) => void;
-  onDelete: (id: string) => void;
+  isAdmin?: boolean;
+  canEdit?: boolean;
+  onEdit?: (course: Course) => void;
+  onDelete?: (id: string) => void;
 }
 
-const CourseCard: React.FC<CourseCardProps> = ({ course, isAdmin, canEdit, onEdit, onDelete }) => {
-  const { user } = useAuth();
+const CourseCard: React.FC<CourseCardProps> = ({ 
+  course, 
+  isAdmin, 
+  canEdit, 
+  onEdit, 
+  onDelete 
+}) => {
+  const navigate = useNavigate();
   
-  // Check if the course was created by the current user
-  const isCreatedByCurrentUser = course.createdBy === user?.id;
+  // Function to get icon based on course name or title
+  const getIcon = () => {
+    const title = course.title.toLowerCase();
+    
+    if (title.includes('web') || title.includes('front') || title.includes('html')) {
+      return <Code className="h-16 w-16" />;
+    } else if (title.includes('python') || title.includes('ml') || title.includes('ai')) {
+      return <PythonLogo className="h-16 w-16" />;
+    } else if (title.includes('java') && !title.includes('javascript')) {
+      return <Coffee className="h-16 w-16" />;
+    } else if (title.includes('javascript') || title.includes('js')) {
+      return <FileJs className="h-16 w-16" />;
+    }
+    
+    // Default icon
+    return <Code className="h-16 w-16" />;
+  };
   
+  const handleViewDetails = () => {
+    navigate(`/course/${course.id}`);
+  };
+
   return (
-    <Card className="h-full flex flex-col">
-      <CardHeader>
-        <div className="flex items-start justify-between">
-          <div>
-            <CardTitle className="text-xl">{course.title}</CardTitle>
-            {course.specialization && (
-              <Badge variant="outline" className="mt-1">
-                {course.specialization}
-              </Badge>
-            )}
-          </div>
-          <Badge>{course.duration}</Badge>
-        </div>
-        <CardDescription className="line-clamp-2 mt-2">
-          {course.description}
-        </CardDescription>
-      </CardHeader>
-      <CardContent className="flex-grow">
-        <div className="mt-2">
-          <h4 className="text-sm font-medium mb-2">Մոդուլներ ({course.modules?.length || 0})</h4>
-          <ul className="text-sm space-y-1">
-            {course.modules?.slice(0, 3).map((module, index) => (
-              <li key={index} className="text-muted-foreground">
-                • {module}
-              </li>
-            ))}
-            {course.modules && course.modules.length > 3 && (
-              <li className="text-muted-foreground">
-                • ... և {course.modules.length - 3} այլ
-              </li>
-            )}
-          </ul>
-        </div>
+    <Card className="flex flex-col h-full overflow-hidden hover:shadow-md transition-shadow duration-300">
+      <div className="flex-grow flex flex-col items-center text-center p-6">
+        {getIcon()}
         
-        {/* Display course creator information */}
-        <div className="mt-4 flex items-center text-sm text-muted-foreground">
-          <User size={14} className="mr-1" />
-          {isCreatedByCurrentUser ? (
-            <span>Ձեր կողմից ստեղծված</span>
-          ) : (
-            <span>{course.createdBy === 'admin' ? 'Ադմինիստրատորի' : 'Դասախոսի'} կողմից ստեղծված</span>
-          )}
-        </div>
-      </CardContent>
-      {canEdit && (
-        <CardFooter className="flex justify-end gap-2 pt-2">
+        <h3 className="mt-4 text-xl font-semibold text-amber-500">{course.title}</h3>
+        <p className="text-sm uppercase text-gray-600 mt-1">ԴԱՍԸՆԹԱՑ</p>
+        
+        <Button 
+          variant="outline" 
+          className="mt-6 rounded-full border-gray-300 hover:bg-amber-50 hover:text-amber-600 hover:border-amber-300 transition-colors"
+          onClick={handleViewDetails}
+        >
+          Դիտել
+        </Button>
+      </div>
+      
+      <CardFooter className="flex justify-between items-center p-4 border-t bg-gray-50">
+        <div className="text-sm text-gray-600">{course.duration} ամիս</div>
+        <div className="text-sm font-medium text-gray-800">{course.price} ֏</div>
+      </CardFooter>
+      
+      {isAdmin && canEdit && onEdit && onDelete && (
+        <div className="hidden">
+          {/* These are hidden controls for admin functionality */}
           <Button variant="outline" size="sm" onClick={() => onEdit(course)}>
-            <Edit className="h-4 w-4 mr-1" />
             Խմբագրել
           </Button>
           <Button variant="destructive" size="sm" onClick={() => onDelete(course.id)}>
-            <Trash2 className="h-4 w-4 mr-1" />
             Ջնջել
           </Button>
-        </CardFooter>
+        </div>
       )}
     </Card>
   );

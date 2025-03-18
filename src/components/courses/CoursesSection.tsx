@@ -3,9 +3,9 @@ import React, { useEffect, useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { useNavigate } from 'react-router-dom';
 import { Course } from './types';
-import CourseSectionCard from './CourseSectionCard';
 import { supabase } from '@/integrations/supabase/client';
 import { Skeleton } from '@/components/ui/skeleton';
+import CourseCard from './CourseCard';
 
 const CoursesSection: React.FC = () => {
   const [courses, setCourses] = useState<Course[]>([]);
@@ -19,7 +19,7 @@ const CoursesSection: React.FC = () => {
         const { data, error } = await supabase
           .from('courses')
           .select('*')
-          .limit(6);
+          .limit(4);
 
         if (error) {
           throw error;
@@ -30,7 +30,7 @@ const CoursesSection: React.FC = () => {
           id: course.id,
           title: course.title,
           description: course.description || '',
-          specialization: undefined, // This field doesn't exist in DB
+          specialization: course.specialization,
           duration: course.duration,
           modules: [], // This field doesn't exist in DB
           createdBy: course.created_by || 'unknown',
@@ -47,16 +47,6 @@ const CoursesSection: React.FC = () => {
         setCourses(mappedCourses);
       } catch (e) {
         console.error('Error fetching courses:', e);
-        
-        // Fallback to localStorage if Supabase fails
-        const storedCourses = localStorage.getItem('courses');
-        if (storedCourses) {
-          try {
-            setCourses(JSON.parse(storedCourses));
-          } catch (error) {
-            console.error('Error parsing stored courses:', error);
-          }
-        }
       } finally {
         setIsLoading(false);
       }
@@ -73,8 +63,8 @@ const CoursesSection: React.FC = () => {
             <Skeleton className="h-8 w-64 mx-auto" />
             <Skeleton className="h-4 w-full max-w-2xl mx-auto mt-2" />
           </div>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {[1, 2, 3].map((i) => (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+            {[1, 2, 3, 4].map((i) => (
               <Skeleton key={i} className="h-64 w-full rounded-lg" />
             ))}
           </div>
@@ -97,9 +87,9 @@ const CoursesSection: React.FC = () => {
           </p>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
           {courses.map((course) => (
-            <CourseSectionCard key={course.id} course={course} onClick={() => navigate('/courses')} />
+            <CourseCard key={course.id} course={course} />
           ))}
         </div>
         
