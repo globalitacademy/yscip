@@ -1,102 +1,31 @@
 
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { supabase } from '@/integrations/supabase/client';
-import { Course } from '@/components/courses/types';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { ArrowLeft } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { toast } from 'sonner';
-import { useForm } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 
-// Import the refactored components
+// Import components
 import CourseViewMode from '@/components/courses/CourseDetails/CourseViewMode';
-import CourseEditForm, { courseFormSchema, CourseFormValues } from '@/components/courses/CourseDetails/CourseEditForm';
+import CourseEditForm, { CourseFormValues } from '@/components/courses/CourseDetails/CourseEditForm';
 import CourseLoadingState from '@/components/courses/CourseDetails/CourseLoadingState';
 import CourseErrorState from '@/components/courses/CourseDetails/CourseErrorState';
 
+// Import the new custom hook
+import { useCourseDetails } from '@/components/courses/hooks/useCourseDetails';
+
 const CourseDetailsPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
-  const [course, setCourse] = useState<Course | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
   const [isEditing, setIsEditing] = useState(false);
   const { user } = useAuth();
   const navigate = useNavigate();
-
-  const form = useForm<CourseFormValues>({
-    resolver: zodResolver(courseFormSchema),
-    defaultValues: {
-      title: '',
-      subtitle: '',
-      description: '',
-      duration: '',
-      price: '',
-      specialization: '',
-      institution: '',
-    },
-  });
-
-  useEffect(() => {
-    const fetchCourse = async () => {
-      setIsLoading(true);
-      try {
-        const { data, error } = await supabase
-          .from('courses')
-          .select('*')
-          .eq('id', id)
-          .single();
-
-        if (error) {
-          throw error;
-        }
-
-        const fetchedCourse = {
-          id: data.id,
-          title: data.title,
-          description: data.description || '',
-          specialization: data.specialization || undefined,
-          duration: data.duration,
-          modules: data.modules || [],
-          createdBy: data.created_by || 'unknown',
-          color: data.color,
-          button_text: data.button_text,
-          icon_name: data.icon_name,
-          subtitle: data.subtitle,
-          price: data.price,
-          image_url: data.image_url,
-          institution: data.institution,
-          is_persistent: data.is_persistent
-        };
-
-        setCourse(fetchedCourse);
-        
-        // Initialize form with course data
-        form.reset({
-          title: fetchedCourse.title,
-          subtitle: fetchedCourse.subtitle || '',
-          description: fetchedCourse.description,
-          duration: fetchedCourse.duration,
-          price: fetchedCourse.price || '',
-          specialization: fetchedCourse.specialization || '',
-          institution: fetchedCourse.institution || '',
-        });
-      } catch (err) {
-        console.error('Error fetching course details:', err);
-        setError('Չհաջողվեց բեռնել դասընթացի մանրամասները');
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    if (id) {
-      fetchCourse();
-    }
-  }, [id, form]);
+  
+  // Use the custom hook
+  const { course, isLoading, error, form, updateCourse } = useCourseDetails(id);
 
   const handleGoBack = () => {
     navigate(-1);
@@ -105,58 +34,29 @@ const CourseDetailsPage: React.FC = () => {
   const handleEditToggle = () => {
     setIsEditing(!isEditing);
     
-    if (!isEditing) {
+    if (!isEditing && course) {
       // Re-populate the form when entering edit mode
-      if (course) {
-        form.reset({
-          title: course.title,
-          subtitle: course.subtitle || '',
-          description: course.description,
-          duration: course.duration,
-          price: course.price || '',
-          specialization: course.specialization || '',
-          institution: course.institution || '',
-        });
-      }
+      form.reset({
+        title: course.title,
+        subtitle: course.subtitle || '',
+        description: course.description,
+        duration: course.duration,
+        price: course.price || '',
+        specialization: course.specialization || '',
+        institution: course.institution || '',
+      });
     }
   };
 
   const onSubmit = async (values: CourseFormValues) => {
     if (!user || !course) return;
     
-    try {
-      const { error } = await supabase
-        .from('courses')
-        .update({
-          title: values.title,
-          subtitle: values.subtitle || 'ԴԱՍԸՆԹԱՑ',
-          description: values.description,
-          duration: values.duration,
-          price: values.price,
-          specialization: values.specialization || null,
-          institution: values.institution || null,
-          updated_at: new Date().toISOString()
-        })
-        .eq('id', id);
-
-      if (error) throw error;
-
-      // Update local course data
-      setCourse({
-        ...course,
-        title: values.title,
-        subtitle: values.subtitle || 'ԴԱՍԸՆԹԱՑ',
-        description: values.description,
-        duration: values.duration,
-        price: values.price,
-        specialization: values.specialization,
-        institution: values.institution,
-      });
-
+    const success = await updateCourse(values);
+    
+    if (success) {
       setIsEditing(false);
       toast.success('Դասընթացը հաջողությամբ թարմացվել է');
-    } catch (err) {
-      console.error('Error updating course:', err);
+    } else {
       toast.error('Չհաջողվեց թարմացնել դասընթացը');
     }
   };
