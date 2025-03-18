@@ -9,6 +9,7 @@ import { ChevronDown, X, PlusCircle, Upload, Link, Code, BookText, BrainCircuit,
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Textarea } from "@/components/ui/textarea";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "../ui/accordion";
+import { getIconNameFromElement } from './useCourseManagement';
 
 const colorOptions = [
   { label: 'Ամբերային', value: 'text-amber-500' },
@@ -44,7 +45,7 @@ const ProfessionalCourseForm: React.FC<ProfessionalCourseFormProps> = ({
   const [newLesson, setNewLesson] = useState({ title: '', duration: '' });
   const [newRequirement, setNewRequirement] = useState('');
   const [newOutcome, setNewOutcome] = useState('');
-  const [imageOption, setImageOption] = useState(course.imageUrl ? 'url' : 'icon');
+  const [imageOption, setImageOption] = useState(course.image_url ? 'url' : 'icon');
   const [useCustomInstitution, setUseCustomInstitution] = useState(
     !['ՀՊՏՀ', 'ԵՊՀ', 'ՀԱՊՀ', 'ՀԱՀ', 'ՀՊՄՀ', 'ՀՌԱՀ'].includes(course.institution || '')
   );
@@ -73,7 +74,11 @@ const ProfessionalCourseForm: React.FC<ProfessionalCourseFormProps> = ({
       default:
         newIcon = <Code className="w-16 h-16" />;
     }
-    setCourse({ ...course, icon: newIcon });
+    setCourse({ 
+      ...course, 
+      icon: newIcon,
+      icon_name: iconName
+    });
     setIsIconsOpen(false);
   };
 
@@ -91,7 +96,7 @@ const ProfessionalCourseForm: React.FC<ProfessionalCourseFormProps> = ({
     if (file) {
       const reader = new FileReader();
       reader.onload = (event) => {
-        setCourse({ ...course, imageUrl: event.target?.result as string });
+        setCourse({ ...course, image_url: event.target?.result as string });
       };
       reader.readAsDataURL(file);
     }
@@ -287,8 +292,8 @@ const ProfessionalCourseForm: React.FC<ProfessionalCourseFormProps> = ({
                 <div className="flex items-center">
                   <Link className="h-5 w-5 mr-2" />
                   <Input
-                    value={course.imageUrl || ''}
-                    onChange={(e) => setCourse({ ...course, imageUrl: e.target.value })}
+                    value={course.image_url || ''}
+                    onChange={(e) => setCourse({ ...course, image_url: e.target.value })}
                     placeholder="https://example.com/image.jpg"
                   />
                 </div>

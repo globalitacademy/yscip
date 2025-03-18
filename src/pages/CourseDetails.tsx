@@ -1,3 +1,4 @@
+
 import React, { useEffect, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import Header from '@/components/Header';
@@ -11,93 +12,89 @@ import EditProfessionalCourseDialog from '@/components/courses/EditProfessionalC
 import { useAuth } from '@/contexts/AuthContext';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
+import { supabase } from '@/integrations/supabase/client';
+import { getIconFromName } from '@/components/courses/useCourseManagement';
 
-const getCourseById = (id: string): ProfessionalCourse | undefined => {
+const getCourseById = async (id: string): Promise<ProfessionalCourse | undefined> => {
   try {
-    const storedCourses = localStorage.getItem('professionalCourses');
-    if (storedCourses) {
-      const courses: ProfessionalCourse[] = JSON.parse(storedCourses);
-      return courses.find(course => course.id === id);
+    // Fetch course from Supabase
+    const { data: courseData, error: courseError } = await supabase
+      .from('courses')
+      .select('*')
+      .eq('id', id)
+      .single();
+    
+    if (courseError) {
+      console.error('Error fetching course:', courseError);
+      return undefined;
     }
+    
+    if (!courseData) {
+      return undefined;
+    }
+    
+    // Fetch lessons for this course
+    const { data: lessonsData, error: lessonsError } = await supabase
+      .from('course_lessons')
+      .select('*')
+      .eq('course_id', id);
+      
+    if (lessonsError) {
+      console.error('Error fetching lessons:', lessonsError);
+    }
+    
+    // Fetch requirements for this course
+    const { data: requirementsData, error: requirementsError } = await supabase
+      .from('course_requirements')
+      .select('*')
+      .eq('course_id', id);
+      
+    if (requirementsError) {
+      console.error('Error fetching requirements:', requirementsError);
+    }
+    
+    // Fetch outcomes for this course
+    const { data: outcomesData, error: outcomesError } = await supabase
+      .from('course_outcomes')
+      .select('*')
+      .eq('course_id', id);
+      
+    if (outcomesError) {
+      console.error('Error fetching outcomes:', outcomesError);
+    }
+    
+    // Transform to ProfessionalCourse format
+    const course: ProfessionalCourse = {
+      id: courseData.id,
+      title: courseData.title,
+      subtitle: courseData.subtitle,
+      icon: getIconFromName(courseData.icon_name),
+      icon_name: courseData.icon_name,
+      duration: courseData.duration,
+      price: courseData.price,
+      button_text: courseData.button_text,
+      color: courseData.color,
+      created_by: courseData.created_by,
+      institution: courseData.institution,
+      image_url: courseData.image_url,
+      description: courseData.description,
+      is_persistent: true,
+      lessons: lessonsData?.map(lesson => ({
+        id: lesson.id,
+        title: lesson.title,
+        duration: lesson.duration
+      })) || [],
+      requirements: requirementsData?.map(req => req.requirement) || [],
+      outcomes: outcomesData?.map(outcome => outcome.outcome) || [],
+      created_at: courseData.created_at,
+      updated_at: courseData.updated_at
+    };
+    
+    return course;
   } catch (error) {
-    console.error('Error fetching course:', error);
+    console.error('Error in getCourseById:', error);
+    return undefined;
   }
-  
-  const mockCourses = [
-    {
-      id: '1',
-      title: 'WEB Front-End',
-      subtitle: 'ԴԱՍԸՆԹԱՑ',
-      description: 'Սովորեք Web կայքերի մշակում՝ օգտագործելով արդի տեխնոլոգիաներ ինչպիսիք են HTML5, CSS3, JavaScript, React և Node.js։ Այս դասընթացը նախատեսված է սկսնակների համար և կօգնի ձեզ դառնալ պրոֆեսիոնալ Front-End ծրագրավորող։',
-      duration: '9 ամիս',
-      price: '58,000 ֏',
-      createdBy: 'Արամ Հակոբյան',
-      institution: 'ՀՊՏՀ',
-      color: 'text-amber-500',
-      buttonText: 'Դիտել',
-      icon: null,
-      lessons: [
-        { title: 'Ներածություն Web ծրագրավորման մեջ', duration: '3 ժամ' },
-        { title: 'HTML5 հիմունքներ', duration: '6 ժամ' },
-        { title: 'CSS3 և ձևավորում', duration: '8 ժամ' },
-        { title: 'JavaScript հիմունքներ', duration: '12 ժամ' },
-        { title: 'DOM մանիպուլյացիա', duration: '6 ժամ' },
-        { title: 'React հիմունքներ', duration: '15 ժամ' },
-        { title: 'React Router և State Management', duration: '10 ժամ' },
-        { title: 'Node.js և Express հիմունքներ', duration: '8 ժամ' },
-        { title: 'RESTful API-ներ', duration: '6 ժամ' },
-        { title: 'Ավարտական նախագիծ', duration: '25 ժամ' }
-      ],
-      requirements: [
-        'Համակարգչային հիմնական գիտելիքներ',
-        'Տրամաբանական մտածելակերպ',
-        'Անգլերենի բազային իմացություն'
-      ],
-      outcomes: [
-        'Մշակել ամբողջական ինտերակտիվ վեբ կայքեր',
-        'Աշխատել React-ով միաէջանի հավելվածների հետ',
-        'Ստեղծել հետին մասի API-ներ Node.js-ով',
-        'Աշխատել թիմում որպես Front-End ծրագրավորող'
-      ]
-    },
-    {
-      id: '2',
-      title: 'Python (ML / AI)',
-      subtitle: 'ԴԱՍԸՆԹԱՑ',
-      description: 'Սովորեք Python ծրագրավորում՝ մեքենայական ուսուցման և արհեստական բանականության հիմունքներով։ Այս ինտենսիվ դասընթացը կօգնի ձեզ ծանոթանալ AI/ML ժամանակակից գործիքների հետ։',
-      duration: '7 ամիս',
-      price: '68,000 ֏',
-      createdBy: 'Լիլիթ Մարտիրոսյան',
-      institution: 'ԵՊՀ',
-      color: 'text-blue-500',
-      buttonText: 'Դիտել',
-      icon: null,
-      lessons: [
-        { title: 'Python հիմունքներ', duration: '10 ժամ' },
-        { title: 'Տվյալների վերլուծություն NumPy-ով և Pandas-ով', duration: '12 ժամ' },
-        { title: 'Տվյալների վիզուալիզացիա Matplotlib-ով և Seaborn-ով', duration: '8 ժամ' },
-        { title: 'Մեքենայական ուսուցման ներածություն', duration: '6 ժամ' },
-        { title: 'Վերահսկվող ուսուցում՝ ռեգրեսիա և դասակարգում', duration: '14 ժամ' },
-        { title: 'Չվերահսկվող ուսուցում', duration: '10 ժամ' },
-        { title: 'Խորը ուսուցման հիմունքներ և նեյրոնային ցանցեր', duration: '15 ժամ' },
-        { title: 'Բնական լեզվի մշակում (NLP)', duration: '12 ժամ' },
-        { title: 'Ավարտական նախագիծ', duration: '20 ժամ' }
-      ],
-      requirements: [
-        'Ծրագրավորման բազային իմացություն',
-        'Մաթեմատիկայի և վիճակագրության հիմունքներ',
-        'Անգլերենի լավ իմացություն'
-      ],
-      outcomes: [
-        'Մշակել մեքենայական ուսուցման մոդելներ',
-        'Վերլուծել և վիզուալիզացնել մեծ տվյալներ',
-        'Իրականացնել խորը ուսուցման ալգորիթմներ',
-        'Ստեղծել AI հիմքով հավելվածներ'
-      ]
-    }
-  ];
-  
-  return mockCourses.find(course => course.id === id) as ProfessionalCourse;
 };
 
 const CourseDetails: React.FC = () => {
@@ -112,62 +109,283 @@ const CourseDetails: React.FC = () => {
   const [newOutcome, setNewOutcome] = useState('');
   const { user } = useAuth();
 
-  useEffect(() => {
-    if (id) {
-      const courseData = getCourseById(id);
-      setCourse(courseData || null);
-      setEditedCourse(courseData || null);
-      setLoading(false);
-    }
-  }, [id]);
-
-  const handleApply = () => {
-    toast.success("Դիմումը հաջողությամբ ուղարկված է", {
-      description: "Մենք կապ կհաստատենք ձեզ հետ",
-      duration: 5000,
-    });
+  const fetchCourse = async () => {
+    if (!id) return;
+    
+    setLoading(true);
+    const courseData = await getCourseById(id);
+    setCourse(courseData || null);
+    setEditedCourse(courseData || null);
+    setLoading(false);
   };
 
-  const handleEditCourse = () => {
+  useEffect(() => {
+    fetchCourse();
+  }, [id]);
+
+  const handleApply = async () => {
+    if (!id || !user) {
+      toast.error("Խնդիր առաջացավ դիմումը ուղարկելու ժամանակ։ Խնդրում ենք փորձել կրկին։");
+      return;
+    }
+
+    try {
+      // Add enrollment to database
+      const { error } = await supabase
+        .from('course_enrollments')
+        .insert({
+          course_id: id,
+          user_id: user.id,
+          status: 'pending'
+        });
+
+      if (error) {
+        console.error('Error adding enrollment:', error);
+        toast.error("Խնդիր առաջացավ դիմումը ուղարկելու ժամանակ։ Խնդրում ենք փորձել կրկին։");
+        return;
+      }
+
+      toast.success("Դիմումը հաջողությամբ ուղարկված է", {
+        description: "Մենք կապ կհաստատենք ձեզ հետ",
+        duration: 5000,
+      });
+    } catch (error) {
+      console.error('Error in handleApply:', error);
+      toast.error("Խնդիր առաջացավ դիմումը ուղարկելու ժամանակ։ Խնդրում ենք փորձել կրկին։");
+    }
+  };
+
+  const handleEditCourse = async () => {
     if (!course) return;
 
-    // Update the course in localStorage
     try {
-      const storedCourses = localStorage.getItem('professionalCourses');
-      if (storedCourses) {
-        const courses: ProfessionalCourse[] = JSON.parse(storedCourses);
-        const updatedCourses = courses.map(c => 
-          c.id === course.id ? course : c
-        );
-        localStorage.setItem('professionalCourses', JSON.stringify(updatedCourses));
-        toast.success('Դասընթացը հաջողությամբ թարմացվել է');
-        setIsEditDialogOpen(false);
+      // Update course in database
+      const { error: courseError } = await supabase
+        .from('courses')
+        .update({
+          title: course.title,
+          subtitle: course.subtitle,
+          icon_name: course.icon_name,
+          duration: course.duration,
+          price: course.price,
+          button_text: course.button_text,
+          color: course.color,
+          created_by: course.created_by,
+          institution: course.institution,
+          image_url: course.image_url,
+          description: course.description,
+          updated_at: new Date().toISOString()
+        })
+        .eq('id', course.id);
+
+      if (courseError) {
+        console.error('Error updating course:', courseError);
+        toast.error('Դասընթացի թարմացման ժամանակ սխալ է տեղի ունեցել');
+        return;
       }
+
+      // Handle lessons
+      if (course.lessons) {
+        // Delete existing lessons
+        await supabase
+          .from('course_lessons')
+          .delete()
+          .eq('course_id', course.id);
+        
+        // Add updated lessons
+        if (course.lessons.length > 0) {
+          const lessonsToAdd = course.lessons.map(lesson => ({
+            course_id: course.id,
+            title: lesson.title,
+            duration: lesson.duration
+          }));
+
+          const { error: lessonsError } = await supabase
+            .from('course_lessons')
+            .insert(lessonsToAdd);
+
+          if (lessonsError) {
+            console.error('Error updating lessons:', lessonsError);
+          }
+        }
+      }
+
+      // Handle requirements
+      if (course.requirements) {
+        // Delete existing requirements
+        await supabase
+          .from('course_requirements')
+          .delete()
+          .eq('course_id', course.id);
+        
+        // Add updated requirements
+        if (course.requirements.length > 0) {
+          const requirementsToAdd = course.requirements.map(req => ({
+            course_id: course.id,
+            requirement: req
+          }));
+
+          const { error: requirementsError } = await supabase
+            .from('course_requirements')
+            .insert(requirementsToAdd);
+
+          if (requirementsError) {
+            console.error('Error updating requirements:', requirementsError);
+          }
+        }
+      }
+
+      // Handle outcomes
+      if (course.outcomes) {
+        // Delete existing outcomes
+        await supabase
+          .from('course_outcomes')
+          .delete()
+          .eq('course_id', course.id);
+        
+        // Add updated outcomes
+        if (course.outcomes.length > 0) {
+          const outcomesToAdd = course.outcomes.map(outcome => ({
+            course_id: course.id,
+            outcome: outcome
+          }));
+
+          const { error: outcomesError } = await supabase
+            .from('course_outcomes')
+            .insert(outcomesToAdd);
+
+          if (outcomesError) {
+            console.error('Error updating outcomes:', outcomesError);
+          }
+        }
+      }
+
+      // Refresh the course data
+      await fetchCourse();
+      
+      setIsEditDialogOpen(false);
+      toast.success('Դասընթացը հաջողությամբ թարմացվել է');
     } catch (error) {
       console.error('Error updating course:', error);
       toast.error('Դասընթացի թարմացման ժամանակ սխալ է տեղի ունեցել');
     }
   };
 
-  const toggleEditMode = () => {
+  const toggleEditMode = async () => {
     if (isEditing) {
       // Save changes
       if (!editedCourse) return;
       
       try {
-        const storedCourses = localStorage.getItem('professionalCourses');
-        if (storedCourses) {
-          const courses: ProfessionalCourse[] = JSON.parse(storedCourses);
-          const updatedCourses = courses.map(c => 
-            c.id === editedCourse.id ? editedCourse : c
-          );
-          localStorage.setItem('professionalCourses', JSON.stringify(updatedCourses));
-          setCourse(editedCourse);
-          toast.success('Դասընթացը հաջողությամբ թարմացվել է');
+        // Update course in database
+        const { error: courseError } = await supabase
+          .from('courses')
+          .update({
+            title: editedCourse.title,
+            subtitle: editedCourse.subtitle,
+            icon_name: editedCourse.icon_name,
+            duration: editedCourse.duration,
+            price: editedCourse.price,
+            button_text: editedCourse.button_text,
+            color: editedCourse.color,
+            created_by: editedCourse.created_by,
+            institution: editedCourse.institution,
+            image_url: editedCourse.image_url,
+            description: editedCourse.description,
+            updated_at: new Date().toISOString()
+          })
+          .eq('id', editedCourse.id);
+
+        if (courseError) {
+          console.error('Error updating course:', courseError);
+          toast.error('Դասընթացի թարմացման ժամանակ սխալ է տեղի ունեցել');
+          return;
         }
+
+        // Handle lessons
+        if (editedCourse.lessons) {
+          // Delete existing lessons
+          await supabase
+            .from('course_lessons')
+            .delete()
+            .eq('course_id', editedCourse.id);
+          
+          // Add updated lessons
+          if (editedCourse.lessons.length > 0) {
+            const lessonsToAdd = editedCourse.lessons.map(lesson => ({
+              course_id: editedCourse.id,
+              title: lesson.title,
+              duration: lesson.duration
+            }));
+
+            const { error: lessonsError } = await supabase
+              .from('course_lessons')
+              .insert(lessonsToAdd);
+
+            if (lessonsError) {
+              console.error('Error updating lessons:', lessonsError);
+            }
+          }
+        }
+
+        // Handle requirements
+        if (editedCourse.requirements) {
+          // Delete existing requirements
+          await supabase
+            .from('course_requirements')
+            .delete()
+            .eq('course_id', editedCourse.id);
+          
+          // Add updated requirements
+          if (editedCourse.requirements.length > 0) {
+            const requirementsToAdd = editedCourse.requirements.map(req => ({
+              course_id: editedCourse.id,
+              requirement: req
+            }));
+
+            const { error: requirementsError } = await supabase
+              .from('course_requirements')
+              .insert(requirementsToAdd);
+
+            if (requirementsError) {
+              console.error('Error updating requirements:', requirementsError);
+            }
+          }
+        }
+
+        // Handle outcomes
+        if (editedCourse.outcomes) {
+          // Delete existing outcomes
+          await supabase
+            .from('course_outcomes')
+            .delete()
+            .eq('course_id', editedCourse.id);
+          
+          // Add updated outcomes
+          if (editedCourse.outcomes.length > 0) {
+            const outcomesToAdd = editedCourse.outcomes.map(outcome => ({
+              course_id: editedCourse.id,
+              outcome: outcome
+            }));
+
+            const { error: outcomesError } = await supabase
+              .from('course_outcomes')
+              .insert(outcomesToAdd);
+
+            if (outcomesError) {
+              console.error('Error updating outcomes:', outcomesError);
+            }
+          }
+        }
+
+        // Refresh the course data
+        await fetchCourse();
+        
+        toast.success('Դասընթացը հաջողությամբ թարմացվել է');
       } catch (error) {
         console.error('Error updating course:', error);
         toast.error('Դասընթացի թարմացման ժամանակ սխալ է տեղի ունեցել');
+        return;
       }
     } else {
       // Enter edit mode
@@ -249,7 +467,7 @@ const CourseDetails: React.FC = () => {
   };
 
   // Check if user can edit this course
-  const canEdit = user && (user.role === 'admin' || course?.createdBy === user.name);
+  const canEdit = user && (user.role === 'admin' || course?.created_by === user.name);
 
   if (loading) {
     return <div className="min-h-screen flex items-center justify-center">Բեռնում...</div>;
@@ -348,12 +566,12 @@ const CourseDetails: React.FC = () => {
                   <User size={18} className="text-blue-500" />
                   {isEditing ? (
                     <Input 
-                      value={editedCourse?.createdBy || ''}
-                      onChange={(e) => setEditedCourse(prev => prev ? {...prev, createdBy: e.target.value} : prev)}
+                      value={editedCourse?.created_by || ''}
+                      onChange={(e) => setEditedCourse(prev => prev ? {...prev, created_by: e.target.value} : prev)}
                       className="w-48"
                     />
                   ) : (
-                    <span>Դասախոս՝ {displayCourse?.createdBy}</span>
+                    <span>Դասախոս՝ {displayCourse?.created_by}</span>
                   )}
                 </div>
                 <div className="flex items-center gap-2">
@@ -371,7 +589,7 @@ const CourseDetails: React.FC = () => {
               </div>
               
               <div className="flex gap-4 mt-6">
-                {!isEditing && (
+                {!isEditing && user && (
                   <>
                     <Button onClick={handleApply} size="lg">
                       Դիմել դասընթացին
@@ -596,7 +814,7 @@ const CourseDetails: React.FC = () => {
                     </div>
                   </div>
                   
-                  {!isEditing && (
+                  {!isEditing && user && (
                     <>
                       <Button onClick={handleApply} className="w-full mb-3">
                         Դիմել դասընթացին
@@ -632,4 +850,3 @@ const CourseDetails: React.FC = () => {
 };
 
 export default CourseDetails;
-

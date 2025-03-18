@@ -6,15 +6,19 @@ export interface ProfessionalCourse {
   title: string;
   subtitle: string;
   icon: React.ReactElement;
+  icon_name: string; // Added to store the icon name in the database
   duration: string;
   price: string;
-  buttonText: string;
+  button_text: string;
   color: string;
-  createdBy: string;
+  created_by: string;
   institution: string;
-  imageUrl?: string;
+  image_url?: string;
   description?: string;
-  lessons?: { title: string; duration: string }[];
+  is_persistent?: boolean; // Added to track if course is stored in database
+  lessons?: { title: string; duration: string; id?: string }[];
   requirements?: string[];
   outcomes?: string[];
+  created_at?: string;
+  updated_at?: string;
 }
