@@ -8,10 +8,10 @@ import { Card } from '@/components/ui/card';
 import { ArrowLeft } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { toast } from 'sonner';
-import Header from '@/components/Header';
-import Footer from '@/components/Footer';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
+import Header from '@/components/Header';
+import Footer from '@/components/Footer';
 
 // Import the refactored components
 import CourseViewMode from '@/components/courses/CourseDetails/CourseViewMode';
@@ -97,31 +97,6 @@ const CourseDetailsPage: React.FC = () => {
       fetchCourse();
     }
   }, [id, form]);
-
-  const handleEnroll = async () => {
-    if (!user) {
-      toast.error('Խնդրում ենք մուտք գործել հաշիվ՝ դասընթացին գրանցվելու համար');
-      navigate('/login');
-      return;
-    }
-
-    try {
-      const { error } = await supabase
-        .from('course_enrollments')
-        .insert({
-          course_id: id,
-          user_id: user.id,
-          status: 'pending'
-        });
-
-      if (error) throw error;
-
-      toast.success('Դուք հաջողությամբ գրանցվել եք դասընթացին');
-    } catch (err) {
-      console.error('Error enrolling in course:', err);
-      toast.error('Չհաջողվեց գրանցվել դասընթացին');
-    }
-  };
 
   const handleGoBack = () => {
     navigate(-1);
@@ -234,7 +209,6 @@ const CourseDetailsPage: React.FC = () => {
                 course={course} 
                 canEdit={canEdit} 
                 handleEditToggle={handleEditToggle} 
-                handleEnroll={handleEnroll} 
               />
             )}
           </Card>

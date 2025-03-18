@@ -11,19 +11,18 @@ import {
 } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { BookOpen, Clock, School, User, Edit } from 'lucide-react';
+import CourseEnrollment from './CourseEnrollment';
 
 interface CourseViewModeProps {
   course: Course;
   canEdit: boolean;
   handleEditToggle: () => void;
-  handleEnroll: () => void;
 }
 
 const CourseViewMode: React.FC<CourseViewModeProps> = ({
   course,
   canEdit,
-  handleEditToggle,
-  handleEnroll
+  handleEditToggle
 }) => {
   return (
     <>
@@ -87,22 +86,7 @@ const CourseViewMode: React.FC<CourseViewModeProps> = ({
           </div>
           
           <div className="flex-1">
-            <Card className="h-full">
-              <CardContent className="p-4 flex flex-col h-full justify-between">
-                <div>
-                  <h3 className="font-medium mb-3">Գրանցվելու համար</h3>
-                  <p className="text-sm text-muted-foreground mb-4">
-                    Գրանցվեք հիմա և սկսեք ձեր ուսումնական ճանապարհորդությունը։
-                  </p>
-                </div>
-                <Button 
-                  className="w-full" 
-                  onClick={handleEnroll}
-                >
-                  Գրանցվել դասընթացին
-                </Button>
-              </CardContent>
-            </Card>
+            <CourseEnrollment courseId={course.id} />
           </div>
         </div>
       </CardContent>
