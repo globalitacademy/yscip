@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Input } from "@/components/ui/input";
 import { ProfessionalCourse } from './types/ProfessionalCourse';
@@ -9,7 +8,7 @@ import { ChevronDown, X, PlusCircle, Upload, Link, Code, BookText, BrainCircuit,
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Textarea } from "@/components/ui/textarea";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "../ui/accordion";
-import { getIconNameFromElement } from './useCourseManagement';
+import { getIconNameFromElement } from './utils/iconUtils';
 
 const colorOptions = [
   { label: 'Ամբերային', value: 'text-amber-500' },

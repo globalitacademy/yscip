@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import Header from '@/components/Header';
@@ -13,7 +12,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { supabase } from '@/integrations/supabase/client';
-import { getIconFromName } from '@/components/courses/useCourseManagement';
+import { getIconFromName } from '@/components/courses/utils/iconUtils';
 
 const getCourseById = async (id: string): Promise<ProfessionalCourse | undefined> => {
   try {
