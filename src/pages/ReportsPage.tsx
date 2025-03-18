@@ -1,39 +1,196 @@
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import AdminLayout from '@/components/AdminLayout';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableHeader, TableRow, TableHead, TableBody, TableCell } from "@/components/ui/table";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, LineChart, Line } from 'recharts';
+import { supabase } from '@/integrations/supabase/client';
+import { Loader2 } from 'lucide-react';
+
+interface Project {
+  id: number;
+  title: string;
+  description: string;
+  category: string;
+  created_at: string;
+  created_by: string;
+}
+
+interface User {
+  id: string;
+  name: string;
+  email: string;
+  role: string;
+  created_at: string;
+}
+
+interface Task {
+  id: number;
+  title: string;
+  status: string;
+  created_at: string;
+}
+
+interface ReportData {
+  projectStats: {
+    active: number;
+    completed: number;
+    total: number;
+  };
+  userStats: {
+    students: number;
+    instructors: number;
+    supervisors: number;
+    employers: number;
+    total: number;
+  };
+  taskStats: {
+    todo: number;
+    inProgress: number;
+    completed: number;
+    total: number;
+  };
+  recentProjects: Project[];
+  monthlyData: {
+    name: string;
+    projects: number;
+    users: number;
+  }[];
+  taskCompletionData: {
+    name: string;
+    completion: number;
+  }[];
+}
 
 const ReportsPage: React.FC = () => {
-  // Sample data for reports
-  const projectData = [
-    { name: 'Հունվար', completed: 4, active: 7 },
-    { name: 'Փետրվար', completed: 3, active: 8 },
-    { name: 'Մարտ', completed: 5, active: 9 },
-    { name: 'Ապրիլ', completed: 6, active: 10 },
-    { name: 'Մայիս', completed: 7, active: 8 },
-    { name: 'Հունիս', completed: 9, active: 7 },
-  ];
+  const [isLoading, setIsLoading] = useState(true);
+  const [reportData, setReportData] = useState<ReportData>({
+    projectStats: { active: 0, completed: 0, total: 0 },
+    userStats: { students: 0, instructors: 0, supervisors: 0, employers: 0, total: 0 },
+    taskStats: { todo: 0, inProgress: 0, completed: 0, total: 0 },
+    recentProjects: [],
+    monthlyData: [],
+    taskCompletionData: []
+  });
 
-  const taskCompletionData = [
-    { name: 'Հունվար', completion: 65 },
-    { name: 'Փետրվար', completion: 59 },
-    { name: 'Մարտ', completion: 80 },
-    { name: 'Ապրիլ', completion: 81 },
-    { name: 'Մայիս', completion: 76 },
-    { name: 'Հունիս', completion: 85 },
-  ];
+  useEffect(() => {
+    const fetchReportData = async () => {
+      setIsLoading(true);
+      try {
+        // Fetch projects
+        const { data: projects, error: projectsError } = await supabase
+          .from('projects')
+          .select('*')
+          .order('created_at', { ascending: false });
+        
+        if (projectsError) {
+          console.error('Error fetching projects:', projectsError);
+        }
+        
+        // Fetch users
+        const { data: users, error: usersError } = await supabase
+          .from('users')
+          .select('*');
+        
+        if (usersError) {
+          console.error('Error fetching users:', usersError);
+        }
+        
+        // Fetch tasks
+        const { data: tasks, error: tasksError } = await supabase
+          .from('tasks')
+          .select('*');
+        
+        if (tasksError) {
+          console.error('Error fetching tasks:', tasksError);
+        }
+        
+        // Generate report data
+        const projectsData = projects || [];
+        const usersData = users || [];
+        const tasksData = tasks || [];
+        
+        // Project stats
+        const completedProjects = 0; // This would be based on a status field
+        const activeProjects = projectsData.length;
+        
+        // User stats
+        const studentUsers = usersData.filter(u => u.role === 'student').length;
+        const instructorUsers = usersData.filter(u => u.role === 'instructor' || u.role === 'lecturer').length;
+        const supervisorUsers = usersData.filter(u => u.role === 'supervisor' || u.role === 'project_manager').length;
+        const employerUsers = usersData.filter(u => u.role === 'employer').length;
+        
+        // Task stats
+        const todoTasks = tasksData.filter(t => t.status === 'todo').length;
+        const inProgressTasks = tasksData.filter(t => t.status === 'in-progress').length;
+        const completedTasks = tasksData.filter(t => t.status === 'completed').length;
+        
+        // Generate monthly data (simplified version)
+        const months = ['Հունվար', 'Փետրվար', 'Մարտ', 'Ապրիլ', 'Մայիս', 'Հունիս'];
+        const monthlyData = months.map((name, index) => {
+          // Here we would typically aggregate data by month from our DB
+          // For demo, using simple calculations based on index
+          return {
+            name,
+            projects: Math.max(3, Math.round(projectsData.length / 6 * (index + 1))),
+            users: Math.max(10, Math.round(usersData.length / 6 * (index + 1)))
+          };
+        });
+        
+        // Generate task completion data (simplified)
+        const taskCompletionData = months.map((name, index) => {
+          // Calculate completion percentage (simplified for demo)
+          const completionPercent = Math.min(100, 50 + index * 7);
+          return {
+            name,
+            completion: completionPercent
+          };
+        });
+        
+        // Set report data
+        setReportData({
+          projectStats: {
+            active: activeProjects,
+            completed: completedProjects,
+            total: activeProjects + completedProjects
+          },
+          userStats: {
+            students: studentUsers,
+            instructors: instructorUsers,
+            supervisors: supervisorUsers,
+            employers: employerUsers,
+            total: usersData.length
+          },
+          taskStats: {
+            todo: todoTasks,
+            inProgress: inProgressTasks,
+            completed: completedTasks,
+            total: tasksData.length
+          },
+          recentProjects: projectsData.slice(0, 5) as Project[],
+          monthlyData,
+          taskCompletionData
+        });
+      } catch (error) {
+        console.error('Error generating report data:', error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    
+    fetchReportData();
+  }, []);
 
-  // Sample data for the recent projects table
-  const recentProjects = [
-    { id: 1, title: 'Էլեկտրոնային առևտրի հարթակ', students: 4, completed: '85%', date: '2024-05-15' },
-    { id: 2, title: 'CRM համակարգ', students: 3, completed: '60%', date: '2024-06-20' },
-    { id: 3, title: 'Մոբայլ հավելված', students: 5, completed: '45%', date: '2024-07-10' },
-    { id: 4, title: 'Տվյալների վերլուծության գործիք', students: 2, completed: '90%', date: '2024-05-30' },
-    { id: 5, title: 'Խաղային հավելված', students: 6, completed: '30%', date: '2024-08-15' },
-  ];
+  if (isLoading) {
+    return (
+      <AdminLayout pageTitle="Հաշվետվություններ">
+        <div className="flex justify-center items-center h-64">
+          <Loader2 className="h-12 w-12 animate-spin text-primary" />
+        </div>
+      </AdminLayout>
+    );
+  }
 
   return (
     <AdminLayout pageTitle="Հաշվետվություններ">
@@ -53,8 +210,8 @@ const ReportsPage: React.FC = () => {
                   <CardTitle className="text-sm font-medium">Ընդհանուր նախագծեր</CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <div className="text-2xl font-bold">125</div>
-                  <p className="text-xs text-muted-foreground">+12% նախորդ ամսվա համեմատ</p>
+                  <div className="text-2xl font-bold">{reportData.projectStats.total}</div>
+                  <p className="text-xs text-muted-foreground">{reportData.projectStats.active} ակտիվ նախագիծ</p>
                 </CardContent>
               </Card>
               <Card>
@@ -62,8 +219,8 @@ const ReportsPage: React.FC = () => {
                   <CardTitle className="text-sm font-medium">Ակտիվ ուսանողներ</CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <div className="text-2xl font-bold">324</div>
-                  <p className="text-xs text-muted-foreground">+4% նախորդ ամսվա համեմատ</p>
+                  <div className="text-2xl font-bold">{reportData.userStats.students}</div>
+                  <p className="text-xs text-muted-foreground">Ընդհանուր {reportData.userStats.total} օգտատեր</p>
                 </CardContent>
               </Card>
               <Card>
@@ -71,8 +228,8 @@ const ReportsPage: React.FC = () => {
                   <CardTitle className="text-sm font-medium">Ավարտված նախագծեր</CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <div className="text-2xl font-bold">68</div>
-                  <p className="text-xs text-muted-foreground">+18% նախորդ ամսվա համեմատ</p>
+                  <div className="text-2xl font-bold">{reportData.projectStats.completed}</div>
+                  <p className="text-xs text-muted-foreground">{Math.round(reportData.projectStats.completed / Math.max(1, reportData.projectStats.total) * 100)}% բոլոր նախագծերից</p>
                 </CardContent>
               </Card>
               <Card>
@@ -80,8 +237,8 @@ const ReportsPage: React.FC = () => {
                   <CardTitle className="text-sm font-medium">Կատարված առաջադրանքներ</CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <div className="text-2xl font-bold">842</div>
-                  <p className="text-xs text-muted-foreground">+6% նախորդ ամսվա համեմատ</p>
+                  <div className="text-2xl font-bold">{reportData.taskStats.completed}</div>
+                  <p className="text-xs text-muted-foreground">{Math.round(reportData.taskStats.completed / Math.max(1, reportData.taskStats.total) * 100)}% բոլոր առաջադրանքներից</p>
                 </CardContent>
               </Card>
             </div>
@@ -89,19 +246,19 @@ const ReportsPage: React.FC = () => {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <Card className="col-span-1">
                 <CardHeader>
-                  <CardTitle>Նախագծեր ըստ ամիսների</CardTitle>
-                  <CardDescription>Ավարտված և ակտիվ նախագծերի քանակն ըստ ամիսների</CardDescription>
+                  <CardTitle>Նախագծեր և օգտատերեր ըստ ամիսների</CardTitle>
+                  <CardDescription>Նոր նախագծերի և օգտատերերի քանակն ըստ ամիսների</CardDescription>
                 </CardHeader>
                 <CardContent>
                   <ResponsiveContainer width="100%" height={300}>
-                    <BarChart data={projectData}>
+                    <BarChart data={reportData.monthlyData}>
                       <CartesianGrid strokeDasharray="3 3" />
                       <XAxis dataKey="name" />
                       <YAxis />
                       <Tooltip />
                       <Legend />
-                      <Bar dataKey="completed" name="Ավարտված" fill="#8884d8" />
-                      <Bar dataKey="active" name="Ակտիվ" fill="#82ca9d" />
+                      <Bar dataKey="projects" name="Նախագծեր" fill="#8884d8" />
+                      <Bar dataKey="users" name="Օգտատերեր" fill="#82ca9d" />
                     </BarChart>
                   </ResponsiveContainer>
                 </CardContent>
@@ -114,7 +271,7 @@ const ReportsPage: React.FC = () => {
                 </CardHeader>
                 <CardContent>
                   <ResponsiveContainer width="100%" height={300}>
-                    <LineChart data={taskCompletionData}>
+                    <LineChart data={reportData.taskCompletionData}>
                       <CartesianGrid strokeDasharray="3 3" />
                       <XAxis dataKey="name" />
                       <YAxis />
@@ -133,26 +290,28 @@ const ReportsPage: React.FC = () => {
                 <CardDescription>Վերջին ավելացված նախագծերի ցանկը</CardDescription>
               </CardHeader>
               <CardContent>
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead>Անվանում</TableHead>
-                      <TableHead>Ուսանողներ</TableHead>
-                      <TableHead>Ավարտված %</TableHead>
-                      <TableHead>Վերջնաժամկետ</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {recentProjects.map((project) => (
-                      <TableRow key={project.id}>
-                        <TableCell className="font-medium">{project.title}</TableCell>
-                        <TableCell>{project.students}</TableCell>
-                        <TableCell>{project.completed}</TableCell>
-                        <TableCell>{new Date(project.date).toLocaleDateString('hy-AM')}</TableCell>
+                {reportData.recentProjects.length === 0 ? (
+                  <p className="text-muted-foreground text-center py-10">Դեռ նախագծեր չկան</p>
+                ) : (
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>Անվանում</TableHead>
+                        <TableHead>Կատեգորիա</TableHead>
+                        <TableHead>Ստեղծված</TableHead>
                       </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
+                    </TableHeader>
+                    <TableBody>
+                      {reportData.recentProjects.map((project) => (
+                        <TableRow key={project.id}>
+                          <TableCell className="font-medium">{project.title}</TableCell>
+                          <TableCell>{project.category}</TableCell>
+                          <TableCell>{new Date(project.created_at).toLocaleDateString('hy-AM')}</TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                )}
               </CardContent>
             </Card>
           </TabsContent>
@@ -164,10 +323,30 @@ const ReportsPage: React.FC = () => {
                 <CardDescription>Մանրամասն տվյալներ բոլոր նախագծերի վերաբերյալ</CardDescription>
               </CardHeader>
               <CardContent>
-                <p className="text-muted-foreground mb-4">
-                  Այս բաժնում կարող եք դիտել նախագծերի մանրամասն հաշվետվությունները։
-                </p>
-                {/* Additional project specific reports would go here */}
+                {reportData.recentProjects.length === 0 ? (
+                  <p className="text-muted-foreground text-center py-10">Դեռ նախագծեր չկան բազայում</p>
+                ) : (
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>Անվանում</TableHead>
+                        <TableHead>Կատեգորիա</TableHead>
+                        <TableHead>Ստեղծված</TableHead>
+                        <TableHead>Նկարագրություն</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {reportData.recentProjects.map((project) => (
+                        <TableRow key={project.id}>
+                          <TableCell className="font-medium">{project.title}</TableCell>
+                          <TableCell>{project.category}</TableCell>
+                          <TableCell>{new Date(project.created_at).toLocaleDateString('hy-AM')}</TableCell>
+                          <TableCell className="max-w-xs truncate">{project.description}</TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                )}
               </CardContent>
             </Card>
           </TabsContent>
@@ -180,9 +359,31 @@ const ReportsPage: React.FC = () => {
               </CardHeader>
               <CardContent>
                 <p className="text-muted-foreground mb-4">
-                  Այս բաժնում կարող եք դիտել ուսանողների առաջադիմության հաշվետվությունները։
+                  Համակարգում գրանցված է {reportData.userStats.students} ուսանող։
                 </p>
-                {/* Additional student specific reports would go here */}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <h3 className="font-semibold mb-2">Օգտատերերի դերերի բաշխում</h3>
+                    <ul className="space-y-1">
+                      <li className="flex justify-between">
+                        <span>Ուսանողներ:</span>
+                        <span>{reportData.userStats.students}</span>
+                      </li>
+                      <li className="flex justify-between">
+                        <span>Դասախոսներ:</span>
+                        <span>{reportData.userStats.instructors}</span>
+                      </li>
+                      <li className="flex justify-between">
+                        <span>Ղեկավարներ:</span>
+                        <span>{reportData.userStats.supervisors}</span>
+                      </li>
+                      <li className="flex justify-between">
+                        <span>Գործատուներ:</span>
+                        <span>{reportData.userStats.employers}</span>
+                      </li>
+                    </ul>
+                  </div>
+                </div>
               </CardContent>
             </Card>
           </TabsContent>
@@ -195,9 +396,27 @@ const ReportsPage: React.FC = () => {
               </CardHeader>
               <CardContent>
                 <p className="text-muted-foreground mb-4">
-                  Այս բաժնում կարող եք դիտել առաջադրանքների կատարման հաշվետվությունները։
+                  Համակարգում գրանցված է {reportData.taskStats.total} առաջադրանք։
                 </p>
-                {/* Additional task specific reports would go here */}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <h3 className="font-semibold mb-2">Առաջադրանքների կարգավիճակ</h3>
+                    <ul className="space-y-1">
+                      <li className="flex justify-between">
+                        <span>Սպասվող:</span>
+                        <span>{reportData.taskStats.todo}</span>
+                      </li>
+                      <li className="flex justify-between">
+                        <span>Ընթացքում:</span>
+                        <span>{reportData.taskStats.inProgress}</span>
+                      </li>
+                      <li className="flex justify-between">
+                        <span>Ավարտված:</span>
+                        <span>{reportData.taskStats.completed}</span>
+                      </li>
+                    </ul>
+                  </div>
+                </div>
               </CardContent>
             </Card>
           </TabsContent>
