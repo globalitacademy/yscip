@@ -4,11 +4,13 @@ import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 
+export type NotificationType = 'info' | 'warning' | 'success' | 'error';
+
 export interface Notification {
   id: number;
   title: string;
   message: string;
-  type: 'info' | 'warning' | 'success' | 'error';
+  type: NotificationType;
   created_at: string;
   read: boolean;
   user_id: string;
@@ -19,6 +21,14 @@ export const useNotifications = () => {
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [loading, setLoading] = useState(true);
   const [unreadCount, setUnreadCount] = useState(0);
+
+  // Helper function to validate notification type
+  const validateNotificationType = (type: string): NotificationType => {
+    if (['info', 'warning', 'success', 'error'].includes(type)) {
+      return type as NotificationType;
+    }
+    return 'info'; // Default fallback
+  };
 
   // Fetch notifications
   const fetchNotifications = async () => {
@@ -35,8 +45,14 @@ export const useNotifications = () => {
       
       if (error) throw error;
       
-      setNotifications(data || []);
-      setUnreadCount(data?.filter(n => !n.read).length || 0);
+      // Transform and validate the notification types
+      const typedNotifications = data?.map(notification => ({
+        ...notification,
+        type: validateNotificationType(notification.type)
+      })) as Notification[] || [];
+      
+      setNotifications(typedNotifications);
+      setUnreadCount(typedNotifications.filter(n => !n.read).length || 0);
     } catch (error) {
       console.error('Error fetching notifications:', error);
     } finally {
@@ -168,7 +184,11 @@ export const useNotifications = () => {
           filter: `user_id=eq.${user.id}`
         }, 
         (payload) => {
-          const newNotification = payload.new as Notification;
+          const newNotification = {
+            ...payload.new,
+            type: validateNotificationType(payload.new.type as string)
+          } as Notification;
+          
           setNotifications(prev => [newNotification, ...prev]);
           setUnreadCount(prev => prev + 1);
           

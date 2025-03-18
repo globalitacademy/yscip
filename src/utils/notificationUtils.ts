@@ -1,7 +1,15 @@
 
 import { supabase } from '@/integrations/supabase/client';
 
-type NotificationType = 'info' | 'warning' | 'success' | 'error';
+export type NotificationType = 'info' | 'warning' | 'success' | 'error';
+
+// Validate notification type to ensure it matches allowed values
+const validateNotificationType = (type: string): NotificationType => {
+  if (['info', 'warning', 'success', 'error'].includes(type)) {
+    return type as NotificationType;
+  }
+  return 'info'; // Default fallback
+};
 
 export const addNotification = async (
   userId: string,
@@ -10,6 +18,9 @@ export const addNotification = async (
   type: NotificationType = 'info'
 ) => {
   try {
+    // Ensure type is valid
+    const validType = validateNotificationType(type);
+    
     const { data, error } = await supabase
       .from('notifications')
       .insert([
@@ -17,7 +28,7 @@ export const addNotification = async (
           user_id: userId,
           title,
           message,
-          type,
+          type: validType,
           read: false
         }
       ]);
@@ -38,12 +49,15 @@ export const addSystemNotification = async (
   type: NotificationType = 'info'
 ) => {
   try {
+    // Ensure type is valid
+    const validType = validateNotificationType(type);
+    
     // Use the Supabase function to create a notification
     const { error } = await supabase.rpc('create_notification', {
       p_user_id: userId,
       p_title: title,
       p_message: message,
-      p_type: type
+      p_type: validType
     });
     
     if (error) throw error;
