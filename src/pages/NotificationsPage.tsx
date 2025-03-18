@@ -1,95 +1,26 @@
 
-import React, { useState } from 'react';
+import React from 'react';
 import AdminLayout from '@/components/AdminLayout';
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
-import { Bell, Check, Clock, Info, AlertTriangle, MessageSquare, Users, Calendar } from 'lucide-react';
-import { toast } from 'sonner';
-
-interface Notification {
-  id: string;
-  title: string;
-  message: string;
-  type: 'info' | 'warning' | 'success' | 'error';
-  date: string;
-  read: boolean;
-}
+import { Bell, Check, Info, AlertTriangle } from 'lucide-react';
+import { useNotifications } from '@/hooks/useNotifications';
 
 const NotificationsPage: React.FC = () => {
-  // Sample notifications data
-  const [notifications, setNotifications] = useState<Notification[]>([
-    {
-      id: '1',
-      title: 'Նոր նախագիծ',
-      message: 'Ավելացվել է նոր նախագիծ "Էլեկտրոնային առևտրի հարթակ"',
-      type: 'info',
-      date: '2024-05-18T10:30:00',
-      read: false
-    },
-    {
-      id: '2',
-      title: 'Ուշացող առաջադրանք',
-      message: 'Ուշանում է "Տվյալների բազայի սխեմայի ստեղծում" առաջադրանքը։',
-      type: 'warning',
-      date: '2024-05-17T16:45:00',
-      read: false
-    },
-    {
-      id: '3',
-      title: 'Ավարտված նախագիծ',
-      message: '"Մոբայլ հավելված" նախագիծը հաջողությամբ ավարտվել է։',
-      type: 'success',
-      date: '2024-05-15T14:20:00',
-      read: true
-    },
-    {
-      id: '4',
-      title: 'Նոր հաղորդագրություն',
-      message: 'Ունեք նոր հաղորդագրություն Անի Պետրոսյանից։',
-      type: 'info',
-      date: '2024-05-14T09:15:00',
-      read: true
-    },
-    {
-      id: '5',
-      title: 'Կարևոր հայտարարություն',
-      message: 'Այսօր ժամը 15:00-ին տեղի կունենա դասախոսների ժողով։',
-      type: 'info',
-      date: '2024-05-13T11:30:00',
-      read: true
-    },
-  ]);
+  const {
+    notifications,
+    loading,
+    unreadCount,
+    markAsRead,
+    markAllAsRead,
+    deleteNotification,
+    clearAllNotifications
+  } = useNotifications();
 
-  const markAsRead = (id: string) => {
-    setNotifications(prev => 
-      prev.map(notification => 
-        notification.id === id ? {...notification, read: true} : notification
-      )
-    );
-    toast.success('Ծանուցումը նշվեց որպես կարդացված');
-  };
-
-  const markAllAsRead = () => {
-    setNotifications(prev => 
-      prev.map(notification => ({...notification, read: true}))
-    );
-    toast.success('Բոլոր ծանուցումները նշվեցին որպես կարդացված');
-  };
-
-  const deleteNotification = (id: string) => {
-    setNotifications(prev => prev.filter(notification => notification.id !== id));
-    toast.success('Ծանուցումը հեռացվեց');
-  };
-
-  const clearAllNotifications = () => {
-    setNotifications([]);
-    toast.success('Բոլոր ծանուցումները հեռացվեցին');
-  };
-
-  const getIconByType = (type: Notification['type']) => {
+  const getIconByType = (type: string) => {
     switch (type) {
       case 'info': return <Info className="h-5 w-5 text-blue-500" />;
       case 'warning': return <AlertTriangle className="h-5 w-5 text-amber-500" />;
@@ -109,8 +40,6 @@ const NotificationsPage: React.FC = () => {
       minute: '2-digit'
     });
   };
-
-  const unreadCount = notifications.filter(n => !n.read).length;
 
   return (
     <AdminLayout pageTitle="Ծանուցումներ">
@@ -139,7 +68,13 @@ const NotificationsPage: React.FC = () => {
           </TabsList>
           
           <TabsContent value="all">
-            {notifications.length === 0 ? (
+            {loading ? (
+              <Card>
+                <CardContent className="pt-6 text-center">
+                  <p>Բեռնում...</p>
+                </CardContent>
+              </Card>
+            ) : notifications.length === 0 ? (
               <Card>
                 <CardContent className="pt-6 text-center">
                   <Bell className="mx-auto h-8 w-8 text-muted-foreground mb-2" />
@@ -160,7 +95,7 @@ const NotificationsPage: React.FC = () => {
                             <div className="flex justify-between items-start mb-1">
                               <h4 className="font-medium">{notification.title}</h4>
                               <span className="text-xs text-muted-foreground">
-                                {formatDate(notification.date)}
+                                {formatDate(notification.created_at)}
                               </span>
                             </div>
                             <p className="text-sm text-muted-foreground mb-2">{notification.message}</p>
@@ -196,7 +131,13 @@ const NotificationsPage: React.FC = () => {
           </TabsContent>
           
           <TabsContent value="unread">
-            {unreadCount === 0 ? (
+            {loading ? (
+              <Card>
+                <CardContent className="pt-6 text-center">
+                  <p>Բեռնում...</p>
+                </CardContent>
+              </Card>
+            ) : unreadCount === 0 ? (
               <Card>
                 <CardContent className="pt-6 text-center">
                   <Check className="mx-auto h-8 w-8 text-muted-foreground mb-2" />
@@ -217,7 +158,7 @@ const NotificationsPage: React.FC = () => {
                             <div className="flex justify-between items-start mb-1">
                               <h4 className="font-medium">{notification.title}</h4>
                               <span className="text-xs text-muted-foreground">
-                                {formatDate(notification.date)}
+                                {formatDate(notification.created_at)}
                               </span>
                             </div>
                             <p className="text-sm text-muted-foreground mb-2">{notification.message}</p>
