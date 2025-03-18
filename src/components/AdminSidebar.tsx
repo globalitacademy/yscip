@@ -1,9 +1,16 @@
 
 import React from 'react';
 import { useAuth } from '@/contexts/AuthContext';
+import { 
+  Sidebar, 
+  SidebarContent, 
+  SidebarHeader,
+  SidebarMenu,
+  SidebarMenuItem,
+  SidebarMenuButton
+} from '@/components/ui/sidebar';
 import { Button } from '@/components/ui/button';
 import { X, Bell } from 'lucide-react';
-import SidebarMenuGroup from './sidebar/SidebarMenuGroup';
 import { 
   baseMenuItems, 
   adminMenuItems, 
@@ -47,18 +54,48 @@ const AdminSidebar: React.FC<AdminSidebarProps> = ({
     return null;
   }
   
+  const renderMenuGroup = (groupTitle: string, menuItems: any[]) => (
+    <div className="mb-6">
+      <h3 className="px-4 mb-2 text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+        {groupTitle}
+      </h3>
+      <SidebarMenu>
+        {menuItems.map((item, index) => (
+          <SidebarMenuItem key={index}>
+            <SidebarMenuButton asChild isActive={window.location.pathname === item.href}>
+              <a href={item.href} onClick={onCloseMenu} className="flex items-center">
+                {item.icon}
+                <span className="ml-2">{item.title}</span>
+              </a>
+            </SidebarMenuButton>
+          </SidebarMenuItem>
+        ))}
+      </SidebarMenu>
+    </div>
+  );
+  
   return (
-    <aside className="w-64 bg-card border-r border-border h-screen sticky top-0 overflow-y-auto py-6 px-0">
-      <div className="flex justify-between items-center mb-8 px-2">
+    <Sidebar variant="inset" className="border-r border-border">
+      <SidebarHeader className="flex justify-between items-center p-4">
         <div className="text-xl font-bold">Ադմինիստրացիա</div>
-        {onCloseMenu && <Button variant="ghost" size="icon" onClick={onCloseMenu} className="md:hidden">
+        {onCloseMenu && 
+          <Button variant="ghost" size="icon" onClick={onCloseMenu} className="md:hidden">
             <X className="h-5 w-5" />
-          </Button>}
-      </div>
+          </Button>
+        }
+      </SidebarHeader>
       
-      <nav className="space-y-6">
+      <SidebarContent className="px-2 py-4">
         {/* Base menu items (common for all roles) */}
-        <SidebarMenuGroup menuItems={baseMenuItems} onCloseMenu={onCloseMenu} />
+        {baseMenuItems.map((group, index) => {
+          const filteredItems = group.items.filter(item => 
+            item.roles.includes(user.role)
+          );
+          
+          if (filteredItems.length === 0) return null;
+          
+          return renderMenuGroup(group.title, filteredItems);
+        })}
         
         {/* Pending approvals notification for supervisors */}
         {(user.role === 'supervisor' || user.role === 'project_manager') && pendingCount > 0 && (
@@ -75,26 +112,26 @@ const AdminSidebar: React.FC<AdminSidebarProps> = ({
         
         {/* Role-specific menu items */}
         {user.role === 'admin' && 
-          <SidebarMenuGroup menuItems={adminMenuItems} onCloseMenu={onCloseMenu} />
+          adminMenuItems.map((group, index) => renderMenuGroup(group.title, group.items))
         }
         
         {(user.role === 'lecturer' || user.role === 'instructor' || user.role === 'supervisor' || user.role === 'project_manager') && 
-          <SidebarMenuGroup menuItems={lecturerMenuItems} onCloseMenu={onCloseMenu} />
+          lecturerMenuItems.map((group, index) => renderMenuGroup(group.title, group.items))
         }
         
         {(user.role === 'supervisor' || user.role === 'project_manager') && 
-          <SidebarMenuGroup menuItems={supervisorMenuItems} onCloseMenu={onCloseMenu} />
+          supervisorMenuItems.map((group, index) => renderMenuGroup(group.title, group.items))
         }
 
         {user.role === 'employer' && 
-          <SidebarMenuGroup menuItems={employerMenuItems} onCloseMenu={onCloseMenu} />
+          employerMenuItems.map((group, index) => renderMenuGroup(group.title, group.items))
         }
         
         {user.role === 'student' && 
-          <SidebarMenuGroup menuItems={studentMenuItems} onCloseMenu={onCloseMenu} />
+          studentMenuItems.map((group, index) => renderMenuGroup(group.title, group.items))
         }
-      </nav>
-    </aside>
+      </SidebarContent>
+    </Sidebar>
   );
 };
 
