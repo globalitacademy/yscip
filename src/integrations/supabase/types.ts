@@ -193,7 +193,9 @@ export type Database = {
           image_url: string | null
           institution: string | null
           is_persistent: boolean | null
+          modules: string[] | null
           price: string
+          specialization: string | null
           subtitle: string
           title: string
           updated_at: string | null
@@ -210,7 +212,9 @@ export type Database = {
           image_url?: string | null
           institution?: string | null
           is_persistent?: boolean | null
+          modules?: string[] | null
           price: string
+          specialization?: string | null
           subtitle?: string
           title: string
           updated_at?: string | null
@@ -227,7 +231,9 @@ export type Database = {
           image_url?: string | null
           institution?: string | null
           is_persistent?: boolean | null
+          modules?: string[] | null
           price?: string
+          specialization?: string | null
           subtitle?: string
           title?: string
           updated_at?: string | null

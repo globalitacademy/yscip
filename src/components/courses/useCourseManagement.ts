@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { toast } from 'sonner';
 import { Course } from './types';
@@ -60,21 +59,16 @@ export const useCourseManagement = () => {
     };
 
     try {
-      // First insert the basic course data
       const { error } = await supabase
         .from('courses')
         .insert(courseToAdd);
       
       if (error) throw error;
       
-      // If there are modules, update the course with the modules
-      // We need to do this as a separate update because modules may not be in the schema
       if (newCourse.modules && newCourse.modules.length > 0) {
         const { error: modulesError } = await supabase
           .from('courses')
-          .update({ 
-            modules: newCourse.modules
-          })
+          .update({ modules: newCourse.modules })
           .eq('id', courseId);
           
         if (modulesError) {
@@ -98,7 +92,6 @@ export const useCourseManagement = () => {
       });
       setIsAddDialogOpen(false);
       
-      // Refresh courses list
       window.location.reload();
     } catch (error) {
       console.error('Error adding course:', error);
@@ -134,7 +127,6 @@ export const useCourseManagement = () => {
       toast.success('Դասընթացը հաջողությամբ թարմացվել է');
       setIsEditDialogOpen(false);
       
-      // Refresh courses list
       window.location.reload();
     } catch (error) {
       console.error('Error updating course:', error);
@@ -187,7 +179,6 @@ export const useCourseManagement = () => {
   const handleDeleteCourse = async (id: string) => {
     const courseToDelete = courses.find(course => course.id === id);
     
-    // Only allow users to delete their own courses (admin can delete any)
     if (courseToDelete && (user?.role === 'admin' || courseToDelete.createdBy === user?.id)) {
       try {
         const { error } = await supabase
@@ -199,7 +190,6 @@ export const useCourseManagement = () => {
         
         toast.success('Դասընթացը հաջողությամբ հեռացվել է');
         
-        // Refresh courses list
         window.location.reload();
       } catch (error) {
         console.error('Error deleting course:', error);

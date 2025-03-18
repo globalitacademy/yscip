@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import { toast } from 'sonner';
 import { Course } from './types';
@@ -25,9 +26,9 @@ export const useSupabaseCourses = () => {
         id: course.id,
         title: course.title,
         description: course.description || '',
-        specialization: undefined,
+        specialization: course.specialization || undefined,
         duration: course.duration,
-        modules: [],
+        modules: course.modules || [],
         createdBy: course.created_by || 'unknown',
         color: course.color,
         button_text: course.button_text,
