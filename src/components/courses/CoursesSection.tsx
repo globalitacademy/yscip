@@ -28,12 +28,19 @@ const CoursesSection: React.FC = () => {
         // Map the database courses to our Course type
         const mappedCourses: Course[] = data.map((course) => ({
           id: course.id,
-          name: course.name,
-          description: course.description,
+          title: course.title,
+          description: course.description || '',
           specialization: course.specialization || undefined,
           duration: course.duration,
           modules: course.modules || [],
-          createdBy: course.created_by || 'unknown'
+          createdBy: course.created_by || 'unknown',
+          color: course.color,
+          button_text: course.button_text,
+          icon_name: course.icon_name,
+          subtitle: course.subtitle,
+          price: course.price,
+          image_url: course.image_url,
+          institution: course.institution
         }));
 
         setCourses(mappedCourses);

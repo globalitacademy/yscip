@@ -23,7 +23,7 @@ export const useCourseManagement = () => {
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [newCourse, setNewCourse] = useState<Partial<Course>>({
-    name: '',
+    title: '',
     description: '',
     specialization: '',
     duration: '',
@@ -33,13 +33,13 @@ export const useCourseManagement = () => {
   const [newModule, setNewModule] = useState('');
 
   const handleAddCourse = async () => {
-    if (!newCourse.name || !newCourse.description || !newCourse.duration) {
+    if (!newCourse.title || !newCourse.description || !newCourse.duration) {
       toast.error('Լրացրեք բոլոր պարտադիր դաշտերը');
       return;
     }
 
     const courseToAdd = {
-      name: newCourse.name,
+      title: newCourse.title,
       description: newCourse.description,
       specialization: newCourse.specialization,
       duration: newCourse.duration,
@@ -50,7 +50,7 @@ export const useCourseManagement = () => {
     
     if (success) {
       setNewCourse({
-        name: '',
+        title: '',
         description: '',
         specialization: '',
         duration: '',
@@ -64,7 +64,7 @@ export const useCourseManagement = () => {
   const handleEditCourse = async () => {
     if (!selectedCourse) return;
     
-    if (!selectedCourse.name || !selectedCourse.description || !selectedCourse.duration) {
+    if (!selectedCourse.title || !selectedCourse.description || !selectedCourse.duration) {
       toast.error('Լրացրեք բոլոր պարտադիր դաշտերը');
       return;
     }
@@ -103,14 +103,14 @@ export const useCourseManagement = () => {
     if (!newModule || !selectedCourse) return;
     setSelectedCourse({
       ...selectedCourse,
-      modules: [...selectedCourse.modules, newModule]
+      modules: [...(selectedCourse.modules || []), newModule]
     });
     setNewModule('');
   };
 
   const handleRemoveModuleFromEdit = (index: number) => {
     if (!selectedCourse) return;
-    const updatedModules = [...selectedCourse.modules];
+    const updatedModules = [...(selectedCourse.modules || [])];
     updatedModules.splice(index, 1);
     setSelectedCourse({
       ...selectedCourse,

@@ -24,12 +24,19 @@ export const useSupabaseCourses = () => {
       // Map the database courses to our Course type
       const mappedCourses: Course[] = data.map((course) => ({
         id: course.id,
-        name: course.name,
-        description: course.description,
+        title: course.title,
+        description: course.description || '',
         specialization: course.specialization || undefined,
         duration: course.duration,
         modules: course.modules || [],
-        createdBy: course.created_by || 'unknown'
+        createdBy: course.created_by || 'unknown',
+        color: course.color,
+        button_text: course.button_text,
+        icon_name: course.icon_name,
+        subtitle: course.subtitle,
+        price: course.price,
+        image_url: course.image_url,
+        institution: course.institution
       }));
 
       setCourses(mappedCourses);
@@ -65,12 +72,16 @@ export const useSupabaseCourses = () => {
     try {
       // Convert to the Supabase table format
       const courseToAdd = {
-        name: newCourse.name,
+        title: newCourse.title,
         description: newCourse.description,
         specialization: newCourse.specialization || null,
         duration: newCourse.duration,
         modules: newCourse.modules || [],
-        created_by: user.id
+        created_by: user.id,
+        color: 'text-amber-500', // Default color
+        icon_name: 'Book', // Default icon
+        price: '0', // Default price
+        subtitle: 'ԴԱՍԸՆԹԱՑ' // Default subtitle
       };
 
       const { data, error } = await supabase
@@ -86,12 +97,19 @@ export const useSupabaseCourses = () => {
       // Add the new course to state
       const addedCourse: Course = {
         id: data.id,
-        name: data.name,
-        description: data.description,
+        title: data.title,
+        description: data.description || '',
         specialization: data.specialization || undefined,
         duration: data.duration,
         modules: data.modules || [],
-        createdBy: data.created_by
+        createdBy: data.created_by,
+        color: data.color,
+        button_text: data.button_text,
+        icon_name: data.icon_name,
+        subtitle: data.subtitle,
+        price: data.price,
+        image_url: data.image_url,
+        institution: data.institution
       };
 
       setCourses(prevCourses => [...prevCourses, addedCourse]);
@@ -113,7 +131,7 @@ export const useSupabaseCourses = () => {
     try {
       // Convert to the Supabase table format
       const courseUpdate = {
-        name: updatedData.name,
+        title: updatedData.title,
         description: updatedData.description,
         specialization: updatedData.specialization || null,
         duration: updatedData.duration,

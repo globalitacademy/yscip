@@ -17,7 +17,7 @@ const CourseSectionCard: React.FC<CourseSectionCardProps> = ({ course, onClick }
       <CardHeader className="pb-2">
         <div className="flex justify-between items-start">
           <div>
-            <CardTitle className="text-xl">{course.name}</CardTitle>
+            <CardTitle className="text-xl">{course.title}</CardTitle>
             {course.specialization && (
               <Badge variant="outline" className="mt-1">
                 {course.specialization}
@@ -40,7 +40,7 @@ const CourseSectionCard: React.FC<CourseSectionCardProps> = ({ course, onClick }
             <span>Նշանակված: 12</span>
           </div>
           
-          {course.modules.length > 0 && (
+          {course.modules && course.modules.length > 0 && (
             <div>
               <div className="text-sm font-medium mb-1 flex items-center">
                 <Book size={16} className="mr-1" />
@@ -67,7 +67,7 @@ const CourseSectionCard: React.FC<CourseSectionCardProps> = ({ course, onClick }
             className="w-full"
             onClick={onClick}
           >
-            Դիտել կուրսը
+            {course.button_text || "Դիտել կուրսը"}
           </Button>
         </div>
       </CardContent>
