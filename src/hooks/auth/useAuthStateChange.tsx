@@ -63,6 +63,13 @@ export const useAuthStateChange = (
           const parsedUser = JSON.parse(storedUser);
           if (parsedUser.email === 'gitedu@bk.ru') {
             console.log('Admin user sign out prevented - keeping admin session active');
+            // Try to reactivate admin session in background
+            try {
+              await supabase.functions.invoke('ensure-admin-activation');
+              console.log('Background admin activation called');
+            } catch (err) {
+              console.error('Background admin activation error:', err);
+            }
             return;
           }
         }
