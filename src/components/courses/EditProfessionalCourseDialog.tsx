@@ -20,7 +20,7 @@ const EditProfessionalCourseDialog: React.FC<EditProfessionalCourseDialogProps> 
   setSelectedCourse,
   handleEditCourse
 }) => {
-  // Ensure we have a deep copy of the course to prevent reference issues
+  // Log course data when dialog opens
   useEffect(() => {
     if (isOpen && selectedCourse) {
       console.log("Dialog opened with course:", selectedCourse);
