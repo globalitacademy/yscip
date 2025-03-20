@@ -4,6 +4,7 @@ import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
 import { Group, GroupStudent, NewGroupData } from './types';
 import { User } from '@/types/user';
+import { useGroupEvents } from './useGroupEvents';
 
 export const useGroupManagement = () => {
   const [groups, setGroups] = useState<Group[]>([]);
@@ -20,6 +21,9 @@ export const useGroupManagement = () => {
   });
   const [availableStudents, setAvailableStudents] = useState<User[]>([]);
   const [selectedStudent, setSelectedStudent] = useState<string>('');
+
+  // Use the real-time subscription hook
+  useGroupEvents(setGroups, setGroupStudents);
 
   // Fetch all users and groups from Supabase
   useEffect(() => {

@@ -3,6 +3,7 @@ import { useState, useEffect } from 'react';
 import { User, UserRole } from '@/types/user';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
+import { useRealTimeUsers } from './useRealTimeUsers';
 
 export const useUserManagement = () => {
   const [users, setUsers] = useState<User[]>([]);
@@ -22,6 +23,9 @@ export const useUserManagement = () => {
     course: '',
     group: ''
   });
+
+  // Use real-time subscription hook
+  useRealTimeUsers(setUsers);
 
   // Function to show confirmation dialog
   const showConfirm = (title: string, description: string, action: () => Promise<void>) => {
