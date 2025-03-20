@@ -3,7 +3,7 @@ import React from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { ProfessionalCourse } from './types/ProfessionalCourse';
-import { Eye, Pencil, Trash } from 'lucide-react';
+import { Eye, Pencil, Trash, Building } from 'lucide-react';
 
 interface ProfessionalCourseCardProps {
   course: ProfessionalCourse;

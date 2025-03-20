@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { FadeIn } from '@/components/LocalTransitions';
 import { Button } from '@/components/ui/button';
@@ -23,7 +22,8 @@ const initialProfessionalCourses: ProfessionalCourse[] = [
     color: 'text-amber-500',
     createdBy: 'Արամ Հակոբյան',
     institution: 'ՀՊՏՀ',
-    imageUrl: 'https://images.unsplash.com/photo-1547658719-da2b51169166?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=2000&q=80'
+    imageUrl: 'https://images.unsplash.com/photo-1547658719-da2b51169166?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=2000&q=80',
+    organizationLogo: 'https://upload.wikimedia.org/wikipedia/commons/thumb/9/9a/ASUE-Logo.png/220px-ASUE-Logo.png'
   },
   {
     id: '2',
@@ -98,7 +98,6 @@ const ProfessionalCoursesSection: React.FC = () => {
   const [selectedCourse, setSelectedCourse] = useState<ProfessionalCourse | null>(null);
   const [courses, setCourses] = useState<ProfessionalCourse[]>([]);
 
-  // Initialize courses from localStorage or fall back to initial data
   useEffect(() => {
     const storedCourses = localStorage.getItem('professionalCourses');
     
@@ -108,7 +107,6 @@ const ProfessionalCoursesSection: React.FC = () => {
         if (Array.isArray(parsedCourses) && parsedCourses.length > 0) {
           setCourses(parsedCourses);
         } else {
-          // Initialize with default data if stored data is empty or invalid
           setCourses(initialProfessionalCourses);
           localStorage.setItem('professionalCourses', JSON.stringify(initialProfessionalCourses));
         }
@@ -118,13 +116,11 @@ const ProfessionalCoursesSection: React.FC = () => {
         localStorage.setItem('professionalCourses', JSON.stringify(initialProfessionalCourses));
       }
     } else {
-      // No stored courses yet, initialize
       setCourses(initialProfessionalCourses);
       localStorage.setItem('professionalCourses', JSON.stringify(initialProfessionalCourses));
     }
   }, []);
 
-  // Listen for course update events
   useEffect(() => {
     const handleCourseUpdated = (event: CustomEvent<ProfessionalCourse>) => {
       const updatedCourse = event.detail;
@@ -139,10 +135,8 @@ const ProfessionalCoursesSection: React.FC = () => {
       });
     };
 
-    // Add event listener
     window.addEventListener(COURSE_UPDATED_EVENT, handleCourseUpdated as EventListener);
     
-    // Clean up
     return () => {
       window.removeEventListener(COURSE_UPDATED_EVENT, handleCourseUpdated as EventListener);
     };
@@ -154,7 +148,6 @@ const ProfessionalCoursesSection: React.FC = () => {
     try {
       const success = await saveCourseChanges(selectedCourse);
       if (success) {
-        // Update was successful and event was dispatched via saveCourseChanges
         toast.success('Դասընթացը հաջողությամբ թարմացվել է');
         setIsEditDialogOpen(false);
       } else {
@@ -171,7 +164,6 @@ const ProfessionalCoursesSection: React.FC = () => {
     setIsEditDialogOpen(true);
   };
   
-  // Check if user can edit a course
   const canEditCourse = (course: ProfessionalCourse) => {
     return user && (user.role === 'admin' || course.createdBy === user.name);
   };
@@ -195,10 +187,21 @@ const ProfessionalCoursesSection: React.FC = () => {
           {courses.map((course) => (
             <FadeIn key={course.id} delay="delay-200" className="flex">
               <Card className="flex flex-col w-full hover:shadow-md transition-shadow relative">
-                <div className="absolute top-4 left-4 flex items-center text-xs bg-gray-100 px-2 py-1 rounded-full z-10">
-                  <Building size={12} className="mr-1" />
-                  <span>{course.institution}</span>
-                </div>
+                {course.organizationLogo ? (
+                  <div className="absolute top-4 left-4 flex items-center text-xs bg-gray-100 px-2 py-1 rounded-full z-10">
+                    <img 
+                      src={course.organizationLogo} 
+                      alt={course.institution}
+                      className="w-6 h-6 mr-1 object-contain rounded-full"
+                    />
+                    <span>{course.institution}</span>
+                  </div>
+                ) : (
+                  <div className="absolute top-4 left-4 flex items-center text-xs bg-gray-100 px-2 py-1 rounded-full z-10">
+                    <Building size={12} className="mr-1" />
+                    <span>{course.institution}</span>
+                  </div>
+                )}
 
                 {canEditCourse(course) && (
                   <div className="absolute top-4 right-4 z-10">
@@ -224,7 +227,6 @@ const ProfessionalCoursesSection: React.FC = () => {
                         alt={course.title}
                         className="w-full h-full object-cover"
                         onError={(e) => {
-                          // Fallback to icon if image fails to load
                           e.currentTarget.style.display = 'none';
                           const iconElement = document.getElementById(`course-icon-${course.id}`);
                           if (iconElement) iconElement.style.display = 'block';
