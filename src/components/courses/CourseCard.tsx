@@ -4,9 +4,11 @@ import { Card, CardContent, CardFooter } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Course } from './types';
 import { useNavigate } from 'react-router-dom';
-import { Code, Coffee, FileCode, ArrowRight } from 'lucide-react';
+import { Code, Coffee, FileCode, ArrowRight, User, Building } from 'lucide-react';
 import { PythonLogo } from './CourseIcons';
 import { Badge } from '@/components/ui/badge';
+import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
+import { useAuth } from '@/contexts/AuthContext';
 
 interface CourseCardProps {
   course: Course;
@@ -24,6 +26,7 @@ const CourseCard: React.FC<CourseCardProps> = ({
   onDelete 
 }) => {
   const navigate = useNavigate();
+  const { user } = useAuth();
   
   // Function to get icon based on course icon_name or title
   const getIcon = () => {
@@ -57,6 +60,14 @@ const CourseCard: React.FC<CourseCardProps> = ({
   const handleViewDetails = () => {
     navigate(`/course/${course.id}`);
   };
+
+  // Determine creator information
+  const isCreatedByCurrentUser = course.createdBy === user?.id;
+  const creatorName = course.instructor || (isCreatedByCurrentUser ? 'Ձեր կողմից' : 'Ուսումնական Կենտրոն');
+  const creatorAvatar = isCreatedByCurrentUser && user?.avatar 
+    ? user.avatar 
+    : 'https://api.dicebear.com/7.x/avataaars/svg?seed=instructor';
+  const creatorType = isCreatedByCurrentUser ? 'user' : 'organization';
 
   return (
     <Card className="flex flex-col h-full overflow-hidden hover:shadow-md transition-all duration-300 border border-border/40 bg-card/80 backdrop-blur-sm group relative">
@@ -98,6 +109,17 @@ const CourseCard: React.FC<CourseCardProps> = ({
         <div className="text-sm text-muted-foreground">{course.duration}</div>
         {course.price && <div className="text-sm font-medium text-foreground">{course.price}</div>}
       </CardFooter>
+      
+      {/* Creator avatar */}
+      <div className="absolute bottom-16 right-3 flex items-center gap-2 bg-background/80 backdrop-blur-sm px-3 py-1.5 rounded-full border border-border shadow-sm">
+        <span className="text-xs font-medium">{creatorName}</span>
+        <Avatar className="h-6 w-6 border border-border">
+          <AvatarImage src={creatorAvatar} alt={creatorName} />
+          <AvatarFallback>
+            {creatorType === 'user' ? <User size={12} /> : <Building size={12} />}
+          </AvatarFallback>
+        </Avatar>
+      </div>
       
       {isAdmin && canEdit && onEdit && onDelete && (
         <div className="hidden">
