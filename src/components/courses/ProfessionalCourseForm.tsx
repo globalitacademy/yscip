@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Input } from "@/components/ui/input";
 import { ProfessionalCourse } from './types/ProfessionalCourse';
@@ -49,6 +48,13 @@ const ProfessionalCourseForm: React.FC<ProfessionalCourseFormProps> = ({
   const [useCustomInstitution, setUseCustomInstitution] = useState(
     !['ՀՊՏՀ', 'ԵՊՀ', 'ՀԱՊՀ', 'ՀԱՀ', 'ՀՊՄՀ', 'ՀՌԱՀ'].includes(course.institution || '')
   );
+  const [selectedIconName, setSelectedIconName] = useState<string | undefined>(undefined);
+
+  React.useEffect(() => {
+    if (isEdit && course.icon && course.iconName) {
+      setSelectedIconName(course.iconName);
+    }
+  }, [isEdit, course.icon, course.iconName]);
 
   const handleIconSelect = (iconName: string) => {
     let newIcon;
@@ -74,7 +80,8 @@ const ProfessionalCourseForm: React.FC<ProfessionalCourseFormProps> = ({
       default:
         newIcon = <Code className="w-16 h-16" />;
     }
-    setCourse({ ...course, icon: newIcon });
+    setCourse({ ...course, icon: newIcon, iconName: iconName });
+    setSelectedIconName(iconName);
     setIsIconsOpen(false);
   };
 
@@ -149,6 +156,24 @@ const ProfessionalCourseForm: React.FC<ProfessionalCourseFormProps> = ({
     const outcomes = [...(course.outcomes || [])];
     outcomes.splice(index, 1);
     setCourse({ ...course, outcomes });
+  };
+
+  const renderSelectedIconIndicator = () => {
+    if (!selectedIconName) return null;
+
+    const option = iconOptions.find(opt => opt.value === selectedIconName);
+    
+    if (option) {
+      return (
+        <div className="mt-2 p-2 bg-gray-100 rounded-md flex items-center">
+          <span className="mr-2">Ընտրված է:</span>
+          {option.icon}
+          <span className="ml-2">{option.label}</span>
+        </div>
+      );
+    }
+    
+    return null;
   };
 
   return (
@@ -322,8 +347,8 @@ const ProfessionalCourseForm: React.FC<ProfessionalCourseFormProps> = ({
                     {iconOptions.map((option) => (
                       <Button
                         key={option.value}
-                        variant="outline"
-                        className="flex flex-col items-center p-2 h-auto"
+                        variant={selectedIconName === option.value ? "default" : "outline"}
+                        className={`flex flex-col items-center p-2 h-auto ${selectedIconName === option.value ? 'ring-2 ring-blue-500' : ''}`}
                         onClick={() => handleIconSelect(option.value)}
                       >
                         {option.icon}
@@ -333,6 +358,7 @@ const ProfessionalCourseForm: React.FC<ProfessionalCourseFormProps> = ({
                   </div>
                 </CollapsibleContent>
               </Collapsible>
+              {renderSelectedIconIndicator()}
             </TabsContent>
             <TabsContent value="upload">
               <div className="border rounded-md p-4 text-center">

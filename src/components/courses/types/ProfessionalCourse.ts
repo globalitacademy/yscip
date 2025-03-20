@@ -11,6 +11,7 @@ export interface ProfessionalCourse {
   title: string;
   subtitle: string;
   icon: ReactElement;
+  iconName?: string; // Added to store the icon name for persistence
   duration: string;
   price: string;
   buttonText: string;

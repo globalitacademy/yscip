@@ -1,3 +1,4 @@
+
 import { supabase } from '@/integrations/supabase/client';
 import { ProfessionalCourse } from '../types/ProfessionalCourse';
 import { toast } from 'sonner';
@@ -81,6 +82,7 @@ export const getCourseById = async (id: string): Promise<ProfessionalCourse | nu
         title: course.title,
         subtitle: course.subtitle,
         icon: convertIconNameToComponent(course.icon_name),
+        iconName: course.icon_name, // Store the icon name for future reference
         duration: course.duration,
         price: course.price,
         buttonText: course.button_text || 'Դիտել',
@@ -207,6 +209,7 @@ const getLocalCourseById = (id: string): ProfessionalCourse | null => {
  * Converts icon name string to React component
  */
 const convertIconNameToComponent = (iconName: string): React.ReactElement => {
+  console.log('Converting icon name to component:', iconName);
   switch (iconName?.toLowerCase()) {
     case 'book':
       return React.createElement(Book, { className: "w-16 h-16" });
@@ -214,15 +217,19 @@ const convertIconNameToComponent = (iconName: string): React.ReactElement => {
       return React.createElement(Code, { className: "w-16 h-16" });
     case 'braincircuit':
     case 'brain':
+    case 'ai':
       return React.createElement(BrainCircuit, { className: "w-16 h-16" });
     case 'database':
       return React.createElement(Database, { className: "w-16 h-16" });
     case 'filecode':
     case 'file':
+    case 'files':
       return React.createElement(FileCode, { className: "w-16 h-16" });
     case 'globe':
+    case 'web':
       return React.createElement(Globe, { className: "w-16 h-16" });
     default:
+      console.log('Unknown icon name, defaulting to Book:', iconName);
       return React.createElement(Book, { className: "w-16 h-16" });
   }
 };
@@ -256,10 +263,12 @@ const saveToLocalStorage = (course: ProfessionalCourse): void => {
  * Converts a ProfessionalCourse object to the format expected by Supabase
  */
 const convertToSupabaseCourseFormat = (course: ProfessionalCourse) => {
-  let iconName = 'book';
+  // Use the stored iconName if available, otherwise try to extract it from the icon
+  let iconName = course.iconName || 'book';
   
-  // Determine icon name from the course's icon
-  if (course.icon) {
+  // Only try to extract from icon if iconName is not already set
+  if (!course.iconName && course.icon) {
+    console.log('Extracting icon name from React element', course.icon);
     // Get the icon type with a proper type assertion
     const iconType = course.icon.type as { name?: string } | null | undefined;
     
@@ -269,6 +278,7 @@ const convertToSupabaseCourseFormat = (course: ProfessionalCourse) => {
       if ('name' in iconType && iconType.name !== null && iconType.name !== undefined) {
         // Now it's safe to access name and convert to lowercase
         iconName = String(iconType.name).toLowerCase();
+        console.log('Extracted icon name:', iconName);
       }
     }
   }
@@ -300,6 +310,7 @@ export const saveCourseChanges = async (course: ProfessionalCourse): Promise<boo
     if (!course) return false;
 
     console.log('Saving course changes:', course);
+    console.log('Icon name being saved:', course.iconName);
 
     // First save to localStorage to ensure local synchronization
     saveToLocalStorage(course);
@@ -307,6 +318,7 @@ export const saveCourseChanges = async (course: ProfessionalCourse): Promise<boo
     // Then try to save to Supabase
     try {
       const supabaseCourse = convertToSupabaseCourseFormat(course);
+      console.log('Converted course for Supabase:', supabaseCourse);
       
       // Update course in Supabase
       const { error: courseError } = await supabase
