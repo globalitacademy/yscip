@@ -26,14 +26,27 @@ const CourseDetailPage: React.FC = () => {
       try {
         if (!id) return;
 
-        const { data, error } = await supabase
+        // First try to fetch from Supabase by ID
+        let { data, error } = await supabase
           .from('courses')
           .select('*')
           .eq('id', id)
           .single();
 
-        if (error) {
-          throw error;
+        // If not found by ID, try to match by slug-like ID (lowercase title)
+        if (error || !data) {
+          const { data: allCourses, error: coursesError } = await supabase
+            .from('courses')
+            .select('*');
+            
+          if (coursesError) throw coursesError;
+          
+          // Find a course with matching ID or where the lowercase title matches the ID
+          data = allCourses.find(course => 
+            course.id === id || 
+            course.title.toLowerCase().replace(/\s+/g, '-') === id ||
+            course.title.toLowerCase() === id
+          );
         }
 
         if (data) {
@@ -57,6 +70,63 @@ const CourseDetailPage: React.FC = () => {
           };
           
           setCourse(mappedCourse);
+        } else {
+          // If no matching course is found, try fallback to demo/featured courses
+          const featuredCourses = [
+            {
+              id: "web-frontend",
+              title: "WEB Front-End",
+              subtitle: "ԴԱՍԸՆԹԱՑ",
+              description: "Web ծրագրավորման հիմունքներ և ժամանակակից front-end տեխնոլոգիաներ",
+              duration: "9 ամիս",
+              price: "58,000 ֏",
+              icon_name: "Code",
+              modules: ["HTML և CSS", "JavaScript հիմունքներ", "React Framework", "Responsive Design"]
+            },
+            {
+              id: "python-ml-ai",
+              title: "Python (ML / AI)",
+              subtitle: "ԴԱՍԸՆԹԱՑ",
+              description: "Python ծրագրավորման լեզու, տվյալների վերլուծություն և արհեստական բանականություն",
+              duration: "7 ամիս",
+              price: "68,000 ֏",
+              icon_name: "FileCode",
+              modules: ["Python հիմունքներ", "Տվյալների վերլուծություն", "Մեքենայական ուսուցում", "Խորը ուսուցում"]
+            },
+            {
+              id: "java",
+              title: "Java",
+              subtitle: "ԴԱՍԸՆԹԱՑ",
+              description: "Java ծրագրավորման լեզու և կիրառական համակարգերի մշակում",
+              duration: "6 ամիս",
+              price: "68,000 ֏",
+              icon_name: "Coffee",
+              modules: ["Java հիմունքներ", "ՕԿԾ Java-ում", "Spring Framework", "Ձեռնարկության հավելվածներ"]
+            },
+            {
+              id: "javascript",
+              title: "JavaScript",
+              subtitle: "ԴԱՍԸՆԹԱՑ",
+              description: "JavaScript ծրագրավորման լեզու և ժամանակակից web հավելվածների մշակում",
+              duration: "3.5 ամիս",
+              price: "58,000 ֏", 
+              icon_name: "FileCode",
+              modules: ["JavaScript հիմունքներ", "DOM մանիպուլյացիա", "ES6+ հատկություններ", "Ասինխրոն JavaScript"]
+            }
+          ];
+          
+          const featuredCourse = featuredCourses.find(course => 
+            course.id === id || 
+            course.title.toLowerCase().includes(id || '')
+          );
+          
+          if (featuredCourse) {
+            setCourse({
+              ...featuredCourse,
+              createdBy: 'system',
+              modules: featuredCourse.modules || [],
+            });
+          }
         }
       } catch (e) {
         console.error('Error fetching course:', e);

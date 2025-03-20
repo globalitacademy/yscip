@@ -55,7 +55,9 @@ const CourseCard: React.FC<CourseCardProps> = ({
   };
   
   const handleViewDetails = () => {
-    navigate(`/course-detail/${course.id}`);
+    // Use either the ID or a slug based on the title if no ID exists
+    const courseId = course.id || course.title.toLowerCase().replace(/\s+/g, '-');
+    navigate(`/course-detail/${courseId}`);
   };
 
   const isCreatedByCurrentUser = course.createdBy === user?.id;
