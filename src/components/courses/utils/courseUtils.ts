@@ -1,4 +1,3 @@
-
 import { supabase } from '@/integrations/supabase/client';
 import { ProfessionalCourse } from '../types/ProfessionalCourse';
 import { toast } from 'sonner';
@@ -76,13 +75,16 @@ export const getCourseById = async (id: string): Promise<ProfessionalCourse | nu
         console.error('Error fetching outcomes:', e);
       }
 
+      // Ensure we have a valid icon_name
+      const iconName = course.icon_name || 'book';
+
       // Format the course data
       const formattedCourse: ProfessionalCourse = {
         id: course.id,
         title: course.title,
         subtitle: course.subtitle,
-        icon: convertIconNameToComponent(course.icon_name),
-        iconName: course.icon_name || 'book', // Ensure iconName is always set
+        icon: convertIconNameToComponent(iconName),
+        iconName: iconName, // Ensure iconName is always set
         duration: course.duration,
         price: course.price,
         buttonText: course.button_text || 'Դիտել',
@@ -142,26 +144,31 @@ export const getAllCourses = async (): Promise<ProfessionalCourse[]> => {
     console.log('Courses found in Supabase:', courses.length);
     
     // Transform database courses to ProfessionalCourse format
-    const formattedCourses: ProfessionalCourse[] = courses.map(course => ({
-      id: course.id,
-      title: course.title,
-      subtitle: course.subtitle,
-      icon: convertIconNameToComponent(course.icon_name),
-      iconName: course.icon_name || 'book', // Ensure iconName is always set
-      duration: course.duration,
-      price: course.price,
-      buttonText: course.button_text || 'Դիտել',
-      color: course.color,
-      createdBy: course.created_by,
-      institution: course.institution,
-      imageUrl: course.image_url,
-      organizationLogo: course.image_url, // Use image_url as organizationLogo since it's not in the schema
-      description: course.description,
-      // Related data will be loaded separately when needed
-      lessons: [],
-      requirements: [],
-      outcomes: []
-    }));
+    const formattedCourses: ProfessionalCourse[] = courses.map(course => {
+      // Ensure we have a valid icon_name
+      const iconName = course.icon_name || 'book';
+      
+      return {
+        id: course.id,
+        title: course.title,
+        subtitle: course.subtitle,
+        icon: convertIconNameToComponent(iconName),
+        iconName: iconName, // Always include the iconName
+        duration: course.duration,
+        price: course.price,
+        buttonText: course.button_text || 'Դիտել',
+        color: course.color,
+        createdBy: course.created_by,
+        institution: course.institution,
+        imageUrl: course.image_url,
+        organizationLogo: course.image_url, // Use image_url as organizationLogo since it's not in the schema
+        description: course.description,
+        // Related data will be loaded separately when needed
+        lessons: [],
+        requirements: [],
+        outcomes: []
+      };
+    });
 
     // Update localStorage to keep it in sync
     localStorage.setItem('professionalCourses', JSON.stringify(formattedCourses));
@@ -180,13 +187,42 @@ export const getAllCoursesFromLocalStorage = (): ProfessionalCourse[] => {
   try {
     const storedCourses = localStorage.getItem('professionalCourses');
     if (storedCourses) {
-      return JSON.parse(storedCourses);
+      // Parse and ensure each course has an iconName
+      const courses: ProfessionalCourse[] = JSON.parse(storedCourses);
+      return courses.map(course => {
+        if (!course.iconName) {
+          // If iconName is missing, try to infer it or use a default
+          return {
+            ...course,
+            iconName: inferIconNameFromCourse(course) || 'book'
+          };
+        }
+        return course;
+      });
     }
     return [];
   } catch (error) {
     console.error('Error getting courses from localStorage:', error);
     return [];
   }
+};
+
+/**
+ * Try to infer icon name from course details if it's missing
+ */
+const inferIconNameFromCourse = (course: any): string | null => {
+  // If the course already has an iconName, return it
+  if (course.iconName) return course.iconName;
+  
+  // Check title for common keywords
+  const title = (course.title || '').toLowerCase();
+  if (title.includes('web') || title.includes('javascript') || title.includes('html')) return 'code';
+  if (title.includes('python') || title.includes('ai') || title.includes('ml')) return 'ai';
+  if (title.includes('database') || title.includes('sql') || title.includes('php')) return 'database';
+  if (title.includes('java') || title.includes('.net') || title.includes('c#')) return 'book';
+  
+  // Default
+  return null;
 };
 
 /**
@@ -197,7 +233,19 @@ const getLocalCourseById = (id: string): ProfessionalCourse | null => {
     const storedCourses = localStorage.getItem('professionalCourses');
     if (storedCourses) {
       const courses: ProfessionalCourse[] = JSON.parse(storedCourses);
-      return courses.find(course => course.id === id) || null;
+      const course = courses.find(course => course.id === id);
+      
+      if (course) {
+        // Ensure iconName is always present
+        if (!course.iconName) {
+          return {
+            ...course,
+            iconName: inferIconNameFromCourse(course) || 'book'
+          };
+        }
+        return course;
+      }
+      return null;
     }
     return null;
   } catch (error) {
@@ -240,20 +288,26 @@ const convertIconNameToComponent = (iconName: string): React.ReactElement => {
  */
 const saveToLocalStorage = (course: ProfessionalCourse): void => {
   try {
+    // Ensure the course has an iconName
+    const courseToSave: ProfessionalCourse = {
+      ...course,
+      iconName: course.iconName || inferIconNameFromCourse(course) || 'book'
+    };
+    
     const storedCourses = localStorage.getItem('professionalCourses');
     if (storedCourses) {
       const courses: ProfessionalCourse[] = JSON.parse(storedCourses);
-      const existingCourseIndex = courses.findIndex(c => c.id === course.id);
+      const existingCourseIndex = courses.findIndex(c => c.id === courseToSave.id);
       
       if (existingCourseIndex !== -1) {
-        courses[existingCourseIndex] = course;
+        courses[existingCourseIndex] = courseToSave;
       } else {
-        courses.push(course);
+        courses.push(courseToSave);
       }
       
       localStorage.setItem('professionalCourses', JSON.stringify(courses));
     } else {
-      localStorage.setItem('professionalCourses', JSON.stringify([course]));
+      localStorage.setItem('professionalCourses', JSON.stringify([courseToSave]));
     }
   } catch (error) {
     console.error('Error saving to localStorage:', error);
@@ -297,6 +351,11 @@ export const saveCourseChanges = async (course: ProfessionalCourse): Promise<boo
 
     console.log('Saving course changes:', course);
     console.log('Icon name being saved:', course.iconName);
+
+    // Ensure the course has a valid iconName
+    if (!course.iconName) {
+      course.iconName = inferIconNameFromCourse(course) || 'book';
+    }
 
     // First save to localStorage to ensure local synchronization
     saveToLocalStorage(course);

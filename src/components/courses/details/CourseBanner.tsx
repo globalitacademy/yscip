@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { FadeIn } from '@/components/LocalTransitions';
 import { ProfessionalCourse } from '../types/ProfessionalCourse';
+import { toast } from 'sonner';
 
 interface CourseBannerProps {
   displayCourse: ProfessionalCourse;
@@ -44,6 +45,8 @@ const CourseBanner: React.FC<CourseBannerProps> = ({
   const handleIconChange = (value: string) => {
     if (!editedCourse) return;
 
+    console.log("Փոխվում է պատկերակը դեպի:", value);
+
     let newIcon;
     switch (value) {
       case 'code':
@@ -68,11 +71,36 @@ const CourseBanner: React.FC<CourseBannerProps> = ({
         newIcon = <BookText className="w-16 h-16" />;
     }
 
-    setEditedCourse({
+    // Նախ ստեղծենք editedCourse-ի պատճենը և հետո թարմացնենք այն
+    const updatedCourse = { 
       ...editedCourse,
       icon: newIcon,
       iconName: value
-    });
+    };
+    
+    console.log("Թարմացված դասընթացը:", updatedCourse);
+    setEditedCourse(updatedCourse);
+    
+    // Ցույց տանք նոթիֆիկացիա, որ օգտատերը իմանա, որ փոփոխությունը կատարվել է
+    toast.info("Պատկերակը փոխվել է");
+  };
+
+  const handleColorChange = (value: string) => {
+    if (!editedCourse) return;
+    
+    console.log("Փոխվում է գույնը դեպի:", value);
+    
+    // Նախ ստեղծենք editedCourse-ի պատճենը և հետո թարմացնենք այն
+    const updatedCourse = { 
+      ...editedCourse,
+      color: value
+    };
+    
+    console.log("Թարմացված դասընթացը:", updatedCourse);
+    setEditedCourse(updatedCourse);
+    
+    // Ցույց տանք նոթիֆիկացիա, որ օգտատերը իմանա, որ փոփոխությունը կատարվել է
+    toast.info("Գույնը փոխվել է");
   };
 
   return (
@@ -132,7 +160,7 @@ const CourseBanner: React.FC<CourseBannerProps> = ({
                   <label className="block text-sm font-medium text-gray-700 mb-1">Գույն</label>
                   <Select 
                     value={editedCourse?.color || ''} 
-                    onValueChange={(value) => setEditedCourse(prev => prev ? {...prev, color: value} : prev)}
+                    onValueChange={handleColorChange}
                   >
                     <SelectTrigger className="w-full">
                       <SelectValue placeholder="Ընտրեք գույն" />

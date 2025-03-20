@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import Header from '@/components/Header';
@@ -33,6 +32,7 @@ const CourseDetails: React.FC = () => {
     const handleCourseUpdate = (event: CustomEvent<ProfessionalCourse>) => {
       const updatedCourse = event.detail;
       if (updatedCourse && updatedCourse.id === id) {
+        console.log("Course updated event received:", updatedCourse);
         setCourse(updatedCourse);
         setEditedCourse(updatedCourse);
       }
@@ -91,6 +91,7 @@ const CourseDetails: React.FC = () => {
             setCourse(sampleCourse);
             setEditedCourse(sampleCourse);
           } else {
+            console.log("Course loaded:", courseData);
             setCourse(courseData);
             setEditedCourse(courseData);
           }
@@ -136,24 +137,33 @@ const CourseDetails: React.FC = () => {
       // Save changes
       if (!editedCourse) return;
       
+      console.log("Saving changes to course:", editedCourse);
+      
+      // Պահպանում ենք փոփոխությունները
       const success = await saveCourseChanges(editedCourse);
       if (success) {
         setCourse(editedCourse);
         toast.success('Դասընթացը հաջողությամբ թարմացվել է');
       } else {
+        // Եթե պահպանումը չի հաջողվել, ապա վերականգնում ենք նախկին արժեքները
+        setEditedCourse(course);
         toast.error('Դասընթացի թարմացման ժամանակ սխալ է տեղի ունեցել');
       }
     } else {
       // Enter edit mode
-      setEditedCourse(course);
+      console.log("Entering edit mode with course:", course);
+      // Կարևոր է ստեղծել նոր օբյեկտ, որպեսզի վստահ լինենք, որ բոլոր փոփոխությունները կպահպանվեն
+      setEditedCourse(JSON.parse(JSON.stringify(course)));
     }
     
     setIsEditing(!isEditing);
   };
 
   const cancelEditing = () => {
+    // Երբ չեղարկում ենք, ապա վերադարձնում ենք նախկին արժեքները
     setEditedCourse(course);
     setIsEditing(false);
+    toast.info('Փոփոխությունները չեղարկվեցին');
   };
 
   const handleAddLesson = () => {

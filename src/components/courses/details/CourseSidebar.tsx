@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { ProfessionalCourse } from '../types/ProfessionalCourse';
+import { toast } from 'sonner';
 
 interface CourseSidebarProps {
   displayCourse: ProfessionalCourse;
@@ -30,6 +31,24 @@ const CourseSidebar: React.FC<CourseSidebarProps> = ({
     { label: 'Մանուշակագույն', value: 'text-purple-500' },
     { label: 'Կանաչ', value: 'text-green-500' },
   ];
+
+  const handleColorChange = (value: string) => {
+    if (!editedCourse) return;
+    
+    console.log("Փոխվում է գույնը Sidebar-ում դեպի:", value);
+    
+    // Ստեղծենք նոր օբյեկտ և հետո թարմացնենք այն
+    const updatedCourse = { 
+      ...editedCourse,
+      color: value
+    };
+    
+    console.log("Թարմացված դասընթացը Sidebar-ում:", updatedCourse);
+    setEditedCourse(updatedCourse);
+    
+    // Ցույց տանք նոթիֆիկացիա
+    toast.info("Գույնը փոփոխվել է");
+  };
 
   return (
     <FadeIn delay="delay-200">
@@ -116,7 +135,7 @@ const CourseSidebar: React.FC<CourseSidebarProps> = ({
                 <span className="text-muted-foreground">Գույն</span>
                 <Select 
                   value={editedCourse?.color || ''} 
-                  onValueChange={(value) => setEditedCourse(prev => prev ? {...prev, color: value} : prev)}
+                  onValueChange={handleColorChange}
                 >
                   <SelectTrigger className="w-32 text-right">
                     <SelectValue placeholder="Գույն" />
