@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { Card, CardContent, CardFooter } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -77,7 +78,7 @@ const CourseCard: React.FC<CourseCardProps> = ({
           </div>
         )}
         
-        <div className="absolute top-3 right-3 flex items-center gap-2 bg-background/80 backdrop-blur-sm px-3 py-1.5 rounded-full border border-border shadow-sm z-10 mt-16">
+        <div className="absolute top-3 left-3 flex items-center gap-2 bg-background/80 backdrop-blur-sm px-3 py-1.5 rounded-full border border-border shadow-sm z-10 mt-16">
           <span className="text-xs font-medium">{creatorName}</span>
           <Avatar className="h-6 w-6 border border-border">
             <AvatarImage src={creatorAvatar} alt={creatorName} />
@@ -87,7 +88,7 @@ const CourseCard: React.FC<CourseCardProps> = ({
           </Avatar>
         </div>
         
-        <div className="p-4 rounded-full bg-primary/5 text-primary mb-4 transition-transform group-hover:scale-105 duration-300">
+        <div className="p-4 rounded-full bg-primary/5 text-primary mb-4 transition-transform group-hover:scale-105 duration-300 mt-24">
           {getIcon()}
         </div>
         
