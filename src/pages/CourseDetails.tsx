@@ -1,3 +1,4 @@
+
 import React, { useEffect, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import Header from '@/components/Header';
@@ -13,7 +14,7 @@ import CourseCurriculum from '@/components/courses/details/CourseCurriculum';
 import CourseLearningOutcomes from '@/components/courses/details/CourseLearningOutcomes';
 import CourseRequirements from '@/components/courses/details/CourseRequirements';
 import CourseSidebar from '@/components/courses/details/CourseSidebar';
-import { Book } from 'lucide-react';
+import { Book, BookText, BrainCircuit, Code, Database, FileCode, Globe } from 'lucide-react';
 
 const CourseDetails: React.FC = () => {
   const { id } = useParams<{ id: string }>();
@@ -45,15 +46,44 @@ const CourseDetails: React.FC = () => {
     };
   }, [id]);
 
+  // Function to convert iconName to React element
+  const getIconElement = (iconName: string) => {
+    console.log("Converting iconName to element:", iconName);
+    switch (iconName?.toLowerCase()) {
+      case 'book':
+        return <BookText className="w-16 h-16" />;
+      case 'code':
+        return <Code className="w-16 h-16" />;
+      case 'ai':
+      case 'braincircuit':
+      case 'brain':
+        return <BrainCircuit className="w-16 h-16" />;
+      case 'database':
+        return <Database className="w-16 h-16" />;
+      case 'files':
+      case 'filecode':
+      case 'file':
+        return <FileCode className="w-16 h-16" />;
+      case 'web':
+      case 'globe':
+        return <Globe className="w-16 h-16" />;
+      default:
+        console.log("Unknown icon name:", iconName);
+        return <Book className="w-16 h-16" />;
+    }
+  };
+
   useEffect(() => {
     const fetchCourse = async () => {
       setLoading(true);
       if (id) {
         try {
+          console.log("Attempting to fetch course with ID:", id);
           const courseData = await getCourseById(id);
           
           // Try to create a sample course in localStorage if none found
           if (!courseData) {
+            console.log("No course found, creating sample course");
             // Create a sample course for testing if we can't fetch one
             const sampleCourse: ProfessionalCourse = {
               id: id,
@@ -91,7 +121,13 @@ const CourseDetails: React.FC = () => {
             setCourse(sampleCourse);
             setEditedCourse(sampleCourse);
           } else {
-            console.log("Course loaded:", courseData);
+            console.log("Course loaded successfully:", courseData);
+            
+            // Ensure icon element is properly set based on iconName
+            if (courseData.iconName && (!courseData.icon || typeof courseData.icon === 'string')) {
+              courseData.icon = getIconElement(courseData.iconName);
+            }
+            
             setCourse(courseData);
             setEditedCourse(courseData);
           }
@@ -139,6 +175,22 @@ const CourseDetails: React.FC = () => {
       
       console.log("Saving changes to course:", editedCourse);
       
+      // Ensure iconName is correctly set
+      if (!editedCourse.iconName && editedCourse.icon) {
+        // Try to determine iconName from icon
+        // This is a fallback and might not be accurate
+        const iconString = editedCourse.icon.type?.name || '';
+        if (iconString.includes('Book')) editedCourse.iconName = 'book';
+        else if (iconString.includes('Code')) editedCourse.iconName = 'code';
+        else if (iconString.includes('Brain')) editedCourse.iconName = 'ai';
+        else if (iconString.includes('Database')) editedCourse.iconName = 'database';
+        else if (iconString.includes('File')) editedCourse.iconName = 'files';
+        else if (iconString.includes('Globe')) editedCourse.iconName = 'web';
+        else editedCourse.iconName = 'book'; // Default
+        
+        console.log("Determined iconName from icon:", editedCourse.iconName);
+      }
+      
       // Պահպանում ենք փոփոխությունները
       const success = await saveCourseChanges(editedCourse);
       if (success) {
@@ -152,8 +204,17 @@ const CourseDetails: React.FC = () => {
     } else {
       // Enter edit mode
       console.log("Entering edit mode with course:", course);
-      // Կարևոր է ստեղծել նոր օբյեկտ, որպեսզի վստահ լինենք, որ բոլոր փոփոխությունները կպահպանվեն
-      setEditedCourse(JSON.parse(JSON.stringify(course)));
+      
+      if (course) {
+        // Ensure we always have the latest icon element
+        const editCopy = { ...course };
+        if (editCopy.iconName) {
+          editCopy.icon = getIconElement(editCopy.iconName);
+        }
+        
+        // Deep clone to avoid reference issues
+        setEditedCourse(JSON.parse(JSON.stringify(editCopy)));
+      }
     }
     
     setIsEditing(!isEditing);
@@ -259,6 +320,11 @@ const CourseDetails: React.FC = () => {
   const displayCourse = isEditing ? editedCourse : course;
   if (!displayCourse) return null;
 
+  // Ensure icon is present based on iconName
+  if (displayCourse.iconName && (!displayCourse.icon || typeof displayCourse.icon === 'string')) {
+    displayCourse.icon = getIconElement(displayCourse.iconName);
+  }
+
   return (
     <div className="min-h-screen flex flex-col">
       <Header />
@@ -341,6 +407,9 @@ const CourseDetails: React.FC = () => {
 // Helper function to add the missing saveToLocalStorage function
 const saveToLocalStorage = (course: ProfessionalCourse): void => {
   try {
+    // Թարմացնում ենք կամ ավելացնում ենք կուրսը localStorage-ում
+    console.log("Saving course to localStorage:", course);
+    
     const storedCourses = localStorage.getItem('professionalCourses');
     if (storedCourses) {
       const courses: ProfessionalCourse[] = JSON.parse(storedCourses);
@@ -358,6 +427,7 @@ const saveToLocalStorage = (course: ProfessionalCourse): void => {
     }
   } catch (error) {
     console.error('Error saving to localStorage:', error);
+    toast.error('Տեղային պահեստում պահպանման սխալ։');
   }
 };
 

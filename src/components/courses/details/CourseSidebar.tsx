@@ -35,7 +35,7 @@ const CourseSidebar: React.FC<CourseSidebarProps> = ({
   const handleColorChange = (value: string) => {
     if (!editedCourse) return;
     
-    console.log("Փոխվում է գույնը Sidebar-ում դեպի:", value);
+    console.log("CourseSidebar: Փոխվում է գույնը դեպի:", value);
     
     // Ստեղծենք նոր օբյեկտ և հետո թարմացնենք այն
     const updatedCourse = { 
@@ -43,7 +43,7 @@ const CourseSidebar: React.FC<CourseSidebarProps> = ({
       color: value
     };
     
-    console.log("Թարմացված դասընթացը Sidebar-ում:", updatedCourse);
+    console.log("CourseSidebar: Թարմացված դասընթացը:", updatedCourse);
     setEditedCourse(updatedCourse);
     
     // Ցույց տանք նոթիֆիկացիա

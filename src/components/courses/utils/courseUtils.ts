@@ -1,3 +1,4 @@
+
 import { supabase } from '@/integrations/supabase/client';
 import { ProfessionalCourse } from '../types/ProfessionalCourse';
 import { toast } from 'sonner';
@@ -190,13 +191,24 @@ export const getAllCoursesFromLocalStorage = (): ProfessionalCourse[] => {
       // Parse and ensure each course has an iconName
       const courses: ProfessionalCourse[] = JSON.parse(storedCourses);
       return courses.map(course => {
+        // If iconName is missing, try to infer it
         if (!course.iconName) {
-          // If iconName is missing, try to infer it or use a default
+          const inferredIconName = inferIconNameFromCourse(course) || 'book';
           return {
             ...course,
-            iconName: inferIconNameFromCourse(course) || 'book'
+            iconName: inferredIconName,
+            icon: convertIconNameToComponent(inferredIconName)
           };
         }
+        
+        // Ensure icon element is set from iconName
+        if (!course.icon || typeof course.icon === 'string') {
+          return {
+            ...course,
+            icon: convertIconNameToComponent(course.iconName)
+          };
+        }
+        
         return course;
       });
     }
@@ -238,11 +250,22 @@ const getLocalCourseById = (id: string): ProfessionalCourse | null => {
       if (course) {
         // Ensure iconName is always present
         if (!course.iconName) {
+          const iconName = inferIconNameFromCourse(course) || 'book';
           return {
             ...course,
-            iconName: inferIconNameFromCourse(course) || 'book'
+            iconName,
+            icon: convertIconNameToComponent(iconName)
           };
         }
+        
+        // Ensure icon element is set based on iconName
+        if (!course.icon || typeof course.icon === 'string') {
+          return {
+            ...course,
+            icon: convertIconNameToComponent(course.iconName)
+          };
+        }
+        
         return course;
       }
       return null;
@@ -257,7 +280,7 @@ const getLocalCourseById = (id: string): ProfessionalCourse | null => {
 /**
  * Converts icon name string to React component
  */
-const convertIconNameToComponent = (iconName: string): React.ReactElement => {
+export const convertIconNameToComponent = (iconName: string): React.ReactElement => {
   console.log('Converting icon name to component:', iconName);
   switch (iconName?.toLowerCase()) {
     case 'book':
@@ -286,31 +309,46 @@ const convertIconNameToComponent = (iconName: string): React.ReactElement => {
 /**
  * Saves course to localStorage
  */
-const saveToLocalStorage = (course: ProfessionalCourse): void => {
+export const saveToLocalStorage = (course: ProfessionalCourse): void => {
   try {
+    console.log("Saving course to localStorage:", course);
+    
     // Ensure the course has an iconName
-    const courseToSave: ProfessionalCourse = {
-      ...course,
-      iconName: course.iconName || inferIconNameFromCourse(course) || 'book'
+    let courseToSave = { ...course };
+    
+    if (!courseToSave.iconName) {
+      console.log("Course missing iconName, inferring from course:", course);
+      courseToSave.iconName = inferIconNameFromCourse(course) || 'book';
+    }
+    
+    // Create a safe-to-serialize version of the course
+    // React elements can't be directly serialized
+    const serializableCourse = {
+      ...courseToSave,
+      // We don't need to serialize the icon since we can recreate it from iconName
+      icon: undefined
     };
+    
+    console.log("Serializable course for localStorage:", serializableCourse);
     
     const storedCourses = localStorage.getItem('professionalCourses');
     if (storedCourses) {
       const courses: ProfessionalCourse[] = JSON.parse(storedCourses);
-      const existingCourseIndex = courses.findIndex(c => c.id === courseToSave.id);
+      const existingCourseIndex = courses.findIndex(c => c.id === serializableCourse.id);
       
       if (existingCourseIndex !== -1) {
-        courses[existingCourseIndex] = courseToSave;
+        courses[existingCourseIndex] = serializableCourse;
       } else {
-        courses.push(courseToSave);
+        courses.push(serializableCourse);
       }
       
       localStorage.setItem('professionalCourses', JSON.stringify(courses));
     } else {
-      localStorage.setItem('professionalCourses', JSON.stringify([courseToSave]));
+      localStorage.setItem('professionalCourses', JSON.stringify([serializableCourse]));
     }
   } catch (error) {
     console.error('Error saving to localStorage:', error);
+    toast.error('Տեղային պահեստում պահպանման սխալ։');
   }
 };
 
@@ -319,7 +357,7 @@ const saveToLocalStorage = (course: ProfessionalCourse): void => {
  */
 const convertToSupabaseCourseFormat = (course: ProfessionalCourse) => {
   // Always use the stored iconName directly
-  let iconName = course.iconName || 'book';
+  const iconName = course.iconName || 'book';
   
   console.log('Using icon name for Supabase:', iconName);
   
@@ -355,6 +393,7 @@ export const saveCourseChanges = async (course: ProfessionalCourse): Promise<boo
     // Ensure the course has a valid iconName
     if (!course.iconName) {
       course.iconName = inferIconNameFromCourse(course) || 'book';
+      course.icon = convertIconNameToComponent(course.iconName);
     }
 
     // First save to localStorage to ensure local synchronization
@@ -373,6 +412,7 @@ export const saveCourseChanges = async (course: ProfessionalCourse): Promise<boo
       if (courseError) {
         console.error('Error updating course in Supabase:', courseError);
         // We've already saved to localStorage, so we will broadcast the event locally
+        toast.warning('Տվյալները պահպանվել են լոկալ, բայց կարող են չթարմացվել Supabase-ում։');
       } else {
         console.log('Course updated successfully in Supabase');
         
@@ -431,11 +471,18 @@ export const saveCourseChanges = async (course: ProfessionalCourse): Promise<boo
       }
     } catch (supabaseError) {
       console.error('Error with Supabase operations:', supabaseError);
+      toast.warning('Տվյալները պահպանվել են լոկալ, բայց չեն թարմացվել Supabase-ում։');
       // We've already saved to localStorage, so we can still broadcast the event locally
     }
 
+    // Նորից ապահովենք, որ icon-ը ճիշտ է դրված iconName-ի համար
+    const courseWithIcon = {
+      ...course,
+      icon: convertIconNameToComponent(course.iconName)
+    };
+
     // Notify any listeners about the course change with a custom event
-    const event = new CustomEvent(COURSE_UPDATED_EVENT, { detail: course });
+    const event = new CustomEvent(COURSE_UPDATED_EVENT, { detail: courseWithIcon });
     window.dispatchEvent(event);
 
     return true;

@@ -45,7 +45,7 @@ const CourseBanner: React.FC<CourseBannerProps> = ({
   const handleIconChange = (value: string) => {
     if (!editedCourse) return;
 
-    console.log("Փոխվում է պատկերակը դեպի:", value);
+    console.log("CourseBanner: Փոխվում է պատկերակը դեպի:", value);
 
     let newIcon;
     switch (value) {
@@ -71,35 +71,36 @@ const CourseBanner: React.FC<CourseBannerProps> = ({
         newIcon = <BookText className="w-16 h-16" />;
     }
 
-    // Նախ ստեղծենք editedCourse-ի պատճենը և հետո թարմացնենք այն
+    // Թարմացնենք կուրսը նոր պատկերակով և անվամբ
     const updatedCourse = { 
       ...editedCourse,
       icon: newIcon,
       iconName: value
     };
     
-    console.log("Թարմացված դասընթացը:", updatedCourse);
+    console.log("CourseBanner: Թարմացված դասընթացը:", updatedCourse);
+    console.log("CourseBanner: Նոր iconName:", value);
     setEditedCourse(updatedCourse);
     
-    // Ցույց տանք նոթիֆիկացիա, որ օգտատերը իմանա, որ փոփոխությունը կատարվել է
+    // Ցույց տանք նոթիֆիկացիա
     toast.info("Պատկերակը փոխվել է");
   };
 
   const handleColorChange = (value: string) => {
     if (!editedCourse) return;
     
-    console.log("Փոխվում է գույնը դեպի:", value);
+    console.log("CourseBanner: Փոխվում է գույնը դեպի:", value);
     
-    // Նախ ստեղծենք editedCourse-ի պատճենը և հետո թարմացնենք այն
+    // Թարմացնենք կուրսը նոր գույնով
     const updatedCourse = { 
       ...editedCourse,
       color: value
     };
     
-    console.log("Թարմացված դասընթացը:", updatedCourse);
+    console.log("CourseBanner: Թարմացված դասընթացը:", updatedCourse);
     setEditedCourse(updatedCourse);
     
-    // Ցույց տանք նոթիֆիկացիա, որ օգտատերը իմանա, որ փոփոխությունը կատարվել է
+    // Ցույց տանք նոթիֆիկացիա
     toast.info("Գույնը փոխվել է");
   };
 
