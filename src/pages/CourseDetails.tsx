@@ -1,3 +1,4 @@
+
 import React, { useEffect, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import Header from '@/components/Header';
@@ -305,12 +306,15 @@ const CourseDetails: React.FC = () => {
   };
 
   const toggleEditMode = async () => {
+    console.log("Toggle edit mode - current state:", isEditing);
+    
     if (isEditing) {
       if (!editedCourse) return;
       
       console.log("Saving changes to course:", editedCourse);
       
       if (!editedCourse.iconName && editedCourse.icon) {
+        // Attempt to infer iconName from icon component
         const iconComponent = editedCourse.icon.type;
         let iconString = '';
         
@@ -333,11 +337,17 @@ const CourseDetails: React.FC = () => {
         editedCourse.preferIcon = !!editedCourse.iconName && !editedCourse.imageUrl;
       }
       
-      const success = await saveCourseChanges(editedCourse);
-      if (success) {
-        setCourse(editedCourse);
-        toast.success('Դասընթացը հաջողությամբ թարմացվել է');
-      } else {
+      try {
+        const success = await saveCourseChanges(editedCourse);
+        if (success) {
+          setCourse(editedCourse);
+          toast.success('Դասընթացը հաջողությամբ թարմացվել է');
+        } else {
+          setEditedCourse(course);
+          toast.error('Դասընթացի թարմացման ժամանակ սխալ է տեղի ունեցել');
+        }
+      } catch (error) {
+        console.error("Error saving course changes:", error);
         setEditedCourse(course);
         toast.error('Դասընթացի թարմացման ժամանակ սխալ է տեղի ունեցել');
       }
@@ -345,12 +355,12 @@ const CourseDetails: React.FC = () => {
       console.log("Entering edit mode with course:", course);
       
       if (course) {
-        const editCopy = { ...course };
+        const editCopy = JSON.parse(JSON.stringify(course));
         if (editCopy.iconName) {
           editCopy.icon = getIconElement(editCopy.iconName);
         }
         
-        setEditedCourse(JSON.parse(JSON.stringify(editCopy)));
+        setEditedCourse(editCopy);
       }
     }
     

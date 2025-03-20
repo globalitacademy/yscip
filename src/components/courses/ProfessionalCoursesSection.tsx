@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { FadeIn } from '@/components/LocalTransitions';
 import { Button } from '@/components/ui/button';
@@ -270,6 +271,12 @@ const ProfessionalCoursesSection: React.FC = () => {
       if (success) {
         toast.success('Դասընթացը հաջողությամբ թարմացվել է');
         setIsEditDialogOpen(false);
+        
+        // Refresh the course list to ensure all data is synced
+        const updatedCourses = await getAllCourses();
+        if (updatedCourses && updatedCourses.length > 0) {
+          setCourses(updatedCourses);
+        }
       } else {
         toast.error('Դասընթացի թարմացման ժամանակ սխալ է տեղի ունեցել');
       }
@@ -280,6 +287,7 @@ const ProfessionalCoursesSection: React.FC = () => {
   };
 
   const openEditDialog = (course: ProfessionalCourse) => {
+    console.log("Opening edit dialog for course:", course);
     setSelectedCourse({...course});
     setIsEditDialogOpen(true);
   };

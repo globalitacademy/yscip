@@ -1,3 +1,4 @@
+
 import { supabase } from '@/integrations/supabase/client';
 import { ProfessionalCourse } from '../types/ProfessionalCourse';
 import { toast } from 'sonner';
@@ -151,7 +152,7 @@ export const getAllCourses = async (): Promise<ProfessionalCourse[]> => {
       const iconName = course.icon_name || 'book';
       
       return {
-        id: course.id,
+        id: String(course.id),
         title: course.title,
         subtitle: course.subtitle,
         icon: convertIconNameToComponent(iconName),
@@ -165,7 +166,7 @@ export const getAllCourses = async (): Promise<ProfessionalCourse[]> => {
         // Now we can use the prefer_icon field from the database
         preferIcon: course.prefer_icon !== undefined ? course.prefer_icon : true,
         imageUrl: course.image_url,
-        organizationLogo: course.image_url, // Use image_url as organizationLogo since it's not in the schema
+        organizationLogo: course.image_url, // Use image_url as organizationLogo
         description: course.description,
         // Related data will be loaded separately when needed
         lessons: [],
@@ -440,56 +441,60 @@ export const saveCourseChanges = async (course: ProfessionalCourse): Promise<boo
         console.log('Course updated successfully in Supabase');
         
         // If course update was successful, also update related tables
-        await Promise.all([
-          supabase.from('course_lessons').delete().eq('course_id', course.id),
-          supabase.from('course_requirements').delete().eq('course_id', course.id),
-          supabase.from('course_outcomes').delete().eq('course_id', course.id)
-        ]);
+        try {
+          await Promise.all([
+            supabase.from('course_lessons').delete().eq('course_id', course.id),
+            supabase.from('course_requirements').delete().eq('course_id', course.id),
+            supabase.from('course_outcomes').delete().eq('course_id', course.id)
+          ]);
 
-        if (course.lessons && course.lessons.length > 0) {
-          const { error: lessonsError } = await supabase
-            .from('course_lessons')
-            .insert(
-              course.lessons.map(lesson => ({
-                course_id: course.id,
-                title: lesson.title,
-                duration: lesson.duration
-              }))
-            );
+          if (course.lessons && course.lessons.length > 0) {
+            const { error: lessonsError } = await supabase
+              .from('course_lessons')
+              .insert(
+                course.lessons.map(lesson => ({
+                  course_id: course.id,
+                  title: lesson.title,
+                  duration: lesson.duration
+                }))
+              );
 
-          if (lessonsError) {
-            console.error('Error inserting lessons:', lessonsError);
+            if (lessonsError) {
+              console.error('Error inserting lessons:', lessonsError);
+            }
           }
-        }
 
-        if (course.requirements && course.requirements.length > 0) {
-          const { error: requirementsError } = await supabase
-            .from('course_requirements')
-            .insert(
-              course.requirements.map(requirement => ({
-                course_id: course.id,
-                requirement: requirement
-              }))
-            );
+          if (course.requirements && course.requirements.length > 0) {
+            const { error: requirementsError } = await supabase
+              .from('course_requirements')
+              .insert(
+                course.requirements.map(requirement => ({
+                  course_id: course.id,
+                  requirement: requirement
+                }))
+              );
 
-          if (requirementsError) {
-            console.error('Error inserting requirements:', requirementsError);
+            if (requirementsError) {
+              console.error('Error inserting requirements:', requirementsError);
+            }
           }
-        }
 
-        if (course.outcomes && course.outcomes.length > 0) {
-          const { error: outcomesError } = await supabase
-            .from('course_outcomes')
-            .insert(
-              course.outcomes.map(outcome => ({
-                course_id: course.id,
-                outcome: outcome
-              }))
-            );
+          if (course.outcomes && course.outcomes.length > 0) {
+            const { error: outcomesError } = await supabase
+              .from('course_outcomes')
+              .insert(
+                course.outcomes.map(outcome => ({
+                  course_id: course.id,
+                  outcome: outcome
+                }))
+              );
 
-          if (outcomesError) {
-            console.error('Error inserting outcomes:', outcomesError);
+            if (outcomesError) {
+              console.error('Error inserting outcomes:', outcomesError);
+            }
           }
+        } catch (relatedError) {
+          console.error('Error updating related tables:', relatedError);
         }
       }
     } catch (supabaseError) {
