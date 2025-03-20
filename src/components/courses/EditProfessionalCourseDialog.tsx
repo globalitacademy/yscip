@@ -6,6 +6,7 @@ import ProfessionalCourseForm from './ProfessionalCourseForm';
 import { ProfessionalCourse } from './types/ProfessionalCourse';
 import { toast } from 'sonner';
 import { saveCourseChanges } from './utils/courseUtils';
+import { ScrollArea } from '@/components/ui/scroll-area';
 
 interface EditProfessionalCourseDialogProps {
   isOpen: boolean;
@@ -48,18 +49,20 @@ const EditProfessionalCourseDialog: React.FC<EditProfessionalCourseDialogProps> 
   
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
-      <DialogContent className="sm:max-w-[600px]">
+      <DialogContent className="sm:max-w-[600px] max-h-[90vh]">
         <DialogHeader>
           <DialogTitle>Դասընթացի խմբագրում</DialogTitle>
           <DialogDescription>
             Խմբագրեք դասընթացի տվյալները: Պատրաստ լինելուց հետո սեղմեք "Պահպանել" կոճակը:
           </DialogDescription>
         </DialogHeader>
-        <ProfessionalCourseForm
-          course={selectedCourse}
-          setCourse={(updatedCourse) => setSelectedCourse({...selectedCourse, ...updatedCourse})}
-          isEdit={true}
-        />
+        <ScrollArea className="max-h-[60vh] pr-4">
+          <ProfessionalCourseForm
+            course={selectedCourse}
+            setCourse={(updatedCourse) => setSelectedCourse({...selectedCourse, ...updatedCourse})}
+            isEdit={true}
+          />
+        </ScrollArea>
         <DialogFooter>
           <Button type="submit" onClick={saveChanges}>
             Պահպանել
