@@ -60,11 +60,24 @@ const CourseCard: React.FC<CourseCardProps> = ({
   return (
     <Card className="flex flex-col h-full overflow-hidden hover:shadow-md transition-shadow duration-300 card-hover border border-border/40 bg-card/80 backdrop-blur-sm">
       <div className="flex-grow flex flex-col items-center text-center p-6">
+        {course.institution && (
+          <div className="absolute top-3 left-3">
+            <span className="text-xs font-medium text-muted-foreground bg-primary/5 px-2 py-1 rounded-full">
+              {course.institution}
+            </span>
+          </div>
+        )}
+        
         <div className="p-4 rounded-full bg-primary/5 text-primary mb-4">
           {getIcon()}
         </div>
         
         <h3 className="mt-2 text-xl font-semibold text-primary">{course.title}</h3>
+        {course.createdBy && (
+          <p className="text-sm text-muted-foreground mt-1">
+            {course.createdBy}
+          </p>
+        )}
         <p className="text-sm uppercase text-muted-foreground mt-1">{course.subtitle || 'ԴԱՍԸՆԹԱՑ'}</p>
         
         <Button 
