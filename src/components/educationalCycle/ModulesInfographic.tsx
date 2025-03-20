@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Code, FileCode, Layers, Globe, Layout, Database, Monitor, PenTool, Image, Smartphone, Shield, Clock, Check, X } from 'lucide-react';
 import { FadeIn, SlideUp } from '@/components/LocalTransitions';
@@ -27,8 +26,8 @@ const ModuleCard: React.FC<ModuleCardProps> = ({ module, delay, showProgress }) 
   const [isFlipped, setIsFlipped] = useState(false);
   
   const colors = [
+    "bg-primary/10 text-primary border-primary/20",
     "bg-blue-100 text-blue-600 border-blue-200",
-    "bg-green-100 text-green-600 border-green-200",
     "bg-purple-100 text-purple-600 border-purple-200",
     "bg-orange-100 text-orange-600 border-orange-200",
     "bg-pink-100 text-pink-600 border-pink-200",
@@ -37,9 +36,6 @@ const ModuleCard: React.FC<ModuleCardProps> = ({ module, delay, showProgress }) 
     "bg-amber-100 text-amber-600 border-amber-200",
     "bg-cyan-100 text-cyan-600 border-cyan-200",
     "bg-rose-100 text-rose-600 border-rose-200",
-    "bg-lime-100 text-lime-600 border-lime-200",
-    "bg-emerald-100 text-emerald-600 border-emerald-200",
-    "bg-sky-100 text-sky-600 border-sky-200",
   ];
   
   const colorClass = colors[(module.id - 1) % colors.length];
@@ -65,7 +61,7 @@ const ModuleCard: React.FC<ModuleCardProps> = ({ module, delay, showProgress }) 
   return (
     <SlideUp delay={delay} className="flex flex-col">
       <div 
-        className={`flip-card ${isFlipped ? 'flipped' : ''}`}
+        className={`flip-card ${isFlipped ? 'flipped' : ''} card-hover`}
         style={{ 
           perspective: '1000px',
           height: '280px' 
@@ -79,17 +75,19 @@ const ModuleCard: React.FC<ModuleCardProps> = ({ module, delay, showProgress }) 
           }}
         >
           <div 
-            className={`flip-card-front absolute w-full h-full ${colorClass} border rounded-lg p-6 shadow-md flex flex-col items-center cursor-pointer`}
+            className={`flip-card-front absolute w-full h-full ${colorClass} rounded-lg p-6 shadow-md flex flex-col items-center cursor-pointer backdrop-blur-sm border-border/40 overflow-hidden`}
             onClick={handleCardClick}
             style={{ 
               backfaceVisibility: 'hidden'
             }}
           >
-            <div className="rounded-full bg-white p-3 mb-4 shadow-inner">
-              <module.icon className={colorClass.split(' ')[1]} size={28} />
+            <div className="absolute top-0 inset-x-0 h-1 bg-primary rounded-t-xl" />
+            
+            <div className="rounded-full bg-white/80 p-3 mb-4 shadow-sm">
+              <module.icon className={`${colorClass.split(' ')[1]} h-7 w-7`} />
             </div>
             <div className="text-sm font-semibold mb-1">{module.id}.</div>
-            <h3 className="text-center font-medium mb-2">{module.title}</h3>
+            <h3 className="text-center font-medium mb-2 text-foreground group-hover:text-primary transition-colors duration-300">{module.title}</h3>
             
             {showProgress && module.status && (
               <div className="mt-2 flex items-center gap-2">
@@ -111,19 +109,23 @@ const ModuleCard: React.FC<ModuleCardProps> = ({ module, delay, showProgress }) 
             
             {module.topics && module.topics.length > 0 && (
               <div className="mt-auto pt-4">
-                <p className="text-xs italic">Սեղմեք թեմաները տեսնելու համար</p>
+                <p className="text-xs italic text-muted-foreground">Սեղմեք թեմաները տեսնելու համար</p>
               </div>
             )}
+            
+            <div className="absolute inset-0 bg-gradient-to-r from-white/0 via-white/20 to-white/0 opacity-0 group-hover:opacity-100 translate-x-[-100%] group-hover:translate-x-[100%] transition-all duration-1000 pointer-events-none" />
           </div>
           
           <div 
-            className={`flip-card-back absolute w-full h-full ${colorClass} border rounded-lg p-4 shadow-md flex flex-col cursor-pointer overflow-hidden`}
+            className={`flip-card-back absolute w-full h-full ${colorClass} rounded-lg p-4 shadow-md flex flex-col cursor-pointer overflow-hidden border-border/40`}
             onClick={handleCardClick}
             style={{ 
               backfaceVisibility: 'hidden',
               transform: 'rotateY(180deg)'
             }}
           >
+            <div className="absolute top-0 inset-x-0 h-1 bg-primary rounded-t-xl" />
+            
             <h4 className="font-medium mb-2 text-center text-sm">{module.title} - Թեմաներ</h4>
             
             {module.topics && module.topics.length > 0 ? (
@@ -131,7 +133,7 @@ const ModuleCard: React.FC<ModuleCardProps> = ({ module, delay, showProgress }) 
                 <ul className="space-y-1 text-xs">
                   {module.topics.map((topic, index) => (
                     <li key={index} className="flex items-start gap-1.5">
-                      <span className="bg-white text-primary rounded-full w-4 h-4 flex items-center justify-center text-xs flex-shrink-0 mt-0.5">
+                      <span className="bg-white/80 text-primary rounded-full w-4 h-4 flex items-center justify-center text-xs flex-shrink-0 mt-0.5">
                         {index + 1}
                       </span>
                       <span className="leading-tight">{topic}</span>
@@ -140,11 +142,11 @@ const ModuleCard: React.FC<ModuleCardProps> = ({ module, delay, showProgress }) 
                 </ul>
               </div>
             ) : (
-              <p className="text-sm text-center italic">Թեմաներ չկան</p>
+              <p className="text-sm text-center italic text-muted-foreground">Թեմաներ չկան</p>
             )}
             
             <div className="mt-auto pt-2 text-center">
-              <p className="text-xs italic">Սեղմեք քարտը շրջելու համար</p>
+              <p className="text-xs italic text-muted-foreground">Սեղմեք քարտը շրջելու համար</p>
             </div>
           </div>
         </div>
@@ -608,132 +610,4 @@ export const ModulesInfographic: React.FC = () => {
         "3D տեքստուրաներ և մոդելներ"
       ]
     },
-    { 
-      id: 12, 
-      title: "Գրաֆիկական ինտերֆեյսի ծրագրավորում", 
-      icon: Smartphone, 
-      status: 'not-started', 
-      progress: 0,
-      topics: [
-        "UI/UX հիմունքներ",
-        "Օգտագործողների փորձի սկզբունքներ",
-        "Ինտերֆեյսների նախագծման սկզբունքներ",
-        "UI կոմպոնենտներ և նրանց տեսակները",
-        "Qt Framework ներածություն",
-        "Qt Designer և Qt Creator",
-        "Պատուհաններ և դիալոգներ",
-        "Վիջեթներ և նրանց հատկությունները",
-        "Ազդանշաններ և սլոտներ",
-        "Ձևեր և ներդրումներ",
-        "Մենյուներ և գործողություններ",
-        "Իրադարձությունների մշակում",
-        "Գրաֆիկական տարրերի նկարում",
-        "2D գրաֆիկա Qt-ում",
-        "Անիմացիաներ և էֆեկտներ",
-        "Ոճեր և թեմաներ",
-        "QML ներածություն",
-        "QML էլեմենտներ և կոմպոնենտներ",
-        "Մոբայլ ինտերֆեյսների նախագծում",
-        "Responsive դիզայն",
-        "Մուլտիպլատֆորմ մոտեցումներ",
-        "JavaFX ներածություն",
-        "Scene Builder և FXML",
-        "JavaFX կոմպոնենտներ",
-        "CSS սթայլշիթեր JavaFX-ում",
-        "WPF և XAML",
-        "MVVM պատերն",
-        "Data Binding",
-        "Electron framework",
-        "Ինտերֆեյսի տեսթավորում",
-        "Մատչելիություն (accessibility)",
-        "Ինտերնացիոնալիզացիա և լոկալիզացիա"
-      ]
-    },
-    { 
-      id: 13, 
-      title: "Տեղեկատվության անվտանգություն", 
-      icon: Shield, 
-      status: 'not-started', 
-      progress: 0,
-      topics: [
-        "Տեղեկատվական անվտանգության հիմունքներ",
-        "Գաղտնիության, ամբողջականության և հասանելիության եռյակ",
-        "Սպառնալիքների տեսակներ",
-        "Վնասակար ծրագրերի տեսակներ",
-        "Հակերային հարձակումների տիպեր",
-        "Կրիպտոգրաֆիայի հիմունքներ",
-        "Սիմետրիկ կոդավորում",
-        "Ասիմետրիկ կոդավորում",
-        "Հեշ ֆունկցիաներ",
-        "PKI և թվային սերտիֆիկատներ",
-        "Օգտագործողների ավթենտիֆիկացիա",
-        "Բազմագործոն նույնականացում",
-        "Գաղտնաբառերի անվտանգություն",
-        "OAuth և OpenID Connect",
-        "Ցանցային անվտանգություն",
-        "Ֆայրվոլներ և IDS/IPS համակարգեր",
-        "VPN տեխնոլոգիաներ",
-        "Վեբ հավելվածների անվտանգություն",
-        "OWASP Top 10 խոցելիություններ",
-        "Միջկայքային սկրիպտինգ (XSS)",
-        "SQL Injection",
-        "CSRF հարձակումներ",
-        "Անվտանգ կոդի գրում",
-        "Անվտանգության թեսթավորում",
-        "Penetration Testing",
-        "Սոցիալական ինժեներիա",
-        "Տվյալների կորստի կանխարգելում",
-        "Ռիսկերի գնահատում և կառավարում",
-        "Անվտանգության աուդիտ",
-        "Ինցիդենտների արձագանքում",
-        "Աղետներից վերականգնման պլանավորում",
-        "Անվտանգության քաղաքականության մշակում"
-      ]
-    },
-  ];
-
-  const getIntroDescription = () => {
-    return isAuthenticated 
-      ? "Ուսումնասիրեք մեր մոդուլները հերթականությամբ՝ սկսած հիմնական ալգորիթմներից մինչև առաջադեմ ծրագրավորում" 
-      : "Ուսումնական ծրագրի մոդուլները ներկայացնում են հիմնական առարկաները հերթականությամբ՝ սկսած հիմնական ալգորիթմներից մինչև առաջադեմ ծրագրավորում";
-  };
-
-  return (
-    <div className="mt-12">
-      <FadeIn delay="delay-100">
-        <h2 className="text-3xl font-bold mb-4 text-center">
-          Ուսումնական մոդուլներ
-        </h2>
-      </FadeIn>
-      
-      <FadeIn delay="delay-200">
-        <p className="text-muted-foreground text-center max-w-2xl mx-auto mb-8">
-          {getIntroDescription()}
-        </p>
-      </FadeIn>
-
-      <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-4 mb-12">
-        {educationalModules.map((module, index) => (
-          <ModuleCard
-            key={module.id}
-            module={module}
-            delay={`delay-${100 * (index % 5 + 1)}`}
-            showProgress={isAuthenticated}
-          />
-        ))}
-      </div>
-      
-      {!isAuthenticated && (
-        <FadeIn delay="delay-300">
-          <div className="text-center mt-4 mb-8">
-            <p className="text-muted-foreground">
-              Մուտք գործեք համակարգ՝ ուսումնական առաջընթացը տեսնելու համար
-            </p>
-          </div>
-        </FadeIn>
-      )}
-    </div>
-  );
-};
-
-export default ModulesInfographic;
+    {
