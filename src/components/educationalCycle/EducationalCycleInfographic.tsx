@@ -3,7 +3,7 @@ import React, { useEffect, useState } from 'react';
 import { LogIn, BookOpen, ClipboardCheck, GraduationCap, FileCode, Clock } from 'lucide-react';
 import { FadeIn, SlideUp, StaggeredContainer } from '@/components/LocalTransitions';
 import { Course } from '@/components/courses/types';
-import ModulesInfographic from './ModulesInfographic';
+import { ModulesInfographic } from './ModulesInfographic';
 import { supabase } from '@/integrations/supabase/client';
 import CourseCard from '@/components/courses/CourseCard';
 import { Button } from '@/components/ui/button';
