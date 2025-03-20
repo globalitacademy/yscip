@@ -89,13 +89,21 @@ const CourseCard: React.FC<CourseCardProps> = ({
           <p className="text-sm text-muted-foreground mb-4 line-clamp-2">{course.description}</p>
         )}
         
-        <Button 
-          variant="outline" 
-          className="mt-auto rounded-full hover:bg-primary/10 hover:text-primary hover:border-primary/30 transition-colors flex items-center gap-1 group-hover:gap-2"
-          onClick={handleViewDetails}
-        >
-          {course.button_text || 'Դիտել'} <ArrowRight className="h-4 w-4" />
-        </Button>
+        <div className="mt-auto w-full flex justify-between items-center">
+          {course.createdBy && (
+            <span className="text-sm text-muted-foreground">
+              Դասախոս՝ {course.createdBy}
+            </span>
+          )}
+          
+          <Button 
+            variant="outline" 
+            className="rounded-full hover:bg-primary/10 hover:text-primary hover:border-primary/30 transition-colors flex items-center gap-1 group-hover:gap-2"
+            onClick={handleViewDetails}
+          >
+            {course.button_text || 'Դիտել'} <ArrowRight className="h-4 w-4" />
+          </Button>
+        </div>
       </div>
       
       <CardFooter className="flex justify-between items-center p-4 border-t bg-muted/30">
