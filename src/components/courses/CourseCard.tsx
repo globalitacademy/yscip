@@ -104,7 +104,7 @@ const CourseCard: React.FC<CourseCardProps> = ({
           <p className="text-sm text-muted-foreground mb-4 line-clamp-2">{course.description}</p>
         )}
         
-        <div className="mt-auto w-full flex justify-between items-center">
+        <div className="mt-auto w-full flex flex-col items-start gap-3">
           <div className="text-sm text-muted-foreground">
             <span className="font-medium">Դասախոս՝</span> Անուն Ազգանուն
           </div>
