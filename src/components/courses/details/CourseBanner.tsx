@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { User, Clock, BookText, Code, BrainCircuit, Database, FileCode, Globe } from 'lucide-react';
 import { Input } from '@/components/ui/input';
@@ -72,7 +71,6 @@ const CourseBanner: React.FC<CourseBannerProps> = ({
         newIcon = <BookText className="w-16 h-16" />;
     }
 
-    // Թարմացնենք կուրսը նոր պատկերակով և անվամբ
     const updatedCourse = { 
       ...editedCourse,
       icon: newIcon,
@@ -83,7 +81,6 @@ const CourseBanner: React.FC<CourseBannerProps> = ({
     console.log("CourseBanner: Նոր iconName:", value);
     setEditedCourse(updatedCourse);
     
-    // Ցույց տանք նոթիֆիկացիա
     toast.info("Պատկերակը փոխվել է");
   };
 
@@ -92,7 +89,6 @@ const CourseBanner: React.FC<CourseBannerProps> = ({
     
     console.log("CourseBanner: Փոխվում է գույնը դեպի:", value);
     
-    // Թարմացնենք կուրսը նոր գույնով
     const updatedCourse = { 
       ...editedCourse,
       color: value
@@ -101,7 +97,6 @@ const CourseBanner: React.FC<CourseBannerProps> = ({
     console.log("CourseBanner: Թարմացված դասընթացը:", updatedCourse);
     setEditedCourse(updatedCourse);
     
-    // Ցույց տանք նոթիֆիկացիա
     toast.info("Գույնը փոխվել է");
   };
 
@@ -110,7 +105,6 @@ const CourseBanner: React.FC<CourseBannerProps> = ({
     
     console.log("CourseBanner: Փոխվում է ցուցադրման տեսակը:", checked ? "Պատկերակ" : "Նկար");
     
-    // Թարմացնենք կուրսը նոր ցուցադրման կարգավորումով
     const updatedCourse = { 
       ...editedCourse,
       preferIcon: checked
@@ -119,13 +113,26 @@ const CourseBanner: React.FC<CourseBannerProps> = ({
     console.log("CourseBanner: Թարմացված դասընթացը:", updatedCourse);
     setEditedCourse(updatedCourse);
     
-    // Ցույց տանք նոթիֆիկացիա
     toast.info(checked ? "Այժմ ցուցադրվում է պատկերակ" : "Այժմ ցուցադրվում է նկար");
   };
 
+  const getGradientColors = (colorClass: string) => {
+    switch(colorClass) {
+      case 'text-amber-500': return 'from-amber-50 to-amber-100';
+      case 'text-blue-500': return 'from-blue-50 to-indigo-100';
+      case 'text-red-500': return 'from-red-50 to-rose-100';
+      case 'text-yellow-500': return 'from-yellow-50 to-amber-100';
+      case 'text-purple-500': return 'from-purple-50 to-indigo-100';
+      case 'text-green-500': return 'from-green-50 to-emerald-100';
+      default: return 'from-blue-50 to-indigo-100';
+    }
+  };
+
+  const gradientClasses = getGradientColors(displayCourse.color);
+
   return (
     <FadeIn>
-      <div className="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-xl p-8 mb-10 relative">
+      <div className={`bg-gradient-to-r ${gradientClasses} rounded-xl p-8 mb-10 relative overflow-hidden`}>
         {displayCourse.imageUrl && !displayCourse.preferIcon && (
           <div className="absolute right-0 top-0 h-full overflow-hidden rounded-r-xl w-2/5">
             <img 
@@ -133,7 +140,7 @@ const CourseBanner: React.FC<CourseBannerProps> = ({
               alt={displayCourse.title}
               className="object-cover h-full w-full opacity-30"
             />
-            <div className="absolute inset-0 bg-gradient-to-l from-transparent to-blue-50"></div>
+            <div className={`absolute inset-0 bg-gradient-to-l from-transparent to-${displayCourse.color.replace('text-', '').replace('-500', '-50')}`}></div>
           </div>
         )}
         
@@ -227,9 +234,31 @@ const CourseBanner: React.FC<CourseBannerProps> = ({
           ) : (
             <>
               <div className="flex items-center mb-4">
-                <div className={`mr-4 ${displayCourse?.color || 'text-blue-500'}`}>
-                  {displayCourse?.icon}
-                </div>
+                {displayCourse.preferIcon ? (
+                  <div className={`mr-4 ${displayCourse?.color || 'text-blue-500'}`}>
+                    {displayCourse?.icon}
+                  </div>
+                ) : displayCourse.imageUrl ? (
+                  <div className="mr-4 h-16 w-16 rounded-md overflow-hidden shadow-md flex-shrink-0">
+                    <img 
+                      src={displayCourse.imageUrl} 
+                      alt={displayCourse.title} 
+                      className="w-full h-full object-cover"
+                      onError={(e) => {
+                        e.currentTarget.style.display = 'none';
+                        const iconElement = document.getElementById(`course-detail-icon-${displayCourse.id}`);
+                        if (iconElement) iconElement.style.display = 'block';
+                      }}
+                    />
+                    <div id={`course-detail-icon-${displayCourse.id}`} style={{display: 'none'}} className={`${displayCourse?.color || 'text-blue-500'}`}>
+                      {displayCourse?.icon}
+                    </div>
+                  </div>
+                ) : (
+                  <div className={`mr-4 ${displayCourse?.color || 'text-blue-500'}`}>
+                    {displayCourse?.icon}
+                  </div>
+                )}
                 <h1 className="text-3xl md:text-4xl font-bold">{displayCourse?.title}</h1>
               </div>
               <p className="text-lg text-muted-foreground mb-6">{displayCourse?.description}</p>
