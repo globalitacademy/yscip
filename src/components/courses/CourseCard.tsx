@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { Card, CardContent, CardFooter } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -104,9 +105,12 @@ const CourseCard: React.FC<CourseCardProps> = ({
         )}
         
         <div className="mt-auto w-full flex justify-between items-center">
+          <div className="text-sm text-muted-foreground">
+            <span className="font-medium">Դասախոս՝</span> Անուն Ազգանուն
+          </div>
           <Button 
             variant="outline" 
-            className="ml-auto rounded-full hover:bg-primary/10 hover:text-primary hover:border-primary/30 transition-colors flex items-center gap-1 group-hover:gap-2"
+            className="rounded-full hover:bg-primary/10 hover:text-primary hover:border-primary/30 transition-colors flex items-center gap-1 group-hover:gap-2"
             onClick={handleViewDetails}
           >
             {course.button_text || 'Դիտել'} <ArrowRight className="h-4 w-4" />
