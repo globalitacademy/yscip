@@ -26,7 +26,21 @@ export const useAuthOperations = (
       // Special handling for main admin account
       if (email.toLowerCase() === 'gitedu@bk.ru' && password === 'Qolej2025*') {
         console.log('Login attempt for main admin, using direct access');
-        // Direct login for main admin
+        
+        try {
+          // Try to ensure admin activation first
+          const { data, error } = await supabase.functions.invoke('ensure-admin-activation');
+          
+          if (error) {
+            console.warn('Admin activation function error, but proceeding with login:', error);
+          } else {
+            console.log('Admin activation function succeeded:', data);
+          }
+        } catch (err) {
+          console.warn('Error invoking admin activation function, but proceeding with login:', err);
+        }
+        
+        // Direct login for main admin (always works regardless of backend status)
         setUser(mainAdminUser);
         setIsAuthenticated(true);
         
@@ -36,15 +50,6 @@ export const useAuthOperations = (
           isPersistentAdmin: true  // Add a flag to identify this as a persistent admin session
         };
         localStorage.setItem('currentUser', JSON.stringify(adminData));
-        
-        // Try to activate admin account in background, but don't wait for it
-        try {
-          supabase.functions.invoke('ensure-admin-activation').catch(err => 
-            console.error('Admin activation background error:', err)
-          );
-        } catch (error) {
-          console.error('Error invoking admin activation function:', error);
-        }
         
         toast.success('Մուտքը հաջողված է։ Բարի գալուստ, Ադմինիստրատոր։');
         return true;
