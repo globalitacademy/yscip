@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Card, CardContent, CardFooter } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -28,7 +27,6 @@ const CourseCard: React.FC<CourseCardProps> = ({
   const navigate = useNavigate();
   const { user } = useAuth();
   
-  // Function to get icon based on course icon_name or title
   const getIcon = () => {
     if (course.icon_name) {
       if (course.icon_name.toLowerCase() === 'code') {
@@ -40,7 +38,6 @@ const CourseCard: React.FC<CourseCardProps> = ({
       }
     }
     
-    // Fallback based on title
     const title = course.title.toLowerCase();
     
     if (title.includes('web') || title.includes('front') || title.includes('html')) {
@@ -53,7 +50,6 @@ const CourseCard: React.FC<CourseCardProps> = ({
       return <FileCode className="h-16 w-16" />;
     }
     
-    // Default icon
     return <Code className="h-16 w-16" />;
   };
   
@@ -61,7 +57,6 @@ const CourseCard: React.FC<CourseCardProps> = ({
     navigate(`/course/${course.id}`);
   };
 
-  // Determine creator information
   const isCreatedByCurrentUser = course.createdBy === user?.id;
   const creatorName = isCreatedByCurrentUser ? 'Ձեր կողմից' : 'Ուսումնական Կենտրոն';
   const creatorAvatar = isCreatedByCurrentUser && user?.avatar 
@@ -104,7 +99,7 @@ const CourseCard: React.FC<CourseCardProps> = ({
           <p className="text-sm text-muted-foreground mb-4 line-clamp-2">{course.description}</p>
         )}
         
-        <div className="mt-auto w-full flex flex-col items-start gap-3">
+        <div className="mt-auto w-full flex flex-col items-center gap-3">
           <div className="text-sm text-muted-foreground">
             <span className="font-medium">Դասախոս՝</span> Անուն Ազգանուն
           </div>
@@ -125,7 +120,6 @@ const CourseCard: React.FC<CourseCardProps> = ({
       
       {isAdmin && canEdit && onEdit && onDelete && (
         <div className="hidden">
-          {/* These are hidden controls for admin functionality */}
           <Button variant="outline" size="sm" onClick={() => onEdit(course)}>
             Խմբագրել
           </Button>
