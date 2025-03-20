@@ -1,4 +1,3 @@
-
 import { supabase } from '@/integrations/supabase/client';
 import { ProfessionalCourse } from '../types/ProfessionalCourse';
 import { toast } from 'sonner';
@@ -261,18 +260,15 @@ const convertToSupabaseCourseFormat = (course: ProfessionalCourse) => {
   
   // Determine icon name from the course's icon
   if (course.icon) {
-    // Get the icon type safely
-    const iconType = course.icon.type;
+    // Get the icon type with a proper type assertion
+    const iconType = course.icon.type as { name?: string } | null | undefined;
     
     // First check if iconType is not null
     if (iconType !== null && iconType !== undefined) {
-      // Then check if it's an object
-      if (typeof iconType === 'object') {
-        // Then check if it has a 'name' property
-        if (iconType && 'name' in iconType && iconType.name !== null && iconType.name !== undefined) {
-          // Now it's safe to access name and convert to lowercase
-          iconName = String(iconType.name).toLowerCase();
-        }
+      // Then check if it has a 'name' property
+      if ('name' in iconType && iconType.name !== null && iconType.name !== undefined) {
+        // Now it's safe to access name and convert to lowercase
+        iconName = String(iconType.name).toLowerCase();
       }
     }
   }
