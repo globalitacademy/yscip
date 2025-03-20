@@ -5,10 +5,12 @@ import { CourseProvider } from './CourseContext';
 import CourseHeader from './CourseHeader';
 import CourseTabView from './CourseTabView';
 import { useCourseManagement } from './useCourseManagement';
+import { useInitializeFeaturedCourses } from './hooks/useInitializeFeaturedCourses';
 
 const CourseManagement: React.FC = () => {
   const { user } = useAuth();
   const { setIsAddDialogOpen } = useCourseManagement();
+  const { initializeFeaturedCourses } = useInitializeFeaturedCourses();
 
   // Check if user has permissions to add courses
   const isAdmin = user?.role === 'admin';
@@ -21,6 +23,7 @@ const CourseManagement: React.FC = () => {
         <CourseHeader 
           canAddCourses={canAddCourses} 
           onAddCourse={() => setIsAddDialogOpen(true)} 
+          onInitializeCourses={isAdmin ? initializeFeaturedCourses : undefined}
         />
         <CourseTabView />
       </div>
