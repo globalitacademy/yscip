@@ -21,7 +21,18 @@ const ProfessionalCourseCard: React.FC<ProfessionalCourseCardProps> = ({
   canEdit = false
 }) => {
   return (
-    <Card className="h-full overflow-hidden shadow-md hover:shadow-lg transition-shadow">
+    <Card className="h-full overflow-hidden shadow-md hover:shadow-lg transition-shadow relative">
+      {course.organizationLogo && (
+        <div className="absolute top-4 left-4 flex items-center text-xs bg-gray-100 px-2 py-1 rounded-full z-10">
+          <img 
+            src={course.organizationLogo} 
+            alt={course.institution}
+            className="w-6 h-6 mr-1 object-contain rounded-full"
+          />
+          <span>{course.institution}</span>
+        </div>
+      )}
+      
       <div className="px-6 py-4 flex flex-col items-center text-center">
         {course.imageUrl ? (
           <img 
@@ -43,7 +54,9 @@ const ProfessionalCourseCard: React.FC<ProfessionalCourseCardProps> = ({
         <h3 className="text-xl font-semibold mb-2">{course.title}</h3>
         <div className="text-sm text-gray-600 mb-1">Տևողություն: {course.duration}</div>
         <div className="text-sm text-gray-600 mb-1">Արժեք: {course.price}</div>
-        <div className="text-sm text-gray-600 mb-4">Հաստատություն: {course.institution}</div>
+        {!course.organizationLogo && (
+          <div className="text-sm text-gray-600 mb-4">Հաստատություն: {course.institution}</div>
+        )}
         
         <div className="flex space-x-2">
           <Button variant="outline" size="sm">

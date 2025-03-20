@@ -13,6 +13,7 @@ export interface ProfessionalCourse {
   createdBy: string;
   institution: string;
   imageUrl?: string;
+  organizationLogo?: string;
   description?: string;
   lessons?: { title: string; duration: string }[];
   requirements?: string[];
