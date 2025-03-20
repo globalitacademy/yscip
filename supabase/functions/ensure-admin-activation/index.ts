@@ -16,7 +16,6 @@ serve(async (req) => {
 
   try {
     // Create a Supabase client with the service role key (admin privileges)
-    // The service role key bypasses RLS policies, which helps prevent infinite recursion
     const supabaseAdmin = createClient(
       Deno.env.get("SUPABASE_URL") || "",
       Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") || "",
@@ -30,19 +29,47 @@ serve(async (req) => {
 
     console.log("Ensuring admin activation...");
 
-    // Call the database function to ensure admin account is set up
-    // But using a direct SQL query to avoid triggering RLS policies
+    // First, ensure the admin account exists and is properly configured
+    const { data: verifyData, error: verifyError } = await supabaseAdmin.rpc("verify_designated_admin");
+    
+    if (verifyError) {
+      console.error("Error verifying admin account:", verifyError);
+    } else {
+      console.log("Admin account verified successfully");
+    }
+
+    // Then call ensure_admin_login to ensure admin login capabilities
     const { data, error } = await supabaseAdmin.rpc("ensure_admin_login");
 
     if (error) {
       console.error("Error ensuring admin login:", error);
-      return new Response(
-        JSON.stringify({ success: false, error: error.message }),
-        {
-          headers: { ...corsHeaders, "Content-Type": "application/json" },
-          status: 500,
+      
+      // Try backup approach - reset admin account
+      try {
+        const { data: resetData, error: resetError } = await supabaseAdmin.rpc("reset_admin_account");
+        
+        if (resetError) {
+          console.error("Error resetting admin account:", resetError);
+          return new Response(
+            JSON.stringify({ success: false, error: error.message }),
+            {
+              headers: { ...corsHeaders, "Content-Type": "application/json" },
+              status: 500,
+            }
+          );
         }
-      );
+        
+        console.log("Admin account reset successfully:", resetData);
+      } catch (resetCatchError) {
+        console.error("Exception during admin reset:", resetCatchError);
+        return new Response(
+          JSON.stringify({ success: false, error: resetCatchError.message }),
+          {
+            headers: { ...corsHeaders, "Content-Type": "application/json" },
+            status: 500,
+          }
+        );
+      }
     }
 
     console.log("Admin activation completed successfully:", data);

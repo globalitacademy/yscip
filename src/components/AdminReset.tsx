@@ -2,7 +2,7 @@
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { RefreshCw, CheckCircle } from 'lucide-react';
+import { RefreshCw, CheckCircle, Shield } from 'lucide-react';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { useAuth } from '@/contexts/AuthContext';
 import { toast } from 'sonner';
@@ -17,10 +17,15 @@ const AdminReset: React.FC = () => {
     setIsResetting(true);
     try {
       // First try to ensure admin activation using edge function
+      console.log('Calling ensure-admin-activation function...');
       const { data: ensureData, error: ensureError } = await supabase.functions.invoke('ensure-admin-activation');
       
       if (ensureError) {
-        console.error('Error ensuring admin access:', ensureError);
+        console.error('Error ensuring admin access via edge function:', ensureError);
+        toast.error('Սխալ սերվերի հարցման ժամանակ', {
+          description: 'Փորձում ենք այլընտրանքային մեթոդ...'
+        });
+        
         // Fall back to resetAdminAccount
         const success = await resetAdminAccount();
         if (success) {
@@ -39,6 +44,22 @@ const AdminReset: React.FC = () => {
         toast.success('Ադմինիստրատորի հաշիվը վերականգնված է', {
           description: 'Email: gitedu@bk.ru, Գաղտնաբառ: Qolej2025*'
         });
+        
+        // Try to log in automatically
+        try {
+          const { error: loginError } = await supabase.auth.signInWithPassword({
+            email: 'gitedu@bk.ru',
+            password: 'Qolej2025*'
+          });
+          
+          if (loginError) {
+            console.error('Auto login failed:', loginError);
+          } else {
+            console.log('Auto login successful');
+          }
+        } catch (loginErr) {
+          console.error('Error during auto login:', loginErr);
+        }
       }
     } catch (error) {
       console.error('Error resetting admin:', error);
@@ -53,7 +74,10 @@ const AdminReset: React.FC = () => {
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Ադմինիստրատորի հաշիվ</CardTitle>
+        <CardTitle className="flex items-center gap-2">
+          <Shield className="h-5 w-5 text-amber-500" />
+          Ադմինիստրատորի հաշիվ
+        </CardTitle>
         <CardDescription>
           Վերականգնեք համակարգի գլխավոր ադմինիստրատորի հաշիվը
         </CardDescription>
