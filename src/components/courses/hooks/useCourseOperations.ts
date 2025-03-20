@@ -24,44 +24,39 @@ export const useCourseOperations = (
       return;
     }
 
-    const courseId = uuidv4();
-    
-    const courseToAdd = {
-      id: courseId,
-      title: newCourse.title,
-      description: newCourse.description,
-      specialization: newCourse.specialization,
-      duration: newCourse.duration,
-      price: newCourse.price,
-      institution: newCourse.institution || 'Qolej',
-      subtitle: newCourse.subtitle || 'ԴԱՍԸՆԹԱՑ',
-      created_by: user?.id || 'admin',
-      color: 'text-amber-500', // Default color
-      icon_name: 'code',       // Default icon
-      button_text: 'Դիտել'
-    };
-
     try {
-      const { error } = await supabase
+      const courseToAdd = {
+        title: newCourse.title,
+        description: newCourse.description,
+        specialization: newCourse.specialization || '',
+        duration: newCourse.duration,
+        price: newCourse.price,
+        institution: newCourse.institution || 'Qolej',
+        subtitle: newCourse.subtitle || 'ԴԱՍԸՆԹԱՑ',
+        icon_name: newCourse.icon_name || 'Code',
+        button_text: 'Դիտել',
+        created_by: user?.id || '',
+        color: 'text-amber-500',
+        modules: newCourse.modules || []
+      };
+
+      console.log('Attempting to create course:', courseToAdd);
+      
+      const { data, error } = await supabase
         .from('courses')
-        .insert(courseToAdd);
+        .insert(courseToAdd)
+        .select();
       
-      if (error) throw error;
-      
-      if (newCourse.modules && newCourse.modules.length > 0) {
-        const { error: modulesError } = await supabase
-          .from('courses')
-          .update({ modules: newCourse.modules })
-          .eq('id', courseId);
-          
-        if (modulesError) {
-          console.error('Error adding modules:', modulesError);
-          // Continue anyway since the course was created
-        }
+      if (error) {
+        console.error('Supabase error inserting course:', error);
+        throw error;
       }
+      
+      console.log('Course created successfully:', data);
       
       toast.success('Դասընթացը հաջողությամբ ավելացվել է');
       
+      // Reset form and close dialog
       setNewCourse({
         title: '',
         description: '',
@@ -75,6 +70,7 @@ export const useCourseOperations = (
       });
       setIsAddDialogOpen(false);
       
+      // Refresh the page to show the new course
       window.location.reload();
     } catch (error) {
       console.error('Error adding course:', error);
@@ -85,31 +81,39 @@ export const useCourseOperations = (
   const handleEditCourse = async () => {
     if (!selectedCourse) return;
     
-    if (!selectedCourse.title || !selectedCourse.description || !selectedCourse.duration || !selectedCourse.price) {
+    if (!selectedCourse.title || !selectedCourse.description || !selectedCourse.duration) {
       toast.error('Լրացրեք բոլոր պարտադիր դաշտերը');
       return;
     }
 
     try {
+      console.log('Updating course:', selectedCourse);
+      
       const { error } = await supabase
         .from('courses')
         .update({
           title: selectedCourse.title,
           description: selectedCourse.description,
-          specialization: selectedCourse.specialization,
+          specialization: selectedCourse.specialization || null,
           duration: selectedCourse.duration,
-          price: selectedCourse.price,
-          institution: selectedCourse.institution,
-          modules: selectedCourse.modules,
+          price: selectedCourse.price || '0',
+          institution: selectedCourse.institution || null,
+          modules: selectedCourse.modules || [],
           updated_at: new Date().toISOString()
         })
         .eq('id', selectedCourse.id);
         
-      if (error) throw error;
+      if (error) {
+        console.error('Supabase error updating course:', error);
+        throw error;
+      }
+      
+      console.log('Course updated successfully');
       
       toast.success('Դասընթացը հաջողությամբ թարմացվել է');
       setIsEditDialogOpen(false);
       
+      // Refresh the page to show updated course data
       window.location.reload();
     } catch (error) {
       console.error('Error updating course:', error);
@@ -118,26 +122,28 @@ export const useCourseOperations = (
   };
 
   const handleDeleteCourse = async (id: string) => {
-    const courseToDelete = courses.find(course => course.id === id);
-    
-    if (courseToDelete && (user?.role === 'admin' || courseToDelete.createdBy === user?.id)) {
-      try {
-        const { error } = await supabase
-          .from('courses')
-          .delete()
-          .eq('id', id);
+    try {
+      console.log('Deleting course with ID:', id);
+      
+      const { error } = await supabase
+        .from('courses')
+        .delete()
+        .eq('id', id);
           
-        if (error) throw error;
-        
-        toast.success('Դասընթացը հաջողությամբ հեռացվել է');
-        
-        window.location.reload();
-      } catch (error) {
-        console.error('Error deleting course:', error);
-        toast.error('Չհաջողվեց հեռացնել դասընթացը');
+      if (error) {
+        console.error('Supabase error deleting course:', error);
+        throw error;
       }
-    } else {
-      toast.error('Դուք չունեք իրավունք ջնջելու այս դասընթացը');
+      
+      console.log('Course deleted successfully');
+      
+      toast.success('Դասընթացը հաջողությամբ հեռացվել է');
+      
+      // Refresh the page to update the course list
+      window.location.reload();
+    } catch (error) {
+      console.error('Error deleting course:', error);
+      toast.error('Չհաջողվեց հեռացնել դասընթացը');
     }
   };
 

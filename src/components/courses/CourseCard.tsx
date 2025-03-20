@@ -1,9 +1,10 @@
+
 import React from 'react';
 import { Card, CardContent, CardFooter } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Course } from './types';
 import { useNavigate } from 'react-router-dom';
-import { Code, Coffee, FileCode, ArrowRight, User, Building } from 'lucide-react';
+import { Code, Coffee, FileCode, ArrowRight, User, Building, PencilLine, Trash2 } from 'lucide-react';
 import { PythonLogo } from './CourseIcons';
 import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
@@ -120,12 +121,22 @@ const CourseCard: React.FC<CourseCardProps> = ({
       </CardFooter>
       
       {isAdmin && canEdit && onEdit && onDelete && (
-        <div className="hidden">
-          <Button variant="outline" size="sm" onClick={() => onEdit(course)}>
-            Խմբագրել
+        <div className="absolute top-3 right-3 flex gap-2">
+          <Button 
+            variant="ghost" 
+            size="icon" 
+            className="h-8 w-8 bg-background/80 backdrop-blur-sm border border-border shadow-sm"
+            onClick={() => onEdit(course)}
+          >
+            <PencilLine className="h-4 w-4" />
           </Button>
-          <Button variant="destructive" size="sm" onClick={() => onDelete(course.id)}>
-            Ջնջել
+          <Button 
+            variant="ghost" 
+            size="icon" 
+            className="h-8 w-8 bg-background/80 backdrop-blur-sm border border-border shadow-sm hover:bg-destructive/10 hover:text-destructive"
+            onClick={() => onDelete(course.id)}
+          >
+            <Trash2 className="h-4 w-4" />
           </Button>
         </div>
       )}

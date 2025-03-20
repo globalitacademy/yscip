@@ -3,24 +3,24 @@ import React from 'react';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Course } from './types';
+import { X, Plus } from 'lucide-react';
+import { Badge } from '@/components/ui/badge';
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { mockSpecializations } from './useCourseManagement';
-import { X, Plus } from 'lucide-react';
-import { Badge } from '@/components/ui/badge';
 
 interface EditCourseDialogProps {
   isOpen: boolean;
   onClose: () => void;
   selectedCourse: Course | null;
   setSelectedCourse: React.Dispatch<React.SetStateAction<Course | null>>;
-  handleEditCourse: () => void;
   newModule: string;
   setNewModule: React.Dispatch<React.SetStateAction<string>>;
   handleAddModuleToEdit: () => void;
   handleRemoveModuleFromEdit: (index: number) => void;
+  handleEditCourse: () => void;
 }
 
 const EditCourseDialog: React.FC<EditCourseDialogProps> = ({
@@ -28,11 +28,11 @@ const EditCourseDialog: React.FC<EditCourseDialogProps> = ({
   onClose,
   selectedCourse,
   setSelectedCourse,
-  handleEditCourse,
   newModule,
   setNewModule,
   handleAddModuleToEdit,
-  handleRemoveModuleFromEdit
+  handleRemoveModuleFromEdit,
+  handleEditCourse
 }) => {
   if (!selectedCourse) return null;
 
@@ -47,7 +47,7 @@ const EditCourseDialog: React.FC<EditCourseDialogProps> = ({
         <DialogHeader>
           <DialogTitle>Խմբագրել դասընթացը</DialogTitle>
           <DialogDescription>
-            Խմբագրեք դասընթացի մանրամասները ստորև։ Պատրաստ լինելուն պես, սեղմեք «Պահպանել» կոճակը։
+            Փոփոխեք դասընթացի մանրամասները ստորև։ Պատրաստ լինելուն պես, սեղմեք «Պահպանել» կոճակը։
           </DialogDescription>
         </DialogHeader>
 
@@ -59,7 +59,7 @@ const EditCourseDialog: React.FC<EditCourseDialogProps> = ({
               </Label>
               <Input
                 id="edit-title"
-                value={selectedCourse.title}
+                value={selectedCourse.title || ''}
                 onChange={(e) => setSelectedCourse({ ...selectedCourse, title: e.target.value })}
                 className="col-span-3"
                 required
@@ -72,7 +72,7 @@ const EditCourseDialog: React.FC<EditCourseDialogProps> = ({
               </Label>
               <Textarea
                 id="edit-description"
-                value={selectedCourse.description}
+                value={selectedCourse.description || ''}
                 onChange={(e) => setSelectedCourse({ ...selectedCourse, description: e.target.value })}
                 className="col-span-3"
                 rows={3}
@@ -96,14 +96,14 @@ const EditCourseDialog: React.FC<EditCourseDialogProps> = ({
 
             <div className="grid grid-cols-4 items-center gap-4">
               <Label htmlFor="edit-duration" className="text-right">
-                Տևողություն (ամիս)
+                Տևողություն
               </Label>
               <Input
                 id="edit-duration"
-                value={selectedCourse.duration}
+                value={selectedCourse.duration || ''}
                 onChange={(e) => setSelectedCourse({ ...selectedCourse, duration: e.target.value })}
                 className="col-span-3"
-                placeholder="Օրինակ՝ 3.5"
+                placeholder="Օրինակ՝ 3 ամիս"
                 required
               />
             </div>

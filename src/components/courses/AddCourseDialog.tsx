@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React from 'react';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Course } from './types';
@@ -10,6 +10,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { mockSpecializations } from './useCourseManagement';
 import { X, Plus } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
+import CourseForm from './CourseForm';
 
 interface AddCourseDialogProps {
   isOpen: boolean;
@@ -94,14 +95,14 @@ const AddCourseDialog: React.FC<AddCourseDialogProps> = ({
 
             <div className="grid grid-cols-4 items-center gap-4">
               <Label htmlFor="duration" className="text-right">
-                Տևողություն (ամիս)
+                Տևողություն
               </Label>
               <Input
                 id="duration"
                 value={newCourse.duration || ''}
                 onChange={(e) => setNewCourse({ ...newCourse, duration: e.target.value })}
                 className="col-span-3"
-                placeholder="Օրինակ՝ 3.5"
+                placeholder="Օրինակ՝ 3 ամիս"
                 required
               />
             </div>
