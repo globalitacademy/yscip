@@ -265,7 +265,7 @@ const convertToSupabaseCourseFormat = (course: ProfessionalCourse) => {
     const iconType = course.icon.type;
     // Make sure iconType is an object with a name property before accessing it
     if (iconType && typeof iconType === 'object' && 'name' in iconType) {
-      iconName = iconType.name.toLowerCase();
+      iconName = (iconType.name as string).toLowerCase();
     }
   }
   
