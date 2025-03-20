@@ -1,77 +1,29 @@
 
 import React, { useEffect, useState } from 'react';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import { Book, Users, Clock } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { Course } from './types';
-import { supabase } from '@/integrations/supabase/client';
-import { Skeleton } from '@/components/ui/skeleton';
-import CourseCard from './CourseCard';
+import CourseSectionCard from './CourseSectionCard';
 
 const CoursesSection: React.FC = () => {
   const [courses, setCourses] = useState<Course[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
   const navigate = useNavigate();
   
   useEffect(() => {
-    const fetchCourses = async () => {
-      setIsLoading(true);
+    // Load courses from localStorage
+    const storedCourses = localStorage.getItem('courses');
+    if (storedCourses) {
       try {
-        const { data, error } = await supabase
-          .from('courses')
-          .select('*')
-          .limit(4);
-
-        if (error) {
-          throw error;
-        }
-
-        // Map the database courses to our Course type
-        const mappedCourses: Course[] = data.map((course) => ({
-          id: course.id,
-          title: course.title,
-          description: course.description || '',
-          specialization: course.specialization || undefined,
-          duration: course.duration,
-          modules: course.modules || [],
-          createdBy: course.created_by || 'unknown',
-          color: course.color,
-          button_text: course.button_text,
-          icon_name: course.icon_name,
-          subtitle: course.subtitle,
-          price: course.price,
-          image_url: course.image_url,
-          institution: course.institution,
-          is_persistent: course.is_persistent
-        }));
-
-        setCourses(mappedCourses);
+        const parsedCourses = JSON.parse(storedCourses);
+        setCourses(parsedCourses);
       } catch (e) {
-        console.error('Error fetching courses:', e);
-      } finally {
-        setIsLoading(false);
+        console.error('Error parsing stored courses:', e);
       }
-    };
-
-    fetchCourses();
+    }
   }, []);
-
-  if (isLoading) {
-    return (
-      <section className="py-12 bg-gradient-to-b from-background to-secondary/20">
-        <div className="container mx-auto px-4">
-          <div className="text-center mb-10">
-            <Skeleton className="h-8 w-64 mx-auto" />
-            <Skeleton className="h-4 w-full max-w-2xl mx-auto mt-2" />
-          </div>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-            {[1, 2, 3, 4].map((i) => (
-              <Skeleton key={i} className="h-64 w-full rounded-lg" />
-            ))}
-          </div>
-        </div>
-      </section>
-    );
-  }
 
   if (courses.length === 0) {
     return null;
@@ -87,13 +39,9 @@ const CoursesSection: React.FC = () => {
           </p>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {courses.map((course) => (
-            <CourseCard 
-              key={course.id} 
-              course={course} 
-              url={`/courses/${course.id}`}
-            />
+            <CourseSectionCard key={course.id} course={course} onClick={() => navigate('/courses')} />
           ))}
         </div>
         

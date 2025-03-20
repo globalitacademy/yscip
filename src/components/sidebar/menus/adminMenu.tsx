@@ -22,9 +22,9 @@ export const adminMenuItems: SidebarMenuGroup[] = [
         roles: ['admin']
       },
       {
-        title: 'Ծրագրեր',
+        title: 'Նախագծեր',
         icon: <Folders className="h-4 w-4" />,
-        href: '/admin/projects',
+        href: '/admin/admin-projects',
         roles: ['admin']
       },
       {

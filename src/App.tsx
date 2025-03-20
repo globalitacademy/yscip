@@ -1,9 +1,11 @@
+
 import React from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import Index from '@/pages/Index';
 import Login from '@/pages/Login';
 import VerifyEmail from '@/pages/VerifyEmail';
 import ProjectDetails from '@/pages/ProjectDetails';
+import CourseDetails from '@/pages/CourseDetails';
 import AdminDashboard from '@/pages/AdminDashboard';
 import UserManagementPage from '@/pages/UserManagementPage';
 import GroupsPage from '@/pages/GroupsPage';
@@ -11,9 +13,6 @@ import SpecializationsPage from '@/pages/SpecializationsPage';
 import OrganizationsPage from '@/pages/OrganizationsPage';
 import ProjectManagementPage from '@/pages/ProjectManagementPage';
 import CoursesPage from '@/pages/CoursesPage';
-import CourseDetailsPage from '@/pages/CourseDetailsPage';
-import CourseDetailPage from '@/components/courses/CourseDetailPage';
-import CoursePage from '@/pages/CoursePage';
 import ProjectProposalsPage from '@/pages/ProjectProposalsPage';
 import PendingApprovals from '@/pages/PendingApprovals';
 import SupervisedStudentsPage from '@/pages/SupervisedStudentsPage';
@@ -27,6 +26,7 @@ import ReportsPage from '@/pages/ReportsPage';
 import ProjectSubmissionPage from '@/pages/ProjectSubmissionPage';
 import NotFound from '@/pages/NotFound';
 import ModulesPage from './pages/ModulesPage';
+import AdminProjectsPage from './pages/AdminProjectsPage';
 import { AuthProvider } from '@/contexts/AuthContext';
 import { ProjectProvider } from '@/contexts/ProjectContext';
 import { Toaster } from "@/components/ui/toaster"
@@ -42,13 +42,7 @@ function App() {
             <Route path="/login" element={<Login />} />
             <Route path="/verify" element={<VerifyEmail />} />
             <Route path="/project/:id" element={<ProjectDetails />} />
-            
-            {/* Course routes - primary route is /courses/:id */}
-            <Route path="/courses/:id" element={<CoursePage />} />
-            
-            {/* Legacy/alternative course routes - keep for backward compatibility */}
-            <Route path="/course/:id" element={<CourseDetailsPage />} />
-            <Route path="/course-detail/:id" element={<CourseDetailPage />} />
+            <Route path="/course/:id" element={<CourseDetails />} />
             
             {/* Redirect /admin to /admin/dashboard */}
             <Route path="/admin" element={<Navigate to="/admin/dashboard" replace />} />
@@ -56,7 +50,6 @@ function App() {
             {/* Student specific redirects */}
             <Route path="/projects/manage" element={<Navigate to="/admin/my-projects" replace />} />
             <Route path="/my-projects" element={<Navigate to="/admin/my-projects" replace />} />
-            <Route path="/courses" element={<Navigate to="/admin/courses" replace />} />
             
             {/* Admin routes */}
             <Route path="/admin/dashboard" element={<AdminDashboard />} />
@@ -65,6 +58,7 @@ function App() {
             <Route path="/admin/specializations" element={<SpecializationsPage />} />
             <Route path="/admin/organizations" element={<OrganizationsPage />} />
             <Route path="/admin/projects" element={<ProjectManagementPage />} />
+            <Route path="/admin/admin-projects" element={<AdminProjectsPage />} />
             <Route path="/admin/courses" element={<CoursesPage />} />
             <Route path="/admin/modules" element={<ModulesPage />} />
             <Route path="/admin/project-proposals" element={<ProjectProposalsPage />} />

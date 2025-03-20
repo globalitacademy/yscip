@@ -1,113 +1,83 @@
 
 import React from 'react';
-import { Card, CardContent, CardFooter, CardHeader } from '@/components/ui/card';
-import { Course } from './types';
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { MoreHorizontal, PenSquare, Trash2 } from 'lucide-react';
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
-import { CourseIconComponent } from './CourseIcons';
-import { Link } from 'react-router-dom';
+import { Course } from './types';
+import { Edit, Trash2, User } from 'lucide-react';
+import { Badge } from '@/components/ui/badge';
+import { useAuth } from '@/contexts/AuthContext';
 
 interface CourseCardProps {
   course: Course;
-  isAdmin?: boolean;
-  canEdit?: boolean;
-  onEdit?: (course: Course) => void;
-  onDelete?: (id: string) => void;
-  url: string;
+  isAdmin: boolean;
+  canEdit: boolean;
+  onEdit: (course: Course) => void;
+  onDelete: (id: string) => void;
 }
 
-const CourseCard: React.FC<CourseCardProps> = ({
-  course,
-  isAdmin = false,
-  canEdit = false,
-  onEdit,
-  onDelete,
-  url,
-}) => {
-  const handleEdit = (e: React.MouseEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
-    if (onEdit) onEdit(course);
-  };
-
-  const handleDelete = (e: React.MouseEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
-    if (onDelete) onDelete(course.id);
-  };
-
-  const IconComponent = CourseIconComponent(course.icon_name);
-
+const CourseCard: React.FC<CourseCardProps> = ({ course, isAdmin, canEdit, onEdit, onDelete }) => {
+  const { user } = useAuth();
+  
+  // Check if the course was created by the current user
+  const isCreatedByCurrentUser = course.createdBy === user?.id;
+  
   return (
-    <Card className="overflow-hidden">
-      <Link to={url} className="block h-full">
-        <CardHeader className="pb-0">
-          <div className="flex justify-between items-start">
-            <div
-              className={`p-2 rounded-md ${
-                course.color || 'text-amber-500'
-              } bg-amber-50`}
-            >
-              <IconComponent className="h-6 w-6" />
-            </div>
-
-            {isAdmin && canEdit && (
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <Button
-                    variant="ghost"
-                    className="h-8 w-8 p-0"
-                    onClick={(e) => e.stopPropagation()}
-                  >
-                    <span className="sr-only">Բացել մենյուն</span>
-                    <MoreHorizontal className="h-4 w-4" />
-                  </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent align="end">
-                  <DropdownMenuItem onClick={handleEdit}>
-                    <PenSquare className="mr-2 h-4 w-4" />
-                    Խմբագրել
-                  </DropdownMenuItem>
-                  <DropdownMenuItem
-                    className="text-red-600"
-                    onClick={handleDelete}
-                  >
-                    <Trash2 className="mr-2 h-4 w-4" />
-                    Հեռացնել
-                  </DropdownMenuItem>
-                </DropdownMenuContent>
-              </DropdownMenu>
+    <Card className="h-full flex flex-col">
+      <CardHeader>
+        <div className="flex items-start justify-between">
+          <div>
+            <CardTitle className="text-xl">{course.name}</CardTitle>
+            {course.specialization && (
+              <Badge variant="outline" className="mt-1">
+                {course.specialization}
+              </Badge>
             )}
           </div>
-        </CardHeader>
-
-        <CardContent className="pt-4">
-          <div className="space-y-1">
-            <p className="text-xs text-muted-foreground">
-              {course.subtitle || 'ԴԱՍԸՆԹԱՑ'}
-            </p>
-            <h3 className="font-bold">{course.title}</h3>
-            <p className="text-sm text-muted-foreground line-clamp-2">
-              {course.description}
-            </p>
-          </div>
-        </CardContent>
-
-        <CardFooter className="flex justify-between">
-          <div className="text-sm text-muted-foreground">
-            {course.duration}
-          </div>
-          <Button variant="outline" size="sm">
-            {course.button_text || 'Դիտել'}
+          <Badge>{course.duration}</Badge>
+        </div>
+        <CardDescription className="line-clamp-2 mt-2">
+          {course.description}
+        </CardDescription>
+      </CardHeader>
+      <CardContent className="flex-grow">
+        <div className="mt-2">
+          <h4 className="text-sm font-medium mb-2">Մոդուլներ ({course.modules.length})</h4>
+          <ul className="text-sm space-y-1">
+            {course.modules.slice(0, 3).map((module, index) => (
+              <li key={index} className="text-muted-foreground">
+                • {module}
+              </li>
+            ))}
+            {course.modules.length > 3 && (
+              <li className="text-muted-foreground">
+                • ... և {course.modules.length - 3} այլ
+              </li>
+            )}
+          </ul>
+        </div>
+        
+        {/* Display course creator information */}
+        <div className="mt-4 flex items-center text-sm text-muted-foreground">
+          <User size={14} className="mr-1" />
+          {isCreatedByCurrentUser ? (
+            <span>Ձեր կողմից ստեղծված</span>
+          ) : (
+            <span>{course.createdBy === 'admin' ? 'Ադմինիստրատորի' : 'Դասախոսի'} կողմից ստեղծված</span>
+          )}
+        </div>
+      </CardContent>
+      {canEdit && (
+        <CardFooter className="flex justify-end gap-2 pt-2">
+          <Button variant="outline" size="sm" onClick={() => onEdit(course)}>
+            <Edit className="h-4 w-4 mr-1" />
+            Խմբագրել
+          </Button>
+          <Button variant="destructive" size="sm" onClick={() => onDelete(course.id)}>
+            <Trash2 className="h-4 w-4 mr-1" />
+            Ջնջել
           </Button>
         </CardFooter>
-      </Link>
+      )}
     </Card>
   );
 };

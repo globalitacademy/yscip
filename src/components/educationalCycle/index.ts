@@ -1,3 +1,6 @@
 
-import EducationalCycleInfographic from './EducationalCycleInfographic';
-export default EducationalCycleInfographic;
+import ModulesInfographic from './ModulesInfographic';
+export { default as ModuleCard } from './ModuleCard';
+export { educationalModules } from './moduleData';
+export type { EducationalModule } from './types';
+export default ModulesInfographic;

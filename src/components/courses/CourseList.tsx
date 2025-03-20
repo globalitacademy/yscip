@@ -1,59 +1,71 @@
 
 import React from 'react';
-import { Course } from './types';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import CourseCard from './CourseCard';
+import { Course } from './types';
 import { useAuth } from '@/contexts/AuthContext';
 
 interface CourseListProps {
   courses: Course[];
-  userCourses?: Course[];
-  isAdmin?: boolean;
-  onEdit?: (course: Course) => void;
-  onDelete?: (id: string) => void;
+  userCourses: Course[];
+  isAdmin: boolean;
+  onEdit: (course: Course) => void;
+  onDelete: (id: string) => void;
 }
 
-const CourseList: React.FC<CourseListProps> = ({ 
-  courses, 
-  userCourses,
-  isAdmin = false, 
-  onEdit, 
-  onDelete 
-}) => {
+const CourseList: React.FC<CourseListProps> = ({ courses, userCourses, isAdmin, onEdit, onDelete }) => {
   const { user } = useAuth();
-  
-  if (!courses || courses.length === 0) {
-    return (
-      <div className="text-center py-12">
-        <h3 className="text-xl font-semibold mb-2">Դասընթացներ չեն գտնվել</h3>
-        <p className="text-muted-foreground">Այս պահին դասընթացներ չկան</p>
-      </div>
-    );
-  }
-
-  const displayCourses = courses.map(course => {
-    // Check if user can edit this course (admin or course creator)
-    const canEdit = isAdmin && (user?.role === 'admin' || course.createdBy === user?.id);
-    
-    // Generate a URL-friendly slug from the title if needed
-    const courseSlug = course.id || course.title.toLowerCase().replace(/\s+/g, '-');
-    
-    return (
-      <CourseCard
-        key={course.id}
-        course={course}
-        isAdmin={isAdmin}
-        canEdit={canEdit}
-        onEdit={onEdit}
-        onDelete={onDelete}
-        url={`/courses/${courseSlug}`}
-      />
-    );
-  });
+  const isLecturer = ['lecturer', 'instructor', 'supervisor', 'project_manager'].includes(user?.role || '');
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-      {displayCourses}
-    </div>
+    <Tabs defaultValue="all" className="w-full">
+      <TabsList>
+        <TabsTrigger value="all">Բոլոր կուրսերը</TabsTrigger>
+        {(isAdmin || isLecturer) && (
+          <TabsTrigger value="my">Իմ կուրսերը</TabsTrigger>
+        )}
+      </TabsList>
+      
+      <TabsContent value="all" className="space-y-4 mt-4">
+        {courses.length === 0 ? (
+          <p className="text-center text-gray-500">Կուրսեր չկան</p>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            {courses.map((course) => (
+              <CourseCard 
+                key={course.id} 
+                course={course} 
+                isAdmin={isAdmin}
+                canEdit={isAdmin || course.createdBy === user?.id}
+                onEdit={onEdit} 
+                onDelete={onDelete} 
+              />
+            ))}
+          </div>
+        )}
+      </TabsContent>
+      
+      {(isAdmin || isLecturer) && (
+        <TabsContent value="my" className="space-y-4 mt-4">
+          {userCourses.length === 0 ? (
+            <p className="text-center text-gray-500">Դուք դեռ չունեք ավելացված կուրսեր</p>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              {userCourses.map((course) => (
+                <CourseCard 
+                  key={course.id} 
+                  course={course} 
+                  isAdmin={isAdmin}
+                  canEdit={true}
+                  onEdit={onEdit} 
+                  onDelete={onDelete} 
+                />
+              ))}
+            </div>
+          )}
+        </TabsContent>
+      )}
+    </Tabs>
   );
 };
 

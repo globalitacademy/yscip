@@ -36,51 +36,6 @@ export type Database = {
         }
         Relationships: []
       }
-      course_enrollments: {
-        Row: {
-          course_id: string
-          created_at: string | null
-          enrollment_date: string | null
-          id: string
-          status: string
-          updated_at: string | null
-          user_id: string
-        }
-        Insert: {
-          course_id: string
-          created_at?: string | null
-          enrollment_date?: string | null
-          id?: string
-          status?: string
-          updated_at?: string | null
-          user_id: string
-        }
-        Update: {
-          course_id?: string
-          created_at?: string | null
-          enrollment_date?: string | null
-          id?: string
-          status?: string
-          updated_at?: string | null
-          user_id?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "course_enrollments_course_id_fkey"
-            columns: ["course_id"]
-            isOneToOne: false
-            referencedRelation: "courses"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "course_enrollments_user_id_fkey"
-            columns: ["user_id"]
-            isOneToOne: false
-            referencedRelation: "users"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
       course_lessons: {
         Row: {
           course_id: string
@@ -192,10 +147,7 @@ export type Database = {
           id: string
           image_url: string | null
           institution: string | null
-          is_persistent: boolean | null
-          modules: string[] | null
           price: string
-          specialization: string | null
           subtitle: string
           title: string
           updated_at: string | null
@@ -211,10 +163,7 @@ export type Database = {
           id?: string
           image_url?: string | null
           institution?: string | null
-          is_persistent?: boolean | null
-          modules?: string[] | null
           price: string
-          specialization?: string | null
           subtitle?: string
           title: string
           updated_at?: string | null
@@ -230,10 +179,7 @@ export type Database = {
           id?: string
           image_url?: string | null
           institution?: string | null
-          is_persistent?: boolean | null
-          modules?: string[] | null
           price?: string
-          specialization?: string | null
           subtitle?: string
           title?: string
           updated_at?: string | null
@@ -269,62 +215,6 @@ export type Database = {
           id?: string
           tech_stack?: string[] | null
           title?: string
-          updated_at?: string | null
-        }
-        Relationships: []
-      }
-      group_students: {
-        Row: {
-          created_at: string | null
-          group_id: string
-          id: string
-          student_id: string
-        }
-        Insert: {
-          created_at?: string | null
-          group_id: string
-          id?: string
-          student_id: string
-        }
-        Update: {
-          created_at?: string | null
-          group_id?: string
-          id?: string
-          student_id?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "group_students_group_id_fkey"
-            columns: ["group_id"]
-            isOneToOne: false
-            referencedRelation: "groups"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      groups: {
-        Row: {
-          course: string
-          created_at: string | null
-          id: string
-          lecturer_id: string
-          name: string
-          updated_at: string | null
-        }
-        Insert: {
-          course: string
-          created_at?: string | null
-          id?: string
-          lecturer_id: string
-          name: string
-          updated_at?: string | null
-        }
-        Update: {
-          course?: string
-          created_at?: string | null
-          id?: string
-          lecturer_id?: string
-          name?: string
           updated_at?: string | null
         }
         Relationships: []
@@ -517,33 +407,6 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
-      }
-      specializations: {
-        Row: {
-          courses: number | null
-          created_at: string | null
-          description: string
-          id: string
-          name: string
-          updated_at: string | null
-        }
-        Insert: {
-          courses?: number | null
-          created_at?: string | null
-          description: string
-          id?: string
-          name: string
-          updated_at?: string | null
-        }
-        Update: {
-          courses?: number | null
-          created_at?: string | null
-          description?: string
-          id?: string
-          name?: string
-          updated_at?: string | null
-        }
-        Relationships: []
       }
       tasks: {
         Row: {

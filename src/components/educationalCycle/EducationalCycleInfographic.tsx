@@ -3,11 +3,7 @@ import React, { useEffect, useState } from 'react';
 import { LogIn, BookOpen, ClipboardCheck, GraduationCap, FileCode, Clock } from 'lucide-react';
 import { FadeIn, SlideUp, StaggeredContainer } from '@/components/LocalTransitions';
 import { Course } from '@/components/courses/types';
-import { ModulesInfographic } from './ModulesInfographic';
-import { supabase } from '@/integrations/supabase/client';
-import CourseCard from '@/components/courses/CourseCard';
-import { Button } from '@/components/ui/button';
-import { useNavigate } from 'react-router-dom';
+import ModulesInfographic from './ModulesInfographic';
 
 const stageColors = {
   admission: {
@@ -75,94 +71,19 @@ const CycleStage: React.FC<CycleStageProps> = ({
 
 const EducationalCycleInfographic: React.FC = () => {
   const [courses, setCourses] = useState<Course[]>([]);
-  const navigate = useNavigate();
   
   useEffect(() => {
-    const fetchCourses = async () => {
+    // Load courses from localStorage
+    const storedCourses = localStorage.getItem('courses');
+    if (storedCourses) {
       try {
-        const { data, error } = await supabase
-          .from('courses')
-          .select('*');
-        
-        if (error) {
-          throw error;
-        }
-
-        if (data) {
-          const mappedCourses: Course[] = data.map((course) => ({
-            id: course.id,
-            title: course.title,
-            description: course.description || '',
-            specialization: course.specialization || undefined,
-            duration: course.duration,
-            modules: course.modules || [],
-            createdBy: course.created_by || 'unknown',
-            color: course.color,
-            button_text: course.button_text,
-            icon_name: course.icon_name,
-            subtitle: course.subtitle,
-            price: course.price,
-            image_url: course.image_url,
-            institution: course.institution,
-            is_persistent: course.is_persistent
-          }));
-          
-          setCourses(mappedCourses);
-        }
+        const parsedCourses = JSON.parse(storedCourses);
+        setCourses(parsedCourses);
       } catch (e) {
-        console.error('Error fetching courses:', e);
-        const storedCourses = localStorage.getItem('courses');
-        if (storedCourses) {
-          try {
-            setCourses(JSON.parse(storedCourses));
-          } catch (e) {
-            console.error('Error parsing stored courses:', e);
-          }
-        }
+        console.error('Error parsing stored courses:', e);
       }
-    };
-    
-    fetchCourses();
-  }, []);
-  
-  const featuredCourses = [
-    {
-      id: "web-frontend",
-      title: "WEB Front-End",
-      subtitle: "ԴԱՍԸՆԹԱՑ",
-      description: "Web ծրագրավորման հիմունքներ և ժամանակակից front-end տեխնոլոգիաներ",
-      duration: "9 ամիս",
-      price: "58,000 ֏",
-      icon_name: "Code"
-    },
-    {
-      id: "python-ml-ai",
-      title: "Python (ML / AI)",
-      subtitle: "ԴԱՍԸՆԹԱՑ",
-      description: "Python ծրագրավորման լեզու, տվյալների վերլուծություն և արհեստական բանականություն",
-      duration: "7 ամիս",
-      price: "68,000 ֏",
-      icon_name: "FileCode"
-    },
-    {
-      id: "java",
-      title: "Java",
-      subtitle: "ԴԱՍԸՆԹԱՑ",
-      description: "Java ծրագրավորման լեզու և կիրառական համակարգերի մշակում",
-      duration: "6 ամիս",
-      price: "68,000 ֏",
-      icon_name: "Coffee"
-    },
-    {
-      id: "javascript",
-      title: "JavaScript",
-      subtitle: "ԴԱՍԸՆԹԱՑ",
-      description: "JavaScript ծրագրավորման լեզու և ժամանակակից web հավելվածների մշակում",
-      duration: "3.5 ամիս",
-      price: "58,000 ֏", 
-      icon_name: "FileCode"
     }
-  ];
+  }, []);
 
   const stages = [
     {
@@ -232,6 +153,7 @@ const EducationalCycleInfographic: React.FC = () => {
           ))}
         </div>
         
+        {/* Mobile timeline visualization */}
         <div className="md:hidden mt-4">
           {stages.slice(0, -1).map((stage, index) => (
             <div 
@@ -241,46 +163,41 @@ const EducationalCycleInfographic: React.FC = () => {
           ))}
         </div>
         
+        {/* Educational Modules Infographic */}
         <ModulesInfographic />
         
-        <div className="mt-24">
-          <FadeIn delay="delay-100">
-            <h2 className="text-3xl font-bold mb-4 text-center">
-              Մեր դասընթացները
-            </h2>
-          </FadeIn>
-          
-          <FadeIn delay="delay-200">
-            <p className="text-muted-foreground text-center max-w-2xl mx-auto mb-12">
-              Տեսեք մեր առաջարկած կրթական ծրագրերը ուսումնական ցիկլի շրջանակներում
-            </p>
-          </FadeIn>
+        {/* Courses section added within educational cycle */}
+        {courses.length > 0 && (
+          <div className="mt-24">
+            <FadeIn delay="delay-100">
+              <h2 className="text-3xl font-bold mb-4 text-center">
+                Մեր կուրսերը
+              </h2>
+            </FadeIn>
+            
+            <FadeIn delay="delay-200">
+              <p className="text-muted-foreground text-center max-w-2xl mx-auto mb-12">
+                Տեսեք մեր առաջարկած կրթական ծրագրերը ուսումնական ցիկլի շրջանակներում
+              </p>
+            </FadeIn>
 
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-            {featuredCourses.map((course) => (
-              <CourseCard 
-                key={course.id} 
-                course={{
-                  ...course,
-                  id: course.id,
-                  createdBy: 'system',
-                  modules: [],
-                }} 
-                url={`/courses/${course.id}`}
-              />
-            ))}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              {courses.map((course) => (
+                <div key={course.id} className="bg-white border rounded-lg shadow-sm p-6 hover:shadow-md transition-shadow">
+                  <h3 className="text-xl font-semibold mb-2">{course.name}</h3>
+                  <p className="text-sm text-muted-foreground mb-4">{course.description}</p>
+                  <div className="flex items-center text-sm text-muted-foreground">
+                    <ClipboardCheck className="w-4 h-4 mr-1" />
+                    <span>{course.modules.length} մոդուլ</span>
+                    <span className="mx-2">•</span>
+                    <Clock className="w-4 h-4 mr-1" />
+                    <span>{course.duration}</span>
+                  </div>
+                </div>
+              ))}
+            </div>
           </div>
-          
-          <div className="text-center mt-8">
-            <Button 
-              variant="outline" 
-              size="lg"
-              onClick={() => navigate('/courses')}
-            >
-              Դիտել բոլոր դասընթացները
-            </Button>
-          </div>
-        </div>
+        )}
       </div>
     </section>
   );

@@ -31,14 +31,6 @@ export const useSessionCheck = (
             setUser(parsedUser);
             setIsAuthenticated(true);
             setIsLoading(false);
-            
-            // Try to silently refresh admin session in background
-            try {
-              await supabase.functions.invoke('ensure-admin-activation');
-              console.log('Background admin activation called during session check');
-            } catch (err) {
-              console.error('Background admin activation error:', err);
-            }
             return;
           }
           
