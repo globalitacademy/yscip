@@ -1,7 +1,7 @@
 
 import React from 'react';
 import AdminLayout from '@/components/AdminLayout';
-import GroupManagement from '@/components/groups/GroupManagement';
+import GroupManagement from '@/components/GroupManagement';
 
 const GroupsPage: React.FC = () => {
   return (

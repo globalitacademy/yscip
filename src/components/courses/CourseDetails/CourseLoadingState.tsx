@@ -4,27 +4,14 @@ import { Skeleton } from '@/components/ui/skeleton';
 
 const CourseLoadingState: React.FC = () => {
   return (
-    <div className="space-y-8">
+    <div className="container max-w-4xl mx-auto px-4 py-8">
       <div className="mb-6">
-        <Skeleton className="h-10 w-40" />
+        <Skeleton className="h-10 w-56" />
       </div>
-      
-      <div className="space-y-4">
-        <div className="flex justify-between">
-          <div className="space-y-2">
-            <Skeleton className="h-6 w-32" />
-            <Skeleton className="h-8 w-64" />
-            <Skeleton className="h-6 w-48" />
-          </div>
-          <Skeleton className="h-10 w-24" />
-        </div>
-        
-        <Skeleton className="h-64 w-full rounded-lg" />
-        
-        <div className="flex flex-col md:flex-row gap-4">
-          <Skeleton className="h-40 w-full" />
-          <Skeleton className="h-40 w-full" />
-        </div>
+      <div className="space-y-6">
+        <Skeleton className="h-72 w-full rounded-lg" />
+        <Skeleton className="h-16 w-full" />
+        <Skeleton className="h-36 w-full" />
       </div>
     </div>
   );

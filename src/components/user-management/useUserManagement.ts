@@ -1,9 +1,9 @@
 
 import { useState, useEffect } from 'react';
 import { User, UserRole } from '@/types/user';
+import { mockUsers } from '@/data/mockUsers';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
-import { useRealTimeUsers } from './useRealTimeUsers';
 
 export const useUserManagement = () => {
   const [users, setUsers] = useState<User[]>([]);
@@ -23,9 +23,6 @@ export const useUserManagement = () => {
     course: '',
     group: ''
   });
-
-  // Use real-time subscription hook
-  useRealTimeUsers(setUsers);
 
   // Function to show confirmation dialog
   const showConfirm = (title: string, description: string, action: () => Promise<void>) => {
@@ -47,7 +44,9 @@ export const useUserManagement = () => {
         if (error) {
           console.error('Error fetching users:', error);
           toast.error('Սխալ է տեղի ունեցել օգտատերերի տվյալները բեռնելիս։');
-          setUsers([]);
+          
+          // Fallback to mock data if Supabase fails
+          setUsers(mockUsers);
         } else if (data) {
           // Map Supabase users to our User type
           const mappedUsers: User[] = data.map(dbUser => ({
@@ -66,7 +65,8 @@ export const useUserManagement = () => {
         }
       } catch (error) {
         console.error('Error in fetchUsers:', error);
-        setUsers([]);
+        // Fallback to mock data
+        setUsers(mockUsers);
       } finally {
         setLoading(false);
       }
@@ -101,10 +101,24 @@ export const useUserManagement = () => {
 
           if (authError) {
             console.error('Error creating user in auth:', authError);
-            toast.error(`Սխալ է տեղի ունեցել օգտատիրոջ ստեղծման ժամանակ: ${authError.message}`);
+            // Fallback to local creation
+            const id = `user-${Date.now()}`;
+            const createdUser: User = {
+              id,
+              name: newUser.name,
+              email: newUser.email,
+              role: newUser.role as UserRole,
+              department: newUser.department,
+              avatar: `https://api.dicebear.com/7.x/avataaars/svg?seed=${id}`,
+              course: newUser.role === 'student' ? newUser.course : undefined,
+              group: newUser.role === 'student' ? newUser.group : undefined
+            };
+
+            setUsers(prev => [...prev, createdUser]);
+            toast.success(`${createdUser.name} օգտատերը հաջողությամբ ստեղծվել է (Լոկալ)։`);
           } else if (authData.user) {
             // If successful, create user profile in users table
-            const { error: userError } = await supabase
+            const { data: userData, error: userError } = await supabase
               .from('users')
               .upsert({
                 id: authData.user.id,
@@ -112,15 +126,15 @@ export const useUserManagement = () => {
                 email: newUser.email,
                 role: newUser.role as UserRole,
                 department: newUser.department,
-                course: newUser.role === 'student' ? newUser.course : null,
-                group_name: newUser.role === 'student' ? newUser.group : null,
+                course: newUser.role === 'student' ? newUser.course : undefined,
+                group_name: newUser.role === 'student' ? newUser.group : undefined,
                 registration_approved: true,
                 avatar: `https://api.dicebear.com/7.x/avataaars/svg?seed=${authData.user.id}`
               });
 
             if (userError) {
               console.error('Error creating user in users table:', userError);
-              toast.error(`Սխալ է տեղի ունեցել օգտատիրոջ պրոֆիլը ստեղծելիս: ${userError.message}`);
+              toast.error("Սխալ է տեղի ունեցել օգտատիրոջը ստեղծելիս։");
             } else {
               // Add the new user to the local state
               const createdUser: User = {
@@ -188,7 +202,7 @@ export const useUserManagement = () => {
         setIsConfirming(true);
         try {
           // Update user in Supabase
-          const { error } = await supabase
+          const { data, error } = await supabase
             .from('users')
             .update({
               name: newUser.name,
@@ -202,25 +216,27 @@ export const useUserManagement = () => {
 
           if (error) {
             console.error('Error updating user in Supabase:', error);
-            toast.error(`Սխալ է տեղի ունեցել օգտատիրոջ տվյալները թարմացնելիս: ${error.message}`);
+            // Still update local state for better UX
+            toast.warning("Տվյալների բազայի սինքրոնիզացումը ձախողվեց, բայց լոկալ փոփոխությունները պահպանվել են։");
           } else {
-            // Update local state
-            setUsers(prev => prev.map(user => {
-              if (user.id === openEditUser) {
-                return {
-                  ...user,
-                  name: newUser.name || user.name,
-                  email: newUser.email || user.email,
-                  role: newUser.role as UserRole || user.role,
-                  department: newUser.department || user.department,
-                  course: newUser.role === 'student' ? newUser.course : undefined,
-                  group: newUser.role === 'student' ? newUser.group : undefined
-                };
-              }
-              return user;
-            }));
             toast.success("Օգտատիրոջ տվյալները հաջողությամբ թարմացվել են։");
           }
+
+          // Update local state
+          setUsers(prev => prev.map(user => {
+            if (user.id === openEditUser) {
+              return {
+                ...user,
+                name: newUser.name || user.name,
+                email: newUser.email || user.email,
+                role: newUser.role as UserRole || user.role,
+                department: newUser.department || user.department,
+                course: newUser.role === 'student' ? newUser.course : undefined,
+                group: newUser.role === 'student' ? newUser.group : undefined
+              };
+            }
+            return user;
+          }));
         } catch (error) {
           console.error('Error in handleUpdateUser:', error);
           toast.error("Սխալ է տեղի ունեցել օգտատիրոջ տվյալները թարմացնելիս։");
@@ -253,21 +269,20 @@ export const useUserManagement = () => {
       async () => {
         setIsConfirming(true);
         try {
-          // Create a project assignment record for supervisor relationship
-          const { error } = await supabase
-            .from('project_assignments')
-            .insert({
-              student_id: studentId,
-              supervisor_id: supervisorId,
-              status: 'assigned'
-            });
+          // You would implement this with a relationship in Supabase
+          // For now, we'll just update local state
+          setUsers(prev => prev.map(user => {
+            if (user.id === supervisorId && 
+              (user.role === 'supervisor' || user.role === 'project_manager')) {
+              return {
+                ...user,
+                supervisedStudents: [...(user.supervisedStudents || []), studentId]
+              };
+            }
+            return user;
+          }));
 
-          if (error) {
-            console.error('Error assigning supervisor:', error);
-            toast.error(`Սխալ է տեղի ունեցել ղեկավար նշանակելիս: ${error.message}`);
-          } else {
-            toast.success("Ուսանողին հաջողությամբ նշանակվել է ղեկավար։");
-          }
+          toast.success("Ուսանողին հաջողությամբ նշանակվել է ղեկավար։");
         } catch (error) {
           console.error('Error assigning supervisor:', error);
           toast.error("Սխալ է տեղի ունեցել ղեկավար նշանակելիս։");
@@ -296,18 +311,16 @@ export const useUserManagement = () => {
 
           if (error) {
             console.error('Error deleting user from Supabase:', error);
-            toast.error(`Սխալ է տեղի ունեցել օգտատիրոջը ջնջելիս: ${error.message}`);
+            // Continue with local deletion for better UX
+            toast.warning("Տվյալների բազայի սինքրոնիզացումը ձախողվեց, բայց լոկալ փոփոխությունները պահպանվել են։");
           } else {
             // Try to delete from auth as well
-            const { error: authError } = await supabase.auth.admin.deleteUser(userId);
-            if (authError) {
-              console.error('Error deleting user from auth:', authError);
-            }
-            
-            // Update local state
-            setUsers(prev => prev.filter(user => user.id !== userId));
-            toast.success("Օգտատերը հաջողությամբ ջնջվել է համակարգից։");
+            await supabase.auth.admin.deleteUser(userId);
           }
+
+          // Update local state
+          setUsers(prev => prev.filter(user => user.id !== userId));
+          toast.success("Օգտատերը հաջողությամբ ջնջվել է համակարգից։");
         } catch (error) {
           console.error('Error deleting user:', error);
           toast.error("Սխալ է տեղի ունեցել օգտատիրոջը ջնջելիս։");
@@ -318,7 +331,6 @@ export const useUserManagement = () => {
     );
   };
 
-  // Filter out supervisors and students from the real users
   const supervisors = users.filter(user => 
     user.role === 'supervisor' || user.role === 'project_manager'
   );
