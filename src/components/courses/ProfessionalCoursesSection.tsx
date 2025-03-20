@@ -178,9 +178,12 @@ const ProfessionalCoursesSection: React.FC = () => {
         async (payload: RealtimePostgresChangesPayload<{[key: string]: any}>) => {
           console.log('Realtime update received from Supabase:', payload);
           
-          if (payload.new && typeof payload.new === 'object' && 'id' in payload.new) {
-            try {
-              const updatedCourse = await getCourseById(payload.new.id as string);
+          try {
+            if (payload.new && typeof payload.new === 'object' && 'id' in payload.new) {
+              // For INSERT and UPDATE events
+              const courseId = String(payload.new.id); // Convert to string to ensure compatibility
+              const updatedCourse = await getCourseById(courseId);
+              
               if (updatedCourse) {
                 console.log('Fetched updated course data:', updatedCourse);
                 
@@ -200,18 +203,18 @@ const ProfessionalCoursesSection: React.FC = () => {
                   toast.info(`Նոր դասընթաց ավելացվել է: ${updatedCourse.title}`);
                 } else if (payload.eventType === 'UPDATE') {
                   toast.info(`${updatedCourse.title} դասընթացը թարմացվել է`);
-                } else if (payload.eventType === 'DELETE') {
-                  toast.info(`Դասընթացը հեռացվել է`);
-                  setCourses(prevCourses => prevCourses.filter(c => c.id !== payload.old?.id));
                 }
               }
-            } catch (error) {
-              console.error('Error fetching updated course:', error);
+            } else if (payload.eventType === 'DELETE' && payload.old && typeof payload.old === 'object' && 'id' in payload.old) {
+              // For DELETE events
+              const deletedId = String(payload.old.id); // Convert to string for compatibility
+              console.log('Course deleted:', deletedId);
+              
+              setCourses(prevCourses => prevCourses.filter(c => c.id !== deletedId));
+              toast.info('Դասընթացը հեռացվել է');
             }
-          } else if (payload.eventType === 'DELETE' && payload.old && typeof payload.old === 'object' && 'id' in payload.old) {
-            console.log('Course deleted:', payload.old.id);
-            setCourses(prevCourses => prevCourses.filter(c => c.id !== payload.old?.id));
-            toast.info('Դասընթացը հեռացվել է');
+          } catch (error) {
+            console.error('Error handling course realtime update:', error);
           }
         }
       )
@@ -231,9 +234,11 @@ const ProfessionalCoursesSection: React.FC = () => {
         async (payload: RealtimePostgresChangesPayload<{[key: string]: any}>) => {
           console.log('Lesson update received:', payload);
           
-          if (payload.new && typeof payload.new === 'object' && 'course_id' in payload.new) {
-            try {
-              const updatedCourse = await getCourseById(payload.new.course_id as string);
+          try {
+            if (payload.new && typeof payload.new === 'object' && 'course_id' in payload.new) {
+              const courseId = String(payload.new.course_id); // Convert to string for compatibility
+              const updatedCourse = await getCourseById(courseId);
+              
               if (updatedCourse) {
                 setCourses(prevCourses => {
                   return prevCourses.map(course => 
@@ -243,9 +248,9 @@ const ProfessionalCoursesSection: React.FC = () => {
                 
                 toast.info(`${updatedCourse.title} դասընթացի դասերը թարմացվել են`);
               }
-            } catch (error) {
-              console.error('Error fetching course after lesson update:', error);
             }
+          } catch (error) {
+            console.error('Error handling lesson realtime update:', error);
           }
         }
       )

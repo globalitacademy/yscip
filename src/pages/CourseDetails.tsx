@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import Header from '@/components/Header';
@@ -16,6 +15,7 @@ import CourseRequirements from '@/components/courses/details/CourseRequirements'
 import CourseSidebar from '@/components/courses/details/CourseSidebar';
 import { Book, BookText, BrainCircuit, Code, Database, FileCode, Globe } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
+import { RealtimePostgresChangesPayload } from '@supabase/supabase-js';
 
 const CourseDetails: React.FC = () => {
   const { id } = useParams<{ id: string }>();
@@ -61,19 +61,23 @@ const CourseDetails: React.FC = () => {
           table: 'courses',
           filter: `id=eq.${id}`
         },
-        async (payload) => {
+        async (payload: RealtimePostgresChangesPayload<{[key: string]: any}>) => {
           console.log('Course update received from Supabase:', payload);
           
           try {
-            const updatedCourse = await getCourseById(id);
-            if (updatedCourse) {
-              console.log('Fetched updated course data:', updatedCourse);
-              setCourse(updatedCourse);
+            if (payload.new && typeof payload.new === 'object' && 'id' in payload.new) {
+              const courseId = String(payload.new.id);
+              const updatedCourse = await getCourseById(courseId);
               
-              if (!isEditing) {
-                setEditedCourse(updatedCourse);
-              } else {
-                toast.info('Կուրսը փոփոխվել է մեկ այլ օգտագործողի կողմից');
+              if (updatedCourse) {
+                console.log('Fetched updated course data:', updatedCourse);
+                setCourse(updatedCourse);
+                
+                if (!isEditing) {
+                  setEditedCourse(updatedCourse);
+                } else {
+                  toast.info('Կուրսը փոփոխվել է մեկ այլ օգտագործողի կողմից');
+                }
               }
             }
           } catch (error) {
@@ -93,15 +97,17 @@ const CourseDetails: React.FC = () => {
           table: 'course_lessons',
           filter: `course_id=eq.${id}`
         },
-        async () => {
+        async (payload: RealtimePostgresChangesPayload<{[key: string]: any}>) => {
           console.log('Lessons update received from Supabase');
           
           try {
-            const updatedCourse = await getCourseById(id);
-            if (updatedCourse && !isEditing) {
-              setCourse(updatedCourse);
-              setEditedCourse(updatedCourse);
-              toast.info('Դասընթացի դասերը թարմացվել են');
+            if (!isEditing) {
+              const updatedCourse = await getCourseById(id);
+              if (updatedCourse) {
+                setCourse(updatedCourse);
+                setEditedCourse(updatedCourse);
+                toast.info('Դասընթացի դասերը թարմացվել են');
+              }
             }
           } catch (error) {
             console.error('Error fetching updated course lessons:', error);
@@ -120,15 +126,17 @@ const CourseDetails: React.FC = () => {
           table: 'course_requirements',
           filter: `course_id=eq.${id}`
         },
-        async () => {
+        async (payload: RealtimePostgresChangesPayload<{[key: string]: any}>) => {
           console.log('Requirements update received from Supabase');
           
           try {
-            const updatedCourse = await getCourseById(id);
-            if (updatedCourse && !isEditing) {
-              setCourse(updatedCourse);
-              setEditedCourse(updatedCourse);
-              toast.info('Դասընթացի պահանջները թարմացվել են');
+            if (!isEditing) {
+              const updatedCourse = await getCourseById(id);
+              if (updatedCourse) {
+                setCourse(updatedCourse);
+                setEditedCourse(updatedCourse);
+                toast.info('Դասընթացի պահանջները թարմացվել են');
+              }
             }
           } catch (error) {
             console.error('Error fetching updated course requirements:', error);
@@ -147,15 +155,17 @@ const CourseDetails: React.FC = () => {
           table: 'course_outcomes',
           filter: `course_id=eq.${id}`
         },
-        async () => {
+        async (payload: RealtimePostgresChangesPayload<{[key: string]: any}>) => {
           console.log('Outcomes update received from Supabase');
           
           try {
-            const updatedCourse = await getCourseById(id);
-            if (updatedCourse && !isEditing) {
-              setCourse(updatedCourse);
-              setEditedCourse(updatedCourse);
-              toast.info('Դասընթացի արդյունքները թարմացվել են');
+            if (!isEditing) {
+              const updatedCourse = await getCourseById(id);
+              if (updatedCourse) {
+                setCourse(updatedCourse);
+                setEditedCourse(updatedCourse);
+                toast.info('Դասընթացի արդյունքները թարմացվել են');
+              }
             }
           } catch (error) {
             console.error('Error fetching updated course outcomes:', error);

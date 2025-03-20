@@ -1,3 +1,4 @@
+
 import { supabase } from '@/integrations/supabase/client';
 import { ProfessionalCourse } from '../types/ProfessionalCourse';
 import { toast } from 'sonner';
@@ -80,7 +81,7 @@ export const getCourseById = async (id: string): Promise<ProfessionalCourse | nu
 
       // Format the course data
       const formattedCourse: ProfessionalCourse = {
-        id: course.id,
+        id: String(course.id), // Ensure ID is always a string
         title: course.title,
         subtitle: course.subtitle,
         icon: convertIconNameToComponent(iconName),
@@ -94,7 +95,7 @@ export const getCourseById = async (id: string): Promise<ProfessionalCourse | nu
         // Now we can use the prefer_icon field from the database
         preferIcon: course.prefer_icon !== undefined ? course.prefer_icon : true,
         imageUrl: course.image_url,
-        organizationLogo: course.image_url, // Use image_url as organizationLogo since it's not in the schema
+        organizationLogo: course.organization_logo || course.image_url, // Use organization_logo if available
         description: course.description,
         lessons: lessons?.map(lesson => ({
           title: lesson.title, 
@@ -254,7 +255,7 @@ const getLocalCourseById = (id: string): ProfessionalCourse | null => {
     const storedCourses = localStorage.getItem('professionalCourses');
     if (storedCourses) {
       const courses: ProfessionalCourse[] = JSON.parse(storedCourses);
-      const course = courses.find(course => course.id === id);
+      const course = courses.find(course => String(course.id) === String(id));
       
       if (course) {
         // Ensure preferIcon is always present
@@ -388,9 +389,9 @@ const convertToSupabaseCourseFormat = (course: ProfessionalCourse) => {
     created_by: course.createdBy,
     institution: course.institution,
     image_url: course.imageUrl,
+    organization_logo: course.organizationLogo, // Add organization_logo field
     // Now include prefer_icon in the Supabase data
     prefer_icon: course.preferIcon !== undefined ? course.preferIcon : true,
-    // Use imageUrl for organizationLogo since it's not in the schema
     description: course.description,
     updated_at: new Date().toISOString()
   };
@@ -498,7 +499,7 @@ export const saveCourseChanges = async (course: ProfessionalCourse): Promise<boo
       // We've already saved to localStorage, so we can still broadcast the event locally
     }
 
-    // Նորից ապահովենք, որ icon-ը ճիշտ է դրված iconName-ի համար
+    // Ensure the icon is correctly set based on iconName
     const courseWithIcon = {
       ...course,
       icon: convertIconNameToComponent(course.iconName)
