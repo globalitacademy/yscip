@@ -1,3 +1,4 @@
+
 import { supabase } from '@/integrations/supabase/client';
 import { ProfessionalCourse } from '../types/ProfessionalCourse';
 import { toast } from 'sonner';
@@ -83,12 +84,12 @@ export const getCourseById = async (id: string): Promise<ProfessionalCourse | nu
         icon: convertIconNameToComponent(course.icon_name),
         duration: course.duration,
         price: course.price,
-        buttonText: course.button_text,
+        buttonText: course.button_text || 'Դիտել',
         color: course.color,
         createdBy: course.created_by,
         institution: course.institution,
         imageUrl: course.image_url,
-        organizationLogo: course.organization_logo,
+        organizationLogo: course.image_url, // Use image_url as organizationLogo since it's not in the schema
         description: course.description,
         lessons: lessons?.map(lesson => ({
           title: lesson.title, 
@@ -147,12 +148,12 @@ export const getAllCourses = async (): Promise<ProfessionalCourse[]> => {
       icon: convertIconNameToComponent(course.icon_name),
       duration: course.duration,
       price: course.price,
-      buttonText: course.buttonText,
+      buttonText: course.button_text || 'Դիտել',
       color: course.color,
       createdBy: course.created_by,
       institution: course.institution,
       imageUrl: course.image_url,
-      organizationLogo: course.organization_logo,
+      organizationLogo: course.image_url, // Use image_url as organizationLogo since it's not in the schema
       description: course.description,
       // Related data will be loaded separately when needed
       lessons: [],
@@ -260,9 +261,11 @@ const convertToSupabaseCourseFormat = (course: ProfessionalCourse) => {
   
   // Determine icon name from the course's icon
   if (course.icon) {
-    const iconString = course.icon.type.name;
-    if (iconString) {
-      iconName = iconString.toLowerCase();
+    // Safely access the icon type property
+    const iconType = course.icon.type;
+    // Make sure iconType is an object with a name property before accessing it
+    if (iconType && typeof iconType === 'object' && 'name' in iconType) {
+      iconName = iconType.name.toLowerCase();
     }
   }
   
@@ -278,7 +281,7 @@ const convertToSupabaseCourseFormat = (course: ProfessionalCourse) => {
     created_by: course.createdBy,
     institution: course.institution,
     image_url: course.imageUrl,
-    organization_logo: course.organizationLogo,
+    // Use imageUrl for organizationLogo since it's not in the schema
     description: course.description,
     updated_at: new Date().toISOString()
   };
