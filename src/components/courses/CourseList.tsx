@@ -45,8 +45,7 @@ const CourseList: React.FC<CourseListProps> = ({
         canEdit={canEdit}
         onEdit={onEdit}
         onDelete={onDelete}
-        // Fix: Pass detailUrl as url prop to CourseCard component
-        url={`/courses/${courseSlug}`}
+        detailUrl={`/courses/${courseSlug}`}
       />
     );
   });
