@@ -58,25 +58,27 @@ const CourseCard: React.FC<CourseCardProps> = ({
   };
 
   return (
-    <Card className="flex flex-col h-full overflow-hidden hover:shadow-md transition-shadow duration-300">
+    <Card className="flex flex-col h-full overflow-hidden hover:shadow-md transition-shadow duration-300 card-hover border border-border/40 bg-card/80 backdrop-blur-sm">
       <div className="flex-grow flex flex-col items-center text-center p-6">
-        {getIcon()}
+        <div className="p-4 rounded-full bg-primary/5 text-primary mb-4">
+          {getIcon()}
+        </div>
         
-        <h3 className="mt-4 text-xl font-semibold text-amber-500">{course.title}</h3>
-        <p className="text-sm uppercase text-gray-600 mt-1">{course.subtitle || 'ԴԱՍԸՆԹԱՑ'}</p>
+        <h3 className="mt-2 text-xl font-semibold text-primary">{course.title}</h3>
+        <p className="text-sm uppercase text-muted-foreground mt-1">{course.subtitle || 'ԴԱՍԸՆԹԱՑ'}</p>
         
         <Button 
           variant="outline" 
-          className="mt-6 rounded-full border-gray-300 hover:bg-amber-50 hover:text-amber-600 hover:border-amber-300 transition-colors"
+          className="mt-6 rounded-full hover:bg-primary/10 hover:text-primary hover:border-primary/30 transition-colors"
           onClick={handleViewDetails}
         >
           {course.button_text || 'Դիտել'}
         </Button>
       </div>
       
-      <CardFooter className="flex justify-between items-center p-4 border-t bg-gray-50">
-        <div className="text-sm text-gray-600">{course.duration}</div>
-        <div className="text-sm font-medium text-gray-800">{course.price}</div>
+      <CardFooter className="flex justify-between items-center p-4 border-t bg-muted/30">
+        <div className="text-sm text-muted-foreground">{course.duration}</div>
+        <div className="text-sm font-medium text-foreground">{course.price}</div>
       </CardFooter>
       
       {isAdmin && canEdit && onEdit && onDelete && (

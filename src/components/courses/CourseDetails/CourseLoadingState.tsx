@@ -10,8 +10,15 @@ const CourseLoadingState: React.FC = () => {
       </div>
       <div className="space-y-6">
         <Skeleton className="h-72 w-full rounded-lg" />
-        <Skeleton className="h-16 w-full" />
+        <div className="grid grid-cols-2 gap-4">
+          <Skeleton className="h-16 w-full" />
+          <Skeleton className="h-16 w-full" />
+        </div>
         <Skeleton className="h-36 w-full" />
+        <div className="flex gap-4">
+          <Skeleton className="h-10 w-32 rounded-full" />
+          <Skeleton className="h-10 w-32 rounded-full" />
+        </div>
       </div>
     </div>
   );
