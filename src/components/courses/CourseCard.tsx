@@ -77,12 +77,6 @@ const CourseCard: React.FC<CourseCardProps> = ({
         
         <h3 className="mt-2 text-xl font-semibold text-foreground group-hover:text-primary transition-colors duration-300">{course.title}</h3>
         
-        {course.createdBy && (
-          <p className="text-sm text-muted-foreground mt-1">
-            {course.createdBy}
-          </p>
-        )}
-        
         <p className="text-sm uppercase text-muted-foreground mt-1 mb-4">{course.subtitle || 'ԴԱՍԸՆԹԱՑ'}</p>
         
         {course.description && (
@@ -90,15 +84,9 @@ const CourseCard: React.FC<CourseCardProps> = ({
         )}
         
         <div className="mt-auto w-full flex justify-between items-center">
-          {course.createdBy && (
-            <span className="text-sm text-muted-foreground">
-              Դասախոս՝ {course.createdBy}
-            </span>
-          )}
-          
           <Button 
             variant="outline" 
-            className="rounded-full hover:bg-primary/10 hover:text-primary hover:border-primary/30 transition-colors flex items-center gap-1 group-hover:gap-2"
+            className="ml-auto rounded-full hover:bg-primary/10 hover:text-primary hover:border-primary/30 transition-colors flex items-center gap-1 group-hover:gap-2"
             onClick={handleViewDetails}
           >
             {course.button_text || 'Դիտել'} <ArrowRight className="h-4 w-4" />
