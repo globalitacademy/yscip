@@ -1,4 +1,3 @@
-
 import { supabase } from '@/integrations/supabase/client';
 import { ProfessionalCourse } from '../types/ProfessionalCourse';
 import { toast } from 'sonner';
@@ -95,7 +94,7 @@ export const getCourseById = async (id: string): Promise<ProfessionalCourse | nu
         // Now we can use the prefer_icon field from the database
         preferIcon: course.prefer_icon !== undefined ? course.prefer_icon : true,
         imageUrl: course.image_url,
-        organizationLogo: course.organization_logo || course.image_url, // Use organization_logo if available
+        organizationLogo: course.image_url, // Use image_url as organization logo since organization_logo might not exist in the table
         description: course.description,
         lessons: lessons?.map(lesson => ({
           title: lesson.title, 
@@ -389,7 +388,7 @@ const convertToSupabaseCourseFormat = (course: ProfessionalCourse) => {
     created_by: course.createdBy,
     institution: course.institution,
     image_url: course.imageUrl,
-    organization_logo: course.organizationLogo, // Add organization_logo field
+    // Don't include organization_logo field as it doesn't exist in the table
     // Now include prefer_icon in the Supabase data
     prefer_icon: course.preferIcon !== undefined ? course.preferIcon : true,
     description: course.description,
