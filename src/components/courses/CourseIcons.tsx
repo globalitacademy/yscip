@@ -3,7 +3,11 @@ import React from 'react';
 import { 
   Code as CodeIcon, 
   FileCode,
-  Coffee
+  Coffee,
+  GraduationCap,
+  BookOpen,
+  Globe,
+  Lightbulb
 } from 'lucide-react';
 
 // Custom Python icon component (since it's not in Lucide)
@@ -27,4 +31,21 @@ export const PythonLogo: React.FC<{ className?: string }> = ({ className }) => {
   );
 };
 
-export { CodeIcon as Code, FileCode, Coffee };
+// This is the component that was missing - it maps icon names to their respective components
+export const CourseIconComponent = (iconName?: string) => {
+  const iconMap: Record<string, React.FC<{ className?: string }>> = {
+    'Code': CodeIcon,
+    'FileCode': FileCode,
+    'Coffee': Coffee,
+    'Python': PythonLogo,
+    'GraduationCap': GraduationCap,
+    'BookOpen': BookOpen,
+    'Globe': Globe,
+    'Lightbulb': Lightbulb
+  };
+
+  // Return the requested icon or default to CodeIcon if not found
+  return iconName && iconMap[iconName] ? iconMap[iconName] : CodeIcon;
+};
+
+export { CodeIcon as Code, FileCode, Coffee, GraduationCap, BookOpen, Globe, Lightbulb };

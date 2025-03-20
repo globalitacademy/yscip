@@ -1,3 +1,4 @@
+
 import React, { useEffect, useState } from 'react';
 import { LogIn, BookOpen, ClipboardCheck, GraduationCap, FileCode, Clock } from 'lucide-react';
 import { FadeIn, SlideUp, StaggeredContainer } from '@/components/LocalTransitions';
@@ -265,6 +266,7 @@ const EducationalCycleInfographic: React.FC = () => {
                   createdBy: 'system',
                   modules: [],
                 }} 
+                url={`/courses/${course.id}`}
               />
             ))}
           </div>
