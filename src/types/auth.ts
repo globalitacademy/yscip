@@ -12,7 +12,7 @@ export interface AuthContextType {
   user: User | null;
   isAuthenticated: boolean;
   isLoading: boolean;
-  login: (email: string, password: string) => Promise<boolean>;
+  login: (email: string, password: string, directAdminLogin?: boolean) => Promise<boolean>;
   logout: () => void;
   switchRole: (role: UserRole) => void;
   registerUser: (userData: Partial<User> & { password: string }) => Promise<{success: boolean, token?: string}>;

