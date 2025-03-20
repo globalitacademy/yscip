@@ -82,7 +82,7 @@ const CourseCard: React.FC<CourseCardProps> = ({
           </div>
         )}
         
-        <div className="absolute top-3 right-3 flex items-center gap-2 bg-background/80 backdrop-blur-sm px-3 py-1.5 rounded-full border border-border shadow-sm">
+        <div className="absolute top-3 right-3 flex items-center gap-2 bg-background/80 backdrop-blur-sm px-3 py-1.5 rounded-full border border-border shadow-sm z-10 mt-16">
           <span className="text-xs font-medium">{creatorName}</span>
           <Avatar className="h-6 w-6 border border-border">
             <AvatarImage src={creatorAvatar} alt={creatorName} />
