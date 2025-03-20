@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Card, CardContent, CardFooter } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -63,7 +62,7 @@ const CourseCard: React.FC<CourseCardProps> = ({
 
   // Determine creator information
   const isCreatedByCurrentUser = course.createdBy === user?.id;
-  const creatorName = course.instructor || (isCreatedByCurrentUser ? 'Ձեր կողմից' : 'Ուսումնական Կենտրոն');
+  const creatorName = isCreatedByCurrentUser ? 'Ձեր կողմից' : 'Ուսումնական Կենտրոն';
   const creatorAvatar = isCreatedByCurrentUser && user?.avatar 
     ? user.avatar 
     : 'https://api.dicebear.com/7.x/avataaars/svg?seed=instructor';
@@ -81,6 +80,16 @@ const CourseCard: React.FC<CourseCardProps> = ({
             </Badge>
           </div>
         )}
+        
+        <div className="absolute top-3 right-3 flex items-center gap-2 bg-background/80 backdrop-blur-sm px-3 py-1.5 rounded-full border border-border shadow-sm">
+          <span className="text-xs font-medium">{creatorName}</span>
+          <Avatar className="h-6 w-6 border border-border">
+            <AvatarImage src={creatorAvatar} alt={creatorName} />
+            <AvatarFallback>
+              {creatorType === 'user' ? <User size={12} /> : <Building size={12} />}
+            </AvatarFallback>
+          </Avatar>
+        </div>
         
         <div className="p-4 rounded-full bg-primary/5 text-primary mb-4 transition-transform group-hover:scale-105 duration-300">
           {getIcon()}
@@ -109,17 +118,6 @@ const CourseCard: React.FC<CourseCardProps> = ({
         <div className="text-sm text-muted-foreground">{course.duration}</div>
         {course.price && <div className="text-sm font-medium text-foreground">{course.price}</div>}
       </CardFooter>
-      
-      {/* Creator avatar */}
-      <div className="absolute bottom-16 right-3 flex items-center gap-2 bg-background/80 backdrop-blur-sm px-3 py-1.5 rounded-full border border-border shadow-sm">
-        <span className="text-xs font-medium">{creatorName}</span>
-        <Avatar className="h-6 w-6 border border-border">
-          <AvatarImage src={creatorAvatar} alt={creatorName} />
-          <AvatarFallback>
-            {creatorType === 'user' ? <User size={12} /> : <Building size={12} />}
-          </AvatarFallback>
-        </Avatar>
-      </div>
       
       {isAdmin && canEdit && onEdit && onDelete && (
         <div className="hidden">
