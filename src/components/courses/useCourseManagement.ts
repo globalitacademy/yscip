@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { toast } from 'sonner';
 import { v4 as uuidv4 } from 'uuid';
@@ -22,6 +21,7 @@ const mockProfessionalCourses: ProfessionalCourse[] = [
     color: 'text-amber-500',
     createdBy: 'Արամ Հակոբյան',
     institution: 'ՀՊՏՀ',
+    preferIcon: true,
     description: 'Սովորեք Web կայքերի մշակում՝ օգտագործելով արդի տեխնոլոգիաներ ինչպիսիք են HTML5, CSS3, JavaScript, React և Node.js։ Այս դասընթացը նախատեսված է սկսնակների համար և կօգնի ձեզ դառնալ պրոֆեսիոնալ Front-End ծրագրավորող։',
     lessons: [
       { title: 'Ներածություն Web ծրագրավորման մեջ', duration: '3 ժամ' },
@@ -50,6 +50,7 @@ const mockProfessionalCourses: ProfessionalCourse[] = [
     color: 'text-blue-500',
     createdBy: 'Լիլիթ Մարտիրոսյան',
     institution: 'ԵՊՀ',
+    preferIcon: true,
     description: 'Սովորեք Python ծրագրավորում՝ մեքենայական ուսուցման և արհեստական բանականության հիմունքներով։ Այս ինտենսիվ դասընթացը կօգնի ձեզ ծանոթանալ AI/ML ժամանակակից գործիքների հետ։',
     lessons: [
       { title: 'Python հիմունքներ', duration: '10 ժամ' },
@@ -76,7 +77,8 @@ const mockProfessionalCourses: ProfessionalCourse[] = [
     buttonText: 'Դիտել',
     color: 'text-red-500',
     createdBy: 'Գարիկ Սարգսյան',
-    institution: 'ՀԱՊՀ'
+    institution: 'ՀԱՊՀ',
+    preferIcon: true
   },
   {
     id: '4',
@@ -89,7 +91,8 @@ const mockProfessionalCourses: ProfessionalCourse[] = [
     buttonText: 'Դիտել',
     color: 'text-yellow-500',
     createdBy: 'Անի Մուրադյան',
-    institution: 'ՀԱՀ'
+    institution: 'ՀԱՀ',
+    preferIcon: true
   },
   {
     id: '5',
@@ -102,7 +105,8 @@ const mockProfessionalCourses: ProfessionalCourse[] = [
     buttonText: 'Դիտել',
     color: 'text-purple-500',
     createdBy: 'Վահե Ղազարյան',
-    institution: 'ՀՊՄՀ'
+    institution: 'ՀՊՄՀ',
+    preferIcon: true
   },
   {
     id: '6',
@@ -115,7 +119,8 @@ const mockProfessionalCourses: ProfessionalCourse[] = [
     buttonText: 'Դիտել',
     color: 'text-green-500',
     createdBy: 'Տիգրան Դավթյան',
-    institution: 'ՀՌԱՀ'
+    institution: 'ՀՌԱՀ',
+    preferIcon: true
   }
 ];
 
@@ -193,13 +198,14 @@ export const useCourseManagement = () => {
     title: '',
     subtitle: 'ԴԱՍԸՆԹԱՑ',
     icon: React.createElement(Code, { className: "w-16 h-16" }),
-    iconName: 'code', // Adding iconName here
+    iconName: 'code',
     duration: '',
     price: '',
     buttonText: 'Դիտել',
     color: 'text-amber-500',
     createdBy: user?.name || '',
     institution: 'ՀՊՏՀ',
+    preferIcon: true,
     imageUrl: undefined,
     description: '',
     lessons: [],
@@ -336,6 +342,7 @@ export const useCourseManagement = () => {
       subtitle: newProfessionalCourse.subtitle || 'ԴԱՍԸՆԹԱՑ',
       color: newProfessionalCourse.color || 'text-amber-500',
       institution: newProfessionalCourse.institution || 'ՀՊՏՀ',
+      preferIcon: newProfessionalCourse.preferIcon !== undefined ? newProfessionalCourse.preferIcon : true,
     };
 
     const updatedCourses = [...professionalCourses, courseToAdd];
@@ -346,12 +353,14 @@ export const useCourseManagement = () => {
       title: '',
       subtitle: 'ԴԱՍԸՆԹԱՑ',
       icon: React.createElement(Code, { className: "w-16 h-16" }),
+      iconName: 'code',
       duration: '',
       price: '',
       buttonText: 'Դիտել',
       color: 'text-amber-500',
       createdBy: user?.name || '',
       institution: 'ՀՊՏՀ',
+      preferIcon: true,
       imageUrl: undefined,
       description: '',
       lessons: [],

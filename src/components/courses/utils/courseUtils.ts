@@ -1,4 +1,3 @@
-
 import { supabase } from '@/integrations/supabase/client';
 import { ProfessionalCourse } from '../types/ProfessionalCourse';
 import { toast } from 'sonner';
@@ -92,6 +91,7 @@ export const getCourseById = async (id: string): Promise<ProfessionalCourse | nu
         color: course.color,
         createdBy: course.created_by,
         institution: course.institution,
+        preferIcon: course.prefer_icon !== undefined ? course.prefer_icon : true,
         imageUrl: course.image_url,
         organizationLogo: course.image_url, // Use image_url as organizationLogo since it's not in the schema
         description: course.description,
@@ -161,6 +161,7 @@ export const getAllCourses = async (): Promise<ProfessionalCourse[]> => {
         color: course.color,
         createdBy: course.created_by,
         institution: course.institution,
+        preferIcon: course.prefer_icon !== undefined ? course.prefer_icon : true,
         imageUrl: course.image_url,
         organizationLogo: course.image_url, // Use image_url as organizationLogo since it's not in the schema
         description: course.description,
@@ -188,28 +189,34 @@ export const getAllCoursesFromLocalStorage = (): ProfessionalCourse[] => {
   try {
     const storedCourses = localStorage.getItem('professionalCourses');
     if (storedCourses) {
-      // Parse and ensure each course has an iconName
+      // Parse and ensure each course has an iconName and preferIcon
       const courses: ProfessionalCourse[] = JSON.parse(storedCourses);
       return courses.map(course => {
+        // Ensure preferIcon is set
+        const courseWithPreferIcon = {
+          ...course,
+          preferIcon: course.preferIcon !== undefined ? course.preferIcon : true
+        };
+        
         // If iconName is missing, try to infer it
-        if (!course.iconName) {
-          const inferredIconName = inferIconNameFromCourse(course) || 'book';
+        if (!courseWithPreferIcon.iconName) {
+          const inferredIconName = inferIconNameFromCourse(courseWithPreferIcon) || 'book';
           return {
-            ...course,
+            ...courseWithPreferIcon,
             iconName: inferredIconName,
             icon: convertIconNameToComponent(inferredIconName)
           };
         }
         
         // Ensure icon element is set from iconName
-        if (!course.icon || typeof course.icon === 'string') {
+        if (!courseWithPreferIcon.icon || typeof courseWithPreferIcon.icon === 'string') {
           return {
-            ...course,
-            icon: convertIconNameToComponent(course.iconName)
+            ...courseWithPreferIcon,
+            icon: convertIconNameToComponent(courseWithPreferIcon.iconName)
           };
         }
         
-        return course;
+        return courseWithPreferIcon;
       });
     }
     return [];
@@ -248,25 +255,31 @@ const getLocalCourseById = (id: string): ProfessionalCourse | null => {
       const course = courses.find(course => course.id === id);
       
       if (course) {
+        // Ensure preferIcon is always present
+        const courseWithPreferIcon = {
+          ...course,
+          preferIcon: course.preferIcon !== undefined ? course.preferIcon : true
+        };
+        
         // Ensure iconName is always present
-        if (!course.iconName) {
-          const iconName = inferIconNameFromCourse(course) || 'book';
+        if (!courseWithPreferIcon.iconName) {
+          const iconName = inferIconNameFromCourse(courseWithPreferIcon) || 'book';
           return {
-            ...course,
+            ...courseWithPreferIcon,
             iconName,
             icon: convertIconNameToComponent(iconName)
           };
         }
         
         // Ensure icon element is set based on iconName
-        if (!course.icon || typeof course.icon === 'string') {
+        if (!courseWithPreferIcon.icon || typeof courseWithPreferIcon.icon === 'string') {
           return {
-            ...course,
-            icon: convertIconNameToComponent(course.iconName)
+            ...courseWithPreferIcon,
+            icon: convertIconNameToComponent(courseWithPreferIcon.iconName)
           };
         }
         
-        return course;
+        return courseWithPreferIcon;
       }
       return null;
     }
@@ -373,6 +386,7 @@ const convertToSupabaseCourseFormat = (course: ProfessionalCourse) => {
     created_by: course.createdBy,
     institution: course.institution,
     image_url: course.imageUrl,
+    prefer_icon: course.preferIcon,
     // Use imageUrl for organizationLogo since it's not in the schema
     description: course.description,
     updated_at: new Date().toISOString()
