@@ -45,7 +45,7 @@ const CourseList: React.FC<CourseListProps> = ({
         canEdit={canEdit}
         onEdit={onEdit}
         onDelete={onDelete}
-        detailUrl={`/courses/${courseSlug}`}
+        url={`/courses/${courseSlug}`}
       />
     );
   });

@@ -4,10 +4,11 @@ import { useAuth } from '@/contexts/AuthContext';
 import { CourseProvider } from './CourseContext';
 import CourseHeader from './CourseHeader';
 import CourseTabView from './CourseTabView';
-import { Skeleton } from '@/components/ui/skeleton';
+import { useCourseManagement } from './useCourseManagement';
 
 const CourseManagement: React.FC = () => {
   const { user } = useAuth();
+  const { setIsAddDialogOpen } = useCourseManagement();
 
   // Check if user has permissions to add courses
   const isAdmin = user?.role === 'admin';
@@ -17,7 +18,10 @@ const CourseManagement: React.FC = () => {
   return (
     <CourseProvider>
       <div className="space-y-6">
-        <CourseHeader canAddCourses={canAddCourses} />
+        <CourseHeader 
+          canAddCourses={canAddCourses} 
+          onAddCourse={() => setIsAddDialogOpen(true)} 
+        />
         <CourseTabView />
       </div>
     </CourseProvider>

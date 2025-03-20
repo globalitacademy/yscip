@@ -1,49 +1,37 @@
 
 import React from 'react';
-import { useCourses } from './CourseContext';
-import AddCourseDialog from './AddCourseDialog';
 import { Button } from '@/components/ui/button';
-import { Plus } from 'lucide-react';
+import { PlusCircle } from 'lucide-react';
+import InitializeCoursesButton from './InitializeCoursesButton';
 
 interface CourseHeaderProps {
   canAddCourses: boolean;
+  onAddCourse?: () => void;
 }
 
-const CourseHeader: React.FC<CourseHeaderProps> = ({ canAddCourses }) => {
-  const {
-    isAddDialogOpen,
-    setIsAddDialogOpen,
-    newCourse,
-    newModule,
-    setNewCourse,
-    setNewModule,
-    handleAddModule,
-    handleRemoveModule,
-    handleAddCourse
-  } = useCourses();
-
+const CourseHeader: React.FC<CourseHeaderProps> = ({ 
+  canAddCourses,
+  onAddCourse 
+}) => {
   return (
-    <div className="flex justify-between items-center mb-6">
-      <h1 className="text-3xl font-bold">Կուրսերի կառավարում</h1>
-      {canAddCourses && (
-        <>
-          <Button onClick={() => setIsAddDialogOpen(true)}>
-            <Plus className="h-4 w-4 mr-1" /> Ավելացնել կուրս
+    <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+      <div>
+        <h1 className="text-2xl font-bold tracking-tight">Դասընթացներ</h1>
+        <p className="text-muted-foreground">
+          Կառավարեք ձեր դասընթացները, ստեղծեք նոր դասընթացներ և հետևեք առաջընթացին
+        </p>
+      </div>
+      
+      <div className="flex gap-3 self-end sm:self-center">
+        <InitializeCoursesButton />
+        
+        {canAddCourses && (
+          <Button onClick={onAddCourse}>
+            <PlusCircle className="mr-2 h-4 w-4" />
+            Ավելացնել դասընթաց
           </Button>
-          
-          <AddCourseDialog
-            isOpen={isAddDialogOpen}
-            onClose={() => setIsAddDialogOpen(false)}
-            newCourse={newCourse}
-            setNewCourse={setNewCourse}
-            newModule={newModule}
-            setNewModule={setNewModule}
-            handleAddModule={handleAddModule}
-            handleRemoveModule={handleRemoveModule}
-            handleAddCourse={handleAddCourse}
-          />
-        </>
-      )}
+        )}
+      </div>
     </div>
   );
 };
