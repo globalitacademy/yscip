@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { User, Clock, BookText, Code, BrainCircuit, Database, FileCode, Globe } from 'lucide-react';
 import { Input } from '@/components/ui/input';
@@ -239,27 +238,7 @@ const CourseBanner: React.FC<CourseBannerProps> = ({
                   <div className={`mr-4 ${displayCourse?.color || 'text-blue-500'}`}>
                     {displayCourse?.icon}
                   </div>
-                ) : displayCourse.imageUrl ? (
-                  <div className="mr-4 h-16 w-16 rounded-md overflow-hidden shadow-md flex-shrink-0">
-                    <img 
-                      src={displayCourse.imageUrl} 
-                      alt={displayCourse.title} 
-                      className="w-full h-full object-cover"
-                      onError={(e) => {
-                        e.currentTarget.style.display = 'none';
-                        const iconElement = document.getElementById(`course-detail-icon-${displayCourse.id}`);
-                        if (iconElement) iconElement.style.display = 'block';
-                      }}
-                    />
-                    <div id={`course-detail-icon-${displayCourse.id}`} style={{display: 'none'}} className={`${displayCourse?.color || 'text-blue-500'}`}>
-                      {displayCourse?.icon}
-                    </div>
-                  </div>
-                ) : (
-                  <div className={`mr-4 ${displayCourse?.color || 'text-blue-500'}`}>
-                    {displayCourse?.icon}
-                  </div>
-                )}
+                ) : null}
                 <h1 className="text-3xl md:text-4xl font-bold">{displayCourse?.title}</h1>
               </div>
               <p className="text-lg text-muted-foreground mb-6">{displayCourse?.description}</p>
