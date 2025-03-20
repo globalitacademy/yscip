@@ -25,6 +25,9 @@ export const useCourseOperations = (
     }
 
     try {
+      // Generate a URL-friendly slug from the title to use as ID if needed
+      const slug = newCourse.title.toLowerCase().replace(/\s+/g, '-');
+
       const courseToAdd = {
         title: newCourse.title,
         description: newCourse.description,

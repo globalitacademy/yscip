@@ -30,14 +30,31 @@ export const useCourseDetails = (courseId: string | undefined) => {
           throw new Error('Course ID is required');
         }
         
-        const { data, error } = await supabase
+        // First try to fetch by direct ID
+        let { data, error } = await supabase
           .from('courses')
           .select('*')
           .eq('id', courseId)
           .single();
 
-        if (error) {
-          throw error;
+        // If not found by direct ID, try with all courses
+        if (error || !data) {
+          const { data: allCourses, error: coursesError } = await supabase
+            .from('courses')
+            .select('*');
+            
+          if (coursesError) throw coursesError;
+          
+          // Try to find by ID or slug match
+          data = allCourses.find(course => 
+            course.id === courseId || 
+            course.title.toLowerCase().replace(/\s+/g, '-') === courseId ||
+            course.title.toLowerCase() === courseId
+          );
+          
+          if (!data) {
+            throw new Error('Course not found');
+          }
         }
 
         const fetchedCourse = {
@@ -99,7 +116,7 @@ export const useCourseDetails = (courseId: string | undefined) => {
           institution: values.institution || null,
           updated_at: new Date().toISOString()
         })
-        .eq('id', courseId);
+        .eq('id', course.id); // Use course.id instead of courseId which could be a slug
 
       if (error) throw error;
 

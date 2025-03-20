@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { ArrowLeft, Users, Clock, Bookmark, Award, FileText } from 'lucide-react';
@@ -91,7 +90,7 @@ const CourseDetailPage: React.FC = () => {
               duration: "7 ամիս",
               price: "68,000 ֏",
               icon_name: "FileCode",
-              modules: ["Python հիմունքներ", "Տվյալների վերլուծություն", "Մեքենայական ուսուցում", "Խորը ուսուցում"]
+              modules: ["Python հիմունքներ", "Տվյալների վերլուծություն", "Մեքեն��յական ուսուցում", "Խորը ուսուցում"]
             },
             {
               id: "java",
@@ -172,6 +171,13 @@ const CourseDetailPage: React.FC = () => {
         <Footer />
       </>
     );
+  }
+
+  const courseSlug = course.id || course.title.toLowerCase().replace(/\s+/g, '-');
+  
+  if (window.location.pathname.includes('/course-detail/') || window.location.pathname.includes('/course/')) {
+    navigate(`/courses/${courseSlug}`, { replace: true });
+    return null;
   }
 
   return (
@@ -311,7 +317,7 @@ const CourseDetailPage: React.FC = () => {
                   <CardHeader>
                     <CardTitle>Դասընթացի պահանջներ</CardTitle>
                     <CardDescription>
-                      Ինչ է անհրաժեշտ դասընթացը սկսելու համար
+                      Ինչ է անհրաժեշտ դ��սընթացը սկսելու համար
                     </CardDescription>
                   </CardHeader>
                   <CardContent>

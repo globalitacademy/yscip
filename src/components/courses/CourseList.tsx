@@ -31,7 +31,12 @@ const CourseList: React.FC<CourseListProps> = ({
   }
 
   const displayCourses = courses.map(course => {
+    // Check if user can edit this course (admin or course creator)
     const canEdit = isAdmin && (user?.role === 'admin' || course.createdBy === user?.id);
+    
+    // Generate a URL-friendly slug from the title if needed
+    const courseSlug = course.id || course.title.toLowerCase().replace(/\s+/g, '-');
+    
     return (
       <CourseCard
         key={course.id}
@@ -40,6 +45,7 @@ const CourseList: React.FC<CourseListProps> = ({
         canEdit={canEdit}
         onEdit={onEdit}
         onDelete={onDelete}
+        detailUrl={`/courses/${courseSlug}`}
       />
     );
   });
