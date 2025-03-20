@@ -133,17 +133,6 @@ const CourseBanner: React.FC<CourseBannerProps> = ({
   return (
     <FadeIn>
       <div className={`bg-gradient-to-r ${gradientClasses} rounded-xl p-8 mb-10 relative overflow-hidden`}>
-        {displayCourse.imageUrl && !displayCourse.preferIcon && (
-          <div className="absolute right-0 top-0 h-full overflow-hidden rounded-r-xl w-2/5">
-            <img 
-              src={displayCourse.imageUrl} 
-              alt={displayCourse.title}
-              className="object-cover h-full w-full opacity-30"
-            />
-            <div className={`absolute inset-0 bg-gradient-to-l from-transparent to-${displayCourse.color.replace('text-', '').replace('-500', '-50')}`}></div>
-          </div>
-        )}
-        
         <div className="relative z-10">
           {isEditing ? (
             <>
@@ -238,27 +227,7 @@ const CourseBanner: React.FC<CourseBannerProps> = ({
                   <div className={`mr-4 ${displayCourse?.color || 'text-blue-500'}`}>
                     {displayCourse?.icon}
                   </div>
-                ) : displayCourse.imageUrl ? (
-                  <div className="mr-4 h-16 w-16 rounded-md overflow-hidden shadow-md flex-shrink-0">
-                    <img 
-                      src={displayCourse.imageUrl} 
-                      alt={displayCourse.title} 
-                      className="w-full h-full object-cover"
-                      onError={(e) => {
-                        e.currentTarget.style.display = 'none';
-                        const iconElement = document.getElementById(`course-detail-icon-${displayCourse.id}`);
-                        if (iconElement) iconElement.style.display = 'block';
-                      }}
-                    />
-                    <div id={`course-detail-icon-${displayCourse.id}`} style={{display: 'none'}} className={`${displayCourse?.color || 'text-blue-500'}`}>
-                      {displayCourse?.icon}
-                    </div>
-                  </div>
-                ) : (
-                  <div className={`mr-4 ${displayCourse?.color || 'text-blue-500'}`}>
-                    {displayCourse?.icon}
-                  </div>
-                )}
+                ) : null}
                 <h1 className="text-3xl md:text-4xl font-bold">{displayCourse?.title}</h1>
               </div>
               <p className="text-lg text-muted-foreground mb-6">{displayCourse?.description}</p>
