@@ -103,5 +103,57 @@ export const notificationService = {
       console.error('Error in deleteNotification:', error);
       return false;
     }
+  },
+
+  /**
+   * Create a system notification for all users
+   */
+  async createSystemNotification(title: string, message: string, userIds: string[]): Promise<boolean> {
+    try {
+      const notifications = userIds.map(userId => ({
+        title,
+        message,
+        type: 'system',
+        read: false,
+        user_id: userId
+      }));
+
+      const { error } = await supabase
+        .from('notifications')
+        .insert(notifications);
+
+      if (error) {
+        console.error('Error creating system notifications:', error);
+        return false;
+      }
+
+      return true;
+    } catch (error) {
+      console.error('Error in createSystemNotification:', error);
+      return false;
+    }
+  },
+
+  /**
+   * Mark all notifications as read for a user
+   */
+  async markAllAsRead(userId: string): Promise<boolean> {
+    try {
+      const { error } = await supabase
+        .from('notifications')
+        .update({ read: true })
+        .eq('user_id', userId)
+        .eq('read', false);
+
+      if (error) {
+        console.error('Error marking all notifications as read:', error);
+        return false;
+      }
+
+      return true;
+    } catch (error) {
+      console.error('Error in markAllAsRead:', error);
+      return false;
+    }
   }
 };
