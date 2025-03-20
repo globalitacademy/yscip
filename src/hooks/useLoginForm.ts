@@ -68,7 +68,7 @@ export const useLoginForm = () => {
         
         // Step 4: If regular login fails, try direct login (bypass Supabase auth)
         console.log("Step 4: Regular login failed, trying direct admin login");
-        const directLoginSuccess = await login(email, password, true); // Added third parameter for direct admin login
+        const directLoginSuccess = await login(email, password, true); // This is correct now with the updated type
         
         if (directLoginSuccess) {
           console.log("Direct admin login succeeded");
