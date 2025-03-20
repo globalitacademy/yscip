@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { Code, FileCode, Layers, Globe, Layout, Database, Monitor, PenTool, Image, Smartphone, Shield, Clock, Check, X } from 'lucide-react';
 import { FadeIn, SlideUp } from '@/components/LocalTransitions';
@@ -611,3 +612,126 @@ export const ModulesInfographic: React.FC = () => {
       ]
     },
     {
+      id: 12,
+      title: "Մոբայլ հավելվածների մշակում",
+      icon: Smartphone,
+      status: 'not-started',
+      progress: 0,
+      topics: [
+        "Մոբայլ հավելվածների տեսակներ",
+        "Native հավելվածներ",
+        "Hybrid հավելվածներ",
+        "Android հիմունքներ",
+        "Android Studio IDE",
+        "Java և Kotlin լեզուներ",
+        "Android ծրագրային միջավայր",
+        "UI/UX դիզայն մոբայլ հավելվածների համար",
+        "Activity և Fragment",
+        "Intent և Intent Filter",
+        "RecyclerView և Adapter",
+        "ViewHolder կաղապար",
+        "Material Design տարրեր",
+        "ConstraintLayout",
+        "Տվյալների պահպանում Android-ում",
+        "SharedPreferences",
+        "SQLite բազաներ",
+        "Room պերսիստենտության լուծում",
+        "Ցանցային հարցումներ",
+        "RESTful API ինտեգրացիա",
+        "JSON մշակում",
+        "Ասինխրոն ծրագրավորում",
+        "Background Services",
+        "WorkManager",
+        "Notifications",
+        "Firebase ինտեգրացիա",
+        "MVVM արխիտեկտուրա",
+        "LiveData և ViewModel",
+        "Data Binding",
+        "Հավելվածի հրապարակում",
+        "Google Play Store",
+        "React Native հիմունքներ"
+      ]
+    },
+    {
+      id: 13,
+      title: "Կիբերանվտանգություն",
+      icon: Shield,
+      status: 'not-started',
+      progress: 0,
+      topics: [
+        "Կիբերանվտանգության ներածություն",
+        "Տեղեկատվական անվտանգության հիմունքներ",
+        "Համակարգչային ցանցերի անվտանգություն",
+        "Սպառնալիքների տեսակներ",
+        "Վնասակար ծրագրերի տեսակներ",
+        "Վիրուսներ, որդեր, տրոյացիներ",
+        "Ransomware և spyware",
+        "Սոցիալական ինժեներիա",
+        "Phishing և նրա տեսակները",
+        "Cryptography հիմունքներ",
+        "Սիմետրիկ և ասիմետրիկ ծածկագրում",
+        "Hash ֆունկցիաներ",
+        "PKI և թվային ստորագրություններ",
+        "Վեբ հավելվածների անվտանգություն",
+        "OWASP Top 10 խոցելիություններ",
+        "XSS (Cross-Site Scripting)",
+        "CSRF (Cross-Site Request Forgery)",
+        "SQL Injection",
+        "Authentication և authorization",
+        "Multi-factor authentication",
+        "Երկկողմանի նույնականացում (2FA)",
+        "Password հեշավորում և պահպանում",
+        "Firewall տեխնոլոգիաներ",
+        "IDS և IPS համակարգեր",
+        "Պենտեստավորում (Penetration Testing)",
+        "Ethical hacking հիմունքներ",
+        "Vulnerability scanning",
+        "SIEM համակարգեր",
+        "Log monitoring և վերլուծություն",
+        "Incident Response",
+        "Disaster Recovery",
+        "Կիբերանվտանգության ստանդարտներ"
+      ]
+    }
+  ];
+
+  // Define the number of columns for different screen sizes
+  const columns = {
+    sm: 1,  // Small screens (mobile)
+    md: 2,  // Medium screens (tablet)
+    lg: 3,  // Large screens (desktop)
+    xl: 4,  // Extra large screens
+  };
+
+  // Calculate how many modules per row for different screen sizes
+  const modulesPerRow = {
+    sm: Math.ceil(educationalModules.length / columns.sm),
+    md: Math.ceil(educationalModules.length / columns.md),
+    lg: Math.ceil(educationalModules.length / columns.lg),
+    xl: Math.ceil(educationalModules.length / columns.xl),
+  };
+
+  return (
+    <section className="py-20 bg-gradient-to-b from-background to-background/80">
+      <div className="container mx-auto px-4">
+        <div className="text-center mb-12">
+          <h2 className="text-3xl font-bold mb-3">Ուսումնական Մոդուլներ</h2>
+          <p className="text-muted-foreground max-w-2xl mx-auto">
+            Ծրագրավորման, վեբ տեխնոլոգիաների և ՏՏ ոլորտի տարբեր ուղղությունների համապարփակ մոդուլներ՝ քայլ առ քայլ ուսուցման համար։
+          </p>
+        </div>
+
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
+          {educationalModules.map((module, index) => (
+            <ModuleCard 
+              key={module.id} 
+              module={module} 
+              delay={`delay-${Math.min(index * 100, 500)}`}
+              showProgress={isAuthenticated}
+            />
+          ))}
+        </div>
+      </div>
+    </section>
+  );
+};
