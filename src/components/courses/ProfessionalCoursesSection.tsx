@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { FadeIn } from '@/components/LocalTransitions';
 import { Button } from '@/components/ui/button';
@@ -12,7 +11,8 @@ import {
   saveCourseChanges, 
   COURSE_UPDATED_EVENT,
   getAllCourses, 
-  subscribeToRealtimeUpdates
+  subscribeToRealtimeUpdates,
+  getCourseById
 } from './utils/courseUtils';
 import { toast } from 'sonner';
 
@@ -117,17 +117,14 @@ const ProfessionalCoursesSection: React.FC = () => {
   const [courses, setCourses] = useState<ProfessionalCourse[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
-  // Fetch courses from Supabase on component mount
   useEffect(() => {
     const fetchCourses = async () => {
       setIsLoading(true);
       try {
-        // Try to get courses from Supabase with localStorage fallback
         const fetchedCourses = await getAllCourses();
         if (fetchedCourses && fetchedCourses.length > 0) {
           setCourses(fetchedCourses);
         } else {
-          // If no courses found in either Supabase or localStorage, use initial data
           setCourses(initialProfessionalCourses);
           localStorage.setItem('professionalCourses', JSON.stringify(initialProfessionalCourses));
         }
@@ -143,7 +140,6 @@ const ProfessionalCoursesSection: React.FC = () => {
     fetchCourses();
   }, []);
 
-  // Listen for course updates from local events
   useEffect(() => {
     const handleCourseUpdated = (event: CustomEvent<ProfessionalCourse>) => {
       const updatedCourse = event.detail;
@@ -165,27 +161,98 @@ const ProfessionalCoursesSection: React.FC = () => {
     };
   }, []);
 
-  // Subscribe to Supabase realtime updates
   useEffect(() => {
-    const handleRealtimeUpdate = (updatedCourse: ProfessionalCourse) => {
-      console.log('Realtime update for course:', updatedCourse);
-      
-      setCourses(prevCourses => {
-        return prevCourses.map(course => 
-          course.id === updatedCourse.id ? updatedCourse : course
-        );
+    console.log('Setting up Supabase realtime subscription for courses table');
+    
+    const channel = supabase
+      .channel('public:courses-changes')
+      .on(
+        'postgres_changes', 
+        { 
+          event: '*', 
+          schema: 'public', 
+          table: 'courses' 
+        }, 
+        async (payload) => {
+          console.log('Realtime update received from Supabase:', payload);
+          
+          if (payload.new && payload.new.id) {
+            try {
+              const updatedCourse = await getCourseById(payload.new.id);
+              if (updatedCourse) {
+                console.log('Fetched updated course data:', updatedCourse);
+                
+                setCourses(prevCourses => {
+                  const courseExists = prevCourses.some(c => c.id === updatedCourse.id);
+                  
+                  if (courseExists) {
+                    return prevCourses.map(course => 
+                      course.id === updatedCourse.id ? updatedCourse : course
+                    );
+                  } else {
+                    return [...prevCourses, updatedCourse];
+                  }
+                });
+                
+                if (payload.eventType === 'INSERT') {
+                  toast.info(`Նոր դասընթաց ավելացվել է: ${updatedCourse.title}`);
+                } else if (payload.eventType === 'UPDATE') {
+                  toast.info(`${updatedCourse.title} դասընթացը թարմացվել է`);
+                } else if (payload.eventType === 'DELETE') {
+                  toast.info(`Դասընթացը հեռացվել է`);
+                  setCourses(prevCourses => prevCourses.filter(c => c.id !== payload.old.id));
+                }
+              }
+            } catch (error) {
+              console.error('Error fetching updated course:', error);
+            }
+          } else if (payload.eventType === 'DELETE' && payload.old && payload.old.id) {
+            console.log('Course deleted:', payload.old.id);
+            setCourses(prevCourses => prevCourses.filter(c => c.id !== payload.old.id));
+            toast.info('Դասընթացը հեռացվել է');
+          }
+        }
+      )
+      .subscribe((status) => {
+        console.log('Realtime subscription status:', status);
       });
-      
-      // Show a toast notification for the update
-      toast.info(`${updatedCourse.title} դասընթացը թարմացվել է`);
-    };
     
-    // Set up subscription
-    const unsubscribe = subscribeToRealtimeUpdates(handleRealtimeUpdate);
+    const lessonsChannel = supabase
+      .channel('public:course_lessons-changes')
+      .on(
+        'postgres_changes', 
+        { 
+          event: '*', 
+          schema: 'public', 
+          table: 'course_lessons' 
+        }, 
+        async (payload) => {
+          console.log('Lesson update received:', payload);
+          
+          if (payload.new && payload.new.course_id) {
+            try {
+              const updatedCourse = await getCourseById(payload.new.course_id);
+              if (updatedCourse) {
+                setCourses(prevCourses => {
+                  return prevCourses.map(course => 
+                    course.id === updatedCourse.id ? updatedCourse : course
+                  );
+                });
+                
+                toast.info(`${updatedCourse.title} դասընթացի դասերը թարմացվել են`);
+              }
+            } catch (error) {
+              console.error('Error fetching course after lesson update:', error);
+            }
+          }
+        }
+      )
+      .subscribe();
     
-    // Cleanup on unmount
     return () => {
-      unsubscribe();
+      console.log('Cleaning up realtime subscriptions');
+      supabase.removeChannel(channel);
+      supabase.removeChannel(lessonsChannel);
     };
   }, []);
 

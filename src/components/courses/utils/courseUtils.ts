@@ -1,4 +1,3 @@
-
 import { supabase } from '@/integrations/supabase/client';
 import { ProfessionalCourse } from '../types/ProfessionalCourse';
 import { toast } from 'sonner';
@@ -398,8 +397,8 @@ const convertToSupabaseCourseFormat = (course: ProfessionalCourse) => {
 };
 
 /**
- * Saves course changes to both Supabase and localStorage
- * Broadcasts a courseUpdated event
+ * Improved function to save course changes to both Supabase and localStorage
+ * Now properly handles real-time updates
  */
 export const saveCourseChanges = async (course: ProfessionalCourse): Promise<boolean> => {
   try {
@@ -407,11 +406,17 @@ export const saveCourseChanges = async (course: ProfessionalCourse): Promise<boo
 
     console.log('Saving course changes:', course);
     console.log('Icon name being saved:', course.iconName);
+    console.log('preferIcon value being saved:', course.preferIcon);
 
     // Ensure the course has a valid iconName
     if (!course.iconName) {
       course.iconName = inferIconNameFromCourse(course) || 'book';
       course.icon = convertIconNameToComponent(course.iconName);
+    }
+
+    // Ensure preferIcon is set to a boolean value
+    if (course.preferIcon === undefined) {
+      course.preferIcon = true; // Default value
     }
 
     // First save to localStorage to ensure local synchronization
@@ -507,43 +512,5 @@ export const saveCourseChanges = async (course: ProfessionalCourse): Promise<boo
   } catch (error) {
     console.error('Error saving course changes:', error);
     return false;
-  }
-};
-
-/**
- * Sets up Supabase realtime subscription for courses
- */
-export const subscribeToRealtimeUpdates = (onCourseUpdated: (course: ProfessionalCourse) => void) => {
-  // Ensure Supabase realtime channel is enabled for this table
-  try {
-    const channel = supabase
-      .channel('public:courses')
-      .on('postgres_changes', 
-        { 
-          event: 'UPDATE', 
-          schema: 'public', 
-          table: 'courses' 
-        }, 
-        async (payload) => {
-          console.log('Realtime update received:', payload);
-          
-          // When we get an update notification, fetch the full course with related data
-          if (payload.new && payload.new.id) {
-            const updatedCourse = await getCourseById(payload.new.id);
-            if (updatedCourse) {
-              // Call the callback with the updated course
-              onCourseUpdated(updatedCourse);
-            }
-          }
-        }
-      )
-      .subscribe();
-      
-    return () => {
-      supabase.removeChannel(channel);
-    };
-  } catch (error) {
-    console.error('Error setting up realtime subscription:', error);
-    return () => {};
   }
 };

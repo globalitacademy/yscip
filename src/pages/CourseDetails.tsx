@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import Header from '@/components/Header';
@@ -28,7 +27,6 @@ const CourseDetails: React.FC = () => {
   const [newOutcome, setNewOutcome] = useState('');
   const { user } = useAuth();
 
-  // Listen for course updates from other components
   useEffect(() => {
     const handleCourseUpdate = (event: CustomEvent<ProfessionalCourse>) => {
       const updatedCourse = event.detail;
@@ -46,7 +44,133 @@ const CourseDetails: React.FC = () => {
     };
   }, [id]);
 
-  // Function to convert iconName to React element
+  useEffect(() => {
+    if (!id) return;
+    
+    console.log('Setting up Supabase realtime subscription for course:', id);
+    
+    const courseChannel = supabase
+      .channel(`public:course:${id}`)
+      .on(
+        'postgres_changes',
+        {
+          event: 'UPDATE',
+          schema: 'public',
+          table: 'courses',
+          filter: `id=eq.${id}`
+        },
+        async (payload) => {
+          console.log('Course update received from Supabase:', payload);
+          
+          try {
+            const updatedCourse = await getCourseById(id);
+            if (updatedCourse) {
+              console.log('Fetched updated course data:', updatedCourse);
+              setCourse(updatedCourse);
+              
+              if (!isEditing) {
+                setEditedCourse(updatedCourse);
+              } else {
+                toast.info('Կուրսը փոփոխվել է մեկ այլ օգտագործողի կողմից');
+              }
+            }
+          } catch (error) {
+            console.error('Error fetching updated course:', error);
+          }
+        }
+      )
+      .subscribe();
+
+    const lessonsChannel = supabase
+      .channel(`public:course_lessons:${id}`)
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'course_lessons',
+          filter: `course_id=eq.${id}`
+        },
+        async () => {
+          console.log('Lessons update received from Supabase');
+          
+          try {
+            const updatedCourse = await getCourseById(id);
+            if (updatedCourse && !isEditing) {
+              setCourse(updatedCourse);
+              setEditedCourse(updatedCourse);
+              toast.info('Դասընթացի դասերը թարմացվել են');
+            }
+          } catch (error) {
+            console.error('Error fetching updated course lessons:', error);
+          }
+        }
+      )
+      .subscribe();
+
+    const requirementsChannel = supabase
+      .channel(`public:course_requirements:${id}`)
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'course_requirements',
+          filter: `course_id=eq.${id}`
+        },
+        async () => {
+          console.log('Requirements update received from Supabase');
+          
+          try {
+            const updatedCourse = await getCourseById(id);
+            if (updatedCourse && !isEditing) {
+              setCourse(updatedCourse);
+              setEditedCourse(updatedCourse);
+              toast.info('Դասընթացի պահանջները թարմացվել են');
+            }
+          } catch (error) {
+            console.error('Error fetching updated course requirements:', error);
+          }
+        }
+      )
+      .subscribe();
+
+    const outcomesChannel = supabase
+      .channel(`public:course_outcomes:${id}`)
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'course_outcomes',
+          filter: `course_id=eq.${id}`
+        },
+        async () => {
+          console.log('Outcomes update received from Supabase');
+          
+          try {
+            const updatedCourse = await getCourseById(id);
+            if (updatedCourse && !isEditing) {
+              setCourse(updatedCourse);
+              setEditedCourse(updatedCourse);
+              toast.info('Դասընթացի արդյունքները թարմացվել են');
+            }
+          } catch (error) {
+            console.error('Error fetching updated course outcomes:', error);
+          }
+        }
+      )
+      .subscribe();
+    
+    return () => {
+      console.log('Cleaning up realtime subscriptions');
+      supabase.removeChannel(courseChannel);
+      supabase.removeChannel(lessonsChannel);
+      supabase.removeChannel(requirementsChannel);
+      supabase.removeChannel(outcomesChannel);
+    };
+  }, [id, isEditing]);
+
   const getIconElement = (iconName: string) => {
     console.log("Converting iconName to element:", iconName);
     switch (iconName?.toLowerCase()) {
@@ -81,23 +205,21 @@ const CourseDetails: React.FC = () => {
           console.log("Attempting to fetch course with ID:", id);
           const courseData = await getCourseById(id);
           
-          // Try to create a sample course in localStorage if none found
           if (!courseData) {
             console.log("No course found, creating sample course");
-            // Create a sample course for testing if we can't fetch one
             const sampleCourse: ProfessionalCourse = {
               id: id,
               title: "Web Development Fundamentals",
               subtitle: "ԴԱՍԸՆԹԱՑ",
               icon: React.createElement(Book, { className: "w-16 h-16" }),
-              iconName: "book", // Adding iconName property
+              iconName: "book",
               duration: "8 շաբաթ",
               price: "65,000 ֏",
               buttonText: "Դիմել",
               color: "text-blue-500",
               createdBy: "John Smith",
               institution: "Web Academy",
-              preferIcon: true, // Default to showing icon
+              preferIcon: true,
               imageUrl: "https://images.unsplash.com/photo-1461749280684-dccba630e2f6?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=2069&q=80",
               description: "Learn the fundamentals of web development including HTML, CSS and JavaScript.",
               lessons: [
@@ -116,7 +238,6 @@ const CourseDetails: React.FC = () => {
               ]
             };
             
-            // Save to localStorage
             saveToLocalStorage(sampleCourse);
             
             setCourse(sampleCourse);
@@ -124,12 +245,10 @@ const CourseDetails: React.FC = () => {
           } else {
             console.log("Course loaded successfully:", courseData);
             
-            // Ensure icon element is properly set based on iconName
             if (courseData.iconName && (!courseData.icon || typeof courseData.icon === 'string')) {
               courseData.icon = getIconElement(courseData.iconName);
             }
             
-            // Ensure preferIcon is set (for backward compatibility)
             if (courseData.preferIcon === undefined) {
               courseData.preferIcon = false;
             }
@@ -158,7 +277,6 @@ const CourseDetails: React.FC = () => {
   const handleEditCourse = () => {
     if (!course) return;
 
-    // Update the course in Supabase and localStorage
     try {
       saveCourseChanges(course).then(success => {
         if (success) {
@@ -176,20 +294,14 @@ const CourseDetails: React.FC = () => {
 
   const toggleEditMode = async () => {
     if (isEditing) {
-      // Save changes
       if (!editedCourse) return;
       
       console.log("Saving changes to course:", editedCourse);
       
-      // Ensure iconName is correctly set
       if (!editedCourse.iconName && editedCourse.icon) {
-        // Try to determine iconName from icon
-        // This is a fallback and might not be accurate
-        // Fix the error by safely accessing the type property
         const iconComponent = editedCourse.icon.type;
         let iconString = '';
         
-        // Check if iconComponent exists and has a name or displayName property
         if (iconComponent && typeof iconComponent !== 'string') {
           iconString = (iconComponent as any).displayName || (iconComponent as any).name || '';
         }
@@ -200,38 +312,32 @@ const CourseDetails: React.FC = () => {
         else if (iconString.includes('Database')) editedCourse.iconName = 'database';
         else if (iconString.includes('File')) editedCourse.iconName = 'files';
         else if (iconString.includes('Globe')) editedCourse.iconName = 'web';
-        else editedCourse.iconName = 'book'; // Default
+        else editedCourse.iconName = 'book';
         
         console.log("Determined iconName from icon:", editedCourse.iconName);
       }
       
-      // Ensure preferIcon is set
       if (editedCourse.preferIcon === undefined) {
         editedCourse.preferIcon = !!editedCourse.iconName && !editedCourse.imageUrl;
       }
       
-      // Պահպանում ենք փոփոխությունները
       const success = await saveCourseChanges(editedCourse);
       if (success) {
         setCourse(editedCourse);
         toast.success('Դասընթացը հաջողությամբ թարմացվել է');
       } else {
-        // Եթե պահպանումը չի հաջողվել, ապա վերականգնում ենք նախկին արժեքները
         setEditedCourse(course);
         toast.error('Դասընթացի թարմացման ժամանակ սխալ է տեղի ունեցել');
       }
     } else {
-      // Enter edit mode
       console.log("Entering edit mode with course:", course);
       
       if (course) {
-        // Ensure we always have the latest icon element
         const editCopy = { ...course };
         if (editCopy.iconName) {
           editCopy.icon = getIconElement(editCopy.iconName);
         }
         
-        // Deep clone to avoid reference issues
         setEditedCourse(JSON.parse(JSON.stringify(editCopy)));
       }
     }
@@ -240,7 +346,6 @@ const CourseDetails: React.FC = () => {
   };
 
   const cancelEditing = () => {
-    // Երբ չեղարկում ենք, ապա վերադարձնում ենք նախկին արժեքները
     setEditedCourse(course);
     setIsEditing(false);
     toast.info('Փոփոխությունները չեղարկվեցին');
@@ -312,7 +417,6 @@ const CourseDetails: React.FC = () => {
     });
   };
 
-  // Check if user can edit this course
   const canEdit = user && (user.role === 'admin' || course?.createdBy === user.name);
 
   if (loading) {
@@ -339,12 +443,10 @@ const CourseDetails: React.FC = () => {
   const displayCourse = isEditing ? editedCourse : course;
   if (!displayCourse) return null;
 
-  // Ensure icon is present based on iconName
   if (displayCourse.iconName && (!displayCourse.icon || typeof displayCourse.icon === 'string')) {
     displayCourse.icon = getIconElement(displayCourse.iconName);
   }
 
-  // Ensure preferIcon is set (for backward compatibility)
   if (displayCourse.preferIcon === undefined) {
     displayCourse.preferIcon = !!displayCourse.iconName && !displayCourse.imageUrl;
   }
@@ -428,10 +530,8 @@ const CourseDetails: React.FC = () => {
   );
 };
 
-// Helper function to add the missing saveToLocalStorage function
 const saveToLocalStorage = (course: ProfessionalCourse): void => {
   try {
-    // Թարմացնում ենք կամ ավելացնում ենք կուրսը localStorage-ում
     console.log("Saving course to localStorage:", course);
     
     const storedCourses = localStorage.getItem('professionalCourses');
