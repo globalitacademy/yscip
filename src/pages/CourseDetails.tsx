@@ -179,7 +179,15 @@ const CourseDetails: React.FC = () => {
       if (!editedCourse.iconName && editedCourse.icon) {
         // Try to determine iconName from icon
         // This is a fallback and might not be accurate
-        const iconString = editedCourse.icon.type?.name || '';
+        // Fix the error by safely accessing the type property
+        const iconComponent = editedCourse.icon.type;
+        let iconString = '';
+        
+        // Check if iconComponent exists and has a name or displayName property
+        if (iconComponent && typeof iconComponent !== 'string') {
+          iconString = (iconComponent as any).displayName || (iconComponent as any).name || '';
+        }
+        
         if (iconString.includes('Book')) editedCourse.iconName = 'book';
         else if (iconString.includes('Code')) editedCourse.iconName = 'code';
         else if (iconString.includes('Brain')) editedCourse.iconName = 'ai';
