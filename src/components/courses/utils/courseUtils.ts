@@ -1,3 +1,4 @@
+
 import { supabase } from '@/integrations/supabase/client';
 import { ProfessionalCourse } from '../types/ProfessionalCourse';
 import { toast } from 'sonner';
@@ -81,7 +82,7 @@ export const getCourseById = async (id: string): Promise<ProfessionalCourse | nu
         title: course.title,
         subtitle: course.subtitle,
         icon: convertIconNameToComponent(course.icon_name),
-        iconName: course.icon_name, // Store the icon name
+        iconName: course.icon_name || 'book', // Ensure iconName is always set
         duration: course.duration,
         price: course.price,
         buttonText: course.button_text || 'Դիտել',
@@ -146,6 +147,7 @@ export const getAllCourses = async (): Promise<ProfessionalCourse[]> => {
       title: course.title,
       subtitle: course.subtitle,
       icon: convertIconNameToComponent(course.icon_name),
+      iconName: course.icon_name || 'book', // Ensure iconName is always set
       duration: course.duration,
       price: course.price,
       buttonText: course.button_text || 'Դիտել',

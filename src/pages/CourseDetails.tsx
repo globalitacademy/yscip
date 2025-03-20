@@ -60,6 +60,7 @@ const CourseDetails: React.FC = () => {
               title: "Web Development Fundamentals",
               subtitle: "ԴԱՍԸՆԹԱՑ",
               icon: React.createElement(Book, { className: "w-16 h-16" }),
+              iconName: "book", // Adding iconName property
               duration: "8 շաբաթ",
               price: "65,000 ֏",
               buttonText: "Դիմել",

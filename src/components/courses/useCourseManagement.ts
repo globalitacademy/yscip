@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import { toast } from 'sonner';
 import { v4 as uuidv4 } from 'uuid';
@@ -14,6 +15,7 @@ const mockProfessionalCourses: ProfessionalCourse[] = [
     title: 'WEB Front-End',
     subtitle: 'ԴԱՍԸՆԹԱՑ',
     icon: React.createElement(Code, { className: "w-16 h-16" }),
+    iconName: 'code',
     duration: '9 ամիս',
     price: '58,000 ֏',
     buttonText: 'Դիտել',
@@ -41,6 +43,7 @@ const mockProfessionalCourses: ProfessionalCourse[] = [
     title: 'Python (ML / AI)',
     subtitle: 'ԴԱՍԸՆԹԱՑ',
     icon: React.createElement(BrainCircuit, { className: "w-16 h-16" }),
+    iconName: 'ai',
     duration: '7 ամիս',
     price: '68,000 ֏',
     buttonText: 'Դիտել',
@@ -67,6 +70,7 @@ const mockProfessionalCourses: ProfessionalCourse[] = [
     title: 'Java',
     subtitle: 'ԴԱՍԸՆԹԱՑ',
     icon: React.createElement(BookText, { className: "w-16 h-16" }),
+    iconName: 'book',
     duration: '6 ամիս',
     price: '68,000 ֏',
     buttonText: 'Դիտել',
@@ -79,6 +83,7 @@ const mockProfessionalCourses: ProfessionalCourse[] = [
     title: 'JavaScript',
     subtitle: 'ԴԱՍԸՆԹԱՑ',
     icon: React.createElement(FileCode, { className: "w-16 h-16" }),
+    iconName: 'files',
     duration: '3.5 ամիս',
     price: '58,000 ֏',
     buttonText: 'Դիտել',
@@ -91,6 +96,7 @@ const mockProfessionalCourses: ProfessionalCourse[] = [
     title: 'PHP',
     subtitle: 'ԴԱՍԸՆԹԱՑ',
     icon: React.createElement(Database, { className: "w-16 h-16" }),
+    iconName: 'database',
     duration: '5 ամիս',
     price: '58,000 ֏',
     buttonText: 'Դիտել',
@@ -103,6 +109,7 @@ const mockProfessionalCourses: ProfessionalCourse[] = [
     title: 'C#/.NET',
     subtitle: 'ԴԱՍԸՆԹԱՑ',
     icon: React.createElement(Globe, { className: "w-16 h-16" }),
+    iconName: 'web',
     duration: '6 ամիս',
     price: '68,000 ֏',
     buttonText: 'Դիտել',
@@ -186,6 +193,7 @@ export const useCourseManagement = () => {
     title: '',
     subtitle: 'ԴԱՍԸՆԹԱՑ',
     icon: React.createElement(Code, { className: "w-16 h-16" }),
+    iconName: 'code', // Adding iconName here
     duration: '',
     price: '',
     buttonText: 'Դիտել',
