@@ -1,3 +1,4 @@
+
 import { supabase } from '@/integrations/supabase/client';
 import { ProfessionalCourse } from '../types/ProfessionalCourse';
 import { toast } from 'sonner';
@@ -91,8 +92,8 @@ export const getCourseById = async (id: string): Promise<ProfessionalCourse | nu
         color: course.color,
         createdBy: course.created_by,
         institution: course.institution,
-        // Set preferIcon to true by default if not present in the database
-        preferIcon: true, // Default value, since the field might not exist in DB yet
+        // Now we can use the prefer_icon field from the database
+        preferIcon: course.prefer_icon !== undefined ? course.prefer_icon : true,
         imageUrl: course.image_url,
         organizationLogo: course.image_url, // Use image_url as organizationLogo since it's not in the schema
         description: course.description,
@@ -162,8 +163,8 @@ export const getAllCourses = async (): Promise<ProfessionalCourse[]> => {
         color: course.color,
         createdBy: course.created_by,
         institution: course.institution,
-        // Set preferIcon to true by default if not present in the database
-        preferIcon: true, // Default value, since the field might not exist in DB yet
+        // Now we can use the prefer_icon field from the database
+        preferIcon: course.prefer_icon !== undefined ? course.prefer_icon : true,
         imageUrl: course.image_url,
         organizationLogo: course.image_url, // Use image_url as organizationLogo since it's not in the schema
         description: course.description,
@@ -388,7 +389,8 @@ const convertToSupabaseCourseFormat = (course: ProfessionalCourse) => {
     created_by: course.createdBy,
     institution: course.institution,
     image_url: course.imageUrl,
-    // We don't include prefer_icon since it doesn't exist in the database yet
+    // Now include prefer_icon in the Supabase data
+    prefer_icon: course.preferIcon !== undefined ? course.preferIcon : true,
     // Use imageUrl for organizationLogo since it's not in the schema
     description: course.description,
     updated_at: new Date().toISOString()

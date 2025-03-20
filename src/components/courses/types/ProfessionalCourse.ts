@@ -18,7 +18,7 @@ export interface ProfessionalCourse {
   color: string;
   createdBy: string;
   institution: string;
-  preferIcon: boolean; // Property to indicate whether to display the icon or image
+  preferIcon: boolean; // Property indicating whether to display the icon or image
   imageUrl?: string;
   organizationLogo?: string;
   description?: string;
