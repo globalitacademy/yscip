@@ -1,4 +1,3 @@
-
 import { supabase } from '@/integrations/supabase/client';
 import { ProfessionalCourse } from '../types/ProfessionalCourse';
 import { toast } from 'sonner';
@@ -82,7 +81,7 @@ export const getCourseById = async (id: string): Promise<ProfessionalCourse | nu
         title: course.title,
         subtitle: course.subtitle,
         icon: convertIconNameToComponent(course.icon_name),
-        iconName: course.icon_name, // Store the icon name for future reference
+        iconName: course.icon_name, // Store the icon name
         duration: course.duration,
         price: course.price,
         buttonText: course.button_text || 'Դիտել',
@@ -263,25 +262,10 @@ const saveToLocalStorage = (course: ProfessionalCourse): void => {
  * Converts a ProfessionalCourse object to the format expected by Supabase
  */
 const convertToSupabaseCourseFormat = (course: ProfessionalCourse) => {
-  // Use the stored iconName if available, otherwise try to extract it from the icon
+  // Always use the stored iconName directly
   let iconName = course.iconName || 'book';
   
-  // Only try to extract from icon if iconName is not already set
-  if (!course.iconName && course.icon) {
-    console.log('Extracting icon name from React element', course.icon);
-    // Get the icon type with a proper type assertion
-    const iconType = course.icon.type as { name?: string } | null | undefined;
-    
-    // First check if iconType is not null
-    if (iconType !== null && iconType !== undefined) {
-      // Then check if it has a 'name' property
-      if ('name' in iconType && iconType.name !== null && iconType.name !== undefined) {
-        // Now it's safe to access name and convert to lowercase
-        iconName = String(iconType.name).toLowerCase();
-        console.log('Extracted icon name:', iconName);
-      }
-    }
-  }
+  console.log('Using icon name for Supabase:', iconName);
   
   return {
     id: course.id,

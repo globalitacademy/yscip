@@ -1,9 +1,10 @@
 
 import React from 'react';
-import { User, Clock } from 'lucide-react';
+import { User, Clock, BookText, Code, BrainCircuit, Database, FileCode, Globe } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Button } from '@/components/ui/button';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { FadeIn } from '@/components/LocalTransitions';
 import { ProfessionalCourse } from '../types/ProfessionalCourse';
 
@@ -22,6 +23,58 @@ const CourseBanner: React.FC<CourseBannerProps> = ({
   setEditedCourse,
   handleApply
 }) => {
+  const iconOptions = [
+    { label: 'Կոդ', value: 'code', icon: <Code className="h-5 w-5" /> },
+    { label: 'Գիրք', value: 'book', icon: <BookText className="h-5 w-5" /> },
+    { label: 'ԻԻ', value: 'ai', icon: <BrainCircuit className="h-5 w-5" /> },
+    { label: 'Տվյալներ', value: 'database', icon: <Database className="h-5 w-5" /> },
+    { label: 'Ֆայլեր', value: 'files', icon: <FileCode className="h-5 w-5" /> },
+    { label: 'Վեբ', value: 'web', icon: <Globe className="h-5 w-5" /> },
+  ];
+
+  const colorOptions = [
+    { label: 'Ամբերային', value: 'text-amber-500' },
+    { label: 'Կապույտ', value: 'text-blue-500' },
+    { label: 'Կարմիր', value: 'text-red-500' },
+    { label: 'Դեղին', value: 'text-yellow-500' },
+    { label: 'Մանուշակագույն', value: 'text-purple-500' },
+    { label: 'Կանաչ', value: 'text-green-500' },
+  ];
+
+  const handleIconChange = (value: string) => {
+    if (!editedCourse) return;
+
+    let newIcon;
+    switch (value) {
+      case 'code':
+        newIcon = <Code className="w-16 h-16" />;
+        break;
+      case 'book':
+        newIcon = <BookText className="w-16 h-16" />;
+        break;
+      case 'ai':
+        newIcon = <BrainCircuit className="w-16 h-16" />;
+        break;
+      case 'database':
+        newIcon = <Database className="w-16 h-16" />;
+        break;
+      case 'files':
+        newIcon = <FileCode className="w-16 h-16" />;
+        break;
+      case 'web':
+        newIcon = <Globe className="w-16 h-16" />;
+        break;
+      default:
+        newIcon = <BookText className="w-16 h-16" />;
+    }
+
+    setEditedCourse({
+      ...editedCourse,
+      icon: newIcon,
+      iconName: value
+    });
+  };
+
   return (
     <FadeIn>
       <div className="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-xl p-8 mb-10 relative">
@@ -48,6 +101,56 @@ const CourseBanner: React.FC<CourseBannerProps> = ({
                   className="mb-3"
                 />
               </div>
+              
+              <div className="mb-4 flex items-center gap-4">
+                <div className="flex-shrink-0">
+                  {editedCourse?.icon}
+                </div>
+                <div className="flex-grow">
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Պատկերակ</label>
+                  <Select 
+                    value={editedCourse?.iconName || ''} 
+                    onValueChange={handleIconChange}
+                  >
+                    <SelectTrigger className="w-full">
+                      <SelectValue placeholder="Ընտրեք պատկերակ" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {iconOptions.map(option => (
+                        <SelectItem key={option.value} value={option.value}>
+                          <div className="flex items-center">
+                            {option.icon}
+                            <span className="ml-2">{option.label}</span>
+                          </div>
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+                
+                <div className="flex-grow">
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Գույն</label>
+                  <Select 
+                    value={editedCourse?.color || ''} 
+                    onValueChange={(value) => setEditedCourse(prev => prev ? {...prev, color: value} : prev)}
+                  >
+                    <SelectTrigger className="w-full">
+                      <SelectValue placeholder="Ընտրեք գույն" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {colorOptions.map(option => (
+                        <SelectItem key={option.value} value={option.value}>
+                          <div className="flex items-center">
+                            <div className={`w-4 h-4 rounded-full ${option.value.replace('text-', 'bg-')}`} />
+                            <span className="ml-2">{option.label}</span>
+                          </div>
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+              
               <Input 
                 value={editedCourse?.title || ''}
                 onChange={(e) => setEditedCourse(prev => prev ? {...prev, title: e.target.value} : prev)}
@@ -62,7 +165,12 @@ const CourseBanner: React.FC<CourseBannerProps> = ({
             </>
           ) : (
             <>
-              <h1 className="text-3xl md:text-4xl font-bold mb-3">{displayCourse?.title}</h1>
+              <div className="flex items-center mb-4">
+                <div className={`mr-4 ${displayCourse?.color || 'text-blue-500'}`}>
+                  {displayCourse?.icon}
+                </div>
+                <h1 className="text-3xl md:text-4xl font-bold">{displayCourse?.title}</h1>
+              </div>
               <p className="text-lg text-muted-foreground mb-6">{displayCourse?.description}</p>
             </>
           )}

@@ -4,6 +4,7 @@ import { FadeIn } from '@/components/LocalTransitions';
 import { ExternalLink } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { ProfessionalCourse } from '../types/ProfessionalCourse';
 
 interface CourseSidebarProps {
@@ -21,6 +22,15 @@ const CourseSidebar: React.FC<CourseSidebarProps> = ({
   setEditedCourse,
   handleApply
 }) => {
+  const colorOptions = [
+    { label: 'Ամբերային', value: 'text-amber-500' },
+    { label: 'Կապույտ', value: 'text-blue-500' },
+    { label: 'Կարմիր', value: 'text-red-500' },
+    { label: 'Դեղին', value: 'text-yellow-500' },
+    { label: 'Մանուշակագույն', value: 'text-purple-500' },
+    { label: 'Կանաչ', value: 'text-green-500' },
+  ];
+
   return (
     <FadeIn delay="delay-200">
       <div className="border rounded-lg overflow-hidden">
@@ -100,6 +110,30 @@ const CourseSidebar: React.FC<CourseSidebarProps> = ({
                 <span>{displayCourse?.createdBy}</span>
               )}
             </div>
+            
+            {isEditing && (
+              <div className="flex justify-between">
+                <span className="text-muted-foreground">Գույն</span>
+                <Select 
+                  value={editedCourse?.color || ''} 
+                  onValueChange={(value) => setEditedCourse(prev => prev ? {...prev, color: value} : prev)}
+                >
+                  <SelectTrigger className="w-32 text-right">
+                    <SelectValue placeholder="Գույն" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {colorOptions.map(option => (
+                      <SelectItem key={option.value} value={option.value}>
+                        <div className="flex items-center">
+                          <div className={`w-4 h-4 rounded-full ${option.value.replace('text-', 'bg-')}`} />
+                          <span className="ml-2">{option.label}</span>
+                        </div>
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            )}
           </div>
           
           {!isEditing && (
