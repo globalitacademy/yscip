@@ -221,7 +221,7 @@ const ProfessionalCoursesSection: React.FC = () => {
 
                 <CardHeader className="pb-2 text-center pt-12 relative">
                   {course.imageUrl ? (
-                    <div className="w-full h-32 mb-4 overflow-hidden rounded-md">
+                    <div className="w-full h-32 mb-4 overflow-hidden rounded-md mt-4">
                       <img 
                         src={course.imageUrl} 
                         alt={course.title}
@@ -234,7 +234,7 @@ const ProfessionalCoursesSection: React.FC = () => {
                       />
                     </div>
                   ) : (
-                    <div id={`course-icon-${course.id}`} className={`mb-4 ${course.color} mx-auto`}>
+                    <div id={`course-icon-${course.id}`} className={`mb-4 ${course.color} mx-auto mt-4`}>
                       {course.icon}
                     </div>
                   )}
