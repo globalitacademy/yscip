@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Card, CardContent, CardFooter } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -55,9 +54,8 @@ const CourseCard: React.FC<CourseCardProps> = ({
   };
   
   const handleViewDetails = () => {
-    // Use either the ID or a slug based on the title if no ID exists
     const courseId = course.id || course.title.toLowerCase().replace(/\s+/g, '-');
-    navigate(`/course-detail/${courseId}`);
+    navigate(`/courses/${courseId}`);
   };
 
   const isCreatedByCurrentUser = course.createdBy === user?.id;

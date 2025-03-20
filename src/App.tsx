@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import Index from '@/pages/Index';
@@ -13,6 +14,7 @@ import ProjectManagementPage from '@/pages/ProjectManagementPage';
 import CoursesPage from '@/pages/CoursesPage';
 import CourseDetailsPage from '@/pages/CourseDetailsPage';
 import CourseDetailPage from '@/components/courses/CourseDetailPage';
+import CoursePage from '@/pages/CoursePage';
 import ProjectProposalsPage from '@/pages/ProjectProposalsPage';
 import PendingApprovals from '@/pages/PendingApprovals';
 import SupervisedStudentsPage from '@/pages/SupervisedStudentsPage';
@@ -43,6 +45,7 @@ function App() {
             <Route path="/project/:id" element={<ProjectDetails />} />
             <Route path="/course/:id" element={<CourseDetailsPage />} />
             <Route path="/course-detail/:id" element={<CourseDetailPage />} />
+            <Route path="/courses/:id" element={<CoursePage />} />
             
             {/* Redirect /admin to /admin/dashboard */}
             <Route path="/admin" element={<Navigate to="/admin/dashboard" replace />} />
