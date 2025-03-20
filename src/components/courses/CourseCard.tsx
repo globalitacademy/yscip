@@ -55,7 +55,7 @@ const CourseCard: React.FC<CourseCardProps> = ({
   };
   
   const handleViewDetails = () => {
-    navigate(`/course/${course.id}`);
+    navigate(`/course-detail/${course.id}`);
   };
 
   const isCreatedByCurrentUser = course.createdBy === user?.id;

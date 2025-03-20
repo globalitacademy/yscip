@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState } from 'react';
 import { LogIn, BookOpen, ClipboardCheck, GraduationCap, FileCode, Clock } from 'lucide-react';
 import { FadeIn, SlideUp, StaggeredContainer } from '@/components/LocalTransitions';
@@ -78,7 +77,6 @@ const EducationalCycleInfographic: React.FC = () => {
   const navigate = useNavigate();
   
   useEffect(() => {
-    // Fetch courses from Supabase
     const fetchCourses = async () => {
       try {
         const { data, error } = await supabase
@@ -90,7 +88,6 @@ const EducationalCycleInfographic: React.FC = () => {
         }
 
         if (data) {
-          // Map the database courses to our Course type
           const mappedCourses: Course[] = data.map((course) => ({
             id: course.id,
             title: course.title,
@@ -113,7 +110,6 @@ const EducationalCycleInfographic: React.FC = () => {
         }
       } catch (e) {
         console.error('Error fetching courses:', e);
-        // Load courses from localStorage as fallback
         const storedCourses = localStorage.getItem('courses');
         if (storedCourses) {
           try {
@@ -128,7 +124,6 @@ const EducationalCycleInfographic: React.FC = () => {
     fetchCourses();
   }, []);
   
-  // Featured courses for display
   const featuredCourses = [
     {
       id: "web-frontend",
@@ -236,7 +231,6 @@ const EducationalCycleInfographic: React.FC = () => {
           ))}
         </div>
         
-        {/* Mobile timeline visualization */}
         <div className="md:hidden mt-4">
           {stages.slice(0, -1).map((stage, index) => (
             <div 
@@ -246,10 +240,8 @@ const EducationalCycleInfographic: React.FC = () => {
           ))}
         </div>
         
-        {/* Educational Modules Infographic */}
         <ModulesInfographic />
         
-        {/* Featured Courses Section */}
         <div className="mt-24">
           <FadeIn delay="delay-100">
             <h2 className="text-3xl font-bold mb-4 text-center">

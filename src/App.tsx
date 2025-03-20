@@ -13,6 +13,7 @@ import OrganizationsPage from '@/pages/OrganizationsPage';
 import ProjectManagementPage from '@/pages/ProjectManagementPage';
 import CoursesPage from '@/pages/CoursesPage';
 import CourseDetailsPage from '@/pages/CourseDetailsPage';
+import CourseDetailPage from '@/components/courses/CourseDetailPage';
 import ProjectProposalsPage from '@/pages/ProjectProposalsPage';
 import PendingApprovals from '@/pages/PendingApprovals';
 import SupervisedStudentsPage from '@/pages/SupervisedStudentsPage';
@@ -42,6 +43,7 @@ function App() {
             <Route path="/verify" element={<VerifyEmail />} />
             <Route path="/project/:id" element={<ProjectDetails />} />
             <Route path="/course/:id" element={<CourseDetailsPage />} />
+            <Route path="/course-detail/:id" element={<CourseDetailPage />} />
             
             {/* Redirect /admin to /admin/dashboard */}
             <Route path="/admin" element={<Navigate to="/admin/dashboard" replace />} />
