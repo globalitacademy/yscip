@@ -11,14 +11,14 @@ export interface ProfessionalCourse {
   title: string;
   subtitle: string;
   icon: ReactElement;
-  iconName: string; // Ensure iconName is required, not optional
+  iconName: string; 
   duration: string;
   price: string;
   buttonText: string;
   color: string;
   createdBy: string;
   institution: string;
-  preferIcon: boolean; // New property to indicate whether to display the icon or image
+  preferIcon: boolean; // Property to indicate whether to display the icon or image
   imageUrl?: string;
   organizationLogo?: string;
   description?: string;
