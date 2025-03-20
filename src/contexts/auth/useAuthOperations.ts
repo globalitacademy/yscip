@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { User, UserRole } from '@/types/user';
 import { mockUsers } from '@/data/mockUsers';
@@ -17,28 +16,15 @@ export const useAuthOperations = (
 ) => {
   const [loginAttempts, setLoginAttempts] = useState(0);
 
-  const login = async (email: string, password: string): Promise<boolean> => {
+  const login = async (email: string, password: string, useDirectAdminLogin = false): Promise<boolean> => {
     try {
-      console.log('Attempting login with email:', email);
+      console.log('Attempting login with email:', email, 'Direct admin login:', useDirectAdminLogin);
       // Track login attempts
       setLoginAttempts(prev => prev + 1);
       
-      // Special handling for main admin account
-      if (email.toLowerCase() === 'gitedu@bk.ru' && password === 'Qolej2025*') {
-        console.log('Login attempt for main admin, using direct access');
-        
-        try {
-          // Try to ensure admin activation first
-          const { data, error } = await supabase.functions.invoke('ensure-admin-activation');
-          
-          if (error) {
-            console.warn('Admin activation function error, but proceeding with login:', error);
-          } else {
-            console.log('Admin activation function succeeded:', data);
-          }
-        } catch (err) {
-          console.warn('Error invoking admin activation function, but proceeding with login:', err);
-        }
+      // Special handling for main admin account with direct login
+      if (email.toLowerCase() === 'gitedu@bk.ru' && (password === 'Qolej2025*' || useDirectAdminLogin)) {
+        console.log('Using direct admin access');
         
         // Direct login for main admin (always works regardless of backend status)
         setUser(mainAdminUser);
@@ -51,11 +37,11 @@ export const useAuthOperations = (
         };
         localStorage.setItem('currentUser', JSON.stringify(adminData));
         
-        toast.success('Մուտքը հաջողված է։ Բարի գալուստ, Ադմինիստրատոր։');
+        console.log('Direct admin login successful');
         return true;
       }
       
-      // First try Supabase auth
+      // Standard Supabase auth flow
       const { data, error } = await supabase.auth.signInWithPassword({
         email,
         password
@@ -67,7 +53,8 @@ export const useAuthOperations = (
         
         if (fallbackResult) {
           toast.success('Մուտքը հաջողված է։');
-        } else {
+        } else if (email.toLowerCase() !== 'gitedu@bk.ru') {
+          // Only show error if not admin (admin has special handling)
           toast.error('Սխալ էլ․ հասցե կամ գաղտնաբառ։');
         }
         
@@ -114,17 +101,18 @@ export const useAuthOperations = (
         setIsAuthenticated(true);
         localStorage.setItem('currentUser', JSON.stringify(loggedInUser));
         console.log('Login successful for:', loggedInUser.email, loggedInUser.role);
-        toast.success('Մուտքը հաջողված է։');
         return true;
       }
       
-      toast.error('Սխալ էլ․ հասցե կամ գաղտնաբառ։');
+      if (email.toLowerCase() !== 'gitedu@bk.ru') {
+        toast.error('Սխալ էլ․ հասցե կամ գաղտնաբառ։');
+      }
       return false;
     } catch (error) {
       console.error('Login error:', error);
       const fallbackResult = handleFallbackLogin(email, password, pendingUsers, mockUsers, setUser, setIsAuthenticated);
       
-      if (!fallbackResult) {
+      if (!fallbackResult && email.toLowerCase() !== 'gitedu@bk.ru') {
         toast.error('Սխալ էլ․ հասցե կամ գաղտնաբառ։');
       }
       
