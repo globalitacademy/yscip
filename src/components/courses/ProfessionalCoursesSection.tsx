@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { FadeIn } from '@/components/LocalTransitions';
 import { Button } from '@/components/ui/button';
@@ -11,10 +12,10 @@ import {
   saveCourseChanges, 
   COURSE_UPDATED_EVENT,
   getAllCourses, 
-  subscribeToRealtimeUpdates,
   getCourseById
 } from './utils/courseUtils';
 import { toast } from 'sonner';
+import { supabase } from '@/integrations/supabase/client';
 
 const initialProfessionalCourses: ProfessionalCourse[] = [
   {

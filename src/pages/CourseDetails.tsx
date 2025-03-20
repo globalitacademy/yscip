@@ -1,3 +1,4 @@
+
 import React, { useEffect, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import Header from '@/components/Header';
@@ -14,6 +15,7 @@ import CourseLearningOutcomes from '@/components/courses/details/CourseLearningO
 import CourseRequirements from '@/components/courses/details/CourseRequirements';
 import CourseSidebar from '@/components/courses/details/CourseSidebar';
 import { Book, BookText, BrainCircuit, Code, Database, FileCode, Globe } from 'lucide-react';
+import { supabase } from '@/integrations/supabase/client';
 
 const CourseDetails: React.FC = () => {
   const { id } = useParams<{ id: string }>();
