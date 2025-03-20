@@ -610,4 +610,5 @@ export const ModulesInfographic: React.FC = () => {
         "3D տեքստուրաներ և մոդելներ"
       ]
     },
-    {
+    { 
+      id:
