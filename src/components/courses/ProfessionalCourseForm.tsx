@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { Input } from "@/components/ui/input";
 import { ProfessionalCourse } from './types/ProfessionalCourse';
@@ -8,6 +9,7 @@ import { ChevronDown, X, PlusCircle, Upload, Link, Code, BookText, BrainCircuit,
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Textarea } from "@/components/ui/textarea";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "../ui/accordion";
+import { Switch } from "@/components/ui/switch";
 
 const colorOptions = [
   { label: 'Ամբերային', value: 'text-amber-500' },
@@ -323,7 +325,20 @@ const ProfessionalCourseForm: React.FC<ProfessionalCourseFormProps> = ({
         </div>
 
         <div>
-          <Label>Պատկեր</Label>
+          <div className="flex justify-between items-center mb-2">
+            <Label>Ցուցադրել որպես</Label>
+            <div className="flex items-center space-x-2">
+              <Label htmlFor="prefer-icon" className="text-sm mr-2">
+                {course.preferIcon ? "Պատկերակ" : "Նկար"}
+              </Label>
+              <Switch 
+                id="prefer-icon" 
+                checked={course.preferIcon}
+                onCheckedChange={(checked) => setCourse({ ...course, preferIcon: checked })}
+              />
+            </div>
+          </div>
+          
           <Tabs value={imageOption} onValueChange={setImageOption} className="w-full">
             <TabsList className="grid w-full grid-cols-3">
               <TabsTrigger value="icon">Պատկերակ</TabsTrigger>

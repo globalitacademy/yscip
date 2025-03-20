@@ -97,6 +97,7 @@ const CourseDetails: React.FC = () => {
               color: "text-blue-500",
               createdBy: "John Smith",
               institution: "Web Academy",
+              preferIcon: true, // Default to showing icon
               imageUrl: "https://images.unsplash.com/photo-1461749280684-dccba630e2f6?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=2069&q=80",
               description: "Learn the fundamentals of web development including HTML, CSS and JavaScript.",
               lessons: [
@@ -126,6 +127,11 @@ const CourseDetails: React.FC = () => {
             // Ensure icon element is properly set based on iconName
             if (courseData.iconName && (!courseData.icon || typeof courseData.icon === 'string')) {
               courseData.icon = getIconElement(courseData.iconName);
+            }
+            
+            // Ensure preferIcon is set (for backward compatibility)
+            if (courseData.preferIcon === undefined) {
+              courseData.preferIcon = false;
             }
             
             setCourse(courseData);
@@ -197,6 +203,11 @@ const CourseDetails: React.FC = () => {
         else editedCourse.iconName = 'book'; // Default
         
         console.log("Determined iconName from icon:", editedCourse.iconName);
+      }
+      
+      // Ensure preferIcon is set
+      if (editedCourse.preferIcon === undefined) {
+        editedCourse.preferIcon = !!editedCourse.iconName && !editedCourse.imageUrl;
       }
       
       // Պահպանում ենք փոփոխությունները
@@ -331,6 +342,11 @@ const CourseDetails: React.FC = () => {
   // Ensure icon is present based on iconName
   if (displayCourse.iconName && (!displayCourse.icon || typeof displayCourse.icon === 'string')) {
     displayCourse.icon = getIconElement(displayCourse.iconName);
+  }
+
+  // Ensure preferIcon is set (for backward compatibility)
+  if (displayCourse.preferIcon === undefined) {
+    displayCourse.preferIcon = !!displayCourse.iconName && !displayCourse.imageUrl;
   }
 
   return (

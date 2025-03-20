@@ -29,6 +29,7 @@ const initialProfessionalCourses: ProfessionalCourse[] = [
     color: 'text-amber-500',
     createdBy: 'Արամ Հակոբյան',
     institution: 'ՀՊՏՀ',
+    preferIcon: false,
     imageUrl: 'https://images.unsplash.com/photo-1547658719-da2b51169166?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=2000&q=80',
     organizationLogo: 'https://upload.wikimedia.org/wikipedia/commons/thumb/9/9a/ASUE-Logo.png/220px-ASUE-Logo.png'
   },
@@ -44,6 +45,7 @@ const initialProfessionalCourses: ProfessionalCourse[] = [
     color: 'text-blue-500',
     createdBy: 'Լիլիթ Մարտիրոսյան',
     institution: 'ԵՊՀ',
+    preferIcon: false,
     imageUrl: 'https://images.unsplash.com/photo-1526379879527-8559ecfd8bf7?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=2000&q=80'
   },
   {
@@ -58,6 +60,7 @@ const initialProfessionalCourses: ProfessionalCourse[] = [
     color: 'text-red-500',
     createdBy: 'Գարիկ Սարգսյան',
     institution: 'ՀԱՊՀ',
+    preferIcon: true,
     imageUrl: 'https://images.unsplash.com/photo-1516116216624-53e697fedbea?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=2000&q=80'
   },
   {
@@ -72,6 +75,7 @@ const initialProfessionalCourses: ProfessionalCourse[] = [
     color: 'text-yellow-500',
     createdBy: 'Անի Մուրադյան',
     institution: 'ՀԱՀ',
+    preferIcon: true,
     imageUrl: 'https://images.unsplash.com/photo-1555066931-4365d14bab8c?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=2000&q=80'
   },
   {
@@ -86,6 +90,7 @@ const initialProfessionalCourses: ProfessionalCourse[] = [
     color: 'text-purple-500',
     createdBy: 'Վահե Ղազարյան',
     institution: 'ՀՊՄՀ',
+    preferIcon: false,
     imageUrl: 'https://images.unsplash.com/photo-1599507593499-a3f7d7d97667?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=2000&q=80'
   },
   {
@@ -100,6 +105,7 @@ const initialProfessionalCourses: ProfessionalCourse[] = [
     color: 'text-green-500',
     createdBy: 'Տիգրան Դավթյան',
     institution: 'ՀՌԱՀ',
+    preferIcon: false,
     imageUrl: 'https://images.unsplash.com/photo-1587620962725-abab7fe55159?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=2000&q=80'
   }
 ];

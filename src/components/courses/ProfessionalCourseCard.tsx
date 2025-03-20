@@ -20,6 +20,9 @@ const ProfessionalCourseCard: React.FC<ProfessionalCourseCardProps> = ({
   isAdmin = false,
   canEdit = false
 }) => {
+  // Determine if we should show the icon based on preferIcon or if no image is available
+  const showIcon = course.preferIcon || !course.imageUrl;
+
   return (
     <Card className="h-full overflow-hidden shadow-md hover:shadow-lg transition-shadow relative">
       {course.organizationLogo && (
@@ -34,7 +37,7 @@ const ProfessionalCourseCard: React.FC<ProfessionalCourseCardProps> = ({
       )}
       
       <div className="px-6 py-4 flex flex-col items-center text-center">
-        {course.imageUrl ? (
+        {!showIcon && course.imageUrl ? (
           <img 
             src={course.imageUrl} 
             alt={course.title}

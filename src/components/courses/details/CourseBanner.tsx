@@ -5,6 +5,7 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Switch } from '@/components/ui/switch';
 import { FadeIn } from '@/components/LocalTransitions';
 import { ProfessionalCourse } from '../types/ProfessionalCourse';
 import { toast } from 'sonner';
@@ -104,10 +105,28 @@ const CourseBanner: React.FC<CourseBannerProps> = ({
     toast.info("Գույնը փոխվել է");
   };
 
+  const handlePreferIconChange = (checked: boolean) => {
+    if (!editedCourse) return;
+    
+    console.log("CourseBanner: Փոխվում է ցուցադրման տեսակը:", checked ? "Պատկերակ" : "Նկար");
+    
+    // Թարմացնենք կուրսը նոր ցուցադրման կարգավորումով
+    const updatedCourse = { 
+      ...editedCourse,
+      preferIcon: checked
+    };
+    
+    console.log("CourseBanner: Թարմացված դասընթացը:", updatedCourse);
+    setEditedCourse(updatedCourse);
+    
+    // Ցույց տանք նոթիֆիկացիա
+    toast.info(checked ? "Այժմ ցուցադրվում է պատկերակ" : "Այժմ ցուցադրվում է նկար");
+  };
+
   return (
     <FadeIn>
       <div className="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-xl p-8 mb-10 relative">
-        {displayCourse.imageUrl && (
+        {displayCourse.imageUrl && !displayCourse.preferIcon && (
           <div className="absolute right-0 top-0 h-full overflow-hidden rounded-r-xl w-2/5">
             <img 
               src={displayCourse.imageUrl} 
@@ -129,6 +148,19 @@ const CourseBanner: React.FC<CourseBannerProps> = ({
                   placeholder="https://example.com/image.jpg"
                   className="mb-3"
                 />
+
+                <div className="flex items-center justify-between mt-2">
+                  <label className="block text-sm font-medium text-gray-700">Ցուցադրել որպես</label>
+                  <div className="flex items-center space-x-2">
+                    <span className="text-sm mr-2">
+                      {editedCourse?.preferIcon ? "Պատկերակ" : "Նկար"}
+                    </span>
+                    <Switch 
+                      checked={editedCourse?.preferIcon || false}
+                      onCheckedChange={handlePreferIconChange}
+                    />
+                  </div>
+                </div>
               </div>
               
               <div className="mb-4 flex items-center gap-4">
