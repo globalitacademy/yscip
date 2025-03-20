@@ -16,6 +16,7 @@ import {
 } from './utils/courseUtils';
 import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
+import { RealtimePostgresChangesPayload } from '@supabase/supabase-js';
 
 const initialProfessionalCourses: ProfessionalCourse[] = [
   {
@@ -174,12 +175,12 @@ const ProfessionalCoursesSection: React.FC = () => {
           schema: 'public', 
           table: 'courses' 
         }, 
-        async (payload) => {
+        async (payload: RealtimePostgresChangesPayload<{[key: string]: any}>) => {
           console.log('Realtime update received from Supabase:', payload);
           
-          if (payload.new && payload.new.id) {
+          if (payload.new && typeof payload.new === 'object' && 'id' in payload.new) {
             try {
-              const updatedCourse = await getCourseById(payload.new.id);
+              const updatedCourse = await getCourseById(payload.new.id as string);
               if (updatedCourse) {
                 console.log('Fetched updated course data:', updatedCourse);
                 
@@ -201,15 +202,15 @@ const ProfessionalCoursesSection: React.FC = () => {
                   toast.info(`${updatedCourse.title} դասընթացը թարմացվել է`);
                 } else if (payload.eventType === 'DELETE') {
                   toast.info(`Դասընթացը հեռացվել է`);
-                  setCourses(prevCourses => prevCourses.filter(c => c.id !== payload.old.id));
+                  setCourses(prevCourses => prevCourses.filter(c => c.id !== payload.old?.id));
                 }
               }
             } catch (error) {
               console.error('Error fetching updated course:', error);
             }
-          } else if (payload.eventType === 'DELETE' && payload.old && payload.old.id) {
+          } else if (payload.eventType === 'DELETE' && payload.old && typeof payload.old === 'object' && 'id' in payload.old) {
             console.log('Course deleted:', payload.old.id);
-            setCourses(prevCourses => prevCourses.filter(c => c.id !== payload.old.id));
+            setCourses(prevCourses => prevCourses.filter(c => c.id !== payload.old?.id));
             toast.info('Դասընթացը հեռացվել է');
           }
         }
@@ -227,12 +228,12 @@ const ProfessionalCoursesSection: React.FC = () => {
           schema: 'public', 
           table: 'course_lessons' 
         }, 
-        async (payload) => {
+        async (payload: RealtimePostgresChangesPayload<{[key: string]: any}>) => {
           console.log('Lesson update received:', payload);
           
-          if (payload.new && payload.new.course_id) {
+          if (payload.new && typeof payload.new === 'object' && 'course_id' in payload.new) {
             try {
-              const updatedCourse = await getCourseById(payload.new.course_id);
+              const updatedCourse = await getCourseById(payload.new.course_id as string);
               if (updatedCourse) {
                 setCourses(prevCourses => {
                   return prevCourses.map(course => 
