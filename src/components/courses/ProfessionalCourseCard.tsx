@@ -39,16 +39,19 @@ const ProfessionalCourseCard: React.FC<ProfessionalCourseCardProps> = ({
 
   return (
     <Card className="h-full overflow-hidden shadow-md hover:shadow-lg transition-shadow relative">
-      {course.organizationLogo && (
-        <div className="absolute top-4 right-4 flex items-center text-xs bg-gray-100 px-2 py-1 rounded-full z-10">
+      {/* Always show organization/institution information in a consistent way */}
+      <div className="absolute top-4 right-4 flex items-center text-xs bg-gray-100 px-2 py-1 rounded-full z-10">
+        {course.organizationLogo ? (
           <img 
             src={course.organizationLogo} 
             alt={course.institution}
             className="w-4 h-4 mr-1 object-contain rounded-full"
           />
-          <span className="text-xs">{course.institution}</span>
-        </div>
-      )}
+        ) : (
+          <Building className="w-3 h-3 mr-1" />
+        )}
+        <span className="text-xs">{course.institution}</span>
+      </div>
       
       <div className="p-6 pt-10 flex flex-col items-center text-center h-full">
         {!showIcon && course.imageUrl ? (
@@ -74,10 +77,6 @@ const ProfessionalCourseCard: React.FC<ProfessionalCourseCardProps> = ({
           <div className="text-sm text-gray-600">Տևողություն: {course.duration}</div>
           <div className="text-sm text-gray-600">Արժեք: {course.price}</div>
         </div>
-        
-        {!course.organizationLogo && (
-          <div className="text-sm text-gray-600 mb-4">Հաստատություն: {course.institution}</div>
-        )}
         
         <div className="mt-auto pt-4 flex justify-center space-x-2">
           <Button variant="outline" size="sm">
