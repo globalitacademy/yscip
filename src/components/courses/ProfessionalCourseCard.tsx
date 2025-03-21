@@ -40,22 +40,22 @@ const ProfessionalCourseCard: React.FC<ProfessionalCourseCardProps> = ({
   return (
     <Card className="h-full overflow-hidden shadow-md hover:shadow-lg transition-shadow relative">
       {course.organizationLogo && (
-        <div className="absolute top-4 left-4 flex items-center text-xs bg-gray-100 px-2 py-1 rounded-full z-10">
+        <div className="absolute top-3 left-3 flex items-center text-xs bg-gray-100 px-2 py-1 rounded-full z-10">
           <img 
             src={course.organizationLogo} 
             alt={course.institution}
-            className="w-6 h-6 mr-1 object-contain rounded-full"
+            className="w-5 h-5 mr-1 object-contain rounded-full"
           />
-          <span>{course.institution}</span>
+          <span className="text-xs">{course.institution}</span>
         </div>
       )}
       
-      <div className="px-6 py-4 flex flex-col items-center text-center">
+      <div className="p-5 flex flex-col items-center text-center h-full">
         {!showIcon && course.imageUrl ? (
           <img 
             src={course.imageUrl} 
             alt={course.title}
-            className="w-16 h-16 mb-4 object-contain"
+            className="w-14 h-14 mb-3 object-contain"
             onError={(e) => {
               // Fallback to icon if image fails to load
               e.currentTarget.style.display = 'none';
@@ -63,21 +63,24 @@ const ProfessionalCourseCard: React.FC<ProfessionalCourseCardProps> = ({
             }}
           />
         ) : (
-          <div id={`course-icon-${course.id}`} className={`${course.color} mb-4`}>
+          <div id={`course-icon-${course.id}`} className={`${course.color} mb-3`}>
             {renderIcon()}
           </div>
         )}
-        <div className="mb-2 text-xs uppercase tracking-wide text-gray-500">{course.subtitle}</div>
-        <h3 className="text-xl font-semibold mb-2">{course.title}</h3>
-        <div className="text-sm text-gray-600 mb-1">Տևողություն: {course.duration}</div>
-        <div className="text-sm text-gray-600 mb-1">Արժեք: {course.price}</div>
-        {!course.organizationLogo && (
-          <div className="text-sm text-gray-600 mb-4">Հաստատություն: {course.institution}</div>
-        )}
+        <div className="mb-1.5 text-xs uppercase tracking-wide text-gray-500">{course.subtitle}</div>
+        <h3 className="text-lg font-semibold mb-2 line-clamp-2">{course.title}</h3>
         
-        <div className="flex space-x-2">
+        <div className="space-y-1 mb-3 text-sm">
+          <div className="text-gray-600">Տևողություն: {course.duration}</div>
+          <div className="text-gray-600">Արժեք: {course.price}</div>
+          {!course.organizationLogo && (
+            <div className="text-gray-600">Հաստատություն: {course.institution}</div>
+          )}
+        </div>
+        
+        <div className="mt-auto pt-2 flex justify-center space-x-2">
           <Button variant="outline" size="sm">
-            <Eye className="h-4 w-4 mr-2" /> {course.buttonText}
+            <Eye className="h-4 w-4 mr-1.5" /> {course.buttonText}
           </Button>
           
           {(isAdmin || canEdit) && (
