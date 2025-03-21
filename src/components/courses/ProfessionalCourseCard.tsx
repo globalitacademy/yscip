@@ -3,9 +3,10 @@ import React from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { ProfessionalCourse } from './types/ProfessionalCourse';
-import { Eye, Pencil, Trash, Building, Book, Clock, User, Banknote } from 'lucide-react';
+import { Eye, Pencil, Trash, Building, Book, Clock, User, Banknote, Globe, MonitorSmartphone, Users, UserCog } from 'lucide-react';
 import { convertIconNameToComponent } from './utils/courseUtils';
 import { Link } from 'react-router-dom';
+import { Badge } from '@/components/ui/badge';
 
 interface ProfessionalCourseCardProps {
   course: ProfessionalCourse;
@@ -36,6 +37,29 @@ const ProfessionalCourseCard: React.FC<ProfessionalCourseCardProps> = ({
     }
     
     return <Book className="w-16 h-16" />;
+  };
+
+  // Helper function to get format icon
+  const getFormatIcon = (format: string) => {
+    switch (format?.toLowerCase()) {
+      case 'online':
+      case 'օնլայն':
+        return <MonitorSmartphone className="h-4 w-4 mr-1" />;
+      case 'in-person':
+      case 'առկա':
+        return <Users className="h-4 w-4 mr-1" />;
+      case 'video':
+      case 'վիդեոկուրս':
+        return <MonitorSmartphone className="h-4 w-4 mr-1" />;
+      case 'group':
+      case 'խմբային':
+        return <Users className="h-4 w-4 mr-1" />;
+      case 'individual':
+      case 'անհատական':
+        return <UserCog className="h-4 w-4 mr-1" />;
+      default:
+        return <MonitorSmartphone className="h-4 w-4 mr-1" />;
+    }
   };
 
   return (
@@ -82,15 +106,39 @@ const ProfessionalCourseCard: React.FC<ProfessionalCourseCardProps> = ({
               <span>Դասախոս՝ {course.instructor || "Անուն Ազգանուն"}</span>
             </div>
             
-            <div className="flex space-x-4 mb-3">
-              <div className="flex items-center text-sm text-gray-600">
-                <Clock className="h-4 w-4 mr-1.5 text-gray-500" />
-                <span>Տևողություն: {course.duration}</span>
+            <div className="flex flex-col space-y-2 mb-3">
+              <div className="flex space-x-4">
+                <div className="flex items-center text-sm text-gray-600">
+                  <Clock className="h-4 w-4 mr-1.5 text-gray-500" />
+                  <span>Տևողություն: {course.duration}</span>
+                </div>
+                <div className="flex items-center text-sm text-gray-600">
+                  <Banknote className="h-4 w-4 mr-1.5 text-gray-500" />
+                  <span>Արժեք: {course.price}</span>
+                </div>
               </div>
-              <div className="flex items-center text-sm text-gray-600">
-                <Banknote className="h-4 w-4 mr-1.5 text-gray-500" />
-                <span>Արժեք: {course.price}</span>
-              </div>
+              
+              {/* Format badges */}
+              {course.format && (
+                <div className="flex items-center text-sm text-gray-600">
+                  {getFormatIcon(course.format)}
+                  <span>Ձևաչափ: {course.format}</span>
+                </div>
+              )}
+              
+              {/* Languages badges */}
+              {course.languages && course.languages.length > 0 && (
+                <div className="flex items-center">
+                  <Globe className="h-4 w-4 mr-1.5 text-gray-500" />
+                  <div className="flex flex-wrap gap-1">
+                    {course.languages.map((language, index) => (
+                      <Badge key={index} variant="outline" className="text-xs">
+                        {language}
+                      </Badge>
+                    ))}
+                  </div>
+                </div>
+              )}
             </div>
           </div>
         </div>

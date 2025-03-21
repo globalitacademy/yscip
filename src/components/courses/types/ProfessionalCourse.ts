@@ -26,6 +26,8 @@ export interface ProfessionalCourse {
   requirements?: string[];
   outcomes?: string[];
   instructor?: string; // Added instructor property
+  format?: string; // Format: online, in-person, video, group, individual
+  languages?: string[]; // Languages: Armenian, Russian, English
 }
 
 // Type guard to validate Supabase payload for course data
