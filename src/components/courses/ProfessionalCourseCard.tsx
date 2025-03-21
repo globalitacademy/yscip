@@ -50,12 +50,12 @@ const ProfessionalCourseCard: React.FC<ProfessionalCourseCardProps> = ({
         </div>
       )}
       
-      <div className="p-6 pt-8 flex flex-col items-center text-center h-full">
+      <div className="p-6 pt-10 flex flex-col items-center text-center h-full">
         {!showIcon && course.imageUrl ? (
           <img 
             src={course.imageUrl} 
             alt={course.title}
-            className="w-14 h-14 mb-4 object-contain"
+            className="w-16 h-16 mb-5 object-contain"
             onError={(e) => {
               // Fallback to icon if image fails to load
               e.currentTarget.style.display = 'none';
@@ -63,12 +63,12 @@ const ProfessionalCourseCard: React.FC<ProfessionalCourseCardProps> = ({
             }}
           />
         ) : (
-          <div id={`course-icon-${course.id}`} className={`${course.color} mb-4`}>
+          <div id={`course-icon-${course.id}`} className={`${course.color} mb-5`}>
             {renderIcon()}
           </div>
         )}
-        <div className="mb-2 text-xs uppercase tracking-wide text-gray-500">{course.subtitle}</div>
-        <h3 className="text-lg font-semibold mb-3 line-clamp-2">{course.title}</h3>
+        <div className="mb-3 text-xs uppercase tracking-wide text-gray-500">{course.subtitle}</div>
+        <h3 className="text-lg font-semibold mb-4 line-clamp-2">{course.title}</h3>
         
         <div className="flex justify-between w-full mb-4">
           <div className="text-sm text-gray-600">Տևողություն: {course.duration}</div>
@@ -79,7 +79,7 @@ const ProfessionalCourseCard: React.FC<ProfessionalCourseCardProps> = ({
           <div className="text-sm text-gray-600 mb-4">Հաստատություն: {course.institution}</div>
         )}
         
-        <div className="mt-auto pt-3 flex justify-center space-x-2">
+        <div className="mt-auto pt-4 flex justify-center space-x-2">
           <Button variant="outline" size="sm">
             <Eye className="h-4 w-4 mr-1.5" /> {course.buttonText}
           </Button>
