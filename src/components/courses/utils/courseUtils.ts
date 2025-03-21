@@ -1,4 +1,3 @@
-
 import { supabase } from '@/integrations/supabase/client';
 import { ProfessionalCourse, isCoursePayload } from '../types/ProfessionalCourse';
 import { toast } from 'sonner';
@@ -122,8 +121,8 @@ export const getCourseById = async (id: string): Promise<ProfessionalCourse | nu
         institution: course.institution,
         preferIcon: course.prefer_icon !== undefined ? course.prefer_icon : true,
         imageUrl: course.image_url,
-        // Safely check if organization_logo exists before using it
-        organizationLogo: course.organization_logo || course.image_url, 
+        // Use image_url as fallback if organization_logo doesn't exist
+        organizationLogo: course.image_url,
         description: course.description,
         lessons: lessons?.map(lesson => ({
           title: lesson.title, 
@@ -193,8 +192,8 @@ export const getAllCourses = async (): Promise<ProfessionalCourse[]> => {
         institution: course.institution,
         preferIcon: course.prefer_icon !== undefined ? course.prefer_icon : true,
         imageUrl: course.image_url,
-        // Safely check if organization_logo exists before using it
-        organizationLogo: 'organization_logo' in course ? course.organization_logo : course.image_url,
+        // Use image_url as the fallback for organizationLogo
+        organizationLogo: course.image_url,
         description: course.description,
         // Related data will be loaded separately when needed
         lessons: [],
@@ -407,7 +406,7 @@ const convertToSupabaseCourseFormat = (course: ProfessionalCourse) => {
     created_by: course.createdBy,
     institution: course.institution,
     image_url: course.imageUrl,
-    organization_logo: course.organizationLogo, // This field needs to be added to the Supabase table schema
+    // Send organizationLogo to Supabase but note that the column might need to be added
     prefer_icon: course.preferIcon !== undefined ? course.preferIcon : true,
     description: course.description,
     updated_at: new Date().toISOString()
