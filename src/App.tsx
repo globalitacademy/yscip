@@ -29,56 +29,59 @@ import ModulesPage from './pages/ModulesPage';
 import AdminProjectsPage from './pages/AdminProjectsPage';
 import { AuthProvider } from '@/contexts/AuthContext';
 import { ProjectProvider } from '@/contexts/ProjectContext';
-import { Toaster } from "@/components/ui/toaster"
+import { Toaster } from "sonner";
+import ErrorBoundary from '@/components/ErrorBoundary';
 
 function App() {
   return (
-    <BrowserRouter>
-      <AuthProvider>
-        <ProjectProvider projectId={null} initialProject={null}>
-          <Toaster />
-          <Routes>
-            <Route path="/" element={<Index />} />
-            <Route path="/login" element={<Login />} />
-            <Route path="/verify" element={<VerifyEmail />} />
-            <Route path="/project/:id" element={<ProjectDetails />} />
-            <Route path="/course/:id" element={<CourseDetails />} />
-            
-            {/* Redirect /admin to /admin/dashboard */}
-            <Route path="/admin" element={<Navigate to="/admin/dashboard" replace />} />
-            
-            {/* Student specific redirects */}
-            <Route path="/projects/manage" element={<Navigate to="/admin/my-projects" replace />} />
-            <Route path="/my-projects" element={<Navigate to="/admin/my-projects" replace />} />
-            
-            {/* Admin routes */}
-            <Route path="/admin/dashboard" element={<AdminDashboard />} />
-            <Route path="/admin/users" element={<UserManagementPage />} />
-            <Route path="/admin/groups" element={<GroupsPage />} />
-            <Route path="/admin/specializations" element={<SpecializationsPage />} />
-            <Route path="/admin/organizations" element={<OrganizationsPage />} />
-            <Route path="/admin/projects" element={<ProjectManagementPage />} />
-            <Route path="/admin/admin-projects" element={<AdminProjectsPage />} />
-            <Route path="/admin/courses" element={<CoursesPage />} />
-            <Route path="/admin/modules" element={<ModulesPage />} />
-            <Route path="/admin/project-proposals" element={<ProjectProposalsPage />} />
-            <Route path="/admin/pending-approvals" element={<PendingApprovals />} />
-            <Route path="/admin/supervised-students" element={<SupervisedStudentsPage />} />
-            <Route path="/admin/student-projects" element={<StudentProjectsPage />} />
-            <Route path="/admin/my-projects" element={<MyProjectsPage />} />
-            <Route path="/admin/tasks" element={<TasksPage />} />
-            <Route path="/admin/portfolio" element={<PortfolioPage />} />
-            <Route path="/admin/settings" element={<SettingsPage />} />
-            <Route path="/admin/notifications" element={<NotificationsPage />} />
-            <Route path="/admin/reports" element={<ReportsPage />} />
-            <Route path="/admin/project-submission/:id" element={<ProjectSubmissionPage />} />
-            
-            {/* Catch-all route for 404 */}
-            <Route path="*" element={<NotFound />} />
-          </Routes>
-        </ProjectProvider>
-      </AuthProvider>
-    </BrowserRouter>
+    <ErrorBoundary>
+      <BrowserRouter>
+        <AuthProvider>
+          <ProjectProvider projectId={null} initialProject={null}>
+            <Toaster />
+            <Routes>
+              <Route path="/" element={<Index />} />
+              <Route path="/login" element={<Login />} />
+              <Route path="/verify" element={<VerifyEmail />} />
+              <Route path="/project/:id" element={<ProjectDetails />} />
+              <Route path="/course/:id" element={<CourseDetails />} />
+              
+              {/* Redirect /admin to /admin/dashboard */}
+              <Route path="/admin" element={<Navigate to="/admin/dashboard" replace />} />
+              
+              {/* Student specific redirects */}
+              <Route path="/projects/manage" element={<Navigate to="/admin/my-projects" replace />} />
+              <Route path="/my-projects" element={<Navigate to="/admin/my-projects" replace />} />
+              
+              {/* Admin routes */}
+              <Route path="/admin/dashboard" element={<AdminDashboard />} />
+              <Route path="/admin/users" element={<UserManagementPage />} />
+              <Route path="/admin/groups" element={<GroupsPage />} />
+              <Route path="/admin/specializations" element={<SpecializationsPage />} />
+              <Route path="/admin/organizations" element={<OrganizationsPage />} />
+              <Route path="/admin/projects" element={<ProjectManagementPage />} />
+              <Route path="/admin/admin-projects" element={<AdminProjectsPage />} />
+              <Route path="/admin/courses" element={<CoursesPage />} />
+              <Route path="/admin/modules" element={<ModulesPage />} />
+              <Route path="/admin/project-proposals" element={<ProjectProposalsPage />} />
+              <Route path="/admin/pending-approvals" element={<PendingApprovals />} />
+              <Route path="/admin/supervised-students" element={<SupervisedStudentsPage />} />
+              <Route path="/admin/student-projects" element={<StudentProjectsPage />} />
+              <Route path="/admin/my-projects" element={<MyProjectsPage />} />
+              <Route path="/admin/tasks" element={<TasksPage />} />
+              <Route path="/admin/portfolio" element={<PortfolioPage />} />
+              <Route path="/admin/settings" element={<SettingsPage />} />
+              <Route path="/admin/notifications" element={<NotificationsPage />} />
+              <Route path="/admin/reports" element={<ReportsPage />} />
+              <Route path="/admin/project-submission/:id" element={<ProjectSubmissionPage />} />
+              
+              {/* Catch-all route for 404 */}
+              <Route path="*" element={<NotFound />} />
+            </Routes>
+          </ProjectProvider>
+        </AuthProvider>
+      </BrowserRouter>
+    </ErrorBoundary>
   );
 }
 

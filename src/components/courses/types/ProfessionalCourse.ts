@@ -29,8 +29,20 @@ export interface ProfessionalCourse {
 
 // Type guard to validate Supabase payload for course data
 export function isCoursePayload(payload: any): payload is { id: string | number; [key: string]: any } {
-  return payload && 
-         (typeof payload === 'object') && 
-         ('id' in payload) && 
-         (typeof payload.id === 'string' || typeof payload.id === 'number');
+  if (!payload || typeof payload !== 'object') {
+    console.error('Invalid course payload: not an object', payload);
+    return false;
+  }
+  
+  if (!('id' in payload)) {
+    console.error('Invalid course payload: missing ID', payload);
+    return false;
+  }
+  
+  if (typeof payload.id !== 'string' && typeof payload.id !== 'number') {
+    console.error('Invalid course payload: ID is not a string or number', payload);
+    return false;
+  }
+  
+  return true;
 }

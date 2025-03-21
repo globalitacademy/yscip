@@ -12,6 +12,7 @@ import ProjectTabs from '@/components/projects/ProjectTabs';
 import EducationalCycleInfographic from '@/components/educationalCycle';
 import CoursesSection from '@/components/courses/CoursesSection';
 import ProfessionalCoursesSection from '@/components/courses/ProfessionalCoursesSection';
+import ErrorBoundary from '@/components/ErrorBoundary';
 
 const Index = () => {
   const { user } = useAuth();
@@ -85,23 +86,42 @@ const Index = () => {
     <div className="min-h-screen flex flex-col">
       <Header />
       <main className="flex-grow">
-        <Hero />
-        <FeaturesSection />
+        <ErrorBoundary>
+          <Hero />
+        </ErrorBoundary>
+        
+        <ErrorBoundary>
+          <FeaturesSection />
+        </ErrorBoundary>
+        
         <div id="themes-section" className="container mx-auto px-4 pb-16">
-          {user && (
-            <UserReservedProjects reservedProjects={userReservedProjectDetails} />
-          )}
+          <ErrorBoundary>
+            {user && (
+              <UserReservedProjects reservedProjects={userReservedProjectDetails} />
+            )}
+          </ErrorBoundary>
           
-          <ProjectTabs 
-            user={user} 
-            createdProjects={createdProjects} 
-            assignments={assignments}
-            projectThemes={projectThemes}
-          />
+          <ErrorBoundary>
+            <ProjectTabs 
+              user={user} 
+              createdProjects={createdProjects} 
+              assignments={assignments}
+              projectThemes={projectThemes}
+            />
+          </ErrorBoundary>
         </div>
-        <ProfessionalCoursesSection />
-        <CoursesSection />
-        <EducationalCycleInfographic />
+        
+        <ErrorBoundary>
+          <ProfessionalCoursesSection />
+        </ErrorBoundary>
+        
+        <ErrorBoundary>
+          <CoursesSection />
+        </ErrorBoundary>
+        
+        <ErrorBoundary>
+          <EducationalCycleInfographic />
+        </ErrorBoundary>
       </main>
       <Footer />
     </div>

@@ -12,7 +12,8 @@ import {
   saveCourseChanges, 
   COURSE_UPDATED_EVENT,
   getAllCourses, 
-  getCourseById
+  getCourseById,
+  createCourseDeepCopy
 } from './utils/courseUtils';
 import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
@@ -118,22 +119,31 @@ const ProfessionalCoursesSection: React.FC = () => {
   const [selectedCourse, setSelectedCourse] = useState<ProfessionalCourse | null>(null);
   const [courses, setCourses] = useState<ProfessionalCourse[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [hasError, setHasError] = useState(false);
 
   useEffect(() => {
     const fetchCourses = async () => {
       setIsLoading(true);
+      setHasError(false);
       try {
         const fetchedCourses = await getAllCourses();
         if (fetchedCourses && fetchedCourses.length > 0) {
           setCourses(fetchedCourses);
         } else {
+          console.log('No courses found, using initial data');
           setCourses(initialProfessionalCourses);
           localStorage.setItem('professionalCourses', JSON.stringify(initialProfessionalCourses));
         }
       } catch (error) {
         console.error('Error fetching courses:', error);
-        setCourses(initialProfessionalCourses);
-        localStorage.setItem('professionalCourses', JSON.stringify(initialProfessionalCourses));
+        setHasError(true);
+        // Safely fall back to initial courses
+        try {
+          setCourses(initialProfessionalCourses);
+          localStorage.setItem('professionalCourses', JSON.stringify(initialProfessionalCourses));
+        } catch (fallbackError) {
+          console.error('Error setting fallback courses:', fallbackError);
+        }
       } finally {
         setIsLoading(false);
       }
@@ -144,25 +154,34 @@ const ProfessionalCoursesSection: React.FC = () => {
 
   useEffect(() => {
     const handleCourseUpdated = (event: CustomEvent<ProfessionalCourse>) => {
-      const updatedCourse = event.detail;
-      
-      console.log('Course updated event received:', updatedCourse);
-      
-      setCourses(prevCourses => {
-        // Create a deep copy to ensure no reference issues
-        const coursesCopy = JSON.parse(JSON.stringify(prevCourses));
-        const courseIndex = coursesCopy.findIndex((c: ProfessionalCourse) => c.id === updatedCourse.id);
+      try {
+        const updatedCourse = event.detail;
         
-        if (courseIndex !== -1) {
-          // Update existing course
-          coursesCopy[courseIndex] = updatedCourse;
-        } else {
-          // Add new course
-          coursesCopy.push(updatedCourse);
-        }
+        console.log('Course updated event received:', updatedCourse);
         
-        return coursesCopy;
-      });
+        setCourses(prevCourses => {
+          try {
+            // Create a deep copy to ensure no reference issues
+            const coursesCopy = JSON.parse(JSON.stringify(prevCourses));
+            const courseIndex = coursesCopy.findIndex((c: ProfessionalCourse) => c.id === updatedCourse.id);
+            
+            if (courseIndex !== -1) {
+              // Update existing course
+              coursesCopy[courseIndex] = updatedCourse;
+            } else {
+              // Add new course
+              coursesCopy.push(updatedCourse);
+            }
+            
+            return coursesCopy;
+          } catch (error) {
+            console.error('Error updating courses state:', error);
+            return prevCourses; // Return previous state if error occurs
+          }
+        });
+      } catch (error) {
+        console.error('Error handling course updated event:', error);
+      }
     };
 
     window.addEventListener(COURSE_UPDATED_EVENT, handleCourseUpdated as EventListener);
@@ -185,45 +204,62 @@ const ProfessionalCoursesSection: React.FC = () => {
           table: 'courses' 
         }, 
         async (payload: RealtimePostgresChangesPayload<{[key: string]: any}>) => {
-          console.log('Realtime update received from Supabase:', payload);
-          
           try {
+            console.log('Realtime update received from Supabase:', payload);
+            
             if (payload.new && typeof payload.new === 'object' && 'id' in payload.new) {
               // For INSERT and UPDATE events
               const courseId = String(payload.new.id);
-              const updatedCourse = await getCourseById(courseId);
               
-              if (updatedCourse) {
-                console.log('Fetched updated course data:', updatedCourse);
+              try {
+                const updatedCourse = await getCourseById(courseId);
                 
-                setCourses(prevCourses => {
-                  // Create a deep copy to ensure no reference issues
-                  const coursesCopy = JSON.parse(JSON.stringify(prevCourses));
-                  const courseIndex = coursesCopy.findIndex((c: ProfessionalCourse) => c.id === updatedCourse.id);
+                if (updatedCourse) {
+                  console.log('Fetched updated course data:', updatedCourse);
                   
-                  if (courseIndex !== -1) {
-                    // Update existing course
-                    coursesCopy[courseIndex] = updatedCourse;
-                  } else {
-                    // Add new course
-                    coursesCopy.push(updatedCourse);
+                  setCourses(prevCourses => {
+                    try {
+                      // Create a deep copy to ensure no reference issues
+                      const coursesCopy = JSON.parse(JSON.stringify(prevCourses));
+                      const courseIndex = coursesCopy.findIndex((c: ProfessionalCourse) => c.id === updatedCourse.id);
+                      
+                      if (courseIndex !== -1) {
+                        // Update existing course
+                        coursesCopy[courseIndex] = updatedCourse;
+                      } else {
+                        // Add new course
+                        coursesCopy.push(updatedCourse);
+                      }
+                      
+                      return coursesCopy;
+                    } catch (error) {
+                      console.error('Error updating courses state:', error);
+                      return prevCourses; // Return previous state if error occurs
+                    }
+                  });
+                  
+                  if (payload.eventType === 'INSERT') {
+                    toast.info(`Նոր դասընթաց ավելացվել է: ${updatedCourse.title}`);
+                  } else if (payload.eventType === 'UPDATE') {
+                    toast.info(`${updatedCourse.title} դասընթացը թարմացվել է`);
                   }
-                  
-                  return coursesCopy;
-                });
-                
-                if (payload.eventType === 'INSERT') {
-                  toast.info(`Նոր դասընթաց ավելացվել է: ${updatedCourse.title}`);
-                } else if (payload.eventType === 'UPDATE') {
-                  toast.info(`${updatedCourse.title} դասընթացը թարմացվել է`);
                 }
+              } catch (courseError) {
+                console.error('Error fetching updated course:', courseError);
               }
             } else if (payload.eventType === 'DELETE' && payload.old && typeof payload.old === 'object' && 'id' in payload.old) {
               // For DELETE events
               const deletedId = String(payload.old.id);
               console.log('Course deleted:', deletedId);
               
-              setCourses(prevCourses => prevCourses.filter(c => c.id !== deletedId));
+              setCourses(prevCourses => {
+                try {
+                  return prevCourses.filter(c => c.id !== deletedId);
+                } catch (error) {
+                  console.error('Error filtering courses after delete:', error);
+                  return prevCourses;
+                }
+              });
               toast.info('Դասընթացը հեռացվել է');
             }
           } catch (error) {
@@ -245,28 +281,38 @@ const ProfessionalCoursesSection: React.FC = () => {
           table: 'course_lessons' 
         }, 
         async (payload: RealtimePostgresChangesPayload<{[key: string]: any}>) => {
-          console.log('Lesson update received:', payload);
-          
           try {
+            console.log('Lesson update received:', payload);
+            
             if (payload.new && typeof payload.new === 'object' && 'course_id' in payload.new) {
               const courseId = String(payload.new.course_id);
-              const updatedCourse = await getCourseById(courseId);
               
-              if (updatedCourse) {
-                setCourses(prevCourses => {
-                  // Create a deep copy to ensure no reference issues
-                  const coursesCopy = JSON.parse(JSON.stringify(prevCourses));
-                  const courseIndex = coursesCopy.findIndex((c: ProfessionalCourse) => c.id === updatedCourse.id);
-                  
-                  if (courseIndex !== -1) {
-                    // Update existing course
-                    coursesCopy[courseIndex] = updatedCourse;
-                  }
-                  
-                  return coursesCopy;
-                });
+              try {
+                const updatedCourse = await getCourseById(courseId);
                 
-                toast.info(`${updatedCourse.title} դասընթացի դասերը թարմացվել են`);
+                if (updatedCourse) {
+                  setCourses(prevCourses => {
+                    try {
+                      // Create a deep copy to ensure no reference issues
+                      const coursesCopy = JSON.parse(JSON.stringify(prevCourses));
+                      const courseIndex = coursesCopy.findIndex((c: ProfessionalCourse) => c.id === updatedCourse.id);
+                      
+                      if (courseIndex !== -1) {
+                        // Update existing course
+                        coursesCopy[courseIndex] = updatedCourse;
+                      }
+                      
+                      return coursesCopy;
+                    } catch (error) {
+                      console.error('Error updating courses after lesson change:', error);
+                      return prevCourses;
+                    }
+                  });
+                  
+                  toast.info(`${updatedCourse.title} դասընթացի դասերը թարմացվել են`);
+                }
+              } catch (courseError) {
+                console.error('Error fetching course after lesson update:', courseError);
               }
             }
           } catch (error) {
@@ -293,9 +339,13 @@ const ProfessionalCoursesSection: React.FC = () => {
         setIsEditDialogOpen(false);
         
         // Refresh the course list to ensure all data is synced
-        const updatedCourses = await getAllCourses();
-        if (updatedCourses && updatedCourses.length > 0) {
-          setCourses(updatedCourses);
+        try {
+          const updatedCourses = await getAllCourses();
+          if (updatedCourses && updatedCourses.length > 0) {
+            setCourses(updatedCourses);
+          }
+        } catch (refreshError) {
+          console.error('Error refreshing courses:', refreshError);
         }
       } else {
         toast.error('Դասընթացի թարմացման ժամանակ սխալ է տեղի ունեցել');
@@ -307,10 +357,16 @@ const ProfessionalCoursesSection: React.FC = () => {
   };
 
   const openEditDialog = (course: ProfessionalCourse) => {
-    console.log("Opening edit dialog for course:", course);
-    // Create a deep copy to avoid reference issues
-    setSelectedCourse(JSON.parse(JSON.stringify(course)));
-    setIsEditDialogOpen(true);
+    try {
+      console.log("Opening edit dialog for course:", course);
+      // Create a deep copy to avoid reference issues
+      const courseCopy = createCourseDeepCopy(course);
+      setSelectedCourse(courseCopy);
+      setIsEditDialogOpen(true);
+    } catch (error) {
+      console.error('Error opening edit dialog:', error);
+      toast.error('Չհաջողվեց բացել խմբագրման երկխոսությունը');
+    }
   };
   
   const canEditCourse = (course: ProfessionalCourse) => {
@@ -323,6 +379,23 @@ const ProfessionalCoursesSection: React.FC = () => {
         <div className="container mx-auto px-4 text-center">
           <div className="animate-spin h-10 w-10 border-4 border-primary border-t-transparent rounded-full mx-auto"></div>
           <p className="mt-4 text-muted-foreground">Բեռնում...</p>
+        </div>
+      </section>
+    );
+  }
+
+  if (hasError) {
+    return (
+      <section className="py-16 bg-white">
+        <div className="container mx-auto px-4 text-center">
+          <p className="text-red-500">Դասընթացների բեռնման ժամանակ սխալ է տեղի ունեցել։</p>
+          <Button 
+            variant="outline" 
+            className="mt-4"
+            onClick={() => window.location.reload()}
+          >
+            Փորձել կրկին
+          </Button>
         </div>
       </section>
     );
@@ -353,6 +426,13 @@ const ProfessionalCoursesSection: React.FC = () => {
                       src={course.organizationLogo} 
                       alt={course.institution}
                       className="w-6 h-6 mr-1 object-contain rounded-full"
+                      onError={(e) => {
+                        e.currentTarget.style.display = 'none';
+                        const institutionEl = e.currentTarget.nextElementSibling;
+                        if (institutionEl) {
+                          institutionEl.textContent = course.institution;
+                        }
+                      }}
                     />
                     <span>{course.institution}</span>
                   </div>
