@@ -4,6 +4,7 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import { Button } from '@/components/ui/button';
 import ProfessionalCourseForm from './ProfessionalCourseForm';
 import { ProfessionalCourse } from './types/ProfessionalCourse';
+import { ScrollArea } from '@/components/ui/scroll-area';
 
 interface AddProfessionalCourseDialogProps {
   isOpen: boolean;
@@ -25,17 +26,19 @@ const AddProfessionalCourseDialog: React.FC<AddProfessionalCourseDialogProps> = 
       <DialogTrigger asChild>
         <Button>Ավելացնել նոր դասընթաց</Button>
       </DialogTrigger>
-      <DialogContent className="sm:max-w-[600px]">
+      <DialogContent className="sm:max-w-[600px] max-h-[90vh]">
         <DialogHeader>
           <DialogTitle>Նոր դասընթացի ավելացում</DialogTitle>
           <DialogDescription>
             Լրացրեք դասընթացի տվյալները ներքևում: Պատրաստ լինելուց հետո սեղմեք "Ավելացնել" կոճակը:
           </DialogDescription>
         </DialogHeader>
-        <ProfessionalCourseForm
-          course={newCourse}
-          setCourse={setNewCourse}
-        />
+        <ScrollArea className="max-h-[60vh] pr-4">
+          <ProfessionalCourseForm
+            course={newCourse}
+            setCourse={setNewCourse}
+          />
+        </ScrollArea>
         <DialogFooter>
           <Button type="submit" onClick={handleAddCourse}>
             Ավելացնել
