@@ -1,15 +1,15 @@
-
 import React, { useState } from 'react';
 import { Input } from "@/components/ui/input";
 import { ProfessionalCourse } from './types/ProfessionalCourse';
 import { Label } from "@/components/ui/label";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { Button } from "../ui/button";
-import { ChevronDown, X, PlusCircle, Upload, Link, Code, BookText, BrainCircuit, Database, FileCode, Globe } from 'lucide-react';
+import { ChevronDown, X, PlusCircle, Upload, Link, Code, BookText, BrainCircuit, Database, FileCode, Globe, Check } from 'lucide-react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Textarea } from "@/components/ui/textarea";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "../ui/accordion";
 import { Switch } from "@/components/ui/switch";
+import { Checkbox } from "@/components/ui/checkbox";
 
 const colorOptions = [
   { label: 'Ամբերային', value: 'text-amber-500' },
@@ -27,6 +27,20 @@ const iconOptions = [
   { label: 'Տվյալներ', value: 'database', icon: <Database className="h-5 w-5" /> },
   { label: 'Ֆայլեր', value: 'files', icon: <FileCode className="h-5 w-5" /> },
   { label: 'Վեբ', value: 'web', icon: <Globe className="h-5 w-5" /> },
+];
+
+const formatOptions = [
+  { label: 'Օնլայն', value: 'օնլայն' },
+  { label: 'Առկա', value: 'առկա' },
+  { label: 'Վիդեոկուրս', value: 'վիդեոկուրս' },
+  { label: 'Խմբային', value: 'խմբային' },
+  { label: 'Անհատական', value: 'անհատական' },
+];
+
+const languageOptions = [
+  { label: 'Հայերեն', value: 'Հայերեն' },
+  { label: 'Ռուսերեն', value: 'Ռուսերեն' },
+  { label: 'Անգլերեն', value: 'Անգլերեն' },
 ];
 
 interface ProfessionalCourseFormProps {
@@ -160,6 +174,23 @@ const ProfessionalCourseForm: React.FC<ProfessionalCourseFormProps> = ({
     setCourse({ ...course, outcomes });
   };
 
+  const handleFormatChange = (value: string) => {
+    setCourse({ ...course, format: value });
+  };
+
+  const handleLanguageToggle = (language: string) => {
+    const languages = [...(course.languages || [])];
+    const index = languages.indexOf(language);
+    
+    if (index > -1) {
+      languages.splice(index, 1);
+    } else {
+      languages.push(language);
+    }
+    
+    setCourse({ ...course, languages });
+  };
+
   const renderSelectedIconIndicator = () => {
     if (!selectedIconName) return null;
 
@@ -213,6 +244,16 @@ const ProfessionalCourseForm: React.FC<ProfessionalCourseFormProps> = ({
         </div>
 
         <div>
+          <Label htmlFor="instructor">Դասախոս</Label>
+          <Input
+            id="instructor"
+            value={course.instructor || ''}
+            onChange={(e) => setCourse({ ...course, instructor: e.target.value })}
+            placeholder="Դասախոսի անուն ազգանուն"
+          />
+        </div>
+
+        <div>
           <Label htmlFor="duration">Տևողություն</Label>
           <Input
             id="duration"
@@ -230,6 +271,44 @@ const ProfessionalCourseForm: React.FC<ProfessionalCourseFormProps> = ({
             onChange={(e) => setCourse({ ...course, price: e.target.value })}
             placeholder="Օրինակ՝ 58,000 ֏"
           />
+        </div>
+
+        <div>
+          <Label htmlFor="format">Ձևաչափ</Label>
+          <select
+            id="format"
+            className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+            value={course.format || ''}
+            onChange={(e) => handleFormatChange(e.target.value)}
+          >
+            <option value="">Ընտրեք ձևաչափը</option>
+            {formatOptions.map((option) => (
+              <option key={option.value} value={option.value}>
+                {option.label}
+              </option>
+            ))}
+          </select>
+        </div>
+
+        <div>
+          <Label className="mb-2 block">Լեզուներ</Label>
+          <div className="space-y-2">
+            {languageOptions.map((option) => (
+              <div key={option.value} className="flex items-center space-x-2">
+                <Checkbox 
+                  id={`language-${option.value}`}
+                  checked={(course.languages || []).includes(option.value)}
+                  onCheckedChange={() => handleLanguageToggle(option.value)}
+                />
+                <Label 
+                  htmlFor={`language-${option.value}`}
+                  className="text-sm font-normal"
+                >
+                  {option.label}
+                </Label>
+              </div>
+            ))}
+          </div>
         </div>
 
         <div>
