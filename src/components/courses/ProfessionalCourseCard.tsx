@@ -3,7 +3,8 @@ import React from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { ProfessionalCourse } from './types/ProfessionalCourse';
-import { Eye, Pencil, Trash, Building } from 'lucide-react';
+import { Eye, Pencil, Trash, Building, Book } from 'lucide-react';
+import { convertIconNameToComponent } from './utils/courseUtils';
 
 interface ProfessionalCourseCardProps {
   course: ProfessionalCourse;
@@ -22,6 +23,19 @@ const ProfessionalCourseCard: React.FC<ProfessionalCourseCardProps> = ({
 }) => {
   // Determine if we should show the icon based on preferIcon or if no image is available
   const showIcon = course.preferIcon || !course.imageUrl;
+
+  // Safely render icon or fallback
+  const renderIcon = () => {
+    if (course.icon) {
+      return course.icon;
+    }
+    
+    if (course.iconName) {
+      return convertIconNameToComponent(course.iconName);
+    }
+    
+    return <Book className="w-16 h-16" />;
+  };
 
   return (
     <Card className="h-full overflow-hidden shadow-md hover:shadow-lg transition-shadow relative">
@@ -50,7 +64,7 @@ const ProfessionalCourseCard: React.FC<ProfessionalCourseCardProps> = ({
           />
         ) : (
           <div id={`course-icon-${course.id}`} className={`${course.color} mb-4`}>
-            {course.icon}
+            {renderIcon()}
           </div>
         )}
         <div className="mb-2 text-xs uppercase tracking-wide text-gray-500">{course.subtitle}</div>

@@ -10,7 +10,7 @@ export interface ProfessionalCourse {
   id: string;
   title: string;
   subtitle: string;
-  icon: ReactElement;
+  icon: ReactElement | null;
   iconName: string; // Store the icon name separately for serialization
   duration: string;
   price: string;
