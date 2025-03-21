@@ -131,8 +131,8 @@ export const getCourseById = async (id: string): Promise<ProfessionalCourse | nu
         institution: course.institution,
         preferIcon: course.prefer_icon !== undefined ? course.prefer_icon : true,
         imageUrl: course.image_url,
-        // Use image_url as fallback
-        organizationLogo: course.image_url,
+        // Now using organization_logo if available, with image_url as fallback
+        organizationLogo: course.organization_logo || course.image_url,
         description: course.description,
         lessons: lessons?.map(lesson => ({
           title: lesson.title, 
@@ -202,8 +202,8 @@ export const getAllCourses = async (): Promise<ProfessionalCourse[]> => {
         institution: course.institution,
         preferIcon: course.prefer_icon !== undefined ? course.prefer_icon : true,
         imageUrl: course.image_url,
-        // Use image_url as the fallback for organizationLogo
-        organizationLogo: course.image_url,
+        // Now using organization_logo if available, with image_url as fallback
+        organizationLogo: course.organization_logo || course.image_url,
         description: course.description,
         // Related data will be loaded separately when needed
         lessons: [],
@@ -336,7 +336,12 @@ export const convertIconNameToComponent = (iconName: string): React.ReactElement
     console.log('Converting icon name to component:', iconName);
     const iconClassName = "w-16 h-16";
     
-    switch (iconName?.toLowerCase()) {
+    if (!iconName) {
+      console.log('Icon name is empty, defaulting to Book');
+      return React.createElement(Book, { className: iconClassName });
+    }
+    
+    switch (iconName.toLowerCase()) {
       case 'book':
         return React.createElement(Book, { className: iconClassName });
       case 'code':
@@ -424,7 +429,8 @@ const convertToSupabaseCourseFormat = (course: ProfessionalCourse) => {
       created_by: course.createdBy,
       institution: course.institution,
       image_url: course.imageUrl,
-      // Send organizationLogo to Supabase but note that the column might need to be added
+      // Now including organization_logo in the Supabase data
+      organization_logo: course.organizationLogo,
       prefer_icon: course.preferIcon !== undefined ? course.preferIcon : true,
       description: course.description,
       updated_at: new Date().toISOString()
