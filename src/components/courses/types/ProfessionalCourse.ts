@@ -25,6 +25,7 @@ export interface ProfessionalCourse {
   lessons?: CourseLesson[];
   requirements?: string[];
   outcomes?: string[];
+  instructor?: string; // Added instructor property
 }
 
 // Type guard to validate Supabase payload for course data
