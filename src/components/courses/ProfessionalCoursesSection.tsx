@@ -2,7 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import { FadeIn } from '@/components/LocalTransitions';
 import { Button } from '@/components/ui/button';
-import { Code, BookText, BrainCircuit, Database, FileCode, Globe, User, Building, Pencil } from 'lucide-react';
+import { Book, BrainCircuit, Code, Database, FileCode, Globe, User, Building, Pencil } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { Card, CardContent, CardFooter, CardHeader } from '@/components/ui/card';
 import { ProfessionalCourse } from './types/ProfessionalCourse';
@@ -13,18 +13,20 @@ import {
   COURSE_UPDATED_EVENT,
   getAllCourses, 
   getCourseById,
-  createCourseDeepCopy
+  createCourseDeepCopy,
+  convertIconNameToComponent
 } from './utils/courseUtils';
 import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
 import { RealtimePostgresChangesPayload } from '@supabase/supabase-js';
+import ProfessionalCourseCard from './ProfessionalCourseCard';
 
 const initialProfessionalCourses: ProfessionalCourse[] = [
   {
     id: '1',
     title: 'WEB Front-End',
     subtitle: 'ԴԱՍԸՆԹԱՑ',
-    icon: <Code className="w-16 h-16" />,
+    icon: null,
     iconName: 'code',
     duration: '9 ամիս',
     price: '58,000 ֏',
@@ -40,7 +42,7 @@ const initialProfessionalCourses: ProfessionalCourse[] = [
     id: '2',
     title: 'Python (ML / AI)',
     subtitle: 'ԴԱՍԸՆԹԱՑ',
-    icon: <BrainCircuit className="w-16 h-16" />,
+    icon: null,
     iconName: 'ai',
     duration: '7 ամիս',
     price: '68,000 ֏',
@@ -55,7 +57,7 @@ const initialProfessionalCourses: ProfessionalCourse[] = [
     id: '3',
     title: 'Java',
     subtitle: 'ԴԱՍԸՆԹԱՑ',
-    icon: <BookText className="w-16 h-16" />,
+    icon: null,
     iconName: 'book',
     duration: '6 ամիս',
     price: '68,000 ֏',
@@ -70,7 +72,7 @@ const initialProfessionalCourses: ProfessionalCourse[] = [
     id: '4',
     title: 'JavaScript',
     subtitle: 'ԴԱՍԸՆԹԱՑ',
-    icon: <FileCode className="w-16 h-16" />,
+    icon: null,
     iconName: 'files',
     duration: '3.5 ամիս',
     price: '58,000 ֏',
@@ -85,7 +87,7 @@ const initialProfessionalCourses: ProfessionalCourse[] = [
     id: '5',
     title: 'PHP',
     subtitle: 'ԴԱՍԸՆԹԱՑ',
-    icon: <Database className="w-16 h-16" />,
+    icon: null,
     iconName: 'database',
     duration: '5 ամիս',
     price: '58,000 ֏',
@@ -100,7 +102,7 @@ const initialProfessionalCourses: ProfessionalCourse[] = [
     id: '6',
     title: 'C#/.NET',
     subtitle: 'ԴԱՍԸՆԹԱՑ',
-    icon: <Globe className="w-16 h-16" />,
+    icon: null,
     iconName: 'web',
     duration: '6 ամիս',
     price: '68,000 ֏',
@@ -419,93 +421,12 @@ const ProfessionalCoursesSection: React.FC = () => {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {courses.map((course) => (
             <FadeIn key={course.id} delay="delay-200" className="flex">
-              <Card className="flex flex-col w-full hover:shadow-md transition-shadow relative">
-                {course.organizationLogo ? (
-                  <div className="absolute top-4 left-4 flex items-center text-xs bg-gray-100 px-2 py-1 rounded-full z-10">
-                    <img 
-                      src={course.organizationLogo} 
-                      alt={course.institution}
-                      className="w-6 h-6 mr-1 object-contain rounded-full"
-                      onError={(e) => {
-                        e.currentTarget.style.display = 'none';
-                        const institutionEl = e.currentTarget.nextElementSibling;
-                        if (institutionEl) {
-                          institutionEl.textContent = course.institution;
-                        }
-                      }}
-                    />
-                    <span>{course.institution}</span>
-                  </div>
-                ) : (
-                  <div className="absolute top-4 left-4 flex items-center text-xs bg-gray-100 px-2 py-1 rounded-full z-10">
-                    <Building size={12} className="mr-1" />
-                    <span>{course.institution}</span>
-                  </div>
-                )}
-
-                {canEditCourse(course) && (
-                  <div className="absolute top-4 right-4 z-10">
-                    <Button 
-                      variant="outline" 
-                      size="icon" 
-                      className="h-6 w-6 rounded-full" 
-                      onClick={(e) => {
-                        e.preventDefault();
-                        openEditDialog(course);
-                      }}
-                    >
-                      <Pencil size={12} />
-                    </Button>
-                  </div>
-                )}
-
-                <CardHeader className="pb-2 text-center pt-12 relative">
-                  {course.imageUrl && !course.preferIcon ? (
-                    <div className="w-full h-32 mb-4 overflow-hidden rounded-md mt-4">
-                      <img 
-                        src={course.imageUrl} 
-                        alt={course.title}
-                        className="w-full h-full object-cover"
-                        onError={(e) => {
-                          e.currentTarget.style.display = 'none';
-                          const iconElement = document.getElementById(`course-icon-${course.id}`);
-                          if (iconElement) iconElement.style.display = 'block';
-                        }}
-                      />
-                    </div>
-                  ) : (
-                    <div id={`course-icon-${course.id}`} className={`mb-4 ${course.color} mx-auto mt-4`}>
-                      {course.icon}
-                    </div>
-                  )}
-                  <h3 className="font-bold text-xl">{course.title}</h3>
-                  <p className="text-sm text-muted-foreground">{course.subtitle}</p>
-                </CardHeader>
-                
-                <CardContent className="flex-grow pb-2">
-                  <div className="flex items-center gap-2 text-sm text-muted-foreground mb-4">
-                    <User size={16} />
-                    <span>Դասախոս՝ {course.createdBy}</span>
-                  </div>
-                  
-                  <div className="flex justify-between w-full text-sm mt-auto">
-                    <span>{course.duration}</span>
-                    <span className="font-semibold">{course.price}</span>
-                  </div>
-                </CardContent>
-                
-                <CardFooter className="pt-4">
-                  <Button 
-                    variant="outline"
-                    className="w-full"
-                    asChild
-                  >
-                    <Link to={`/course/${course.id}`}>
-                      Մանրամասն
-                    </Link>
-                  </Button>
-                </CardFooter>
-              </Card>
+              <ProfessionalCourseCard 
+                course={course}
+                onEdit={() => openEditDialog(course)}
+                isAdmin={user?.role === 'admin'}
+                canEdit={canEditCourse(course)}
+              />
             </FadeIn>
           ))}
         </div>

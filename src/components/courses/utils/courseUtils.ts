@@ -1,4 +1,3 @@
-
 import { supabase } from '@/integrations/supabase/client';
 import { ProfessionalCourse, isCoursePayload } from '../types/ProfessionalCourse';
 import { toast } from 'sonner';
@@ -17,13 +16,8 @@ export const createCourseDeepCopy = (course: ProfessionalCourse): ProfessionalCo
     const courseCopy = JSON.parse(JSON.stringify({
       ...course,
       // Remove the icon since it can't be serialized
-      icon: undefined
+      icon: null
     }));
-    
-    // Then restore the icon using the iconName
-    if (courseCopy.iconName) {
-      courseCopy.icon = convertIconNameToComponent(courseCopy.iconName);
-    }
     
     // Ensure required fields have default values
     if (courseCopy.preferIcon === undefined) {
@@ -34,14 +28,56 @@ export const createCourseDeepCopy = (course: ProfessionalCourse): ProfessionalCo
       courseCopy.buttonText = 'Դիտել';
     }
     
+    // No need to restore icon here, it will be created at render time
     return courseCopy;
   } catch (error) {
     console.error('Error creating course deep copy:', error);
     // Return a fallback copy if something goes wrong
     return {
       ...course,
-      icon: course.iconName ? convertIconNameToComponent(course.iconName) : React.createElement(Book, { className: "w-16 h-16" })
+      icon: null
     };
+  }
+};
+
+/**
+ * Converts icon name string to React component
+ */
+export const convertIconNameToComponent = (iconName: string): React.ReactElement => {
+  try {
+    console.log('Converting icon name to component:', iconName);
+    const iconClassName = "w-16 h-16";
+    
+    if (!iconName) {
+      console.log('Icon name is empty, defaulting to Book');
+      return React.createElement(Book, { className: iconClassName });
+    }
+    
+    switch (iconName.toLowerCase()) {
+      case 'book':
+        return React.createElement(Book, { className: iconClassName });
+      case 'code':
+        return React.createElement(Code, { className: iconClassName });
+      case 'braincircuit':
+      case 'brain':
+      case 'ai':
+        return React.createElement(BrainCircuit, { className: iconClassName });
+      case 'database':
+        return React.createElement(Database, { className: iconClassName });
+      case 'filecode':
+      case 'file':
+      case 'files':
+        return React.createElement(FileCode, { className: iconClassName });
+      case 'globe':
+      case 'web':
+        return React.createElement(Globe, { className: iconClassName });
+      default:
+        console.log('Unknown icon name, defaulting to Book:', iconName);
+        return React.createElement(Book, { className: iconClassName });
+    }
+  } catch (error) {
+    console.error('Error converting icon name to component:', error);
+    return React.createElement(Book, { className: "w-16 h-16" });
   }
 };
 
@@ -121,7 +157,7 @@ export const getCourseById = async (id: string): Promise<ProfessionalCourse | nu
         id: String(course.id), // Ensure ID is always a string
         title: course.title,
         subtitle: course.subtitle,
-        icon: convertIconNameToComponent(iconName),
+        icon: null, // Icon will be created at render time
         iconName: iconName, // Ensure iconName is always set
         duration: course.duration,
         price: course.price,
@@ -192,7 +228,7 @@ export const getAllCourses = async (): Promise<ProfessionalCourse[]> => {
         id: String(course.id),
         title: course.title,
         subtitle: course.subtitle,
-        icon: convertIconNameToComponent(iconName),
+        icon: null, // Icon will be created at render time
         iconName: iconName, // Always include the iconName
         duration: course.duration,
         price: course.price,
@@ -213,12 +249,7 @@ export const getAllCourses = async (): Promise<ProfessionalCourse[]> => {
     });
 
     // Update localStorage to keep it in sync
-    localStorage.setItem('professionalCourses', JSON.stringify(
-      formattedCourses.map(course => ({
-        ...course,
-        icon: undefined // Remove icon for storage
-      }))
-    ));
+    localStorage.setItem('professionalCourses', JSON.stringify(formattedCourses));
     
     return formattedCourses;
   } catch (error) {
@@ -240,6 +271,7 @@ export const getAllCoursesFromLocalStorage = (): ProfessionalCourse[] => {
         // Ensure preferIcon is set
         const courseWithPreferIcon = {
           ...course,
+          icon: null, // Icon will be created at render time
           preferIcon: course.preferIcon !== undefined ? course.preferIcon : true
         };
         
@@ -248,16 +280,7 @@ export const getAllCoursesFromLocalStorage = (): ProfessionalCourse[] => {
           const inferredIconName = inferIconNameFromCourse(courseWithPreferIcon) || 'book';
           return {
             ...courseWithPreferIcon,
-            iconName: inferredIconName,
-            icon: convertIconNameToComponent(inferredIconName)
-          };
-        }
-        
-        // Ensure icon element is set from iconName
-        if (!courseWithPreferIcon.icon || typeof courseWithPreferIcon.icon === 'string') {
-          return {
-            ...courseWithPreferIcon,
-            icon: convertIconNameToComponent(courseWithPreferIcon.iconName)
+            iconName: inferredIconName
           };
         }
         
@@ -314,8 +337,8 @@ const getLocalCourseById = (id: string): ProfessionalCourse | null => {
           courseCopy.iconName = iconName;
         }
         
-        // Ensure icon element is set based on iconName
-        courseCopy.icon = convertIconNameToComponent(courseCopy.iconName);
+        // Set icon to null, it will be created at render time
+        courseCopy.icon = null;
         
         return courseCopy;
       }
@@ -329,47 +352,6 @@ const getLocalCourseById = (id: string): ProfessionalCourse | null => {
 };
 
 /**
- * Converts icon name string to React component
- */
-export const convertIconNameToComponent = (iconName: string): React.ReactElement => {
-  try {
-    console.log('Converting icon name to component:', iconName);
-    const iconClassName = "w-16 h-16";
-    
-    if (!iconName) {
-      console.log('Icon name is empty, defaulting to Book');
-      return React.createElement(Book, { className: iconClassName });
-    }
-    
-    switch (iconName.toLowerCase()) {
-      case 'book':
-        return React.createElement(Book, { className: iconClassName });
-      case 'code':
-        return React.createElement(Code, { className: iconClassName });
-      case 'braincircuit':
-      case 'brain':
-      case 'ai':
-        return React.createElement(BrainCircuit, { className: iconClassName });
-      case 'database':
-        return React.createElement(Database, { className: iconClassName });
-      case 'filecode':
-      case 'file':
-      case 'files':
-        return React.createElement(FileCode, { className: iconClassName });
-      case 'globe':
-      case 'web':
-        return React.createElement(Globe, { className: iconClassName });
-      default:
-        console.log('Unknown icon name, defaulting to Book:', iconName);
-        return React.createElement(Book, { className: iconClassName });
-    }
-  } catch (error) {
-    console.error('Error converting icon name to component:', error);
-    return React.createElement(Book, { className: "w-16 h-16" });
-  }
-};
-
-/**
  * Saves course to localStorage
  */
 export const saveToLocalStorage = (course: ProfessionalCourse): void => {
@@ -378,7 +360,7 @@ export const saveToLocalStorage = (course: ProfessionalCourse): void => {
     const courseCopy = JSON.parse(JSON.stringify({
       ...course,
       // Remove the icon since it can't be serialized
-      icon: undefined
+      icon: null
     }));
     
     // Ensure the course has an iconName

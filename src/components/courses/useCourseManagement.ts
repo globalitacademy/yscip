@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import { toast } from 'sonner';
 import { v4 as uuidv4 } from 'uuid';
@@ -6,6 +7,7 @@ import { ProfessionalCourse } from './types/ProfessionalCourse';
 import { useAuth } from '@/contexts/AuthContext';
 import { Code, BookText, BrainCircuit, Database, FileCode, Globe } from 'lucide-react';
 import React from 'react';
+import { convertIconNameToComponent } from './utils/courseUtils';
 
 // Mock professional courses data
 const mockProfessionalCourses: ProfessionalCourse[] = [
@@ -13,7 +15,7 @@ const mockProfessionalCourses: ProfessionalCourse[] = [
     id: '1',
     title: 'WEB Front-End',
     subtitle: 'ԴԱՍԸՆԹԱՑ',
-    icon: React.createElement(Code, { className: "w-16 h-16" }),
+    icon: null,
     iconName: 'code',
     duration: '9 ամիս',
     price: '58,000 ֏',
@@ -42,7 +44,7 @@ const mockProfessionalCourses: ProfessionalCourse[] = [
     id: '2',
     title: 'Python (ML / AI)',
     subtitle: 'ԴԱՍԸՆԹԱՑ',
-    icon: React.createElement(BrainCircuit, { className: "w-16 h-16" }),
+    icon: null,
     iconName: 'ai',
     duration: '7 ամիս',
     price: '68,000 ֏',
@@ -70,7 +72,7 @@ const mockProfessionalCourses: ProfessionalCourse[] = [
     id: '3',
     title: 'Java',
     subtitle: 'ԴԱՍԸՆԹԱՑ',
-    icon: React.createElement(BookText, { className: "w-16 h-16" }),
+    icon: null,
     iconName: 'book',
     duration: '6 ամիս',
     price: '68,000 ֏',
@@ -84,7 +86,7 @@ const mockProfessionalCourses: ProfessionalCourse[] = [
     id: '4',
     title: 'JavaScript',
     subtitle: 'ԴԱՍԸՆԹԱՑ',
-    icon: React.createElement(FileCode, { className: "w-16 h-16" }),
+    icon: null,
     iconName: 'files',
     duration: '3.5 ամիս',
     price: '58,000 ֏',
@@ -98,7 +100,7 @@ const mockProfessionalCourses: ProfessionalCourse[] = [
     id: '5',
     title: 'PHP',
     subtitle: 'ԴԱՍԸՆԹԱՑ',
-    icon: React.createElement(Database, { className: "w-16 h-16" }),
+    icon: null,
     iconName: 'database',
     duration: '5 ամիս',
     price: '58,000 ֏',
@@ -112,7 +114,7 @@ const mockProfessionalCourses: ProfessionalCourse[] = [
     id: '6',
     title: 'C#/.NET',
     subtitle: 'ԴԱՍԸՆԹԱՑ',
-    icon: React.createElement(Globe, { className: "w-16 h-16" }),
+    icon: null,
     iconName: 'web',
     duration: '6 ամիս',
     price: '68,000 ֏',
@@ -131,7 +133,12 @@ const initializeProfessionalCourses = (): ProfessionalCourse[] => {
   const storedCourses = localStorage.getItem('professionalCourses');
   if (storedCourses) {
     try {
-      return JSON.parse(storedCourses);
+      const parsedCourses = JSON.parse(storedCourses);
+      // Ensure icon is set to null and will be created at render time
+      return parsedCourses.map((course: ProfessionalCourse) => ({
+        ...course,
+        icon: null
+      }));
     } catch (e) {
       console.error('Error parsing stored professional courses:', e);
     }
@@ -197,7 +204,7 @@ export const useCourseManagement = () => {
   const [newProfessionalCourse, setNewProfessionalCourse] = useState<Partial<ProfessionalCourse>>({
     title: '',
     subtitle: 'ԴԱՍԸՆԹԱՑ',
-    icon: React.createElement(Code, { className: "w-16 h-16" }),
+    icon: null,
     iconName: 'code',
     duration: '',
     price: '',
@@ -337,6 +344,7 @@ export const useCourseManagement = () => {
     const courseToAdd: ProfessionalCourse = {
       ...(newProfessionalCourse as ProfessionalCourse),
       id: uuidv4(),
+      icon: null, // Icon will be rendered at runtime from iconName
       createdBy: user?.name || 'Unknown',
       buttonText: newProfessionalCourse.buttonText || 'Դիտել',
       subtitle: newProfessionalCourse.subtitle || 'ԴԱՍԸՆԹԱՑ',
@@ -347,12 +355,19 @@ export const useCourseManagement = () => {
 
     const updatedCourses = [...professionalCourses, courseToAdd];
     setProfessionalCourses(updatedCourses);
-    localStorage.setItem('professionalCourses', JSON.stringify(updatedCourses));
+    
+    // Store without icon property for serialization
+    const storageCourses = updatedCourses.map(course => ({
+      ...course,
+      icon: null // Don't store the React element
+    }));
+    
+    localStorage.setItem('professionalCourses', JSON.stringify(storageCourses));
     
     setNewProfessionalCourse({
       title: '',
       subtitle: 'ԴԱՍԸՆԹԱՑ',
-      icon: React.createElement(Code, { className: "w-16 h-16" }),
+      icon: null,
       iconName: 'code',
       duration: '',
       price: '',
@@ -379,12 +394,25 @@ export const useCourseManagement = () => {
       return;
     }
 
+    // Ensure the icon is null and will be created from iconName at render time
+    const courseToUpdate = {
+      ...selectedProfessionalCourse,
+      icon: null
+    };
+
     const updatedCourses = professionalCourses.map(course => 
-      course.id === selectedProfessionalCourse.id ? selectedProfessionalCourse : course
+      course.id === courseToUpdate.id ? courseToUpdate : course
     );
     
     setProfessionalCourses(updatedCourses);
-    localStorage.setItem('professionalCourses', JSON.stringify(updatedCourses));
+    
+    // Store without icon property for serialization
+    const storageCourses = updatedCourses.map(course => ({
+      ...course,
+      icon: null // Don't store the React element
+    }));
+    
+    localStorage.setItem('professionalCourses', JSON.stringify(storageCourses));
     setIsEditDialogOpen(false);
     toast.success('Դասընթացը հաջողությամբ թարմացվել է');
   };
