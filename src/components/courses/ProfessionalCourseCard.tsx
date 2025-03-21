@@ -3,7 +3,7 @@ import React from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { ProfessionalCourse } from './types/ProfessionalCourse';
-import { Eye, Pencil, Trash, Building, Book } from 'lucide-react';
+import { Eye, Pencil, Trash, Building, Book, Clock, User, Banknote } from 'lucide-react';
 import { convertIconNameToComponent } from './utils/courseUtils';
 
 interface ProfessionalCourseCardProps {
@@ -53,32 +53,48 @@ const ProfessionalCourseCard: React.FC<ProfessionalCourseCardProps> = ({
         <span className="text-xs">{course.institution}</span>
       </div>
       
-      <div className="p-6 pt-10 flex flex-col items-center text-center h-full">
-        {!showIcon && course.imageUrl ? (
-          <img 
-            src={course.imageUrl} 
-            alt={course.title}
-            className="w-16 h-16 mb-5 object-contain"
-            onError={(e) => {
-              // Fallback to icon if image fails to load
-              e.currentTarget.style.display = 'none';
-              document.getElementById(`course-icon-${course.id}`)?.style.setProperty('display', 'block');
-            }}
-          />
-        ) : (
-          <div id={`course-icon-${course.id}`} className={`${course.color} mb-5`}>
-            {renderIcon()}
+      <div className="p-6 pt-12 h-full flex flex-col">
+        <div className="flex items-start mb-5">
+          {!showIcon && course.imageUrl ? (
+            <img 
+              src={course.imageUrl} 
+              alt={course.title}
+              className="w-20 h-20 object-contain mr-4"
+              onError={(e) => {
+                // Fallback to icon if image fails to load
+                e.currentTarget.style.display = 'none';
+                document.getElementById(`course-icon-${course.id}`)?.style.setProperty('display', 'block');
+              }}
+            />
+          ) : (
+            <div id={`course-icon-${course.id}`} className={`${course.color} mr-4`}>
+              {renderIcon()}
+            </div>
+          )}
+          
+          <div className="text-left">
+            <div className="text-xs uppercase tracking-wide text-gray-500 mb-1">{course.subtitle}</div>
+            <h3 className="text-lg font-semibold mb-3 line-clamp-2">{course.title}</h3>
+            
+            <div className="flex items-center text-sm text-gray-600 mb-2">
+              <User className="h-4 w-4 mr-1.5 text-gray-500" />
+              <span>Դասախոս՝ {course.instructor || "Անուն Ազգանուն"}</span>
+            </div>
+            
+            <div className="flex space-x-4 mb-3">
+              <div className="flex items-center text-sm text-gray-600">
+                <Clock className="h-4 w-4 mr-1.5 text-gray-500" />
+                <span>Տևողություն: {course.duration}</span>
+              </div>
+              <div className="flex items-center text-sm text-gray-600">
+                <Banknote className="h-4 w-4 mr-1.5 text-gray-500" />
+                <span>Արժեք: {course.price}</span>
+              </div>
+            </div>
           </div>
-        )}
-        <div className="mb-3 text-xs uppercase tracking-wide text-gray-500">{course.subtitle}</div>
-        <h3 className="text-lg font-semibold mb-4 line-clamp-2">{course.title}</h3>
-        
-        <div className="flex justify-between w-full mb-4">
-          <div className="text-sm text-gray-600">Տևողություն: {course.duration}</div>
-          <div className="text-sm text-gray-600">Արժեք: {course.price}</div>
         </div>
         
-        <div className="mt-auto pt-4 flex justify-center space-x-2">
+        <div className="mt-auto pt-4 flex justify-start space-x-2">
           <Button variant="outline" size="sm">
             <Eye className="h-4 w-4 mr-1.5" /> {course.buttonText}
           </Button>
