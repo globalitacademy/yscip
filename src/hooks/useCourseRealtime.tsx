@@ -1,6 +1,6 @@
 
 import { useEffect, useState } from 'react';
-import { ProfessionalCourse } from '@/components/courses/types/ProfessionalCourse';
+import { ProfessionalCourse, isCoursePayload } from '@/components/courses/types/ProfessionalCourse';
 import { getCourseById, COURSE_UPDATED_EVENT } from '@/components/courses/utils/courseUtils';
 import { supabase } from '@/integrations/supabase/client';
 import { RealtimePostgresChangesPayload } from '@supabase/supabase-js';
@@ -16,6 +16,7 @@ export const useCourseRealtime = (courseId?: string) => {
 
   // Load course on initial render if courseId is provided
   useEffect(() => {
+    let isMounted = true;
     const loadCourse = async () => {
       if (!courseId) {
         setLoading(false);
@@ -25,18 +26,28 @@ export const useCourseRealtime = (courseId?: string) => {
       setLoading(true);
       try {
         const fetchedCourse = await getCourseById(courseId);
-        if (fetchedCourse) {
+        // Only update state if component is still mounted
+        if (isMounted && fetchedCourse) {
           setCourse(fetchedCourse);
         }
       } catch (error) {
         console.error('Error loading course:', error);
-        toast.error('Դասընթացի բեռնման ժամանակ սխալ է տեղի ունեցել');
+        if (isMounted) {
+          toast.error('Դասընթացի բեռնման ժամանակ սխալ է տեղի ունեցել');
+        }
       } finally {
-        setLoading(false);
+        if (isMounted) {
+          setLoading(false);
+        }
       }
     };
 
     loadCourse();
+    
+    // Cleanup function to prevent state updates on unmounted component
+    return () => {
+      isMounted = false;
+    };
   }, [courseId]);
 
   // Set up event listener for local course updates
@@ -64,6 +75,9 @@ export const useCourseRealtime = (courseId?: string) => {
     console.log('Setting up Supabase realtime subscription for course:', courseId);
     setIsSubscribed(false);
     
+    const channels = [];
+    
+    // Main course changes channel
     const courseChannel = supabase
       .channel(`public:course:${courseId}`)
       .on(
@@ -78,7 +92,7 @@ export const useCourseRealtime = (courseId?: string) => {
           console.log('Course update received from Supabase:', payload);
           
           try {
-            if (payload.new && typeof payload.new === 'object' && 'id' in payload.new) {
+            if (payload.new && isCoursePayload(payload.new)) {
               const updatedCourseId = String(payload.new.id);
               const updatedCourse = await getCourseById(updatedCourseId);
               
@@ -96,7 +110,10 @@ export const useCourseRealtime = (courseId?: string) => {
       .subscribe(() => {
         setIsSubscribed(true);
       });
+    
+    channels.push(courseChannel);
 
+    // Lessons changes channel
     const lessonsChannel = supabase
       .channel(`public:course_lessons:${courseId}`)
       .on(
@@ -122,7 +139,10 @@ export const useCourseRealtime = (courseId?: string) => {
         }
       )
       .subscribe();
+    
+    channels.push(lessonsChannel);
 
+    // Requirements changes channel
     const requirementsChannel = supabase
       .channel(`public:course_requirements:${courseId}`)
       .on(
@@ -148,7 +168,10 @@ export const useCourseRealtime = (courseId?: string) => {
         }
       )
       .subscribe();
+    
+    channels.push(requirementsChannel);
 
+    // Outcomes changes channel
     const outcomesChannel = supabase
       .channel(`public:course_outcomes:${courseId}`)
       .on(
@@ -175,12 +198,14 @@ export const useCourseRealtime = (courseId?: string) => {
       )
       .subscribe();
     
+    channels.push(outcomesChannel);
+    
+    // Cleanup function to properly remove all channels
     return () => {
       console.log('Cleaning up realtime subscriptions');
-      supabase.removeChannel(courseChannel);
-      supabase.removeChannel(lessonsChannel);
-      supabase.removeChannel(requirementsChannel);
-      supabase.removeChannel(outcomesChannel);
+      channels.forEach(channel => {
+        supabase.removeChannel(channel);
+      });
       setIsSubscribed(false);
     };
   }, [courseId]);

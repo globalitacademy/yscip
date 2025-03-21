@@ -1,11 +1,39 @@
 import { supabase } from '@/integrations/supabase/client';
-import { ProfessionalCourse } from '../types/ProfessionalCourse';
+import { ProfessionalCourse, isCoursePayload } from '../types/ProfessionalCourse';
 import { toast } from 'sonner';
 import { Book, BrainCircuit, Code, Database, FileCode, Globe } from 'lucide-react';
 import React from 'react';
 
 // Define the event name as a constant
 export const COURSE_UPDATED_EVENT = 'courseUpdated';
+
+/**
+ * Creates a deep copy of a course object to avoid reference issues
+ */
+export const createCourseDeepCopy = (course: ProfessionalCourse): ProfessionalCourse => {
+  // First create a JSON copy to break all references
+  const courseCopy = JSON.parse(JSON.stringify({
+    ...course,
+    // Remove the icon since it can't be serialized
+    icon: undefined
+  }));
+  
+  // Then restore the icon using the iconName
+  if (courseCopy.iconName) {
+    courseCopy.icon = convertIconNameToComponent(courseCopy.iconName);
+  }
+  
+  // Ensure required fields have default values
+  if (courseCopy.preferIcon === undefined) {
+    courseCopy.preferIcon = true;
+  }
+  
+  if (!courseCopy.buttonText) {
+    courseCopy.buttonText = 'Դիտել';
+  }
+  
+  return courseCopy;
+};
 
 /**
  * Fetches a course by ID from Supabase, with fallback to localStorage
@@ -93,7 +121,7 @@ export const getCourseById = async (id: string): Promise<ProfessionalCourse | nu
         institution: course.institution,
         preferIcon: course.prefer_icon !== undefined ? course.prefer_icon : true,
         imageUrl: course.image_url,
-        organizationLogo: course.image_url, // Use image_url as organization logo 
+        organizationLogo: course.organization_logo || course.image_url, // Use organization_logo if available, fallback to image_url
         description: course.description,
         lessons: lessons?.map(lesson => ({
           title: lesson.title, 
@@ -163,7 +191,7 @@ export const getAllCourses = async (): Promise<ProfessionalCourse[]> => {
         institution: course.institution,
         preferIcon: course.prefer_icon !== undefined ? course.prefer_icon : true,
         imageUrl: course.image_url,
-        organizationLogo: course.image_url, // Use image_url as organizationLogo
+        organizationLogo: course.organization_logo || course.image_url, // Use organization_logo if available, fallback to image_url
         description: course.description,
         // Related data will be loaded separately when needed
         lessons: [],
@@ -173,7 +201,12 @@ export const getAllCourses = async (): Promise<ProfessionalCourse[]> => {
     });
 
     // Update localStorage to keep it in sync
-    localStorage.setItem('professionalCourses', JSON.stringify(formattedCourses));
+    localStorage.setItem('professionalCourses', JSON.stringify(
+      formattedCourses.map(course => ({
+        ...course,
+        icon: undefined // Remove icon for storage
+      }))
+    ));
     
     return formattedCourses;
   } catch (error) {
@@ -255,31 +288,24 @@ const getLocalCourseById = (id: string): ProfessionalCourse | null => {
       const course = courses.find(course => String(course.id) === String(id));
       
       if (course) {
+        // Create a deep copy to avoid mutation issues
+        const courseCopy = JSON.parse(JSON.stringify(course));
+        
         // Ensure preferIcon is always present
-        const courseWithPreferIcon = {
-          ...course,
-          preferIcon: course.preferIcon !== undefined ? course.preferIcon : true
-        };
+        if (courseCopy.preferIcon === undefined) {
+          courseCopy.preferIcon = true;
+        }
         
         // Ensure iconName is always present
-        if (!courseWithPreferIcon.iconName) {
-          const iconName = inferIconNameFromCourse(courseWithPreferIcon) || 'book';
-          return {
-            ...courseWithPreferIcon,
-            iconName,
-            icon: convertIconNameToComponent(iconName)
-          };
+        if (!courseCopy.iconName) {
+          const iconName = inferIconNameFromCourse(courseCopy) || 'book';
+          courseCopy.iconName = iconName;
         }
         
         // Ensure icon element is set based on iconName
-        if (!courseWithPreferIcon.icon || typeof courseWithPreferIcon.icon === 'string') {
-          return {
-            ...courseWithPreferIcon,
-            icon: convertIconNameToComponent(courseWithPreferIcon.iconName)
-          };
-        }
+        courseCopy.icon = convertIconNameToComponent(courseCopy.iconName);
         
-        return courseWithPreferIcon;
+        return courseCopy;
       }
       return null;
     }
@@ -378,6 +404,7 @@ const convertToSupabaseCourseFormat = (course: ProfessionalCourse) => {
     created_by: course.createdBy,
     institution: course.institution,
     image_url: course.imageUrl,
+    organization_logo: course.organizationLogo, // Added to store the organization logo separately
     prefer_icon: course.preferIcon !== undefined ? course.preferIcon : true,
     description: course.description,
     updated_at: new Date().toISOString()
@@ -397,21 +424,8 @@ export const saveCourseChanges = async (course: ProfessionalCourse): Promise<boo
     console.log('preferIcon value being saved:', course.preferIcon);
 
     // Create a deep copy to avoid mutation issues
-    const courseCopy = JSON.parse(JSON.stringify(course));
+    const courseCopy = createCourseDeepCopy(course);
     
-    // Ensure the course has a valid iconName
-    if (!courseCopy.iconName) {
-      courseCopy.iconName = inferIconNameFromCourse(course) || 'book';
-    }
-    
-    // Recreate the icon element based on iconName
-    courseCopy.icon = convertIconNameToComponent(courseCopy.iconName);
-
-    // Ensure preferIcon is set to a boolean value
-    if (courseCopy.preferIcon === undefined) {
-      courseCopy.preferIcon = true; // Default value
-    }
-
     // First save to localStorage to ensure local synchronization
     saveToLocalStorage(courseCopy);
 

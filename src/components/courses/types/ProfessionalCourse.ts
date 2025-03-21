@@ -26,3 +26,11 @@ export interface ProfessionalCourse {
   requirements?: string[];
   outcomes?: string[];
 }
+
+// Type guard to validate Supabase payload for course data
+export function isCoursePayload(payload: any): payload is { id: string | number; [key: string]: any } {
+  return payload && 
+         (typeof payload === 'object') && 
+         ('id' in payload) && 
+         (typeof payload.id === 'string' || typeof payload.id === 'number');
+}

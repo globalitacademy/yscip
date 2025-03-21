@@ -1,5 +1,5 @@
 
-import React from 'react';
+import React, { useState } from 'react';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import ProfessionalCourseForm from './ProfessionalCourseForm';
@@ -23,12 +23,32 @@ const EditProfessionalCourseDialog: React.FC<EditProfessionalCourseDialogProps> 
   setSelectedCourse,
   handleEditCourse
 }) => {
+  const [isSaving, setIsSaving] = useState(false);
+  
   if (!selectedCourse) return null;
   
   const saveChanges = async () => {
     if (!selectedCourse) return;
     
+    setIsSaving(true);
     try {
+      // Ensure iconName is set if icon is present
+      if (selectedCourse.icon && !selectedCourse.iconName) {
+        const iconString = (selectedCourse.icon.type as any)?.name || '';
+        if (iconString.includes('Book')) selectedCourse.iconName = 'book';
+        else if (iconString.includes('Code')) selectedCourse.iconName = 'code';
+        else if (iconString.includes('Brain')) selectedCourse.iconName = 'ai';
+        else if (iconString.includes('Database')) selectedCourse.iconName = 'database';
+        else if (iconString.includes('File')) selectedCourse.iconName = 'files';
+        else if (iconString.includes('Globe')) selectedCourse.iconName = 'web';
+        else selectedCourse.iconName = 'book';
+      }
+      
+      // Ensure preferIcon has a boolean value
+      if (selectedCourse.preferIcon === undefined) {
+        selectedCourse.preferIcon = true;
+      }
+      
       // Save course to Supabase
       const success = await saveCourseChanges(selectedCourse);
       
@@ -44,6 +64,8 @@ const EditProfessionalCourseDialog: React.FC<EditProfessionalCourseDialogProps> 
     } catch (error) {
       console.error('Error saving course changes:', error);
       toast.error('Դասընթացի պահպանման ժամանակ սխալ է տեղի ունեցել');
+    } finally {
+      setIsSaving(false);
     }
   };
   
@@ -59,13 +81,19 @@ const EditProfessionalCourseDialog: React.FC<EditProfessionalCourseDialogProps> 
         <ScrollArea className="max-h-[60vh] pr-4">
           <ProfessionalCourseForm
             course={selectedCourse}
-            setCourse={(updatedCourse) => setSelectedCourse({...selectedCourse, ...updatedCourse})}
+            setCourse={(updatedCourse) => {
+              // Create deep copy to avoid reference issues
+              setSelectedCourse({
+                ...JSON.parse(JSON.stringify(selectedCourse)),
+                ...updatedCourse
+              });
+            }}
             isEdit={true}
           />
         </ScrollArea>
         <DialogFooter>
-          <Button type="submit" onClick={saveChanges}>
-            Պահպանել
+          <Button type="submit" onClick={saveChanges} disabled={isSaving}>
+            {isSaving ? 'Պահպանվում է...' : 'Պահպանել'}
           </Button>
         </DialogFooter>
       </DialogContent>
