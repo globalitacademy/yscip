@@ -1,3 +1,4 @@
+
 import { supabase } from '@/integrations/supabase/client';
 import { ProfessionalCourse, isCoursePayload } from '../types/ProfessionalCourse';
 import { toast } from 'sonner';
@@ -11,28 +12,37 @@ export const COURSE_UPDATED_EVENT = 'courseUpdated';
  * Creates a deep copy of a course object to avoid reference issues
  */
 export const createCourseDeepCopy = (course: ProfessionalCourse): ProfessionalCourse => {
-  // First create a JSON copy to break all references
-  const courseCopy = JSON.parse(JSON.stringify({
-    ...course,
-    // Remove the icon since it can't be serialized
-    icon: undefined
-  }));
-  
-  // Then restore the icon using the iconName
-  if (courseCopy.iconName) {
-    courseCopy.icon = convertIconNameToComponent(courseCopy.iconName);
+  try {
+    // First create a JSON copy to break all references
+    const courseCopy = JSON.parse(JSON.stringify({
+      ...course,
+      // Remove the icon since it can't be serialized
+      icon: undefined
+    }));
+    
+    // Then restore the icon using the iconName
+    if (courseCopy.iconName) {
+      courseCopy.icon = convertIconNameToComponent(courseCopy.iconName);
+    }
+    
+    // Ensure required fields have default values
+    if (courseCopy.preferIcon === undefined) {
+      courseCopy.preferIcon = true;
+    }
+    
+    if (!courseCopy.buttonText) {
+      courseCopy.buttonText = 'Դիտել';
+    }
+    
+    return courseCopy;
+  } catch (error) {
+    console.error('Error creating course deep copy:', error);
+    // Return a fallback copy if something goes wrong
+    return {
+      ...course,
+      icon: course.iconName ? convertIconNameToComponent(course.iconName) : React.createElement(Book, { className: "w-16 h-16" })
+    };
   }
-  
-  // Ensure required fields have default values
-  if (courseCopy.preferIcon === undefined) {
-    courseCopy.preferIcon = true;
-  }
-  
-  if (!courseCopy.buttonText) {
-    courseCopy.buttonText = 'Դիտել';
-  }
-  
-  return courseCopy;
 };
 
 /**
@@ -121,7 +131,7 @@ export const getCourseById = async (id: string): Promise<ProfessionalCourse | nu
         institution: course.institution,
         preferIcon: course.prefer_icon !== undefined ? course.prefer_icon : true,
         imageUrl: course.image_url,
-        // Use image_url as fallback if organization_logo doesn't exist
+        // Use image_url as fallback
         organizationLogo: course.image_url,
         description: course.description,
         lessons: lessons?.map(lesson => ({
@@ -322,28 +332,35 @@ const getLocalCourseById = (id: string): ProfessionalCourse | null => {
  * Converts icon name string to React component
  */
 export const convertIconNameToComponent = (iconName: string): React.ReactElement => {
-  console.log('Converting icon name to component:', iconName);
-  switch (iconName?.toLowerCase()) {
-    case 'book':
-      return React.createElement(Book, { className: "w-16 h-16" });
-    case 'code':
-      return React.createElement(Code, { className: "w-16 h-16" });
-    case 'braincircuit':
-    case 'brain':
-    case 'ai':
-      return React.createElement(BrainCircuit, { className: "w-16 h-16" });
-    case 'database':
-      return React.createElement(Database, { className: "w-16 h-16" });
-    case 'filecode':
-    case 'file':
-    case 'files':
-      return React.createElement(FileCode, { className: "w-16 h-16" });
-    case 'globe':
-    case 'web':
-      return React.createElement(Globe, { className: "w-16 h-16" });
-    default:
-      console.log('Unknown icon name, defaulting to Book:', iconName);
-      return React.createElement(Book, { className: "w-16 h-16" });
+  try {
+    console.log('Converting icon name to component:', iconName);
+    const iconClassName = "w-16 h-16";
+    
+    switch (iconName?.toLowerCase()) {
+      case 'book':
+        return React.createElement(Book, { className: iconClassName });
+      case 'code':
+        return React.createElement(Code, { className: iconClassName });
+      case 'braincircuit':
+      case 'brain':
+      case 'ai':
+        return React.createElement(BrainCircuit, { className: iconClassName });
+      case 'database':
+        return React.createElement(Database, { className: iconClassName });
+      case 'filecode':
+      case 'file':
+      case 'files':
+        return React.createElement(FileCode, { className: iconClassName });
+      case 'globe':
+      case 'web':
+        return React.createElement(Globe, { className: iconClassName });
+      default:
+        console.log('Unknown icon name, defaulting to Book:', iconName);
+        return React.createElement(Book, { className: iconClassName });
+    }
+  } catch (error) {
+    console.error('Error converting icon name to component:', error);
+    return React.createElement(Book, { className: "w-16 h-16" });
   }
 };
 
@@ -391,26 +408,42 @@ export const saveToLocalStorage = (course: ProfessionalCourse): void => {
  * Converts a ProfessionalCourse object to the format expected by Supabase
  */
 const convertToSupabaseCourseFormat = (course: ProfessionalCourse) => {
-  // Always use the stored iconName directly
-  const iconName = course.iconName || 'book';
-  
-  return {
-    id: course.id,
-    title: course.title,
-    subtitle: course.subtitle,
-    icon_name: iconName,
-    duration: course.duration,
-    price: course.price,
-    button_text: course.buttonText,
-    color: course.color,
-    created_by: course.createdBy,
-    institution: course.institution,
-    image_url: course.imageUrl,
-    // Send organizationLogo to Supabase but note that the column might need to be added
-    prefer_icon: course.preferIcon !== undefined ? course.preferIcon : true,
-    description: course.description,
-    updated_at: new Date().toISOString()
-  };
+  try {
+    // Always use the stored iconName directly
+    const iconName = course.iconName || 'book';
+    
+    return {
+      id: course.id,
+      title: course.title,
+      subtitle: course.subtitle,
+      icon_name: iconName,
+      duration: course.duration,
+      price: course.price,
+      button_text: course.buttonText,
+      color: course.color,
+      created_by: course.createdBy,
+      institution: course.institution,
+      image_url: course.imageUrl,
+      // Send organizationLogo to Supabase but note that the column might need to be added
+      prefer_icon: course.preferIcon !== undefined ? course.preferIcon : true,
+      description: course.description,
+      updated_at: new Date().toISOString()
+    };
+  } catch (error) {
+    console.error('Error converting course to Supabase format:', error);
+    // Return a minimal valid object as fallback
+    return {
+      id: course.id,
+      title: course.title || 'Untitled Course',
+      subtitle: 'ԴԱՍԸՆԹԱՑ',
+      icon_name: 'book',
+      duration: course.duration || '0',
+      price: course.price || '0',
+      button_text: 'Դիտել',
+      color: 'text-amber-500',
+      updated_at: new Date().toISOString()
+    };
+  }
 };
 
 /**
