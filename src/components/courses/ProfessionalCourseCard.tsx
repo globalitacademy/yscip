@@ -70,13 +70,14 @@ const ProfessionalCourseCard: React.FC<ProfessionalCourseCardProps> = ({
         <div className="mb-2 text-xs uppercase tracking-wide text-gray-500">{course.subtitle}</div>
         <h3 className="text-lg font-semibold mb-3 line-clamp-2">{course.title}</h3>
         
-        <div className="space-y-2 mb-4 text-sm">
-          <div className="text-gray-600">Տևողություն: {course.duration}</div>
-          <div className="text-gray-600">Արժեք: {course.price}</div>
-          {!course.organizationLogo && (
-            <div className="text-gray-600">Հաստատություն: {course.institution}</div>
-          )}
+        <div className="flex justify-between w-full mb-4">
+          <div className="text-sm text-gray-600">Տևողություն: {course.duration}</div>
+          <div className="text-sm text-gray-600">Արժեք: {course.price}</div>
         </div>
+        
+        {!course.organizationLogo && (
+          <div className="text-sm text-gray-600 mb-4">Հաստատություն: {course.institution}</div>
+        )}
         
         <div className="mt-auto pt-3 flex justify-center space-x-2">
           <Button variant="outline" size="sm">
