@@ -1,4 +1,3 @@
-
 import { supabase } from '@/integrations/supabase/client';
 import { ProfessionalCourse } from '../types/ProfessionalCourse';
 import { toast } from 'sonner';
@@ -92,10 +91,9 @@ export const getCourseById = async (id: string): Promise<ProfessionalCourse | nu
         color: course.color,
         createdBy: course.created_by,
         institution: course.institution,
-        // Now we can use the prefer_icon field from the database
         preferIcon: course.prefer_icon !== undefined ? course.prefer_icon : true,
         imageUrl: course.image_url,
-        organizationLogo: course.image_url, // Use image_url as organization logo since organization_logo might not exist in the table
+        organizationLogo: course.image_url, // Use image_url as organization logo 
         description: course.description,
         lessons: lessons?.map(lesson => ({
           title: lesson.title, 
@@ -163,7 +161,6 @@ export const getAllCourses = async (): Promise<ProfessionalCourse[]> => {
         color: course.color,
         createdBy: course.created_by,
         institution: course.institution,
-        // Now we can use the prefer_icon field from the database
         preferIcon: course.prefer_icon !== undefined ? course.prefer_icon : true,
         imageUrl: course.image_url,
         organizationLogo: course.image_url, // Use image_url as organizationLogo
@@ -327,40 +324,34 @@ export const convertIconNameToComponent = (iconName: string): React.ReactElement
  */
 export const saveToLocalStorage = (course: ProfessionalCourse): void => {
   try {
-    console.log("Saving course to localStorage:", course);
+    // Create a deep copy to avoid reference issues
+    const courseCopy = JSON.parse(JSON.stringify({
+      ...course,
+      // Remove the icon since it can't be serialized
+      icon: undefined
+    }));
     
     // Ensure the course has an iconName
-    let courseToSave = { ...course };
-    
-    if (!courseToSave.iconName) {
-      console.log("Course missing iconName, inferring from course:", course);
-      courseToSave.iconName = inferIconNameFromCourse(course) || 'book';
+    if (!courseCopy.iconName) {
+      courseCopy.iconName = inferIconNameFromCourse(course) || 'book';
     }
     
-    // Create a safe-to-serialize version of the course
-    // React elements can't be directly serialized
-    const serializableCourse = {
-      ...courseToSave,
-      // We don't need to serialize the icon since we can recreate it from iconName
-      icon: undefined
-    };
-    
-    console.log("Serializable course for localStorage:", serializableCourse);
+    console.log("Saving course to localStorage:", courseCopy);
     
     const storedCourses = localStorage.getItem('professionalCourses');
     if (storedCourses) {
       const courses: ProfessionalCourse[] = JSON.parse(storedCourses);
-      const existingCourseIndex = courses.findIndex(c => c.id === serializableCourse.id);
+      const existingCourseIndex = courses.findIndex(c => c.id === courseCopy.id);
       
       if (existingCourseIndex !== -1) {
-        courses[existingCourseIndex] = serializableCourse;
+        courses[existingCourseIndex] = courseCopy;
       } else {
-        courses.push(serializableCourse);
+        courses.push(courseCopy);
       }
       
       localStorage.setItem('professionalCourses', JSON.stringify(courses));
     } else {
-      localStorage.setItem('professionalCourses', JSON.stringify([serializableCourse]));
+      localStorage.setItem('professionalCourses', JSON.stringify([courseCopy]));
     }
   } catch (error) {
     console.error('Error saving to localStorage:', error);
@@ -375,8 +366,6 @@ const convertToSupabaseCourseFormat = (course: ProfessionalCourse) => {
   // Always use the stored iconName directly
   const iconName = course.iconName || 'book';
   
-  console.log('Using icon name for Supabase:', iconName);
-  
   return {
     id: course.id,
     title: course.title,
@@ -389,8 +378,6 @@ const convertToSupabaseCourseFormat = (course: ProfessionalCourse) => {
     created_by: course.createdBy,
     institution: course.institution,
     image_url: course.imageUrl,
-    // Don't include organization_logo field as it doesn't exist in the table
-    // Now include prefer_icon in the Supabase data
     prefer_icon: course.preferIcon !== undefined ? course.preferIcon : true,
     description: course.description,
     updated_at: new Date().toISOString()
@@ -409,23 +396,28 @@ export const saveCourseChanges = async (course: ProfessionalCourse): Promise<boo
     console.log('Icon name being saved:', course.iconName);
     console.log('preferIcon value being saved:', course.preferIcon);
 
+    // Create a deep copy to avoid mutation issues
+    const courseCopy = JSON.parse(JSON.stringify(course));
+    
     // Ensure the course has a valid iconName
-    if (!course.iconName) {
-      course.iconName = inferIconNameFromCourse(course) || 'book';
-      course.icon = convertIconNameToComponent(course.iconName);
+    if (!courseCopy.iconName) {
+      courseCopy.iconName = inferIconNameFromCourse(course) || 'book';
     }
+    
+    // Recreate the icon element based on iconName
+    courseCopy.icon = convertIconNameToComponent(courseCopy.iconName);
 
     // Ensure preferIcon is set to a boolean value
-    if (course.preferIcon === undefined) {
-      course.preferIcon = true; // Default value
+    if (courseCopy.preferIcon === undefined) {
+      courseCopy.preferIcon = true; // Default value
     }
 
     // First save to localStorage to ensure local synchronization
-    saveToLocalStorage(course);
+    saveToLocalStorage(courseCopy);
 
     // Then try to save to Supabase
     try {
-      const supabaseCourse = convertToSupabaseCourseFormat(course);
+      const supabaseCourse = convertToSupabaseCourseFormat(courseCopy);
       console.log('Converted course for Supabase:', supabaseCourse);
       
       // Update course in Supabase
@@ -442,18 +434,20 @@ export const saveCourseChanges = async (course: ProfessionalCourse): Promise<boo
         
         // If course update was successful, also update related tables
         try {
+          // Delete existing related data
           await Promise.all([
-            supabase.from('course_lessons').delete().eq('course_id', course.id),
-            supabase.from('course_requirements').delete().eq('course_id', course.id),
-            supabase.from('course_outcomes').delete().eq('course_id', course.id)
+            supabase.from('course_lessons').delete().eq('course_id', courseCopy.id),
+            supabase.from('course_requirements').delete().eq('course_id', courseCopy.id),
+            supabase.from('course_outcomes').delete().eq('course_id', courseCopy.id)
           ]);
 
-          if (course.lessons && course.lessons.length > 0) {
+          // Insert new related data if available
+          if (courseCopy.lessons && courseCopy.lessons.length > 0) {
             const { error: lessonsError } = await supabase
               .from('course_lessons')
               .insert(
-                course.lessons.map(lesson => ({
-                  course_id: course.id,
+                courseCopy.lessons.map(lesson => ({
+                  course_id: courseCopy.id,
                   title: lesson.title,
                   duration: lesson.duration
                 }))
@@ -464,12 +458,12 @@ export const saveCourseChanges = async (course: ProfessionalCourse): Promise<boo
             }
           }
 
-          if (course.requirements && course.requirements.length > 0) {
+          if (courseCopy.requirements && courseCopy.requirements.length > 0) {
             const { error: requirementsError } = await supabase
               .from('course_requirements')
               .insert(
-                course.requirements.map(requirement => ({
-                  course_id: course.id,
+                courseCopy.requirements.map(requirement => ({
+                  course_id: courseCopy.id,
                   requirement: requirement
                 }))
               );
@@ -479,12 +473,12 @@ export const saveCourseChanges = async (course: ProfessionalCourse): Promise<boo
             }
           }
 
-          if (course.outcomes && course.outcomes.length > 0) {
+          if (courseCopy.outcomes && courseCopy.outcomes.length > 0) {
             const { error: outcomesError } = await supabase
               .from('course_outcomes')
               .insert(
-                course.outcomes.map(outcome => ({
-                  course_id: course.id,
+                courseCopy.outcomes.map(outcome => ({
+                  course_id: courseCopy.id,
                   outcome: outcome
                 }))
               );
@@ -503,14 +497,9 @@ export const saveCourseChanges = async (course: ProfessionalCourse): Promise<boo
       // We've already saved to localStorage, so we can still broadcast the event locally
     }
 
-    // Ensure the icon is correctly set based on iconName
-    const courseWithIcon = {
-      ...course,
-      icon: convertIconNameToComponent(course.iconName)
-    };
-
     // Notify any listeners about the course change with a custom event
-    const event = new CustomEvent(COURSE_UPDATED_EVENT, { detail: courseWithIcon });
+    // Use the deep copied course with the icon properly set
+    const event = new CustomEvent(COURSE_UPDATED_EVENT, { detail: courseCopy });
     window.dispatchEvent(event);
 
     return true;

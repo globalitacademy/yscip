@@ -149,10 +149,19 @@ const ProfessionalCoursesSection: React.FC = () => {
       console.log('Course updated event received:', updatedCourse);
       
       setCourses(prevCourses => {
-        const updated = prevCourses.map(course => 
-          course.id === updatedCourse.id ? updatedCourse : course
-        );
-        return updated;
+        // Create a deep copy to ensure no reference issues
+        const coursesCopy = JSON.parse(JSON.stringify(prevCourses));
+        const courseIndex = coursesCopy.findIndex((c: ProfessionalCourse) => c.id === updatedCourse.id);
+        
+        if (courseIndex !== -1) {
+          // Update existing course
+          coursesCopy[courseIndex] = updatedCourse;
+        } else {
+          // Add new course
+          coursesCopy.push(updatedCourse);
+        }
+        
+        return coursesCopy;
       });
     };
 
@@ -181,22 +190,26 @@ const ProfessionalCoursesSection: React.FC = () => {
           try {
             if (payload.new && typeof payload.new === 'object' && 'id' in payload.new) {
               // For INSERT and UPDATE events
-              const courseId = String(payload.new.id); // Convert to string to ensure compatibility
+              const courseId = String(payload.new.id);
               const updatedCourse = await getCourseById(courseId);
               
               if (updatedCourse) {
                 console.log('Fetched updated course data:', updatedCourse);
                 
                 setCourses(prevCourses => {
-                  const courseExists = prevCourses.some(c => c.id === updatedCourse.id);
+                  // Create a deep copy to ensure no reference issues
+                  const coursesCopy = JSON.parse(JSON.stringify(prevCourses));
+                  const courseIndex = coursesCopy.findIndex((c: ProfessionalCourse) => c.id === updatedCourse.id);
                   
-                  if (courseExists) {
-                    return prevCourses.map(course => 
-                      course.id === updatedCourse.id ? updatedCourse : course
-                    );
+                  if (courseIndex !== -1) {
+                    // Update existing course
+                    coursesCopy[courseIndex] = updatedCourse;
                   } else {
-                    return [...prevCourses, updatedCourse];
+                    // Add new course
+                    coursesCopy.push(updatedCourse);
                   }
+                  
+                  return coursesCopy;
                 });
                 
                 if (payload.eventType === 'INSERT') {
@@ -207,7 +220,7 @@ const ProfessionalCoursesSection: React.FC = () => {
               }
             } else if (payload.eventType === 'DELETE' && payload.old && typeof payload.old === 'object' && 'id' in payload.old) {
               // For DELETE events
-              const deletedId = String(payload.old.id); // Convert to string for compatibility
+              const deletedId = String(payload.old.id);
               console.log('Course deleted:', deletedId);
               
               setCourses(prevCourses => prevCourses.filter(c => c.id !== deletedId));
@@ -236,14 +249,21 @@ const ProfessionalCoursesSection: React.FC = () => {
           
           try {
             if (payload.new && typeof payload.new === 'object' && 'course_id' in payload.new) {
-              const courseId = String(payload.new.course_id); // Convert to string for compatibility
+              const courseId = String(payload.new.course_id);
               const updatedCourse = await getCourseById(courseId);
               
               if (updatedCourse) {
                 setCourses(prevCourses => {
-                  return prevCourses.map(course => 
-                    course.id === updatedCourse.id ? updatedCourse : course
-                  );
+                  // Create a deep copy to ensure no reference issues
+                  const coursesCopy = JSON.parse(JSON.stringify(prevCourses));
+                  const courseIndex = coursesCopy.findIndex((c: ProfessionalCourse) => c.id === updatedCourse.id);
+                  
+                  if (courseIndex !== -1) {
+                    // Update existing course
+                    coursesCopy[courseIndex] = updatedCourse;
+                  }
+                  
+                  return coursesCopy;
                 });
                 
                 toast.info(`${updatedCourse.title} դասընթացի դասերը թարմացվել են`);
@@ -288,7 +308,8 @@ const ProfessionalCoursesSection: React.FC = () => {
 
   const openEditDialog = (course: ProfessionalCourse) => {
     console.log("Opening edit dialog for course:", course);
-    setSelectedCourse({...course});
+    // Create a deep copy to avoid reference issues
+    setSelectedCourse(JSON.parse(JSON.stringify(course)));
     setIsEditDialogOpen(true);
   };
   
@@ -359,7 +380,7 @@ const ProfessionalCoursesSection: React.FC = () => {
                 )}
 
                 <CardHeader className="pb-2 text-center pt-12 relative">
-                  {course.imageUrl ? (
+                  {course.imageUrl && !course.preferIcon ? (
                     <div className="w-full h-32 mb-4 overflow-hidden rounded-md mt-4">
                       <img 
                         src={course.imageUrl} 
