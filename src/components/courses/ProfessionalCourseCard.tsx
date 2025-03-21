@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button';
 import { ProfessionalCourse } from './types/ProfessionalCourse';
 import { Eye, Pencil, Trash, Building, Book, Clock, User, Banknote } from 'lucide-react';
 import { convertIconNameToComponent } from './utils/courseUtils';
+import { Link } from 'react-router-dom';
 
 interface ProfessionalCourseCardProps {
   course: ProfessionalCourse;
@@ -95,8 +96,10 @@ const ProfessionalCourseCard: React.FC<ProfessionalCourseCardProps> = ({
         </div>
         
         <div className="mt-auto pt-4 flex justify-start space-x-2">
-          <Button variant="outline" size="sm">
-            <Eye className="h-4 w-4 mr-1.5" /> {course.buttonText}
+          <Button variant="outline" size="sm" asChild>
+            <Link to={`/course/${course.id}`}>
+              <Eye className="h-4 w-4 mr-1.5" /> {course.buttonText}
+            </Link>
           </Button>
           
           {(isAdmin || canEdit) && (
