@@ -1,11 +1,16 @@
 
-import React from 'react';
+import { ReactElement } from 'react';
+
+export interface CourseLesson {
+  title: string;
+  duration: string;
+}
 
 export interface ProfessionalCourse {
   id: string;
   title: string;
   subtitle: string;
-  icon: React.ReactElement;
+  icon: ReactElement;
   duration: string;
   price: string;
   buttonText: string;
@@ -15,8 +20,7 @@ export interface ProfessionalCourse {
   imageUrl?: string;
   organizationLogo?: string;
   description?: string;
-  lessons?: { title: string; duration: string }[];
+  lessons?: CourseLesson[];
   requirements?: string[];
   outcomes?: string[];
-  iconName?: string; // Added to support storing the icon name in the database
 }

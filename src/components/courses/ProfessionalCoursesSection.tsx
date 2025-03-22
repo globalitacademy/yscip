@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { FadeIn } from '@/components/LocalTransitions';
 import { Button } from '@/components/ui/button';
@@ -7,7 +8,12 @@ import { Card, CardContent, CardFooter, CardHeader } from '@/components/ui/card'
 import { ProfessionalCourse } from './types/ProfessionalCourse';
 import EditProfessionalCourseDialog from './EditProfessionalCourseDialog';
 import { useAuth } from '@/contexts/AuthContext';
-import { saveCourseChanges, COURSE_UPDATED_EVENT, getAllCoursesFromLocalStorage } from './utils/courseUtils';
+import { 
+  saveCourseChanges, 
+  COURSE_UPDATED_EVENT,
+  getAllCourses, 
+  subscribeToRealtimeUpdates
+} from './utils/courseUtils';
 import { toast } from 'sonner';
 
 const initialProfessionalCourses: ProfessionalCourse[] = [
@@ -97,30 +103,35 @@ const ProfessionalCoursesSection: React.FC = () => {
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [selectedCourse, setSelectedCourse] = useState<ProfessionalCourse | null>(null);
   const [courses, setCourses] = useState<ProfessionalCourse[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
 
+  // Fetch courses from Supabase on component mount
   useEffect(() => {
-    const storedCourses = localStorage.getItem('professionalCourses');
-    
-    if (storedCourses) {
+    const fetchCourses = async () => {
+      setIsLoading(true);
       try {
-        const parsedCourses = JSON.parse(storedCourses);
-        if (Array.isArray(parsedCourses) && parsedCourses.length > 0) {
-          setCourses(parsedCourses);
+        // Try to get courses from Supabase with localStorage fallback
+        const fetchedCourses = await getAllCourses();
+        if (fetchedCourses && fetchedCourses.length > 0) {
+          setCourses(fetchedCourses);
         } else {
+          // If no courses found in either Supabase or localStorage, use initial data
           setCourses(initialProfessionalCourses);
           localStorage.setItem('professionalCourses', JSON.stringify(initialProfessionalCourses));
         }
-      } catch (e) {
-        console.error('Error parsing stored courses:', e);
+      } catch (error) {
+        console.error('Error fetching courses:', error);
         setCourses(initialProfessionalCourses);
         localStorage.setItem('professionalCourses', JSON.stringify(initialProfessionalCourses));
+      } finally {
+        setIsLoading(false);
       }
-    } else {
-      setCourses(initialProfessionalCourses);
-      localStorage.setItem('professionalCourses', JSON.stringify(initialProfessionalCourses));
-    }
+    };
+    
+    fetchCourses();
   }, []);
 
+  // Listen for course updates from local events
   useEffect(() => {
     const handleCourseUpdated = (event: CustomEvent<ProfessionalCourse>) => {
       const updatedCourse = event.detail;
@@ -139,6 +150,30 @@ const ProfessionalCoursesSection: React.FC = () => {
     
     return () => {
       window.removeEventListener(COURSE_UPDATED_EVENT, handleCourseUpdated as EventListener);
+    };
+  }, []);
+
+  // Subscribe to Supabase realtime updates
+  useEffect(() => {
+    const handleRealtimeUpdate = (updatedCourse: ProfessionalCourse) => {
+      console.log('Realtime update for course:', updatedCourse);
+      
+      setCourses(prevCourses => {
+        return prevCourses.map(course => 
+          course.id === updatedCourse.id ? updatedCourse : course
+        );
+      });
+      
+      // Show a toast notification for the update
+      toast.info(`${updatedCourse.title} դասընթացը թարմացվել է`);
+    };
+    
+    // Set up subscription
+    const unsubscribe = subscribeToRealtimeUpdates(handleRealtimeUpdate);
+    
+    // Cleanup on unmount
+    return () => {
+      unsubscribe();
     };
   }, []);
 
@@ -167,6 +202,17 @@ const ProfessionalCoursesSection: React.FC = () => {
   const canEditCourse = (course: ProfessionalCourse) => {
     return user && (user.role === 'admin' || course.createdBy === user.name);
   };
+
+  if (isLoading) {
+    return (
+      <section className="py-16 bg-white">
+        <div className="container mx-auto px-4 text-center">
+          <div className="animate-spin h-10 w-10 border-4 border-primary border-t-transparent rounded-full mx-auto"></div>
+          <p className="mt-4 text-muted-foreground">Բեռնում...</p>
+        </div>
+      </section>
+    );
+  }
 
   return (
     <section className="py-16 bg-white">
@@ -221,7 +267,7 @@ const ProfessionalCoursesSection: React.FC = () => {
 
                 <CardHeader className="pb-2 text-center pt-12 relative">
                   {course.imageUrl ? (
-                    <div className="w-full h-32 mb-4 overflow-hidden rounded-md">
+                    <div className="w-full h-32 mb-4 overflow-hidden rounded-md mt-4">
                       <img 
                         src={course.imageUrl} 
                         alt={course.title}
@@ -234,7 +280,7 @@ const ProfessionalCoursesSection: React.FC = () => {
                       />
                     </div>
                   ) : (
-                    <div id={`course-icon-${course.id}`} className={`mb-4 ${course.color} mx-auto`}>
+                    <div id={`course-icon-${course.id}`} className={`mb-4 ${course.color} mx-auto mt-4`}>
                       {course.icon}
                     </div>
                   )}
