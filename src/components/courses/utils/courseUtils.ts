@@ -1,4 +1,3 @@
-
 import { supabase } from '@/integrations/supabase/client';
 import { ProfessionalCourse } from '../types/ProfessionalCourse';
 import { toast } from 'sonner';
@@ -192,8 +191,8 @@ const convertToSupabaseCourseFormat = (course: ProfessionalCourse) => {
     // Get the icon type safely
     const iconType = course.icon.type;
     
-    // Enhanced null checks to handle all possible cases
-    if (iconType !== null && iconType !== undefined) {
+    // Enhanced null safety checks to handle all possible cases
+    if (iconType) {
       // Check if iconType is an object
       if (typeof iconType === 'object') {
         // Check if it has a 'name' property

@@ -3,7 +3,7 @@ import React from 'react';
 import { useCourses } from './CourseContext';
 import AddProfessionalCourseDialog from './AddProfessionalCourseDialog';
 import { Button } from '@/components/ui/button';
-import { Plus } from 'lucide-react';
+import { Plus, Book } from 'lucide-react';
 import { v4 as uuidv4 } from 'uuid';
 import { useAuth } from '@/contexts/AuthContext';
 
@@ -26,7 +26,8 @@ const CourseHeader: React.FC<CourseHeaderProps> = ({ canAddCourses }) => {
     buttonText: 'Դիտել',
     color: 'text-blue-500',
     createdBy: user?.name || '',
-    institution: user?.organization || 'Գիտելիք Էդյու'
+    institution: user?.organization || 'Գիտելիք Էդյու',
+    icon: React.createElement(Book, { className: "w-16 h-16" })
   });
 
   const handleAddProfessionalCourse = async () => {
@@ -56,7 +57,8 @@ const CourseHeader: React.FC<CourseHeaderProps> = ({ canAddCourses }) => {
         buttonText: 'Դիտել',
         color: 'text-blue-500',
         createdBy: user?.name || '',
-        institution: user?.organization || 'Գիտելիք Էդյու'
+        institution: user?.organization || 'Գիտելիք Էդյու',
+        icon: React.createElement(Book, { className: "w-16 h-16" })
       });
     } catch (error) {
       console.error('Error adding course:', error);
