@@ -157,21 +157,21 @@ const FeaturesSection = () => {
   ];
 
   return (
-    <section id="features-section" className="py-16 bg-gray-50">
-      <div className="container mx-auto px-4">
+    <section id="features-section" className="py-10 sm:py-12 md:py-16 lg:py-20 bg-gray-50">
+      <div className="container mx-auto px-4 sm:px-6">
         <FadeIn delay="delay-100">
-          <h2 className="text-3xl md:text-4xl font-bold mb-4 text-center">
+          <h2 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold mb-3 sm:mb-4 text-center leading-tight">
             Համակարգի հիմնական առանձնահատկությունները
           </h2>
         </FadeIn>
         
         <FadeIn delay="delay-200">
-          <p className="text-muted-foreground text-center max-w-2xl mx-auto mb-12">
+          <p className="text-sm sm:text-base text-muted-foreground text-center max-w-2xl mx-auto mb-8 sm:mb-10 md:mb-12">
             Մեր հարթակը առաջարկում է բազմաթիվ գործիքներ՝ կրթական գործընթացը դյուրին դարձնելու համար
           </p>
         </FadeIn>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-5 md:gap-6">
           {features.map((feature, index) => (
             <FeatureCard 
               key={index}
