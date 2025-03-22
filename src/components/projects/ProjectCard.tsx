@@ -1,12 +1,11 @@
 
 import React from 'react';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardFooter, CardHeader } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
-import { Edit, Trash, Image, User, Building } from 'lucide-react';
+import { Eye, Pencil, Trash, Image, Building, User } from 'lucide-react';
 import { ProjectTheme } from '@/data/projectThemes';
+import { Link } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
-import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 
 interface ProjectCardProps {
   project: ProjectTheme;
@@ -26,93 +25,80 @@ const ProjectCard: React.FC<ProjectCardProps> = ({
   // Check if the project was created by the current user
   const isCreatedByCurrentUser = project.createdBy === user?.id;
   const creatorName = isCreatedByCurrentUser ? 'Ձեր կողմից' : 'Ուսումնական Կենտրոն';
-  const creatorAvatar = isCreatedByCurrentUser && user?.avatar 
-    ? user.avatar 
-    : 'https://api.dicebear.com/7.x/avataaars/svg?seed=project';
-  const creatorType = isCreatedByCurrentUser ? 'user' : 'organization';
-
+  
   return (
-    <Card key={project.id} className="overflow-hidden hover:shadow-md transition-shadow">
-      <div className="h-40 sm:h-48 bg-gray-100 relative">
-        <img 
-          src={project.image || 'https://via.placeholder.com/640x360?text=Նախագծի+նկար'} 
-          alt={project.title} 
-          className="w-full h-full object-cover"
-        />
-        
-        {/* Creator avatar on the image */}
-        <div className="absolute bottom-3 right-3 flex items-center gap-2 bg-background/80 backdrop-blur-sm px-3 py-1.5 rounded-full border border-border shadow-sm">
-          <span className="text-xs font-medium">{creatorName}</span>
-          <Avatar className="h-6 w-6 border border-border">
-            <AvatarImage src={creatorAvatar} alt={creatorName} />
-            <AvatarFallback>
-              {creatorType === 'user' ? <User size={12} /> : <Building size={12} />}
-            </AvatarFallback>
-          </Avatar>
-        </div>
+    <Card className="flex flex-col w-full hover:shadow-md transition-shadow relative">
+      <div className="absolute top-4 left-4 flex items-center text-xs bg-gray-100 px-2 py-1 rounded-full z-10">
+        <Building size={12} className="mr-1" />
+        <span>{project.category}</span>
       </div>
-      <CardHeader className="p-4 pb-2">
-        <div className="flex justify-between items-start">
-          <div>
-            <CardTitle className="line-clamp-1 text-base sm:text-lg">{project.title}</CardTitle>
-            <CardDescription>{project.category}</CardDescription>
-          </div>
+
+      <div className="absolute top-4 right-4 z-10 flex gap-2">
+        <Button
+          variant="outline" 
+          size="icon" 
+          className="h-6 w-6 rounded-full" 
+          onClick={() => onEdit(project)}
+        >
+          <Pencil size={12} />
+        </Button>
+        <Button
+          variant="outline" 
+          size="icon" 
+          className="h-6 w-6 rounded-full" 
+          onClick={() => onImageChange(project)}
+        >
+          <Image size={12} />
+        </Button>
+        <Button
+          variant="outline" 
+          size="icon" 
+          className="h-6 w-6 rounded-full" 
+          onClick={() => onDelete(project)}
+        >
+          <Trash size={12} />
+        </Button>
+      </div>
+
+      <CardHeader className="pb-2 text-center pt-12 relative">
+        <div className="w-full h-32 mb-4 overflow-hidden rounded-md">
+          <img 
+            src={project.image || 'https://via.placeholder.com/640x360?text=Նախագծի+նկար'} 
+            alt={project.title}
+            className="w-full h-full object-cover"
+          />
         </div>
+        <h3 className="font-bold text-xl">{project.title}</h3>
+        <p className="text-sm text-muted-foreground">{project.complexity}</p>
       </CardHeader>
-      <CardContent className="p-4 pt-2">
-        <p className="text-xs sm:text-sm text-gray-500 line-clamp-3 mb-4">{project.description}</p>
-        <div className="flex flex-wrap gap-1 mb-4">
-          {project.techStack.slice(0, 3).map((tech, index) => (
-            <Badge key={index} variant="secondary" className="text-xs">
-              {tech}
-            </Badge>
-          ))}
-          {project.techStack.length > 3 && (
-            <Badge variant="outline" className="text-xs">
-              +{project.techStack.length - 3}
-            </Badge>
-          )}
+      
+      <CardContent className="flex-grow pb-2">
+        <div className="flex items-center gap-2 text-sm text-muted-foreground mb-4">
+          <User size={16} />
+          <span>Հեղինակ՝ {creatorName}</span>
         </div>
         
-        <div className="flex justify-end gap-2">
-          <Button 
-            variant="outline" 
-            size="sm" 
-            className="text-xs"
-            onClick={(e) => {
-              e.stopPropagation();
-              onEdit(project);
-            }}
-          >
-            <Edit className="mr-1 h-3 w-3" />
-            Խմբագրել
-          </Button>
-          <Button 
-            variant="outline" 
-            size="sm" 
-            className="text-xs"
-            onClick={(e) => {
-              e.stopPropagation();
-              onImageChange(project);
-            }}
-          >
-            <Image className="mr-1 h-3 w-3" />
-            Նկար
-          </Button>
-          <Button 
-            variant="destructive" 
-            size="sm" 
-            className="text-xs"
-            onClick={(e) => {
-              e.stopPropagation();
-              onDelete(project);
-            }}
-          >
-            <Trash className="mr-1 h-3 w-3" />
-            Ջնջել
-          </Button>
+        <p className="text-sm text-gray-500 line-clamp-2 mb-4">{project.description}</p>
+        
+        <div className="flex justify-between w-full text-sm mt-auto">
+          <span>{project.duration || 'Անորոշ ժամկետ'}</span>
+          <span className="font-semibold">
+            {project.techStack.slice(0, 2).join(', ')}
+            {project.techStack.length > 2 ? '...' : ''}
+          </span>
         </div>
       </CardContent>
+      
+      <CardFooter className="pt-4">
+        <Link to={`/project/${project.id}`} className="w-full">
+          <Button 
+            variant="outline"
+            className="w-full"
+          >
+            <Eye className="h-4 w-4 mr-2" /> Մանրամասն
+          </Button>
+        </Link>
+      </CardFooter>
     </Card>
   );
 };
