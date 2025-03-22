@@ -1,9 +1,9 @@
 
 import React, { useMemo } from 'react';
-import ProjectCard from './ProjectCard';
-import ProjectEmptyState from './ProjectEmptyState';
 import { filterProjects } from './ProjectUtils';
 import { useProjectManagement } from '@/contexts/ProjectManagementContext';
+import ProjectCard from '@/components/ProjectCard';
+import ProjectEmptyState from './ProjectEmptyState';
 
 const ProjectList: React.FC = () => {
   const {
@@ -39,9 +39,7 @@ const ProjectList: React.FC = () => {
         <ProjectCard 
           key={project.id}
           project={project}
-          onEdit={handleEditInit}
-          onImageChange={handleImageChangeInit}
-          onDelete={handleDeleteInit}
+          className="h-full"
         />
       ))}
     </div>

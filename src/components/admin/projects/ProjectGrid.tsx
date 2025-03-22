@@ -4,6 +4,8 @@ import { ProjectTheme } from '@/data/projectThemes';
 import ProjectCard from '@/components/projects/ProjectCard';
 import { FadeIn } from '@/components/LocalTransitions';
 import { useProjectPermissions } from '@/hooks/useProjectPermissions';
+import { Button } from '@/components/ui/button';
+import { Eye, Pencil, Trash, Image } from 'lucide-react';
 
 interface ProjectGridProps {
   projects: ProjectTheme[];
@@ -36,11 +38,35 @@ const ProjectGrid: React.FC<ProjectGridProps> = ({
     <FadeIn className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-10">
       {projects.map((project) => (
         <div key={project.id} className="relative">
+          <div className="absolute top-4 right-4 z-10 flex gap-2">
+            <Button
+              variant="outline" 
+              size="icon" 
+              className="h-6 w-6 rounded-full bg-white/80 backdrop-blur-sm" 
+              onClick={() => onEditProject(project)}
+            >
+              <Pencil size={12} />
+            </Button>
+            <Button
+              variant="outline" 
+              size="icon" 
+              className="h-6 w-6 rounded-full bg-white/80 backdrop-blur-sm" 
+              onClick={() => onImageChange(project)}
+            >
+              <Image size={12} />
+            </Button>
+            <Button
+              variant="outline" 
+              size="icon" 
+              className="h-6 w-6 rounded-full bg-white/80 backdrop-blur-sm" 
+              onClick={() => onDeleteProject(project)}
+            >
+              <Trash size={12} />
+            </Button>
+          </div>
           <ProjectCard
             project={project}
-            onEdit={onEditProject}
-            onImageChange={onImageChange}
-            onDelete={onDeleteProject}
+            className="h-full"
           />
         </div>
       ))}

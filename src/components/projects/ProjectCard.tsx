@@ -2,23 +2,20 @@
 import React from 'react';
 import { Card, CardContent, CardFooter, CardHeader } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Eye, Pencil, Trash, Image, Building, User } from 'lucide-react';
+import { Eye, Building, User } from 'lucide-react';
 import { ProjectTheme } from '@/data/projectThemes';
 import { Link } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 
 interface ProjectCardProps {
   project: ProjectTheme;
-  onEdit: (project: ProjectTheme) => void;
-  onImageChange: (project: ProjectTheme) => void;
-  onDelete: (project: ProjectTheme) => void;
+  onEdit?: (project: ProjectTheme) => void;
+  onImageChange?: (project: ProjectTheme) => void;
+  onDelete?: (project: ProjectTheme) => void;
 }
 
 const ProjectCard: React.FC<ProjectCardProps> = ({ 
-  project, 
-  onEdit, 
-  onImageChange, 
-  onDelete 
+  project
 }) => {
   const { user } = useAuth();
   
@@ -31,33 +28,6 @@ const ProjectCard: React.FC<ProjectCardProps> = ({
       <div className="absolute top-4 left-4 flex items-center text-xs bg-gray-100 px-2 py-1 rounded-full z-10">
         <Building size={12} className="mr-1" />
         <span>{project.category}</span>
-      </div>
-
-      <div className="absolute top-4 right-4 z-10 flex gap-2">
-        <Button
-          variant="outline" 
-          size="icon" 
-          className="h-6 w-6 rounded-full" 
-          onClick={() => onEdit(project)}
-        >
-          <Pencil size={12} />
-        </Button>
-        <Button
-          variant="outline" 
-          size="icon" 
-          className="h-6 w-6 rounded-full" 
-          onClick={() => onImageChange(project)}
-        >
-          <Image size={12} />
-        </Button>
-        <Button
-          variant="outline" 
-          size="icon" 
-          className="h-6 w-6 rounded-full" 
-          onClick={() => onDelete(project)}
-        >
-          <Trash size={12} />
-        </Button>
       </div>
 
       <CardHeader className="pb-2 text-center pt-12 relative">
@@ -83,8 +53,14 @@ const ProjectCard: React.FC<ProjectCardProps> = ({
         <div className="flex justify-between w-full text-sm mt-auto">
           <span>{project.duration || 'Անորոշ ժամկետ'}</span>
           <span className="font-semibold">
-            {project.techStack.slice(0, 2).join(', ')}
-            {project.techStack.length > 2 ? '...' : ''}
+            {project.techStack && project.techStack.length > 0 ? (
+              <>
+                {project.techStack.slice(0, 2).join(', ')}
+                {project.techStack.length > 2 ? '...' : ''}
+              </>
+            ) : (
+              'Տեխնոլոգիաներ չկան'
+            )}
           </span>
         </div>
       </CardContent>
