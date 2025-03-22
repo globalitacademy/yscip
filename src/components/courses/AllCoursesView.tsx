@@ -1,7 +1,6 @@
 
 import React, { useEffect } from 'react';
 import { useCourses } from './CourseContext';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import ProfessionalCourseList from './ProfessionalCourseList';
 import EditProfessionalCourseDialog from './EditProfessionalCourseDialog';
 import { supabase } from '@/integrations/supabase/client';
