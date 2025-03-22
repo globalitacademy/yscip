@@ -14,7 +14,6 @@ import {
   syncCoursesToSupabase
 } from './utils/courseUtils';
 
-// Mock professional courses data
 const mockProfessionalCourses: ProfessionalCourse[] = [
   {
     id: '1',
@@ -121,21 +120,17 @@ const mockProfessionalCourses: ProfessionalCourse[] = [
 
 export const mockSpecializations = ['Ծրագրավորում', 'Տվյալագիտություն', 'Դիզայն', 'Մարկետինգ', 'Բիզնես վերլուծություն'];
 
-// Modified to prioritize Supabase data
 const initializeProfessionalCourses = async (): Promise<ProfessionalCourse[]> => {
   try {
-    // First try to get courses from Supabase
     const supabaseCourses = await getAllCoursesFromSupabase();
     if (supabaseCourses && supabaseCourses.length > 0) {
       return supabaseCourses;
     }
     
-    // If no courses in Supabase, use localStorage
     const storedCourses = localStorage.getItem('professionalCourses');
     if (storedCourses) {
       try {
         const parsedCourses = JSON.parse(storedCourses);
-        // Try to sync these to Supabase
         for (const course of parsedCourses) {
           await saveCourseChanges(course);
         }
@@ -145,7 +140,6 @@ const initializeProfessionalCourses = async (): Promise<ProfessionalCourse[]> =>
       }
     }
     
-    // Fallback to mock data
     return mockProfessionalCourses;
   } catch (error) {
     console.error('Error initializing professional courses:', error);
@@ -153,7 +147,6 @@ const initializeProfessionalCourses = async (): Promise<ProfessionalCourse[]> =>
   }
 };
 
-// Old mock data kept for reference
 const mockCourses: Course[] = [
   {
     id: '1',
@@ -175,7 +168,6 @@ const mockCourses: Course[] = [
   }
 ];
 
-// Initialize courses with mock data if localStorage is empty
 const initializeCourses = (): Course[] => {
   const storedCourses = localStorage.getItem('courses');
   if (storedCourses) {
@@ -228,7 +220,6 @@ export const useCourseManagement = () => {
   
   const [newModule, setNewModule] = useState('');
 
-  // Load initial courses when component mounts
   useEffect(() => {
     const loadInitialCourses = async () => {
       setLoading(true);
@@ -245,12 +236,10 @@ export const useCourseManagement = () => {
     
     loadInitialCourses();
   }, []);
-  
-  // Function to load courses from database with better error handling
+
   const loadCoursesFromDatabase = useCallback(async () => {
     try {
       setLoading(true);
-      // Fetch courses from Supabase
       const { data: coursesData, error: coursesError } = await supabase
         .from('courses')
         .select('*');
@@ -258,57 +247,47 @@ export const useCourseManagement = () => {
       if (coursesError) {
         console.error('Error fetching courses:', coursesError);
         toast.error('Սխալ դասընթացների ստացման ժամանակ, օգտագործվում են լոկալ տվյալները');
-        // Load from localStorage as fallback
-        const localCourses = getAllCoursesFromLocalStorage();
-        setProfessionalCourses(localCourses);
+        await loadCoursesFromLocalStorage();
         return;
       }
       
       if (!coursesData || coursesData.length === 0) {
         console.log('No courses found in database, checking local storage');
-        // If no courses in database, initialize with local data and sync to database
         const storedCourses = localStorage.getItem('professionalCourses');
         if (storedCourses) {
           const parsedCourses: ProfessionalCourse[] = JSON.parse(storedCourses);
           setProfessionalCourses(parsedCourses);
-          // Save local courses to database
           for (const course of parsedCourses) {
             await saveCourseChanges(course);
           }
           toast.success('Տեղական դասընթացները համաժամեցվել են բազայի հետ');
         } else {
-          // No courses in localStorage either, use mock data
           setProfessionalCourses(mockProfessionalCourses);
-          // Save mock courses to database
           for (const course of mockProfessionalCourses) {
             await saveCourseChanges(course);
           }
           toast.success('Նմուշային դասընթացները ավելացվել են բազա');
         }
+        setLoading(false);
         return;
       }
       
-      // Process each course to add related data
       const completeCourses = await Promise.all(coursesData.map(async (course) => {
-        // Fetch lessons
         const { data: lessonsData } = await supabase
           .from('course_lessons')
           .select('*')
           .eq('course_id', course.id);
         
-        // Fetch requirements
         const { data: requirementsData } = await supabase
           .from('course_requirements')
           .select('*')
           .eq('course_id', course.id);
         
-        // Fetch outcomes
         const { data: outcomesData } = await supabase
           .from('course_outcomes')
           .select('*')
           .eq('course_id', course.id);
         
-        // Create icon based on icon_name
         let iconComponent;
         switch ((course.icon_name || '').toLowerCase()) {
           case 'book':
@@ -335,7 +314,6 @@ export const useCourseManagement = () => {
             iconComponent = React.createElement(Book, { className: "w-16 h-16" });
         }
         
-        // Format the course with all data
         return {
           id: course.id,
           title: course.title,
@@ -360,28 +338,43 @@ export const useCourseManagement = () => {
         } as ProfessionalCourse;
       }));
       
-      // Update state with courses from database
       setProfessionalCourses(completeCourses);
-      
-      // Update localStorage for offline access
       localStorage.setItem('professionalCourses', JSON.stringify(completeCourses));
-      
     } catch (error) {
       console.error('Error loading courses from database:', error);
       toast.error('Դասընթացների բեռնման ժամանակ սխալ է տեղի ունեցել');
-      
-      // Load from localStorage as fallback
-      const localCourses = getAllCoursesFromLocalStorage();
-      setProfessionalCourses(localCourses);
+      await loadCoursesFromLocalStorage();
     } finally {
       setLoading(false);
     }
   }, []);
 
-  // Get user's courses
+  const loadCoursesFromLocalStorage = useCallback(async () => {
+    try {
+      const storedCourses = localStorage.getItem('professionalCourses');
+      if (storedCourses) {
+        const parsedCourses = JSON.parse(storedCourses);
+        if (parsedCourses && parsedCourses.length > 0) {
+          console.log('Loaded courses from localStorage:', parsedCourses.length);
+          setProfessionalCourses(parsedCourses);
+          return true;
+        }
+      }
+      
+      console.log('No courses in localStorage, using mock data');
+      setProfessionalCourses(mockProfessionalCourses);
+      localStorage.setItem('professionalCourses', JSON.stringify(mockProfessionalCourses));
+      
+      return false;
+    } catch (error) {
+      console.error('Error loading courses from localStorage:', error);
+      setProfessionalCourses(mockProfessionalCourses);
+      return false;
+    }
+  }, []);
+
   const userCourses = courses.filter(course => course.createdBy === user?.id);
   
-  // Get user's professional courses
   const userProfessionalCourses = professionalCourses.filter(course => course.createdBy === user?.name);
 
   const handleAddCourse = () => {
@@ -484,7 +477,6 @@ export const useCourseManagement = () => {
   const handleDeleteCourse = (id: string) => {
     const courseToDelete = courses.find(course => course.id === id);
     
-    // Only allow users to delete their own courses (admin can delete any)
     if (courseToDelete && (user?.role === 'admin' || courseToDelete.createdBy === user?.id)) {
       const updatedCourses = courses.filter(course => course.id !== id);
       setCourses(updatedCourses);
@@ -509,18 +501,15 @@ export const useCourseManagement = () => {
       subtitle: newProfessionalCourse.subtitle || 'ԴԱՍԸՆԹԱՑ',
       color: newProfessionalCourse.color || 'text-amber-500',
       institution: newProfessionalCourse.institution || 'ՀՊՏՀ',
-      iconName: 'book' // Default icon name
+      iconName: 'book'
     };
 
-    // Save to database
     const success = await saveCourseChanges(courseToAdd);
     
     if (success) {
-      // Update local state
       const updatedCourses = [...professionalCourses, courseToAdd];
       setProfessionalCourses(updatedCourses);
       
-      // Reset form
       setNewProfessionalCourse({
         title: '',
         subtitle: 'ԴԱՍԸՆԹԱՑ',
@@ -552,11 +541,9 @@ export const useCourseManagement = () => {
       return;
     }
 
-    // Save to database
     const success = await saveCourseChanges(selectedProfessionalCourse);
     
     if (success) {
-      // Update local state
       const updatedCourses = professionalCourses.map(course => 
         course.id === selectedProfessionalCourse.id ? selectedProfessionalCourse : course
       );
@@ -572,7 +559,6 @@ export const useCourseManagement = () => {
   const handleDeleteProfessionalCourse = (id: string) => {
     const courseToDelete = professionalCourses.find(course => course.id === id);
     
-    // Only allow admins to delete courses
     if (courseToDelete && user?.role === 'admin') {
       const updatedCourses = professionalCourses.filter(course => course.id !== id);
       setProfessionalCourses(updatedCourses);
@@ -589,7 +575,6 @@ export const useCourseManagement = () => {
     
     try {
       await syncCoursesToSupabase();
-      // Reload courses from database to ensure we have the latest data
       await loadCoursesFromDatabase();
       toast.success('Դասընթացները հաջողությամբ համաժամեցվել են');
     } catch (error) {
@@ -599,36 +584,6 @@ export const useCourseManagement = () => {
       setLoading(false);
     }
   };
-
-  // Add a new function to load courses from localStorage
-  const loadCoursesFromLocalStorage = useCallback(async () => {
-    try {
-      const storedCourses = localStorage.getItem('professionalCourses');
-      if (storedCourses) {
-        const parsedCourses = JSON.parse(storedCourses);
-        if (parsedCourses && parsedCourses.length > 0) {
-          console.log('Loaded courses from localStorage:', parsedCourses.length);
-          setProfessionalCourses(parsedCourses);
-          return true;
-        }
-      }
-      
-      // If no courses in localStorage, use mock data
-      if (professionalCourses.length === 0) {
-        console.log('No courses in localStorage, using mock data');
-        setProfessionalCourses(mockProfessionalCourses);
-        // Save mock data to localStorage
-        localStorage.setItem('professionalCourses', JSON.stringify(mockProfessionalCourses));
-      }
-      
-      return false;
-    } catch (error) {
-      console.error('Error loading courses from localStorage:', error);
-      // Use mock data as fallback
-      setProfessionalCourses(mockProfessionalCourses);
-      return false;
-    }
-  }, [professionalCourses]);
 
   return {
     courses,
@@ -664,6 +619,6 @@ export const useCourseManagement = () => {
     handleDeleteProfessionalCourse,
     loadCoursesFromDatabase,
     syncCoursesWithDatabase,
-    loadCoursesFromLocalStorage, // Add the new function to the return object
+    loadCoursesFromLocalStorage
   };
 };

@@ -1,16 +1,18 @@
 
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useCourses } from './CourseContext';
 import ProfessionalCourseList from './ProfessionalCourseList';
 import EditProfessionalCourseDialog from './EditProfessionalCourseDialog';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
-import { Loader2 } from 'lucide-react';
+import { Loader2, AlertTriangle } from 'lucide-react';
 import DatabaseSyncButton from '@/components/DatabaseSyncButton';
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 
 const ProfessionalCourseTabView: React.FC = () => {
   const { user } = useAuth();
+  const [error, setError] = useState<string | null>(null);
   const {
     professionalCourses,
     userProfessionalCourses,
@@ -26,10 +28,12 @@ const ProfessionalCourseTabView: React.FC = () => {
     loading
   } = useCourses();
 
-  // Load courses from database when component mounts
+  // Load courses when component mounts
   useEffect(() => {
     const fetchCourses = async () => {
       try {
+        setError(null);
+        
         // First try to load from localStorage
         await loadCoursesFromLocalStorage();
         
@@ -37,12 +41,16 @@ const ProfessionalCourseTabView: React.FC = () => {
         await loadCoursesFromDatabase();
       } catch (error) {
         console.error('Error loading courses:', error);
+        setError('Դասընթացների բեռնման ժամանակ սխալ է տեղի ունեցել');
         toast.error('Դասընթացների բեռնման ժամանակ սխալ է տեղի ունեցել');
       }
     };
 
     fetchCourses();
+  }, [loadCoursesFromDatabase, loadCoursesFromLocalStorage]);
 
+  // Set up subscription for real-time updates in a separate useEffect
+  useEffect(() => {
     // Set up subscription for real-time updates
     const channel = supabase
       .channel('courses-changes')
@@ -55,25 +63,44 @@ const ProfessionalCourseTabView: React.FC = () => {
         },
         () => {
           // Reload courses when any changes happen
-          loadCoursesFromDatabase();
+          loadCoursesFromDatabase().catch(err => {
+            console.error('Error reloading courses after change:', err);
+          });
         }
       )
       .subscribe();
 
-    // Set up event listener for reloading from localStorage when sync button is clicked
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [loadCoursesFromDatabase]);
+
+  // Set up event listener for reloading from localStorage in a separate useEffect
+  useEffect(() => {
     const handleReloadFromLocal = () => {
-      loadCoursesFromLocalStorage();
+      loadCoursesFromLocalStorage().catch(err => {
+        console.error('Error reloading courses from localStorage:', err);
+      });
     };
 
     window.addEventListener('reload-courses-from-local', handleReloadFromLocal);
 
     return () => {
-      supabase.removeChannel(channel);
       window.removeEventListener('reload-courses-from-local', handleReloadFromLocal);
     };
-  }, [loadCoursesFromDatabase, loadCoursesFromLocalStorage]);
+  }, [loadCoursesFromLocalStorage]);
 
   const isAdmin = user?.role === 'admin';
+
+  if (error) {
+    return (
+      <Alert variant="destructive" className="mb-4">
+        <AlertTriangle className="h-4 w-4" />
+        <AlertTitle>Սխալ</AlertTitle>
+        <AlertDescription>{error}</AlertDescription>
+      </Alert>
+    );
+  }
 
   if (loading) {
     return (
