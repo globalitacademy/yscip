@@ -27,6 +27,7 @@ const CourseTabView: React.FC = () => {
     setIsEditDialogOpen(true);
   };
   
+  // Fix the type here to make sure it accepts the Course parameter
   const handleEditCourse = (editedCourse: Course) => {
     coursesContext.handleEditCourse(editedCourse);
     setIsEditDialogOpen(false);
