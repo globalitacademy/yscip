@@ -1,11 +1,9 @@
-
 import { supabase } from '@/integrations/supabase/client';
 import { ProfessionalCourse } from '../types/ProfessionalCourse';
 import { toast } from 'sonner';
 import { Book, BrainCircuit, Code, Database, FileCode, Globe } from 'lucide-react';
 import React from 'react';
 
-// Define the event name as a constant
 export const COURSE_UPDATED_EVENT = 'courseUpdated';
 
 export const getCourseById = async (id: string): Promise<ProfessionalCourse | null> => {
@@ -65,7 +63,6 @@ export const getCourseById = async (id: string): Promise<ProfessionalCourse | nu
         console.error('Error fetching outcomes:', e);
       }
 
-      // Create a proper React element for the icon
       const iconElement = convertIconNameToComponent(course.icon_name);
 
       const formattedCourse: ProfessionalCourse = {
@@ -191,13 +188,10 @@ export const saveCourseChanges = async (course: ProfessionalCourse): Promise<boo
 
     console.log('Saving course changes:', course);
 
-    // First save to localStorage to ensure local synchronization
     saveToLocalStorage(course);
 
-    // Extract the icon name from the course object or from the iconName property
     const iconName = course.iconName || getIconNameFromElement(course.icon);
 
-    // Then try to save to Supabase if available
     try {
       const { error: courseError } = await supabase
         .from('courses')
@@ -220,14 +214,10 @@ export const saveCourseChanges = async (course: ProfessionalCourse): Promise<boo
 
       if (courseError) {
         console.error('Error updating course in Supabase:', courseError);
-        // Continue with local storage only
       } else {
-        // If course update was successful, also update related tables
         if (course.lessons && course.lessons.length > 0) {
-          // First delete existing lessons
           await supabase.from('course_lessons').delete().eq('course_id', course.id);
           
-          // Then insert new lessons
           const { error: lessonsError } = await supabase
             .from('course_lessons')
             .insert(
@@ -244,10 +234,8 @@ export const saveCourseChanges = async (course: ProfessionalCourse): Promise<boo
         }
 
         if (course.requirements && course.requirements.length > 0) {
-          // First delete existing requirements
           await supabase.from('course_requirements').delete().eq('course_id', course.id);
           
-          // Then insert new requirements
           const { error: requirementsError } = await supabase
             .from('course_requirements')
             .insert(
@@ -263,10 +251,8 @@ export const saveCourseChanges = async (course: ProfessionalCourse): Promise<boo
         }
 
         if (course.outcomes && course.outcomes.length > 0) {
-          // First delete existing outcomes
           await supabase.from('course_outcomes').delete().eq('course_id', course.id);
           
-          // Then insert new outcomes
           const { error: outcomesError } = await supabase
             .from('course_outcomes')
             .insert(
@@ -283,10 +269,8 @@ export const saveCourseChanges = async (course: ProfessionalCourse): Promise<boo
       }
     } catch (supabaseError) {
       console.error('Error with Supabase operations:', supabaseError);
-      // We've already saved to localStorage, so we can still return true
     }
 
-    // Notify any listeners about the course change with a custom event
     const event = new CustomEvent(COURSE_UPDATED_EVENT, { detail: course });
     window.dispatchEvent(event);
 
@@ -297,15 +281,20 @@ export const saveCourseChanges = async (course: ProfessionalCourse): Promise<boo
   }
 };
 
-// Helper function to extract icon name from React element
 const getIconNameFromElement = (iconElement: React.ReactElement): string => {
   if (!iconElement) return 'book';
   
   const iconType = iconElement.type;
-  const iconName = iconType.displayName || iconType.name;
   
-  if (iconName) {
-    return iconName.toLowerCase();
+  if (typeof iconType === 'function') {
+    const iconName = iconType.displayName || iconType.name;
+    
+    if (iconName) {
+      return iconName.toLowerCase();
+    }
+  } 
+  else if (typeof iconType === 'string') {
+    return iconType.toLowerCase();
   }
   
   return 'book';
