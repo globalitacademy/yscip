@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import Header from '@/components/Header';
@@ -7,7 +6,7 @@ import { toast } from 'sonner';
 import { ProfessionalCourse } from '@/components/courses/types/ProfessionalCourse';
 import EditProfessionalCourseDialog from '@/components/courses/EditProfessionalCourseDialog';
 import { useAuth } from '@/contexts/AuthContext';
-import { getCourseById, saveCourseChanges } from '@/components/courses/utils/courseUtils';
+import { getCourseById, saveCourseChanges, COURSE_UPDATED_EVENT } from '@/components/courses/utils/courseUtils';
 import CourseHeader from '@/components/courses/details/CourseHeader';
 import CourseBanner from '@/components/courses/details/CourseBanner';
 import CourseCurriculum from '@/components/courses/details/CourseCurriculum';
@@ -15,6 +14,7 @@ import CourseLearningOutcomes from '@/components/courses/details/CourseLearningO
 import CourseRequirements from '@/components/courses/details/CourseRequirements';
 import CourseSidebar from '@/components/courses/details/CourseSidebar';
 import { Book } from 'lucide-react';
+import { supabase } from '@/integrations/supabase/client';
 
 const CourseDetails: React.FC = () => {
   const { id } = useParams<{ id: string }>();
@@ -38,10 +38,40 @@ const CourseDetails: React.FC = () => {
       }
     };
 
-    window.addEventListener('courseUpdated', handleCourseUpdate as EventListener);
+    window.addEventListener(COURSE_UPDATED_EVENT, handleCourseUpdate as EventListener);
     
     return () => {
-      window.removeEventListener('courseUpdated', handleCourseUpdate as EventListener);
+      window.removeEventListener(COURSE_UPDATED_EVENT, handleCourseUpdate as EventListener);
+    };
+  }, [id]);
+
+  // Subscribe to real-time updates for courses
+  useEffect(() => {
+    if (!id) return;
+
+    const channel = supabase
+      .channel('course-changes')
+      .on(
+        'postgres_changes',
+        {
+          event: 'UPDATE',
+          schema: 'public',
+          table: 'courses',
+          filter: `id=eq.${id}`
+        },
+        async () => {
+          // Refetch the course when it's updated in the database
+          const courseData = await getCourseById(id);
+          if (courseData) {
+            setCourse(courseData);
+            setEditedCourse(courseData);
+          }
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
     };
   }, [id]);
 
@@ -52,19 +82,19 @@ const CourseDetails: React.FC = () => {
         try {
           const courseData = await getCourseById(id);
           
-          // Try to create a sample course in localStorage if none found
           if (!courseData) {
-            // Create a sample course for testing if we can't fetch one
+            // Create a sample course if not found in database
             const sampleCourse: ProfessionalCourse = {
               id: id,
               title: "Web Development Fundamentals",
               subtitle: "ԴԱՍԸՆԹԱՑ",
               icon: React.createElement(Book, { className: "w-16 h-16" }),
+              iconName: "book",
               duration: "8 շաբաթ",
               price: "65,000 ֏",
               buttonText: "Դիմել",
               color: "text-blue-500",
-              createdBy: "John Smith",
+              createdBy: user?.name || "Unknown User",
               institution: "Web Academy",
               imageUrl: "https://images.unsplash.com/photo-1461749280684-dccba630e2f6?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=2069&q=80",
               description: "Learn the fundamentals of web development including HTML, CSS and JavaScript.",
@@ -84,8 +114,11 @@ const CourseDetails: React.FC = () => {
               ]
             };
             
-            // Save to localStorage
-            saveToLocalStorage(sampleCourse);
+            // Save to database and localStorage
+            const success = await saveCourseChanges(sampleCourse);
+            if (success) {
+              toast.success("Նոր դասընթաց ստեղծվել և պահպանվել է");
+            }
             
             setCourse(sampleCourse);
             setEditedCourse(sampleCourse);
@@ -102,7 +135,7 @@ const CourseDetails: React.FC = () => {
     };
     
     fetchCourse();
-  }, [id]);
+  }, [id, user?.name]);
 
   const handleApply = () => {
     toast.success("Դիմումը հաջողությամբ ուղարկված է", {
@@ -325,29 +358,6 @@ const CourseDetails: React.FC = () => {
       )}
     </div>
   );
-};
-
-// Helper function to add the missing saveToLocalStorage function
-const saveToLocalStorage = (course: ProfessionalCourse): void => {
-  try {
-    const storedCourses = localStorage.getItem('professionalCourses');
-    if (storedCourses) {
-      const courses: ProfessionalCourse[] = JSON.parse(storedCourses);
-      const existingCourseIndex = courses.findIndex(c => c.id === course.id);
-      
-      if (existingCourseIndex !== -1) {
-        courses[existingCourseIndex] = course;
-      } else {
-        courses.push(course);
-      }
-      
-      localStorage.setItem('professionalCourses', JSON.stringify(courses));
-    } else {
-      localStorage.setItem('professionalCourses', JSON.stringify([course]));
-    }
-  } catch (error) {
-    console.error('Error saving to localStorage:', error);
-  }
 };
 
 export default CourseDetails;

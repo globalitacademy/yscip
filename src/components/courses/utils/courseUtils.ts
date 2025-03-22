@@ -302,11 +302,19 @@ const getIconNameFromElement = (iconElement: React.ReactElement): string => {
   if (!iconElement) return 'book';
   
   const iconType = iconElement.type;
-  const iconName = iconType.displayName || iconType.name;
   
-  if (iconName) {
-    return iconName.toLowerCase();
+  // Check if iconType is a function (component) and access properties safely
+  if (typeof iconType === 'function') {
+    // Try to get displayName or name from the function component
+    const iconName = iconType.displayName || iconType.name;
+    if (iconName) {
+      return iconName.toLowerCase();
+    }
+  } else if (typeof iconType === 'string') {
+    // If it's a string (HTML element), use that
+    return iconType.toLowerCase();
   }
   
+  // Default fallback
   return 'book';
 };
