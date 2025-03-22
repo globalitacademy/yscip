@@ -11,8 +11,8 @@ export const getIconComponent = (iconType: string | null) => {
   
   try {
     // These lines had the TS18047 errors - adding null checks
-    if (iconType && lucideIcons[iconType]) {
-      const IconComponent = lucideIcons[iconType];
+    if (iconType && lucideIcons[iconType as keyof typeof lucideIcons]) {
+      const IconComponent = lucideIcons[iconType as keyof typeof lucideIcons];
       return IconComponent;
     }
     
@@ -30,27 +30,37 @@ export const getIconComponent = (iconType: string | null) => {
 // Function to save course changes (to Supabase and localStorage)
 export const saveCourseChanges = async (course: ProfessionalCourse): Promise<boolean> => {
   try {
+    // Extract icon name from the course object
+    let iconName: string | null = null;
+    if (typeof course.icon === 'string') {
+      iconName = course.icon;
+    } else if (course.icon && typeof course.icon === 'object') {
+      // Try to extract the icon name from props or type
+      const iconProps = (course.icon as React.ReactElement).props;
+      if (iconProps && iconProps.type && iconProps.type.name) {
+        iconName = iconProps.type.name;
+      }
+    }
+
     // First, try to save to Supabase
     const { error } = await supabase
-      .from('professional_courses')
+      .from('courses')
       .upsert({ 
         id: course.id,
         title: course.title,
         subtitle: course.subtitle,
         duration: course.duration,
         price: course.price,
-        buttonText: course.buttonText,
+        button_text: course.buttonText,
         color: course.color,
-        createdBy: course.createdBy,
+        created_by: course.createdBy,
         institution: course.institution,
-        imageUrl: course.imageUrl,
-        organizationLogo: course.organizationLogo,
+        image_url: course.imageUrl,
+        organization_logo: course.organizationLogo,
         description: course.description,
-        lessons: course.lessons,
-        requirements: course.requirements,
-        outcomes: course.outcomes,
+        // Convert nested objects to JSON strings for storage
         // We can't store React components in the database, so we store the icon name
-        iconName: typeof course.icon === 'string' ? course.icon : null
+        icon_name: iconName
       });
 
     if (error) {
@@ -119,7 +129,7 @@ export const getAllCourses = async (): Promise<ProfessionalCourse[]> => {
   try {
     // Try to get courses from Supabase
     const { data, error } = await supabase
-      .from('professional_courses')
+      .from('courses')
       .select('*');
       
     if (error) {
@@ -132,16 +142,28 @@ export const getAllCourses = async (): Promise<ProfessionalCourse[]> => {
       const coursesWithIcons = data.map(course => {
         // Convert iconName to an actual React component
         let iconComponent = null;
-        if (course.iconName) {
-          const IconComponent = lucideIcons[course.iconName];
-          if (IconComponent) {
-            iconComponent = React.createElement(IconComponent, { className: "w-16 h-16" });
-          }
+        if (course.icon_name && lucideIcons[course.icon_name as keyof typeof lucideIcons]) {
+          const IconComponent = lucideIcons[course.icon_name as keyof typeof lucideIcons];
+          iconComponent = React.createElement(IconComponent, { className: "w-16 h-16" });
         }
         
         return {
-          ...course,
-          icon: iconComponent
+          id: course.id,
+          title: course.title,
+          subtitle: course.subtitle || 'ԴԱՍԸՆԹԱՑ',
+          icon: iconComponent,
+          duration: course.duration,
+          price: course.price,
+          buttonText: course.button_text || 'Դիտել',
+          color: course.color || 'text-amber-500',
+          createdBy: course.created_by || '',
+          institution: course.institution || 'ՀՊՏՀ',
+          imageUrl: course.image_url,
+          organizationLogo: course.organization_logo,
+          description: course.description,
+          lessons: course.lessons || [],
+          requirements: course.requirements || [],
+          outcomes: course.outcomes || []
         } as ProfessionalCourse;
       });
       
@@ -173,10 +195,10 @@ export const getCourseById = async (id: string): Promise<ProfessionalCourse | nu
   try {
     // Try to get the course from Supabase
     const { data, error } = await supabase
-      .from('professional_courses')
+      .from('courses')
       .select('*')
       .eq('id', id)
-      .single();
+      .maybeSingle(); // Use maybeSingle instead of single to avoid errors
       
     if (error) {
       console.error('Error fetching from Supabase:', error);
@@ -186,16 +208,28 @@ export const getCourseById = async (id: string): Promise<ProfessionalCourse | nu
     if (data) {
       // Convert iconName to an actual React component
       let iconComponent = null;
-      if (data.iconName) {
-        const IconComponent = lucideIcons[data.iconName];
-        if (IconComponent) {
-          iconComponent = React.createElement(IconComponent, { className: "w-16 h-16" });
-        }
+      if (data.icon_name && lucideIcons[data.icon_name as keyof typeof lucideIcons]) {
+        const IconComponent = lucideIcons[data.icon_name as keyof typeof lucideIcons];
+        iconComponent = React.createElement(IconComponent, { className: "w-16 h-16" });
       }
       
       return {
-        ...data,
-        icon: iconComponent
+        id: data.id,
+        title: data.title,
+        subtitle: data.subtitle || 'ԴԱՍԸՆԹԱՑ',
+        icon: iconComponent,
+        duration: data.duration,
+        price: data.price,
+        buttonText: data.button_text || 'Դիտել',
+        color: data.color || 'text-amber-500',
+        createdBy: data.created_by || '',
+        institution: data.institution || 'ՀՊՏՀ',
+        imageUrl: data.image_url,
+        organizationLogo: data.organization_logo,
+        description: data.description,
+        lessons: data.lessons || [],
+        requirements: data.requirements || [],
+        outcomes: data.outcomes || []
       } as ProfessionalCourse;
     }
     
@@ -227,13 +261,13 @@ export const subscribeToRealtimeUpdates = (
 ): (() => void) => {
   // Set up Supabase realtime subscription
   const channel = supabase
-    .channel('public:professional_courses')
+    .channel('public:courses')
     .on(
       'postgres_changes',
       {
         event: '*',
         schema: 'public',
-        table: 'professional_courses'
+        table: 'courses'
       },
       async (payload) => {
         console.log('Realtime update received:', payload);
