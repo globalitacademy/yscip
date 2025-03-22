@@ -8,7 +8,7 @@ import FeaturesSection from '@/components/features';
 import Footer from '@/components/Footer';
 import CoursesSection from '@/components/courses/CoursesSection';
 import ProfessionalCoursesSection from '@/components/courses/ProfessionalCoursesSection';
-import { HomePageModules } from '@/components/educationalCycle';
+import EducationalCycleInfographic from '@/components/educationalCycle/EducationalCycleInfographic';
 import ProjectTabs from '@/components/projects/ProjectTabs';
 import { ProjectManagementProvider } from '@/contexts/ProjectManagementContext';
 import { useAuth } from '@/contexts/AuthContext';
@@ -58,22 +58,8 @@ const Index = () => {
         <FeaturesSection />
       </div>
 
-      {/* Educational Cycle */}
-      <section className="py-20 bg-gradient-to-b from-gray-50 to-white">
-        <div className="container mx-auto px-4">
-          <div className="text-center mb-12">
-            <h2 className="text-3xl font-bold mb-4">Կրթական ցիկլ</h2>
-            <p className="text-lg text-gray-600 max-w-3xl mx-auto">
-              Մեր կրթական ցիկլը ներառում է տարբեր մոդուլներ, որոնք օգնում են ուսանողներին 
-              զարգացնել իրենց հմտությունները և ձեռք բերել նոր գիտելիքներ:
-            </p>
-          </div>
-          
-          <HomePageModules />
-          
-          {/* Removed the redundant button that links to modules page */}
-        </div>
-      </section>
+      {/* Educational Cycle Infographic */}
+      <EducationalCycleInfographic />
 
       {/* Courses Section */}
       <div
