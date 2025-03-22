@@ -5,19 +5,19 @@ import { ArrowRight } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { useInView } from '@/hooks/useInView';
 import Hero from '@/components/hero/Hero';
-import { FeaturesSection } from '@/components/features';
+import FeaturesSection from '@/components/features';
 import Footer from '@/components/Footer';
 import CoursesSection from '@/components/courses/CoursesSection';
 import ProfessionalCoursesSection from '@/components/courses/ProfessionalCoursesSection';
-import { HomePageModules } from '@/components/educationalCycle';
+import { HomePageModules } from '@/components/educationalCycle/HomePageModules';
 import ProjectTabs from '@/components/projects/ProjectTabs';
 import { ProjectManagementProvider } from '@/contexts/ProjectManagementContext';
 import { useAuth } from '@/contexts/AuthContext';
 
 const Index = () => {
-  const { heroRef, heroInView } = useInView();
-  const { featuresRef, featuresInView } = useInView();
-  const { coursesRef, coursesInView } = useInView();
+  const [heroRef, heroInView] = useInView();
+  const [featuresRef, featuresInView] = useInView();
+  const [coursesRef, coursesInView] = useInView();
   const { user } = useAuth();
 
   // Scroll to module on load if URL contains module hash
@@ -32,8 +32,6 @@ const Index = () => {
     }
   }, []);
 
-  const userRoleForHero = user?.role || 'guest';
-
   return (
     <div className="flex flex-col min-h-screen">
       {/* Hero Section */}
@@ -43,7 +41,7 @@ const Index = () => {
           heroInView ? 'opacity-100' : 'opacity-0'
         }`}
       >
-        <Hero userRole={userRoleForHero} />
+        <Hero />
       </div>
 
       {/* Features Section */}
