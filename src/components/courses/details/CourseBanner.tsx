@@ -140,7 +140,7 @@ const CourseBanner: React.FC<CourseBannerProps> = ({
               alt={displayCourse.title}
               className="object-cover h-full w-full opacity-30"
             />
-            <div className={`absolute inset-0 bg-gradient-to-l from-transparent to-${displayCourse.color.replace('text-', '').replace('-500', '-50')}`}></div>
+            <div className="absolute inset-0 bg-gradient-to-l from-transparent to-current"></div>
           </div>
         )}
         
