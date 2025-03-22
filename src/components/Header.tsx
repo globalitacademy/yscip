@@ -13,23 +13,22 @@ const Header: React.FC = () => {
     <header className="bg-white shadow-md">
       <div className="container mx-auto px-4 py-4">
         <div className="flex justify-between items-center">
-          <div className="flex items-center space-x-4">
-            <Link to="/" className="flex items-center gap-2">
-              <div className="relative w-8 h-8 bg-blue-600 flex items-center justify-center rounded">
-                <span className="text-white text-sm font-bold">LC</span>
-                <Square className="absolute inset-0 w-8 h-8 text-blue-600" strokeWidth={3} />
-              </div>
-              <span className="text-xl font-bold text-blue-600">ԿԿՀ</span>
-            </Link>
-            <nav className="hidden md:flex space-x-4">
-              <Link to="/" className="text-gray-600 hover:text-gray-900">Գլխավոր</Link>
-              <Link to="/projects" className="text-gray-600 hover:text-gray-900">Նախագծեր</Link>
-              <Link to="/courses" className="text-gray-600 hover:text-gray-900">Դասընթացներ</Link>
-              {isAuthenticated && (
-                <Link to="/portfolio" className="text-gray-600 hover:text-gray-900">Պորտֆոլիո</Link>
-              )}
-            </nav>
-          </div>
+          <Link to="/" className="flex items-center gap-2">
+            <div className="relative w-8 h-8 bg-blue-600 flex items-center justify-center rounded">
+              <span className="text-white text-sm font-bold">LC</span>
+              <Square className="absolute inset-0 w-8 h-8 text-blue-600" strokeWidth={3} />
+            </div>
+            <span className="text-xl font-bold text-blue-600">ԿԿՀ</span>
+          </Link>
+          
+          <nav className="hidden md:flex space-x-4 flex-1 justify-center">
+            <Link to="/" className="text-gray-600 hover:text-gray-900">Գլխավոր</Link>
+            <Link to="/projects" className="text-gray-600 hover:text-gray-900">Նախագծեր</Link>
+            <Link to="/courses" className="text-gray-600 hover:text-gray-900">Դասընթացներ</Link>
+            {isAuthenticated && (
+              <Link to="/portfolio" className="text-gray-600 hover:text-gray-900">Պորտֆոլիո</Link>
+            )}
+          </nav>
           
           <div className="flex items-center space-x-4">
             {isAuthenticated && (
