@@ -4,9 +4,11 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useCourses } from './CourseContext';
 import ProfessionalCourseList from './ProfessionalCourseList';
 import EditProfessionalCourseDialog from './EditProfessionalCourseDialog';
+import { useProjectPermissions } from '@/hooks/useProjectPermissions';
 
 const ProfessionalCourseTabView: React.FC = () => {
   const { user } = useAuth();
+  const permissions = useProjectPermissions(user?.role);
   const {
     professionalCourses,
     userProfessionalCourses,
@@ -19,14 +21,20 @@ const ProfessionalCourseTabView: React.FC = () => {
     handleDeleteProfessionalCourse
   } = useCourses();
 
-  const isAdmin = user?.role === 'admin';
+  // Determine if the user can manage all courses
+  const canManageAllCourses = permissions.canViewAllProjects || user?.role === 'admin';
+  
+  // Determine which courses to display based on user role
+  const displayCourses = canManageAllCourses 
+    ? professionalCourses 
+    : userProfessionalCourses;
 
   return (
     <>
       <ProfessionalCourseList
-        courses={professionalCourses}
+        courses={displayCourses}
         userCourses={userProfessionalCourses}
-        isAdmin={isAdmin}
+        isAdmin={canManageAllCourses}
         onEdit={handleEditProfessionalCourseInit}
         onDelete={handleDeleteProfessionalCourse}
       />

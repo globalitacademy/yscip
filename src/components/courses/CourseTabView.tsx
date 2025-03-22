@@ -5,10 +5,12 @@ import { useCourses } from './CourseContext';
 import CourseList from './CourseList';
 import EditCourseDialog from './EditCourseDialog';
 import { Course } from './types';
+import { useProjectPermissions } from '@/hooks/useProjectPermissions';
 
 const CourseTabView: React.FC = () => {
   const { user } = useAuth();
   const coursesContext = useCourses();
+  const permissions = useProjectPermissions(user?.role);
   
   // Fixed strings for newModule to match expected type
   const [newModule, setNewModule] = useState<string>('');
@@ -17,7 +19,8 @@ const CourseTabView: React.FC = () => {
   const [selectedCourse, setSelectedCourse] = useState<Course | null>(null);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   
-  const isAdmin = user?.role === 'admin';
+  // Check if user has admin permissions
+  const canManageAllCourses = permissions.canViewAllProjects || user?.role === 'admin';
   
   const handleEditInit = (course: Course) => {
     setSelectedCourse(course);
@@ -52,12 +55,17 @@ const CourseTabView: React.FC = () => {
     });
   };
 
+  // Determine which courses to display based on user role
+  const displayCourses = canManageAllCourses 
+    ? coursesContext.courses 
+    : coursesContext.userCourses;
+
   return (
     <>
       <CourseList
-        courses={coursesContext.courses}
+        courses={displayCourses}
         userCourses={coursesContext.userCourses}
-        isAdmin={isAdmin}
+        isAdmin={canManageAllCourses}
         onEdit={handleEditInit}
         onDelete={coursesContext.handleDeleteCourse}
       />

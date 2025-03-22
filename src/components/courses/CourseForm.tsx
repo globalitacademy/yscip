@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { mockSpecializations } from './constants';
 import { Course } from './types';
+import { toast } from 'sonner';
 
 interface CourseFormProps {
   course: Partial<Course>;
@@ -27,6 +28,15 @@ const CourseForm: React.FC<CourseFormProps> = ({
   handleRemoveModule,
   isEdit = false
 }) => {
+  // Validate module before adding
+  const validateAndAddModule = () => {
+    if (!newModule.trim()) {
+      toast.error('Մոդուլի անվանումը չի կարող դատարկ լինել');
+      return;
+    }
+    handleAddModule();
+  };
+
   return (
     <div className="grid gap-4 py-4">
       <div className="grid grid-cols-4 items-center gap-4">
@@ -38,6 +48,7 @@ const CourseForm: React.FC<CourseFormProps> = ({
           value={course.name || ''}
           onChange={(e) => setCourse({ ...course, name: e.target.value })}
           className="col-span-3"
+          required
         />
       </div>
       <div className="grid grid-cols-4 items-center gap-4">
@@ -70,6 +81,7 @@ const CourseForm: React.FC<CourseFormProps> = ({
           onChange={(e) => setCourse({ ...course, duration: e.target.value })}
           className="col-span-3"
           placeholder="Օր. 4 ամիս"
+          required
         />
       </div>
       <div className="grid grid-cols-4 items-start gap-4">
@@ -92,8 +104,14 @@ const CourseForm: React.FC<CourseFormProps> = ({
               value={newModule}
               onChange={(e) => setNewModule(e.target.value)}
               placeholder="Մոդուլի անվանում"
+              onKeyDown={(e) => {
+                if (e.key === 'Enter') {
+                  e.preventDefault();
+                  validateAndAddModule();
+                }
+              }}
             />
-            <Button type="button" onClick={handleAddModule} size="sm">
+            <Button type="button" onClick={validateAndAddModule} size="sm">
               Ավելացնել
             </Button>
           </div>

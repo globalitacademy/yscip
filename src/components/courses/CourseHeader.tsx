@@ -4,6 +4,8 @@ import { useCourses } from './CourseContext';
 import AddProfessionalCourseDialog from './AddProfessionalCourseDialog';
 import { Button } from '@/components/ui/button';
 import { Plus } from 'lucide-react';
+import { v4 as uuidv4 } from 'uuid';
+import { useAuth } from '@/contexts/AuthContext';
 
 interface CourseHeaderProps {
   canAddCourses: boolean;
@@ -11,26 +13,51 @@ interface CourseHeaderProps {
 
 const CourseHeader: React.FC<CourseHeaderProps> = ({ canAddCourses }) => {
   const courses = useCourses();
+  const { user } = useAuth();
   
-  // These properties were missing in the context type
-  // Instead of using them directly from context, we'll handle dialog state locally
+  // Handle dialog state locally
   const [isAddDialogOpen, setIsAddDialogOpen] = React.useState(false);
   const [newProfessionalCourse, setNewProfessionalCourse] = React.useState({
-    id: '',
+    id: uuidv4(),
     title: '',
     subtitle: 'ԴԱՍԸՆԹԱՑ',
     duration: '',
     price: '',
     buttonText: 'Դիտել',
     color: 'text-blue-500',
-    createdBy: '',
-    institution: ''
+    createdBy: user?.name || '',
+    institution: user?.organization || 'Գիտելիք Էդյու'
   });
 
   const handleAddProfessionalCourse = async () => {
     try {
-      await courses.handleCreateProfessionalCourse(newProfessionalCourse);
+      if (!newProfessionalCourse.title || !newProfessionalCourse.duration || !newProfessionalCourse.price) {
+        console.error('Missing required fields for course creation');
+        return;
+      }
+      
+      // Ensure createdBy is set correctly
+      const courseToCreate = {
+        ...newProfessionalCourse,
+        createdBy: user?.name || '',
+        id: uuidv4() // Generate a new ID for each course
+      };
+      
+      await courses.handleCreateProfessionalCourse(courseToCreate);
       setIsAddDialogOpen(false);
+      
+      // Reset the form after successful creation
+      setNewProfessionalCourse({
+        id: uuidv4(),
+        title: '',
+        subtitle: 'ԴԱՍԸՆԹԱՑ',
+        duration: '',
+        price: '',
+        buttonText: 'Դիտել',
+        color: 'text-blue-500',
+        createdBy: user?.name || '',
+        institution: user?.organization || 'Գիտելիք Էդյու'
+      });
     } catch (error) {
       console.error('Error adding course:', error);
     }
