@@ -9,13 +9,15 @@ import { useAuth } from '@/contexts/AuthContext';
 
 interface ProjectCardProps {
   project: ProjectTheme;
+  className?: string;
   onEdit?: (project: ProjectTheme) => void;
   onImageChange?: (project: ProjectTheme) => void;
   onDelete?: (project: ProjectTheme) => void;
 }
 
 const ProjectCard: React.FC<ProjectCardProps> = ({ 
-  project
+  project,
+  className
 }) => {
   const { user } = useAuth();
   
@@ -24,7 +26,7 @@ const ProjectCard: React.FC<ProjectCardProps> = ({
   const creatorName = isCreatedByCurrentUser ? 'Ձեր կողմից' : 'Ուսումնական Կենտրոն';
   
   return (
-    <Card className="flex flex-col w-full hover:shadow-md transition-shadow relative">
+    <Card className={`flex flex-col w-full hover:shadow-md transition-shadow relative ${className || ''}`}>
       <div className="absolute top-4 left-4 flex items-center text-xs bg-gray-100 px-2 py-1 rounded-full z-10">
         <Building size={12} className="mr-1" />
         <span>{project.category}</span>
