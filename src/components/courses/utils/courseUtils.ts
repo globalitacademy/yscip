@@ -1,3 +1,4 @@
+
 import { supabase } from '@/integrations/supabase/client';
 import { ProfessionalCourse } from '../types/ProfessionalCourse';
 import { toast } from 'sonner';
@@ -147,9 +148,9 @@ export const getAllCourses = async (): Promise<ProfessionalCourse[]> => {
       icon: convertIconNameToComponent(course.icon_name),
       duration: course.duration,
       price: course.price,
-      buttonText: course.buttonText || 'Դիտել',
+      buttonText: course.button_text || 'Դիտել',
       color: course.color,
-      createdBy: course.createdBy,
+      createdBy: course.created_by,
       institution: course.institution,
       imageUrl: course.image_url,
       organizationLogo: course.image_url, // Use image_url as organizationLogo since it's not in the schema
@@ -263,7 +264,7 @@ const convertToSupabaseCourseFormat = (course: ProfessionalCourse) => {
     // Get the icon type safely
     const iconType = course.icon.type;
     
-    // First check if iconType exists and is an object
+    // Add proper null checks for iconType
     if (iconType && typeof iconType === 'object') {
       // Then check if it has a 'name' property
       if ('name' in iconType && iconType.name) {
