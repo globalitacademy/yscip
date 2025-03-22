@@ -1,3 +1,4 @@
+
 import React, { useEffect, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import Header from '@/components/Header';
@@ -27,6 +28,7 @@ const CourseDetails: React.FC = () => {
   const [newOutcome, setNewOutcome] = useState('');
   const { user } = useAuth();
 
+  // Listen for course updates from other components
   useEffect(() => {
     const handleCourseUpdate = (event: CustomEvent<ProfessionalCourse>) => {
       const updatedCourse = event.detail;
@@ -50,7 +52,9 @@ const CourseDetails: React.FC = () => {
         try {
           const courseData = await getCourseById(id);
           
+          // Try to create a sample course in localStorage if none found
           if (!courseData) {
+            // Create a sample course for testing if we can't fetch one
             const sampleCourse: ProfessionalCourse = {
               id: id,
               title: "Web Development Fundamentals",
@@ -80,6 +84,7 @@ const CourseDetails: React.FC = () => {
               ]
             };
             
+            // Save to localStorage
             saveToLocalStorage(sampleCourse);
             
             setCourse(sampleCourse);
@@ -109,6 +114,7 @@ const CourseDetails: React.FC = () => {
   const handleEditCourse = () => {
     if (!course) return;
 
+    // Update the course in Supabase and localStorage
     try {
       saveCourseChanges(course).then(success => {
         if (success) {
@@ -126,6 +132,7 @@ const CourseDetails: React.FC = () => {
 
   const toggleEditMode = async () => {
     if (isEditing) {
+      // Save changes
       if (!editedCourse) return;
       
       const success = await saveCourseChanges(editedCourse);
@@ -136,6 +143,7 @@ const CourseDetails: React.FC = () => {
         toast.error('Դասընթացի թարմացման ժամանակ սխալ է տեղի ունեցել');
       }
     } else {
+      // Enter edit mode
       setEditedCourse(course);
     }
     
@@ -213,6 +221,7 @@ const CourseDetails: React.FC = () => {
     });
   };
 
+  // Check if user can edit this course
   const canEdit = user && (user.role === 'admin' || course?.createdBy === user.name);
 
   if (loading) {
@@ -318,6 +327,7 @@ const CourseDetails: React.FC = () => {
   );
 };
 
+// Helper function to add the missing saveToLocalStorage function
 const saveToLocalStorage = (course: ProfessionalCourse): void => {
   try {
     const storedCourses = localStorage.getItem('professionalCourses');
