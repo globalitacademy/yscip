@@ -1,4 +1,3 @@
-
 import { supabase } from '@/integrations/supabase/client';
 import { ProfessionalCourse } from '../types/ProfessionalCourse';
 import { toast } from 'sonner';
@@ -148,9 +147,9 @@ export const getAllCourses = async (): Promise<ProfessionalCourse[]> => {
       icon: convertIconNameToComponent(course.icon_name),
       duration: course.duration,
       price: course.price,
-      buttonText: course.button_text || 'Դիտել',
+      buttonText: course.buttonText || 'Դիտել',
       color: course.color,
-      createdBy: course.created_by,
+      createdBy: course.createdBy,
       institution: course.institution,
       imageUrl: course.image_url,
       organizationLogo: course.image_url, // Use image_url as organizationLogo since it's not in the schema
