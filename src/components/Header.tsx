@@ -1,88 +1,57 @@
 
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { cn } from '@/lib/utils';
-import UserMenu from '@/components/UserMenu';
 import { useAuth } from '@/contexts/AuthContext';
-import { Button } from '@/components/ui/button';
-import { LayoutDashboard, GraduationCap } from 'lucide-react';
-import {
-  NavigationMenu,
-  NavigationMenuContent,
-  NavigationMenuItem,
-  NavigationMenuLink,
-  NavigationMenuList,
-  NavigationMenuTrigger,
-  navigationMenuTriggerStyle,
-} from "@/components/ui/navigation-menu";
+import UserMenu from './UserMenu';
+import DatabaseSyncButton from './DatabaseSyncButton';
 
-interface HeaderProps {
-  className?: string;
-}
+const Header: React.FC = () => {
+  const { user, isAuthenticated } = useAuth();
 
-const Header: React.FC<HeaderProps> = ({
-  className
-}) => {
-  const { user } = useAuth();
-
-  // Define role-based navigation
-  const getRoleNavigation = () => {
-    if (!user) return null;
-    
-    // Determine correct dashboard route based on user role
-    const getDashboardRoute = () => {
-      if (user.role === 'student') {
-        return '/admin/my-projects';
-      } else {
-        return '/admin/dashboard';
-      }
-    };
-
-    return (
-      <div className="flex items-center gap-2 md:gap-4">
-        <Link to={getDashboardRoute()}>
-          <Button variant="outline" size="sm" className="gap-1">
-            <LayoutDashboard size={16} />
-            <span className="hidden md:inline">
-              {user.role === 'student' ? 'Իմ նախագծերը' : 'Ադմին պանել'}
-            </span>
-          </Button>
-        </Link>
-        
-        {user.role === 'student' && (
-          <Link to="/admin/student-projects">
-            <Button variant="outline" size="sm" className="gap-1">
-              <GraduationCap size={16} />
-              <span className="hidden md:inline">Նախագծեր</span>
-            </Button>
-          </Link>
-        )}
-      </div>
-    );
-  };
-
-  return <header className={cn("border-b border-border sticky top-0 z-50 bg-background", className)}>
-      <div className="container mx-auto px-4 py-3 flex justify-between items-center">
-        <div className="flex items-center gap-6">
-          <Link to="/" className="flex items-center gap-2">
-            <GraduationCap size={28} className="text-primary" />
-            <div className="flex flex-col">
-              <span className="text-xl font-bold text-primary">ՈՒԿՀ</span>
-            </div>
-          </Link>
+  return (
+    <header className="bg-white shadow-md">
+      <div className="container mx-auto px-4 py-4">
+        <div className="flex justify-between items-center">
+          <div className="flex items-center space-x-4">
+            <Link to="/" className="text-xl font-bold text-gray-800">GitEdu</Link>
+            <nav className="hidden md:flex space-x-4">
+              <Link to="/" className="text-gray-600 hover:text-gray-900">Գլխավոր</Link>
+              <Link to="/projects" className="text-gray-600 hover:text-gray-900">Նախագծեր</Link>
+              <Link to="/courses" className="text-gray-600 hover:text-gray-900">Դասընթացներ</Link>
+              {isAuthenticated && (
+                <Link to="/portfolio" className="text-gray-600 hover:text-gray-900">Պորտֆոլիո</Link>
+              )}
+            </nav>
+          </div>
           
-          <NavigationMenu className="hidden md:flex">
-            <NavigationMenuList>
-              {/* Navigation menu items for Projects and Courses have been removed */}
-            </NavigationMenuList>
-          </NavigationMenu>
-          
-          {getRoleNavigation()}
+          <div className="flex items-center space-x-4">
+            {isAuthenticated && (
+              <DatabaseSyncButton />
+            )}
+            
+            {isAuthenticated ? (
+              <UserMenu />
+            ) : (
+              <div className="space-x-2">
+                <Link
+                  to="/login"
+                  className="px-4 py-2 border border-gray-300 rounded text-gray-700 hover:bg-gray-50"
+                >
+                  Մուտք
+                </Link>
+                <Link
+                  to="/register"
+                  className="px-4 py-2 bg-blue-600 rounded text-white hover:bg-blue-700"
+                >
+                  Գրանցվել
+                </Link>
+              </div>
+            )}
+          </div>
         </div>
-        
-        <UserMenu />
       </div>
-    </header>;
+    </header>
+  );
 };
 
 export default Header;

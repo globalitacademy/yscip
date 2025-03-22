@@ -1,3 +1,4 @@
+
 import { supabase } from '@/integrations/supabase/client';
 import { ProfessionalCourse } from '../types/ProfessionalCourse';
 import { toast } from 'sonner';
@@ -9,8 +10,9 @@ export const COURSE_UPDATED_EVENT = 'courseUpdated';
 
 export const getCourseById = async (id: string): Promise<ProfessionalCourse | null> => {
   try {
-    const localCourse = getLocalCourseById(id);
+    console.log('Fetching course with ID:', id);
     
+    // First try to fetch from Supabase
     try {
       const { data: course, error } = await supabase
         .from('courses')
@@ -19,14 +21,16 @@ export const getCourseById = async (id: string): Promise<ProfessionalCourse | nu
         .single();
 
       if (error) {
-        console.error('Error fetching course:', error);
-        if (localCourse) return localCourse;
-        return null;
+        console.error('Error fetching course from Supabase:', error);
+        // If Supabase fails, fall back to local storage
+        const localCourse = getLocalCourseById(id);
+        return localCourse;
       }
 
       if (!course) {
-        if (localCourse) return localCourse;
-        return null;
+        console.log('Course not found in Supabase, checking local storage');
+        const localCourse = getLocalCourseById(id);
+        return localCourse;
       }
 
       let lessons = [], requirements = [], outcomes = [];
@@ -90,17 +94,91 @@ export const getCourseById = async (id: string): Promise<ProfessionalCourse | nu
         outcomes: outcomes?.map(outcome => outcome.outcome) || []
       };
 
+      // Update local storage for offline access
       saveToLocalStorage(formattedCourse);
       
       return formattedCourse;
     } catch (supabaseError) {
       console.error('Error in Supabase fetching:', supabaseError);
-      if (localCourse) return localCourse;
-      return null;
+      // If Supabase fails, fall back to local storage
+      const localCourse = getLocalCourseById(id);
+      return localCourse;
     }
   } catch (error) {
     console.error('Error in getCourseById:', error);
     return null;
+  }
+};
+
+export const getAllCoursesFromSupabase = async (): Promise<ProfessionalCourse[]> => {
+  try {
+    console.log('Fetching all courses from Supabase');
+    const { data, error } = await supabase
+      .from('courses')
+      .select('*');
+      
+    if (error) {
+      console.error('Error fetching courses from Supabase:', error);
+      return getAllCoursesFromLocalStorage();
+    }
+    
+    if (!data || data.length === 0) {
+      console.log('No courses found in Supabase, using local storage');
+      return getAllCoursesFromLocalStorage();
+    }
+    
+    // Process each course to format it properly
+    const formattedCourses: ProfessionalCourse[] = await Promise.all(data.map(async (course) => {
+      // Fetch related data for each course
+      const { data: lessonsData } = await supabase
+        .from('course_lessons')
+        .select('*')
+        .eq('course_id', course.id);
+        
+      const { data: requirementsData } = await supabase
+        .from('course_requirements')
+        .select('*')
+        .eq('course_id', course.id);
+        
+      const { data: outcomesData } = await supabase
+        .from('course_outcomes')
+        .select('*')
+        .eq('course_id', course.id);
+        
+      // Create icon component
+      const iconElement = convertIconNameToComponent(course.icon_name);
+      
+      return {
+        id: course.id,
+        title: course.title,
+        subtitle: course.subtitle,
+        icon: iconElement,
+        iconName: course.icon_name,
+        duration: course.duration,
+        price: course.price,
+        buttonText: course.button_text,
+        color: course.color,
+        createdBy: course.created_by,
+        institution: course.institution,
+        imageUrl: course.image_url,
+        organizationLogo: course.organization_logo,
+        description: course.description,
+        lessons: lessonsData?.map(lesson => ({
+          title: lesson.title, 
+          duration: lesson.duration
+        })) || [],
+        requirements: requirementsData?.map(req => req.requirement) || [],
+        outcomes: outcomesData?.map(outcome => outcome.outcome) || []
+      };
+    }));
+    
+    // Update local storage with the fetched courses
+    localStorage.setItem('professionalCourses', JSON.stringify(formattedCourses));
+    
+    return formattedCourses;
+  } catch (error) {
+    console.error('Error fetching all courses from Supabase:', error);
+    return getAllCoursesFromLocalStorage();
   }
 };
 
@@ -134,7 +212,7 @@ const getLocalCourseById = (id: string): ProfessionalCourse | null => {
 const convertIconNameToComponent = (iconName: string): React.ReactElement => {
   let IconComponent;
   
-  switch (iconName.toLowerCase()) {
+  switch (iconName?.toLowerCase()) {
     case 'book':
       IconComponent = Book;
       break;
@@ -188,15 +266,12 @@ export const saveCourseChanges = async (course: ProfessionalCourse): Promise<boo
   try {
     if (!course) return false;
 
-    console.log('Saving course changes:', course);
-
-    // First save to localStorage to ensure local synchronization
-    saveToLocalStorage(course);
+    console.log('Saving course changes to Supabase:', course);
 
     // Extract the icon name from the course object or from the iconName property
     const iconName = course.iconName || getIconNameFromElement(course.icon);
 
-    // Then try to save to Supabase if available
+    // First try to save to Supabase
     try {
       const { error: courseError } = await supabase
         .from('courses')
@@ -219,7 +294,44 @@ export const saveCourseChanges = async (course: ProfessionalCourse): Promise<boo
 
       if (courseError) {
         console.error('Error updating course in Supabase:', courseError);
-        // Continue with local storage only
+        // Try to check if course exists
+        const { data: existingCourse, error: checkError } = await supabase
+          .from('courses')
+          .select('id')
+          .eq('id', course.id)
+          .maybeSingle();
+          
+        if (checkError || !existingCourse) {
+          // Course does not exist, let's create it
+          const { error: insertError } = await supabase
+            .from('courses')
+            .insert({
+              id: course.id,
+              title: course.title,
+              subtitle: course.subtitle,
+              icon_name: iconName,
+              duration: course.duration,
+              price: course.price,
+              button_text: course.buttonText,
+              color: course.color,
+              created_by: course.createdBy,
+              institution: course.institution,
+              image_url: course.imageUrl,
+              organization_logo: course.organizationLogo,
+              description: course.description,
+              created_at: new Date().toISOString(),
+              updated_at: new Date().toISOString()
+            });
+            
+          if (insertError) {
+            console.error('Error inserting course in Supabase:', insertError);
+            // Save to localStorage as fallback
+            saveToLocalStorage(course);
+          }
+        } else {
+          // Save to localStorage as fallback
+          saveToLocalStorage(course);
+        }
       } else {
         // If course update was successful, also update related tables
         if (course.lessons && course.lessons.length > 0) {
@@ -285,6 +397,9 @@ export const saveCourseChanges = async (course: ProfessionalCourse): Promise<boo
       // We've already saved to localStorage, so we can still return true
     }
 
+    // Always save to localStorage for offline access
+    saveToLocalStorage(course);
+
     // Notify any listeners about the course change with a custom event
     const event = new CustomEvent(COURSE_UPDATED_EVENT, { detail: course });
     window.dispatchEvent(event);
@@ -318,4 +433,27 @@ const getIconNameFromElement = (iconElement: React.ReactElement): string => {
   
   // Default fallback
   return 'book';
+};
+
+export const syncCoursesToSupabase = async (): Promise<void> => {
+  try {
+    // Get all courses from local storage
+    const localCourses = getAllCoursesFromLocalStorage();
+    
+    if (localCourses.length === 0) {
+      console.log('No local courses to sync to Supabase');
+      return;
+    }
+    
+    // For each local course, try to save it to Supabase
+    for (const course of localCourses) {
+      await saveCourseChanges(course);
+    }
+    
+    console.log('Successfully synced local courses to Supabase');
+    toast.success('Դասընթացները հաջողությամբ համաժամեցվել են բազայի հետ');
+  } catch (error) {
+    console.error('Error syncing courses to Supabase:', error);
+    toast.error('Դասընթացների համաժամեցման ժամանակ սխալ է տեղի ունեցել');
+  }
 };
