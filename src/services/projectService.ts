@@ -8,34 +8,46 @@ import { toast } from 'sonner';
  */
 export const projectService = {
   /**
+   * Format a project from database format to application format
+   */
+  formatDatabaseProject(dbProject: any): ProjectTheme {
+    return {
+      id: dbProject.id,
+      title: dbProject.title,
+      description: dbProject.description,
+      image: dbProject.image || `https://source.unsplash.com/random/800x600/?${encodeURIComponent(dbProject.category)}`,
+      category: dbProject.category,
+      techStack: dbProject.tech_stack || [],
+      createdBy: dbProject.created_by,
+      createdAt: dbProject.created_at,
+      duration: dbProject.duration
+    };
+  },
+
+  /**
    * Fetch all projects from the database
    */
   async fetchProjects(): Promise<ProjectTheme[]> {
     try {
       const { data, error } = await supabase
         .from('projects')
-        .select('*');
+        .select('*')
+        .order('created_at', { ascending: false });
       
       if (error) {
         console.error('Error fetching projects:', error);
-        toast('Սխալ նախագծերի ստացման ժամանակ');
-        throw error;
+        toast.error('Սխալ նախագծերի ստացման ժամանակ');
+        return [];
       }
 
-      return data.map(project => ({
-        id: project.id,
-        title: project.title,
-        description: project.description,
-        image: project.image || `https://source.unsplash.com/random/800x600/?${encodeURIComponent(project.category)}`,
-        category: project.category,
-        techStack: project.tech_stack || [],
-        createdBy: project.created_by,
-        createdAt: project.created_at,
-        duration: project.duration
-      }));
+      if (!data || data.length === 0) {
+        return [];
+      }
+
+      return data.map(project => this.formatDatabaseProject(project));
     } catch (err) {
       console.error('Unexpected error:', err);
-      toast('Տվյալների ստացման սխալ, օգտագործվում են լոկալ տվյալները');
+      toast.error('Տվյալների ստացման սխալ');
       return [];
     }
   },
@@ -55,20 +67,19 @@ export const projectService = {
           image: project.image,
           created_by: userId,
           duration: project.duration,
-        })
-        .select();
+        });
         
       if (error) {
         console.error('Error creating project:', error);
-        toast('Սխալ նախագծի ստեղծման ժամանակ');
+        toast.error('Սխալ նախագծի ստեղծման ժամանակ');
         return false;
       }
       
-      toast('Նախագիծը հաջողությամբ ստեղծվել է');
+      toast.success('Նախագիծը հաջողությամբ ստեղծվել է');
       return true;
     } catch (err) {
       console.error('Unexpected error creating project:', err);
-      toast('Տվյալների բազայի հետ կապի սխալ, նախագիծը ստեղծվել է լոկալ');
+      toast.error('Տվյալների բազայի հետ կապի սխալ');
       return false;
     }
   },
@@ -84,21 +95,23 @@ export const projectService = {
           title: updates.title,
           description: updates.description,
           category: updates.category,
+          tech_stack: updates.techStack,
+          duration: updates.duration,
           updated_at: new Date().toISOString()
         })
         .eq('id', projectId);
         
       if (error) {
         console.error('Error updating project:', error);
-        toast('Սխալ նախագծի թարմացման ժամանակ');
+        toast.error('Սխալ նախագծի թարմացման ժամանակ');
         return false;
       }
       
-      toast('Նախագիծը հաջողությամբ թարմացվել է');
+      toast.success('Նախագիծը հաջողությամբ թարմացվել է');
       return true;
     } catch (err) {
       console.error('Unexpected error updating project:', err);
-      toast('Տվյալների բազայի հետ կապի սխալ, նախագիծը թարմացվել է լոկալ');
+      toast.error('Տվյալների բազայի հետ կապի սխալ');
       return false;
     }
   },
@@ -115,15 +128,15 @@ export const projectService = {
         
       if (error) {
         console.error('Error updating project image:', error);
-        toast('Սխալ նախագծի նկարի թարմացման ժամանակ');
+        toast.error('Սխալ նախագծի նկարի թարմացման ժամանակ');
         return false;
       }
       
-      toast('Նախագծի նկարը հաջողությամբ թարմացվել է');
+      toast.success('Նախագծի նկարը հաջողությամբ թարմացվել է');
       return true;
     } catch (err) {
       console.error('Unexpected error updating project image:', err);
-      toast('Տվյալների բազայի հետ կապի սխալ, նախագիծը նկարը թարմացվել է լոկալ');
+      toast.error('Տվյալների բազայի հետ կապի սխալ');
       return false;
     }
   },
@@ -140,15 +153,15 @@ export const projectService = {
         
       if (error) {
         console.error('Error deleting project:', error);
-        toast('Սխալ նախագծի ջնջման ժամանակ');
+        toast.error('Սխալ նախագծի ջնջման ժամանակ');
         return false;
       }
       
-      toast('Նախագիծը հաջողությամբ ջնջվել է');
+      toast.success('Նախագիծը հաջողությամբ ջնջվել է');
       return true;
     } catch (err) {
       console.error('Unexpected error deleting project:', err);
-      toast('Տվյալների բազայի հետ կապի սխալ, նախագիծը ջնջվել է լոկալ');
+      toast.error('Տվյալների բազայի հետ կապի սխալ');
       return false;
     }
   }

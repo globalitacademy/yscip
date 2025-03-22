@@ -1,7 +1,7 @@
+
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ArrowRight, BookOpen, Users, Tag, GraduationCap, Layers, ChevronDown } from 'lucide-react';
-import { projectThemes } from '@/data/projectThemes';
 import ProjectCard from '@/components/ProjectCard';
 import { Button } from '@/components/ui/button';
 import { FadeIn } from '@/components/LocalTransitions';
@@ -23,6 +23,9 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { projectService } from '@/services/projectService';
+import { supabase } from '@/integrations/supabase/client';
+import { toast } from 'sonner';
 
 interface ThemeGridProps {
   limit?: number;
@@ -33,12 +36,84 @@ const ThemeGrid: React.FC<ThemeGridProps> = ({ limit, createdProjects = [] }) =>
   const navigate = useNavigate();
   const [displayLimit, setDisplayLimit] = useState(limit || 6);
   const { user } = useAuth();
-  const [allProjects, setAllProjects] = useState([...projectThemes]);
+  const [allProjects, setAllProjects] = useState<any[]>([]);
   const [activeCategory, setActiveCategory] = useState("all");
   const [reservedProjects, setReservedProjects] = useState<any[]>([]);
   const [assignments, setAssignments] = useState<any[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [categories, setCategories] = useState<string[]>(["all"]);
   
-  const categories = ["all", ...new Set(projectThemes.map(project => project.category))];
+  // Load database projects on component mount
+  useEffect(() => {
+    const loadDatabaseProjects = async () => {
+      setIsLoading(true);
+      try {
+        const dbProjects = await projectService.fetchProjects();
+        setAllProjects(dbProjects);
+        
+        // Extract unique categories
+        const uniqueCategories = ["all", ...new Set(dbProjects.map(project => project.category))];
+        setCategories(uniqueCategories);
+      } catch (error) {
+        console.error('Error loading projects:', error);
+        toast.error('Նախագծերի բեռնման ժամանակ սխալ է տեղի ունեցել');
+        setAllProjects([]);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    
+    loadDatabaseProjects();
+    
+    // Subscribe to real-time project updates
+    const channel = supabase
+      .channel('public:projects')
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'projects' },
+        (payload) => {
+          console.log('Project real-time update:', payload);
+          
+          if (payload.eventType === 'INSERT') {
+            // Add new project to state
+            const newProject = projectService.formatDatabaseProject(payload.new);
+            setAllProjects(prev => [newProject, ...prev]);
+            // Update categories if new category appears
+            if (newProject.category && !categories.includes(newProject.category)) {
+              setCategories(prev => [...prev, newProject.category]);
+            }
+          } 
+          else if (payload.eventType === 'UPDATE') {
+            // Update existing project in state
+            const updatedProject = projectService.formatDatabaseProject(payload.new);
+            setAllProjects(prev => prev.map(p => 
+              p.id === updatedProject.id ? updatedProject : p
+            ));
+            // Refresh categories in case category names have changed
+            setCategories(prev => {
+              const allCategories = allProjects.map(p => p.category);
+              return ["all", ...new Set(allCategories)];
+            });
+          }
+          else if (payload.eventType === 'DELETE') {
+            // Remove deleted project from state
+            const deletedId = payload.old.id;
+            setAllProjects(prev => prev.filter(p => p.id !== deletedId));
+            // Refresh categories in case a category is now empty
+            setCategories(prev => {
+              const remainingProjects = allProjects.filter(p => p.id !== deletedId);
+              const allCategories = remainingProjects.map(p => p.category);
+              return ["all", ...new Set(allCategories)];
+            });
+          }
+        }
+      )
+      .subscribe();
+    
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, []);
   
   useEffect(() => {
     const handleCategoryChange = (event: CustomEvent) => {
@@ -91,32 +166,6 @@ const ThemeGrid: React.FC<ThemeGridProps> = ({ limit, createdProjects = [] }) =>
       }
     }
   }, [user]);
-  
-  useEffect(() => {
-    if (createdProjects && createdProjects.length > 0) {
-      const formattedCreatedProjects = createdProjects.map(project => ({
-        ...project,
-        id: project.id || Date.now() + Math.random(),
-        complexity: project.complexity || 'Միջին',
-        techStack: project.techStack || [],
-        steps: project.steps || [],
-        category: project.category || 'Այլ',
-      }));
-      
-      const mergedProjects = [...projectThemes];
-      
-      formattedCreatedProjects.forEach(newProject => {
-        const existingIndex = mergedProjects.findIndex(p => p.id === newProject.id);
-        if (existingIndex >= 0) {
-          mergedProjects[existingIndex] = newProject;
-        } else {
-          mergedProjects.push(newProject);
-        }
-      });
-      
-      setAllProjects(mergedProjects);
-    }
-  }, [createdProjects]);
   
   const getFilteredProjects = () => {
     if (!user) return allProjects;
@@ -187,6 +236,19 @@ const ThemeGrid: React.FC<ThemeGridProps> = ({ limit, createdProjects = [] }) =>
   };
   
   const hasMore = displayLimit < categoryFilteredProjects.length;
+  
+  if (isLoading) {
+    return (
+      <div id="themes-section" className="mt-12 text-left">
+        <div className="mb-8">
+          <h2 className="text-2xl font-semibold mb-4">Ծրագրերի թեմաներն ըստ կատեգորիաների</h2>
+          <div className="flex justify-center py-10">
+            <div className="animate-spin h-10 w-10 border-4 border-primary border-t-transparent rounded-full"></div>
+          </div>
+        </div>
+      </div>
+    );
+  }
   
   return (
     <div id="themes-section" className="mt-12 text-left">
@@ -262,19 +324,19 @@ const ThemeGrid: React.FC<ThemeGridProps> = ({ limit, createdProjects = [] }) =>
           </div>
         </div>
 
-        <FadeIn className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-10">
-          {themes.map((theme) => (
-            <ProjectCard
-              key={theme.id}
-              project={theme}
-            />
-          ))}
-        </FadeIn>
-        
-        {themes.length === 0 && (
+        {themes.length === 0 ? (
           <div className="text-center p-10 bg-muted rounded-lg">
             <p className="text-muted-foreground">Այս կատեգորիայում ծրագրեր չկան</p>
           </div>
+        ) : (
+          <FadeIn className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-10">
+            {themes.map((theme) => (
+              <ProjectCard
+                key={theme.id}
+                project={theme}
+              />
+            ))}
+          </FadeIn>
         )}
         
         <div className="flex justify-center space-x-4 mt-8">

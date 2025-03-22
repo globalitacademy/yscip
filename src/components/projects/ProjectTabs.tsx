@@ -5,23 +5,19 @@ import ThemeGrid from '@/components/ThemeGrid';
 import CreatedProjectsTab from './CreatedProjectsTab';
 import AssignedProjectsTab from './AssignedProjectsTab';
 import TeachingProjectsTab from './TeachingProjectsTab';
-import { ProjectTheme } from '@/data/projectThemes';
 
 interface ProjectTabsProps {
   user: any;
   createdProjects: any[];
   assignments: any[];
-  projectThemes: ProjectTheme[];
+  projectThemes: any[];
 }
 
 const ProjectTabs: React.FC<ProjectTabsProps> = ({ 
   user, 
-  createdProjects, 
   assignments, 
   projectThemes 
 }) => {
-  const allProjects = [...projectThemes, ...createdProjects];
-
   return (
     <Tabs defaultValue="all-projects" className="mb-6">
       <TabsList className="h-auto mb-6 w-full flex flex-wrap gap-2 justify-start sm:justify-center">
@@ -38,14 +34,12 @@ const ProjectTabs: React.FC<ProjectTabsProps> = ({
       </TabsList>
       
       <TabsContent value="all-projects">
-        <ThemeGrid 
-          createdProjects={createdProjects} 
-        />
+        <ThemeGrid />
       </TabsContent>
       
       {user?.role !== 'student' && (
         <TabsContent value="created-projects">
-          <CreatedProjectsTab projects={createdProjects} userId={user?.id} />
+          <CreatedProjectsTab userId={user?.id} />
         </TabsContent>
       )}
       
@@ -54,7 +48,7 @@ const ProjectTabs: React.FC<ProjectTabsProps> = ({
           <AssignedProjectsTab 
             assignments={assignments} 
             userId={user?.id} 
-            allProjects={allProjects}
+            allProjects={projectThemes}
           />
         </TabsContent>
       )}
@@ -63,7 +57,7 @@ const ProjectTabs: React.FC<ProjectTabsProps> = ({
         <TabsContent value="teaching-projects">
           <TeachingProjectsTab 
             assignedProjects={user.assignedProjects} 
-            allProjects={allProjects}
+            allProjects={projectThemes}
           />
         </TabsContent>
       )}

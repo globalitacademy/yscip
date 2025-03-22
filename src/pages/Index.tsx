@@ -6,53 +6,68 @@ import FeaturesSection from '@/components/features';
 import Footer from '@/components/Footer';
 import { useAuth } from '@/contexts/AuthContext';
 import { toast } from 'sonner';
-import { projectThemes } from '@/data/projectThemes';
 import UserReservedProjects from '@/components/user/UserReservedProjects';
 import ProjectTabs from '@/components/projects/ProjectTabs';
 import EducationalCycleInfographic from '@/components/educationalCycle';
 import CoursesSection from '@/components/courses/CoursesSection';
 import ProfessionalCoursesSection from '@/components/courses/ProfessionalCoursesSection';
+import { projectService } from '@/services/projectService';
 
 const Index = () => {
   const { user } = useAuth();
-  const [createdProjects, setCreatedProjects] = useState<any[]>([]);
+  const [projects, setProjects] = useState<any[]>([]);
   const [reservedProjects, setReservedProjects] = useState<any[]>([]);
   const [assignments, setAssignments] = useState<any[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  
+  // Load projects from database on component mount
+  useEffect(() => {
+    const loadProjects = async () => {
+      setIsLoading(true);
+      try {
+        const fetchedProjects = await projectService.fetchProjects();
+        setProjects(fetchedProjects);
+      } catch (error) {
+        console.error('Error loading projects:', error);
+        toast.error('Նախագծերի բեռնման ժամանակ սխալ է տեղի ունեցել');
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    
+    loadProjects();
+  }, []);
   
   useEffect(() => {
-    const storedProjects = localStorage.getItem('createdProjects');
-    if (storedProjects) {
-      try {
-        const parsedProjects = JSON.parse(storedProjects);
-        setCreatedProjects(parsedProjects);
-        console.log('Loaded created projects:', parsedProjects);
-      } catch (e) {
-        console.error('Error parsing stored projects:', e);
+    try {
+      const assignmentsData = localStorage.getItem('projectAssignments');
+      if (assignmentsData) {
+        const parsedAssignments = JSON.parse(assignmentsData);
+        setAssignments(parsedAssignments || []);
       }
-    }
-    
-    const storedReservations = localStorage.getItem('reservedProjects');
-    if (storedReservations) {
-      try {
-        const parsedReservations = JSON.parse(storedReservations);
-        setReservedProjects(parsedReservations);
-        console.log('Loaded reserved projects:', parsedReservations);
-      } catch (e) {
-        console.error('Error parsing reserved projects:', e);
-      }
-    }
-    
-    const storedAssignments = localStorage.getItem('projectAssignments');
-    if (storedAssignments) {
-      try {
-        const parsedAssignments = JSON.parse(storedAssignments);
-        setAssignments(parsedAssignments);
-        console.log('Loaded assignments:', parsedAssignments);
-      } catch (e) {
-        console.error('Error parsing assignments:', e);
-      }
+    } catch (e) {
+      console.error('Error loading project assignments:', e);
+      setAssignments([]);
     }
   }, []);
+  
+  useEffect(() => {
+    if (user) {
+      try {
+        const reservedData = localStorage.getItem('reservedProjects');
+        if (reservedData) {
+          const reservations = JSON.parse(reservedData);
+          const userReservations = user.role === 'student' 
+            ? reservations.filter((res: any) => res.userId === user.id)
+            : reservations;
+          
+          setReservedProjects(userReservations);
+        }
+      } catch (e) {
+        console.error('Error loading reserved projects:', e);
+      }
+    }
+  }, [user]);
 
   useEffect(() => {
     if (user) {
@@ -77,7 +92,7 @@ const Index = () => {
     : [];
 
   const userReservedProjectDetails = userReservedProjects.map(rp => {
-    const project = [...projectThemes, ...createdProjects].find(p => Number(p.id) === Number(rp.projectId));
+    const project = projects.find(p => Number(p.id) === Number(rp.projectId));
     return { ...rp, project };
   }).filter(rp => rp.project);
 
@@ -94,9 +109,9 @@ const Index = () => {
           
           <ProjectTabs 
             user={user} 
-            createdProjects={createdProjects} 
+            createdProjects={[]} 
             assignments={assignments}
-            projectThemes={projectThemes}
+            projectThemes={projects}
           />
         </div>
         <ProfessionalCoursesSection />
