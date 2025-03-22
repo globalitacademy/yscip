@@ -70,15 +70,8 @@ const Index = () => {
           </div>
           
           <HomePageModules />
-
-          <div className="text-center mt-10">
-            <Link to="/modules">
-              <Button variant="outline" className="mt-4 group">
-                Դիտել բոլոր մոդուլները
-                <ArrowRight className="ml-2 h-4 w-4 transition-transform group-hover:translate-x-1" />
-              </Button>
-            </Link>
-          </div>
+          
+          {/* Removed the redundant button that links to modules page */}
         </div>
       </section>
 
