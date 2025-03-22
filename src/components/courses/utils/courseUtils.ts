@@ -1,4 +1,3 @@
-
 import { supabase } from '@/integrations/supabase/client';
 import { ProfessionalCourse } from '../types/ProfessionalCourse';
 import { toast } from 'sonner';
@@ -306,7 +305,9 @@ const getIconNameFromElement = (iconElement: React.ReactElement): string => {
   // Check if iconType is a function (component) and access properties safely
   if (typeof iconType === 'function') {
     // Try to get displayName or name from the function component
-    const iconName = iconType.displayName || iconType.name;
+    // Use type assertion to help TypeScript understand this is a function component
+    const component = iconType as React.FC;
+    const iconName = component.displayName || component.name;
     if (iconName) {
       return iconName.toLowerCase();
     }

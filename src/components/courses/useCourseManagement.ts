@@ -4,7 +4,7 @@ import { v4 as uuidv4 } from 'uuid';
 import { Course } from './types';
 import { ProfessionalCourse } from './types/ProfessionalCourse';
 import { useAuth } from '@/contexts/AuthContext';
-import { Code, BookText, BrainCircuit, Database, FileCode, Globe } from 'lucide-react';
+import { Code, BookText, BrainCircuit, Database, FileCode, Globe, Book } from 'lucide-react';
 import React from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { saveCourseChanges } from './utils/courseUtils';
@@ -371,6 +371,11 @@ export const useCourseManagement = () => {
 
   const handleEditInit = (course: Course) => {
     setSelectedCourse({...course});
+    setIsEditDialogOpen(true);
+  };
+
+  const handleEditProfessionalCourseInit = (course: ProfessionalCourse) => {
+    setSelectedProfessionalCourse({...course});
     setIsEditDialogOpen(true);
   };
 
