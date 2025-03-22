@@ -1,3 +1,4 @@
+import React from 'react';
 import * as lucideIcons from 'lucide-react';
 import { ProfessionalCourse } from '../types/ProfessionalCourse';
 import { supabase } from '@/integrations/supabase/client';
@@ -134,7 +135,7 @@ export const getAllCourses = async (): Promise<ProfessionalCourse[]> => {
         if (course.iconName) {
           const IconComponent = lucideIcons[course.iconName];
           if (IconComponent) {
-            iconComponent = <IconComponent className="w-16 h-16" />;
+            iconComponent = React.createElement(IconComponent, { className: "w-16 h-16" });
           }
         }
         
@@ -188,7 +189,7 @@ export const getCourseById = async (id: string): Promise<ProfessionalCourse | nu
       if (data.iconName) {
         const IconComponent = lucideIcons[data.iconName];
         if (IconComponent) {
-          iconComponent = <IconComponent className="w-16 h-16" />;
+          iconComponent = React.createElement(IconComponent, { className: "w-16 h-16" });
         }
       }
       
