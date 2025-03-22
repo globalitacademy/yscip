@@ -13,7 +13,7 @@ const Header: React.FC = () => {
       <div className="container mx-auto px-4 py-4">
         <div className="flex justify-between items-center">
           <div className="flex items-center space-x-4">
-            <Link to="/" className="text-xl font-bold text-gray-800">ԿԿՀ</Link>
+            <Link to="/" className="text-xl font-bold text-blue-600">ԿԿՀ</Link>
             <nav className="hidden md:flex space-x-4">
               <Link to="/" className="text-gray-600 hover:text-gray-900">Գլխավոր</Link>
               <Link to="/projects" className="text-gray-600 hover:text-gray-900">Նախագծեր</Link>
