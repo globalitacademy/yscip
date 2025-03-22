@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { Course } from './types';
 import { ProfessionalCourse } from './types/ProfessionalCourse';
@@ -23,8 +22,8 @@ export const useCourseManagement = () => {
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   
-  // New module for regular courses
-  const [newModule, setNewModule] = useState<{ title: string, duration: string }>({ title: '', duration: '' });
+  // New module for regular courses - updated to string type
+  const [newModule, setNewModule] = useState<string>('');
 
   // Filter user's courses
   const userCourses = courses.filter(course => course.createdBy === user?.id);
@@ -111,13 +110,15 @@ export const useCourseManagement = () => {
       if (success) {
         setProfessionalCourses(prev => [...prev, newCourse]);
         toast.success('Դասընթացը հաջողությամբ ստեղծվել է');
-        setIsCreateDialogOpen(false);
+        return true;
       } else {
         toast.error('Դասընթացի ստեղծման ժամանակ սխալ է տեղի ունեցել');
+        return false;
       }
     } catch (error) {
       console.error('Error creating professional course:', error);
       toast.error('Դասընթացի ստեղծման ժամանակ սխալ է տեղի ունեցել');
+      return false;
     }
   };
   
@@ -195,16 +196,16 @@ export const useCourseManagement = () => {
     }
   };
   
-  // Add a module to a course being edited
+  // Add a module to a course being edited - updated for string type
   const handleAddModuleToEdit = () => {
-    if (!selectedCourse || !newModule.title || !newModule.duration) return;
+    if (!selectedCourse || !newModule) return;
     
     setSelectedCourse({
       ...selectedCourse,
-      modules: [...(selectedCourse.modules || []), newModule.title]
+      modules: [...(selectedCourse.modules || []), newModule]
     });
     
-    setNewModule({ title: '', duration: '' });
+    setNewModule('');
   };
   
   // Remove a module from a course being edited
