@@ -600,6 +600,36 @@ export const useCourseManagement = () => {
     }
   };
 
+  // Add a new function to load courses from localStorage
+  const loadCoursesFromLocalStorage = useCallback(async () => {
+    try {
+      const storedCourses = localStorage.getItem('professionalCourses');
+      if (storedCourses) {
+        const parsedCourses = JSON.parse(storedCourses);
+        if (parsedCourses && parsedCourses.length > 0) {
+          console.log('Loaded courses from localStorage:', parsedCourses.length);
+          setProfessionalCourses(parsedCourses);
+          return true;
+        }
+      }
+      
+      // If no courses in localStorage, use mock data
+      if (professionalCourses.length === 0) {
+        console.log('No courses in localStorage, using mock data');
+        setProfessionalCourses(mockProfessionalCourses);
+        // Save mock data to localStorage
+        localStorage.setItem('professionalCourses', JSON.stringify(mockProfessionalCourses));
+      }
+      
+      return false;
+    } catch (error) {
+      console.error('Error loading courses from localStorage:', error);
+      // Use mock data as fallback
+      setProfessionalCourses(mockProfessionalCourses);
+      return false;
+    }
+  }, [professionalCourses]);
+
   return {
     courses,
     userCourses,
@@ -633,6 +663,7 @@ export const useCourseManagement = () => {
     handleDeleteCourse,
     handleDeleteProfessionalCourse,
     loadCoursesFromDatabase,
-    syncCoursesWithDatabase
+    syncCoursesWithDatabase,
+    loadCoursesFromLocalStorage, // Add the new function to the return object
   };
 };

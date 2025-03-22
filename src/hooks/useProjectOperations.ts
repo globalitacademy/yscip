@@ -1,5 +1,5 @@
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { ProjectTheme } from '@/data/projectThemes';
 import { projectService } from '@/services/projectService';
 import { useAuth } from '@/contexts/AuthContext';
@@ -12,14 +12,60 @@ export const useProjectOperations = () => {
   const [isLoading, setIsLoading] = useState(true);
   const { user } = useAuth();
 
+  // Add event listener for reloading projects from localStorage
+  useEffect(() => {
+    const handleReloadFromLocal = () => {
+      loadProjectsFromLocalStorage();
+    };
+
+    window.addEventListener('reload-projects-from-local', handleReloadFromLocal);
+
+    return () => {
+      window.removeEventListener('reload-projects-from-local', handleReloadFromLocal);
+    };
+  }, []);
+
   /**
    * Load all projects from the database
    */
   const loadProjects = async () => {
     setIsLoading(true);
     try {
+      // First try to load from localStorage
+      await loadProjectsFromLocalStorage();
+      
+      // Then try to load from the database
       const fetchedProjects = await projectService.fetchProjects();
-      setProjects(fetchedProjects);
+      if (fetchedProjects && fetchedProjects.length > 0) {
+        setProjects(fetchedProjects);
+        // Update localStorage with fetched projects
+        localStorage.setItem('projects', JSON.stringify(fetchedProjects));
+      }
+    } catch (error) {
+      console.error('Error loading projects:', error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  /**
+   * Load projects from localStorage
+   */
+  const loadProjectsFromLocalStorage = async () => {
+    try {
+      const localProjects = localStorage.getItem('projects');
+      if (localProjects) {
+        const parsedProjects = JSON.parse(localProjects);
+        if (parsedProjects && parsedProjects.length > 0) {
+          console.log('Loaded projects from localStorage:', parsedProjects.length);
+          setProjects(parsedProjects);
+          return true;
+        }
+      }
+      return false;
+    } catch (error) {
+      console.error('Error loading projects from localStorage:', error);
+      return false;
     } finally {
       setIsLoading(false);
     }
@@ -38,6 +84,11 @@ export const useProjectOperations = () => {
     
     // If the database operation fails, update the local state
     setProjects(prev => [project, ...prev]);
+    
+    // Also update localStorage
+    const updatedProjects = [project, ...projects];
+    localStorage.setItem('projects', JSON.stringify(updatedProjects));
+    
     return false;
   };
 
@@ -53,9 +104,14 @@ export const useProjectOperations = () => {
     }
     
     // If the database operation fails, update the local state
-    setProjects(prev => prev.map(p => 
+    const updatedProjects = projects.map(p => 
       p.id === selectedProject.id ? { ...p, ...updatedData } : p
-    ));
+    );
+    setProjects(updatedProjects);
+    
+    // Also update localStorage
+    localStorage.setItem('projects', JSON.stringify(updatedProjects));
+    
     return false;
   };
 
@@ -71,9 +127,14 @@ export const useProjectOperations = () => {
     }
     
     // If the database operation fails, update the local state
-    setProjects(prev => prev.map(p => 
+    const updatedProjects = projects.map(p => 
       p.id === selectedProject.id ? { ...p, image: newImageUrl } : p
-    ));
+    );
+    setProjects(updatedProjects);
+    
+    // Also update localStorage
+    localStorage.setItem('projects', JSON.stringify(updatedProjects));
+    
     return false;
   };
 
@@ -89,7 +150,12 @@ export const useProjectOperations = () => {
     }
     
     // If the database operation fails, update the local state
-    setProjects(prev => prev.filter(p => p.id !== selectedProject.id));
+    const updatedProjects = projects.filter(p => p.id !== selectedProject.id);
+    setProjects(updatedProjects);
+    
+    // Also update localStorage
+    localStorage.setItem('projects', JSON.stringify(updatedProjects));
+    
     return false;
   };
 
@@ -98,6 +164,7 @@ export const useProjectOperations = () => {
     setProjects,
     isLoading,
     loadProjects,
+    loadProjectsFromLocalStorage,
     createProject,
     updateProject,
     updateProjectImage,

@@ -22,6 +22,7 @@ const ProfessionalCourseTabView: React.FC = () => {
     handleEditProfessionalCourseInit,
     handleDeleteProfessionalCourse,
     loadCoursesFromDatabase,
+    loadCoursesFromLocalStorage,
     loading
   } = useCourses();
 
@@ -29,6 +30,10 @@ const ProfessionalCourseTabView: React.FC = () => {
   useEffect(() => {
     const fetchCourses = async () => {
       try {
+        // First try to load from localStorage
+        await loadCoursesFromLocalStorage();
+        
+        // Then try to load from database
         await loadCoursesFromDatabase();
       } catch (error) {
         console.error('Error loading courses:', error);
@@ -55,10 +60,18 @@ const ProfessionalCourseTabView: React.FC = () => {
       )
       .subscribe();
 
+    // Set up event listener for reloading from localStorage when sync button is clicked
+    const handleReloadFromLocal = () => {
+      loadCoursesFromLocalStorage();
+    };
+
+    window.addEventListener('reload-courses-from-local', handleReloadFromLocal);
+
     return () => {
       supabase.removeChannel(channel);
+      window.removeEventListener('reload-courses-from-local', handleReloadFromLocal);
     };
-  }, [loadCoursesFromDatabase]);
+  }, [loadCoursesFromDatabase, loadCoursesFromLocalStorage]);
 
   const isAdmin = user?.role === 'admin';
 

@@ -29,22 +29,36 @@ const DatabaseSyncButton: React.FC<DatabaseSyncButtonProps> = ({
     toast.info('Տվյալների համաժամեցման գործընթացը սկսվել է...');
     
     try {
-      // Start the synchronization process with progress updates
-      const success = await databaseSyncService.syncAllData(
+      // First try to load data from localStorage if available
+      const success = await databaseSyncService.loadDataFromLocalStorage(
         // Progress callback
         (status: string) => {
           setSyncProgress(status);
         }
       );
-      
+
       if (success) {
+        toast.success('Տվյալները հաջողությամբ բեռնվել են լոկալ հիշողությունից');
+      }
+      
+      // Then try to sync with the database (if it fails, we'll at least have local data)
+      try {
+        // Start the synchronization process with progress updates
+        await databaseSyncService.syncAllData(
+          // Progress callback
+          (status: string) => {
+            setSyncProgress(status);
+          }
+        );
+        
         toast.success('Տվյալները հաջողությամբ համաժամեցվել են բազայի հետ');
-      } else {
-        toast.error('Տվյալների համաժամեցումը մասամբ է հաջողվել');
+      } catch (syncError) {
+        console.error('Error syncing with database:', syncError);
+        toast.error('Բազայի հետ համաժամեցման ժամանակ սխալ է տեղի ունեցել, լոկալ տվյալներն են օգտագործվում');
       }
     } catch (error) {
-      console.error('Error syncing data:', error);
-      toast.error('Տվյալների համաժամեցման ժամանակ սխալ է տեղի ունեցել');
+      console.error('Error loading data:', error);
+      toast.error('Տվյալների բեռնման ժամանակ սխալ է տեղի ունեցել');
     } finally {
       setSyncing(false);
       setSyncProgress(null);
