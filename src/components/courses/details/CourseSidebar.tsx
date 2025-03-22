@@ -4,9 +4,7 @@ import { FadeIn } from '@/components/LocalTransitions';
 import { ExternalLink } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { ProfessionalCourse } from '../types/ProfessionalCourse';
-import { toast } from 'sonner';
 
 interface CourseSidebarProps {
   displayCourse: ProfessionalCourse;
@@ -23,33 +21,6 @@ const CourseSidebar: React.FC<CourseSidebarProps> = ({
   setEditedCourse,
   handleApply
 }) => {
-  const colorOptions = [
-    { label: 'Ամբերային', value: 'text-amber-500' },
-    { label: 'Կապույտ', value: 'text-blue-500' },
-    { label: 'Կարմիր', value: 'text-red-500' },
-    { label: 'Դեղին', value: 'text-yellow-500' },
-    { label: 'Մանուշակագույն', value: 'text-purple-500' },
-    { label: 'Կանաչ', value: 'text-green-500' },
-  ];
-
-  const handleColorChange = (value: string) => {
-    if (!editedCourse) return;
-    
-    console.log("CourseSidebar: Փոխվում է գույնը դեպի:", value);
-    
-    // Ստեղծենք նոր օբյեկտ և հետո թարմացնենք այն
-    const updatedCourse = { 
-      ...editedCourse,
-      color: value
-    };
-    
-    console.log("CourseSidebar: Թարմացված դասընթացը:", updatedCourse);
-    setEditedCourse(updatedCourse);
-    
-    // Ցույց տանք նոթիֆիկացիա
-    toast.info("Գույնը փոփոխվել է");
-  };
-
   return (
     <FadeIn delay="delay-200">
       <div className="border rounded-lg overflow-hidden">
@@ -129,30 +100,6 @@ const CourseSidebar: React.FC<CourseSidebarProps> = ({
                 <span>{displayCourse?.createdBy}</span>
               )}
             </div>
-            
-            {isEditing && (
-              <div className="flex justify-between">
-                <span className="text-muted-foreground">Գույն</span>
-                <Select 
-                  value={editedCourse?.color || ''} 
-                  onValueChange={handleColorChange}
-                >
-                  <SelectTrigger className="w-32 text-right">
-                    <SelectValue placeholder="Գույն" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {colorOptions.map(option => (
-                      <SelectItem key={option.value} value={option.value}>
-                        <div className="flex items-center">
-                          <div className={`w-4 h-4 rounded-full ${option.value.replace('text-', 'bg-')}`} />
-                          <span className="ml-2">{option.label}</span>
-                        </div>
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-            )}
           </div>
           
           {!isEditing && (

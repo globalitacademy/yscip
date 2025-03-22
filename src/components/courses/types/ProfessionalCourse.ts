@@ -10,42 +10,17 @@ export interface ProfessionalCourse {
   id: string;
   title: string;
   subtitle: string;
-  icon: ReactElement | null;
-  iconName: string; // Store the icon name separately for serialization
+  icon: ReactElement;
   duration: string;
   price: string;
   buttonText: string;
   color: string;
   createdBy: string;
   institution: string;
-  preferIcon: boolean;
   imageUrl?: string;
   organizationLogo?: string;
   description?: string;
   lessons?: CourseLesson[];
   requirements?: string[];
   outcomes?: string[];
-  instructor?: string; // Added instructor property
-  format?: string; // Format: online, in-person, video, group, individual
-  languages?: string[]; // Languages: Armenian, Russian, English
-}
-
-// Type guard to validate Supabase payload for course data
-export function isCoursePayload(payload: any): payload is { id: string | number; [key: string]: any } {
-  if (!payload || typeof payload !== 'object') {
-    console.error('Invalid course payload: not an object', payload);
-    return false;
-  }
-  
-  if (!('id' in payload)) {
-    console.error('Invalid course payload: missing ID', payload);
-    return false;
-  }
-  
-  if (typeof payload.id !== 'string' && typeof payload.id !== 'number') {
-    console.error('Invalid course payload: ID is not a string or number', payload);
-    return false;
-  }
-  
-  return true;
 }

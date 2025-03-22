@@ -3,10 +3,7 @@ import React from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { ProfessionalCourse } from './types/ProfessionalCourse';
-import { Eye, Pencil, Trash, Building, Book, Clock, User, Banknote, Globe, MonitorSmartphone, Users, UserCog } from 'lucide-react';
-import { convertIconNameToComponent } from './utils/courseUtils';
-import { Link } from 'react-router-dom';
-import { Badge } from '@/components/ui/badge';
+import { Eye, Pencil, Trash, Building } from 'lucide-react';
 
 interface ProfessionalCourseCardProps {
   course: ProfessionalCourse;
@@ -23,131 +20,47 @@ const ProfessionalCourseCard: React.FC<ProfessionalCourseCardProps> = ({
   isAdmin = false,
   canEdit = false
 }) => {
-  // Determine if we should show the icon based on preferIcon or if no image is available
-  const showIcon = course.preferIcon || !course.imageUrl;
-
-  // Safely render icon or fallback
-  const renderIcon = () => {
-    if (course.icon) {
-      return course.icon;
-    }
-    
-    if (course.iconName) {
-      return convertIconNameToComponent(course.iconName);
-    }
-    
-    return <Book className="w-16 h-16" />;
-  };
-
-  // Helper function to get format icon
-  const getFormatIcon = (format: string) => {
-    switch (format?.toLowerCase()) {
-      case 'online':
-      case 'օնլայն':
-        return <MonitorSmartphone className="h-4 w-4 mr-1" />;
-      case 'in-person':
-      case 'առկա':
-        return <Users className="h-4 w-4 mr-1" />;
-      case 'video':
-      case 'վիդեոկուրս':
-        return <MonitorSmartphone className="h-4 w-4 mr-1" />;
-      case 'group':
-      case 'խմբային':
-        return <Users className="h-4 w-4 mr-1" />;
-      case 'individual':
-      case 'անհատական':
-        return <UserCog className="h-4 w-4 mr-1" />;
-      default:
-        return <MonitorSmartphone className="h-4 w-4 mr-1" />;
-    }
-  };
-
   return (
     <Card className="h-full overflow-hidden shadow-md hover:shadow-lg transition-shadow relative">
-      {/* Always show organization/institution information in a consistent way */}
-      <div className="absolute top-4 right-4 flex items-center text-xs bg-gray-100 px-2 py-1 rounded-full z-10">
-        {course.organizationLogo ? (
+      {course.organizationLogo && (
+        <div className="absolute top-4 left-4 flex items-center text-xs bg-gray-100 px-2 py-1 rounded-full z-10">
           <img 
             src={course.organizationLogo} 
             alt={course.institution}
-            className="w-4 h-4 mr-1 object-contain rounded-full"
+            className="w-6 h-6 mr-1 object-contain rounded-full"
+          />
+          <span>{course.institution}</span>
+        </div>
+      )}
+      
+      <div className="px-6 py-4 flex flex-col items-center text-center">
+        {course.imageUrl ? (
+          <img 
+            src={course.imageUrl} 
+            alt={course.title}
+            className="w-16 h-16 mb-4 object-contain"
+            onError={(e) => {
+              // Fallback to icon if image fails to load
+              e.currentTarget.style.display = 'none';
+              document.getElementById(`course-icon-${course.id}`)?.style.setProperty('display', 'block');
+            }}
           />
         ) : (
-          <Building className="w-3 h-3 mr-1" />
-        )}
-        <span className="text-xs">{course.institution}</span>
-      </div>
-      
-      <div className="p-6 pt-12 h-full flex flex-col">
-        <div className="flex items-start mb-5">
-          {!showIcon && course.imageUrl ? (
-            <img 
-              src={course.imageUrl} 
-              alt={course.title}
-              className="w-20 h-20 object-contain mr-4"
-              onError={(e) => {
-                // Fallback to icon if image fails to load
-                e.currentTarget.style.display = 'none';
-                document.getElementById(`course-icon-${course.id}`)?.style.setProperty('display', 'block');
-              }}
-            />
-          ) : (
-            <div id={`course-icon-${course.id}`} className={`${course.color} mr-4`}>
-              {renderIcon()}
-            </div>
-          )}
-          
-          <div className="text-left">
-            <div className="text-xs uppercase tracking-wide text-gray-500 mb-1">{course.subtitle}</div>
-            <h3 className="text-lg font-semibold mb-3 line-clamp-2">{course.title}</h3>
-            
-            <div className="flex items-center text-sm text-gray-600 mb-2">
-              <User className="h-4 w-4 mr-1.5 text-gray-500" />
-              <span>Դասախոս՝ {course.instructor || "Անուն Ազգանուն"}</span>
-            </div>
-            
-            <div className="flex flex-col space-y-2 mb-3">
-              <div className="flex space-x-4">
-                <div className="flex items-center text-sm text-gray-600">
-                  <Clock className="h-4 w-4 mr-1.5 text-gray-500" />
-                  <span>Տևողություն: {course.duration}</span>
-                </div>
-                <div className="flex items-center text-sm text-gray-600">
-                  <Banknote className="h-4 w-4 mr-1.5 text-gray-500" />
-                  <span>Արժեք: {course.price}</span>
-                </div>
-              </div>
-              
-              {/* Format badges */}
-              {course.format && (
-                <div className="flex items-center text-sm text-gray-600">
-                  {getFormatIcon(course.format)}
-                  <span>Ձևաչափ: {course.format}</span>
-                </div>
-              )}
-              
-              {/* Languages badges */}
-              {course.languages && course.languages.length > 0 && (
-                <div className="flex items-center">
-                  <Globe className="h-4 w-4 mr-1.5 text-gray-500" />
-                  <div className="flex flex-wrap gap-1">
-                    {course.languages.map((language, index) => (
-                      <Badge key={index} variant="outline" className="text-xs">
-                        {language}
-                      </Badge>
-                    ))}
-                  </div>
-                </div>
-              )}
-            </div>
+          <div id={`course-icon-${course.id}`} className={`${course.color} mb-4`}>
+            {course.icon}
           </div>
-        </div>
+        )}
+        <div className="mb-2 text-xs uppercase tracking-wide text-gray-500">{course.subtitle}</div>
+        <h3 className="text-xl font-semibold mb-2">{course.title}</h3>
+        <div className="text-sm text-gray-600 mb-1">Տևողություն: {course.duration}</div>
+        <div className="text-sm text-gray-600 mb-1">Արժեք: {course.price}</div>
+        {!course.organizationLogo && (
+          <div className="text-sm text-gray-600 mb-4">Հաստատություն: {course.institution}</div>
+        )}
         
-        <div className="mt-auto pt-4 flex justify-start space-x-2">
-          <Button variant="outline" size="sm" asChild>
-            <Link to={`/course/${course.id}`}>
-              <Eye className="h-4 w-4 mr-1.5" /> {course.buttonText}
-            </Link>
+        <div className="flex space-x-2">
+          <Button variant="outline" size="sm">
+            <Eye className="h-4 w-4 mr-2" /> {course.buttonText}
           </Button>
           
           {(isAdmin || canEdit) && (

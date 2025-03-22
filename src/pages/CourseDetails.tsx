@@ -14,9 +14,7 @@ import CourseCurriculum from '@/components/courses/details/CourseCurriculum';
 import CourseLearningOutcomes from '@/components/courses/details/CourseLearningOutcomes';
 import CourseRequirements from '@/components/courses/details/CourseRequirements';
 import CourseSidebar from '@/components/courses/details/CourseSidebar';
-import { Book, BookText, BrainCircuit, Code, Database, FileCode, Globe } from 'lucide-react';
-import { supabase } from '@/integrations/supabase/client';
-import { RealtimePostgresChangesPayload } from '@supabase/supabase-js';
+import { Book } from 'lucide-react';
 
 const CourseDetails: React.FC = () => {
   const { id } = useParams<{ id: string }>();
@@ -30,11 +28,11 @@ const CourseDetails: React.FC = () => {
   const [newOutcome, setNewOutcome] = useState('');
   const { user } = useAuth();
 
+  // Listen for course updates from other components
   useEffect(() => {
     const handleCourseUpdate = (event: CustomEvent<ProfessionalCourse>) => {
       const updatedCourse = event.detail;
       if (updatedCourse && updatedCourse.id === id) {
-        console.log("Course updated event received:", updatedCourse);
         setCourse(updatedCourse);
         setEditedCourse(updatedCourse);
       }
@@ -48,191 +46,26 @@ const CourseDetails: React.FC = () => {
   }, [id]);
 
   useEffect(() => {
-    if (!id) return;
-    
-    console.log('Setting up Supabase realtime subscription for course:', id);
-    
-    const courseChannel = supabase
-      .channel(`public:course:${id}`)
-      .on(
-        'postgres_changes',
-        {
-          event: 'UPDATE',
-          schema: 'public',
-          table: 'courses',
-          filter: `id=eq.${id}`
-        },
-        async (payload: RealtimePostgresChangesPayload<{[key: string]: any}>) => {
-          console.log('Course update received from Supabase:', payload);
-          
-          try {
-            if (payload.new && typeof payload.new === 'object' && 'id' in payload.new) {
-              const courseId = String(payload.new.id);
-              const updatedCourse = await getCourseById(courseId);
-              
-              if (updatedCourse) {
-                console.log('Fetched updated course data:', updatedCourse);
-                setCourse(updatedCourse);
-                
-                if (!isEditing) {
-                  setEditedCourse(updatedCourse);
-                } else {
-                  toast.info('Կուրսը փոփոխվել է մեկ այլ օգտագործողի կողմից');
-                }
-              }
-            }
-          } catch (error) {
-            console.error('Error fetching updated course:', error);
-          }
-        }
-      )
-      .subscribe();
-
-    const lessonsChannel = supabase
-      .channel(`public:course_lessons:${id}`)
-      .on(
-        'postgres_changes',
-        {
-          event: '*',
-          schema: 'public',
-          table: 'course_lessons',
-          filter: `course_id=eq.${id}`
-        },
-        async (payload: RealtimePostgresChangesPayload<{[key: string]: any}>) => {
-          console.log('Lessons update received from Supabase');
-          
-          try {
-            if (!isEditing) {
-              const updatedCourse = await getCourseById(id);
-              if (updatedCourse) {
-                setCourse(updatedCourse);
-                setEditedCourse(updatedCourse);
-                toast.info('Դասընթացի դասերը թարմացվել են');
-              }
-            }
-          } catch (error) {
-            console.error('Error fetching updated course lessons:', error);
-          }
-        }
-      )
-      .subscribe();
-
-    const requirementsChannel = supabase
-      .channel(`public:course_requirements:${id}`)
-      .on(
-        'postgres_changes',
-        {
-          event: '*',
-          schema: 'public',
-          table: 'course_requirements',
-          filter: `course_id=eq.${id}`
-        },
-        async (payload: RealtimePostgresChangesPayload<{[key: string]: any}>) => {
-          console.log('Requirements update received from Supabase');
-          
-          try {
-            if (!isEditing) {
-              const updatedCourse = await getCourseById(id);
-              if (updatedCourse) {
-                setCourse(updatedCourse);
-                setEditedCourse(updatedCourse);
-                toast.info('Դասընթացի պահանջները թարմացվել են');
-              }
-            }
-          } catch (error) {
-            console.error('Error fetching updated course requirements:', error);
-          }
-        }
-      )
-      .subscribe();
-
-    const outcomesChannel = supabase
-      .channel(`public:course_outcomes:${id}`)
-      .on(
-        'postgres_changes',
-        {
-          event: '*',
-          schema: 'public',
-          table: 'course_outcomes',
-          filter: `course_id=eq.${id}`
-        },
-        async (payload: RealtimePostgresChangesPayload<{[key: string]: any}>) => {
-          console.log('Outcomes update received from Supabase');
-          
-          try {
-            if (!isEditing) {
-              const updatedCourse = await getCourseById(id);
-              if (updatedCourse) {
-                setCourse(updatedCourse);
-                setEditedCourse(updatedCourse);
-                toast.info('Դասընթացի արդյունքները թարմացվել են');
-              }
-            }
-          } catch (error) {
-            console.error('Error fetching updated course outcomes:', error);
-          }
-        }
-      )
-      .subscribe();
-    
-    return () => {
-      console.log('Cleaning up realtime subscriptions');
-      supabase.removeChannel(courseChannel);
-      supabase.removeChannel(lessonsChannel);
-      supabase.removeChannel(requirementsChannel);
-      supabase.removeChannel(outcomesChannel);
-    };
-  }, [id, isEditing]);
-
-  const getIconElement = (iconName: string) => {
-    console.log("Converting iconName to element:", iconName);
-    switch (iconName?.toLowerCase()) {
-      case 'book':
-        return <BookText className="w-16 h-16" />;
-      case 'code':
-        return <Code className="w-16 h-16" />;
-      case 'ai':
-      case 'braincircuit':
-      case 'brain':
-        return <BrainCircuit className="w-16 h-16" />;
-      case 'database':
-        return <Database className="w-16 h-16" />;
-      case 'files':
-      case 'filecode':
-      case 'file':
-        return <FileCode className="w-16 h-16" />;
-      case 'web':
-      case 'globe':
-        return <Globe className="w-16 h-16" />;
-      default:
-        console.log("Unknown icon name:", iconName);
-        return <Book className="w-16 h-16" />;
-    }
-  };
-
-  useEffect(() => {
     const fetchCourse = async () => {
       setLoading(true);
       if (id) {
         try {
-          console.log("Attempting to fetch course with ID:", id);
           const courseData = await getCourseById(id);
           
+          // Try to create a sample course in localStorage if none found
           if (!courseData) {
-            console.log("No course found, creating sample course");
+            // Create a sample course for testing if we can't fetch one
             const sampleCourse: ProfessionalCourse = {
               id: id,
               title: "Web Development Fundamentals",
               subtitle: "ԴԱՍԸՆԹԱՑ",
               icon: React.createElement(Book, { className: "w-16 h-16" }),
-              iconName: "book",
               duration: "8 շաբաթ",
               price: "65,000 ֏",
               buttonText: "Դիմել",
               color: "text-blue-500",
               createdBy: "John Smith",
               institution: "Web Academy",
-              preferIcon: true,
               imageUrl: "https://images.unsplash.com/photo-1461749280684-dccba630e2f6?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=2069&q=80",
               description: "Learn the fundamentals of web development including HTML, CSS and JavaScript.",
               lessons: [
@@ -251,21 +84,12 @@ const CourseDetails: React.FC = () => {
               ]
             };
             
+            // Save to localStorage
             saveToLocalStorage(sampleCourse);
             
             setCourse(sampleCourse);
             setEditedCourse(sampleCourse);
           } else {
-            console.log("Course loaded successfully:", courseData);
-            
-            if (courseData.iconName && (!courseData.icon || typeof courseData.icon === 'string')) {
-              courseData.icon = getIconElement(courseData.iconName);
-            }
-            
-            if (courseData.preferIcon === undefined) {
-              courseData.preferIcon = false;
-            }
-            
             setCourse(courseData);
             setEditedCourse(courseData);
           }
@@ -290,6 +114,7 @@ const CourseDetails: React.FC = () => {
   const handleEditCourse = () => {
     if (!course) return;
 
+    // Update the course in Supabase and localStorage
     try {
       saveCourseChanges(course).then(success => {
         if (success) {
@@ -306,62 +131,20 @@ const CourseDetails: React.FC = () => {
   };
 
   const toggleEditMode = async () => {
-    console.log("Toggle edit mode - current state:", isEditing);
-    
     if (isEditing) {
+      // Save changes
       if (!editedCourse) return;
       
-      console.log("Saving changes to course:", editedCourse);
-      
-      if (!editedCourse.iconName && editedCourse.icon) {
-        // Attempt to infer iconName from icon component
-        const iconComponent = editedCourse.icon.type;
-        let iconString = '';
-        
-        if (iconComponent && typeof iconComponent !== 'string') {
-          iconString = (iconComponent as any).displayName || (iconComponent as any).name || '';
-        }
-        
-        if (iconString.includes('Book')) editedCourse.iconName = 'book';
-        else if (iconString.includes('Code')) editedCourse.iconName = 'code';
-        else if (iconString.includes('Brain')) editedCourse.iconName = 'ai';
-        else if (iconString.includes('Database')) editedCourse.iconName = 'database';
-        else if (iconString.includes('File')) editedCourse.iconName = 'files';
-        else if (iconString.includes('Globe')) editedCourse.iconName = 'web';
-        else editedCourse.iconName = 'book';
-        
-        console.log("Determined iconName from icon:", editedCourse.iconName);
-      }
-      
-      if (editedCourse.preferIcon === undefined) {
-        editedCourse.preferIcon = !!editedCourse.iconName && !editedCourse.imageUrl;
-      }
-      
-      try {
-        const success = await saveCourseChanges(editedCourse);
-        if (success) {
-          setCourse(editedCourse);
-          toast.success('Դասընթացը հաջողությամբ թարմացվել է');
-        } else {
-          setEditedCourse(course);
-          toast.error('Դասընթացի թարմացման ժամանակ սխալ է տեղի ունեցել');
-        }
-      } catch (error) {
-        console.error("Error saving course changes:", error);
-        setEditedCourse(course);
+      const success = await saveCourseChanges(editedCourse);
+      if (success) {
+        setCourse(editedCourse);
+        toast.success('Դասընթացը հաջողությամբ թարմացվել է');
+      } else {
         toast.error('Դասընթացի թարմացման ժամանակ սխալ է տեղի ունեցել');
       }
     } else {
-      console.log("Entering edit mode with course:", course);
-      
-      if (course) {
-        const editCopy = JSON.parse(JSON.stringify(course));
-        if (editCopy.iconName) {
-          editCopy.icon = getIconElement(editCopy.iconName);
-        }
-        
-        setEditedCourse(editCopy);
-      }
+      // Enter edit mode
+      setEditedCourse(course);
     }
     
     setIsEditing(!isEditing);
@@ -370,7 +153,6 @@ const CourseDetails: React.FC = () => {
   const cancelEditing = () => {
     setEditedCourse(course);
     setIsEditing(false);
-    toast.info('Փոփոխությունները չեղարկվեցին');
   };
 
   const handleAddLesson = () => {
@@ -439,6 +221,7 @@ const CourseDetails: React.FC = () => {
     });
   };
 
+  // Check if user can edit this course
   const canEdit = user && (user.role === 'admin' || course?.createdBy === user.name);
 
   if (loading) {
@@ -464,14 +247,6 @@ const CourseDetails: React.FC = () => {
 
   const displayCourse = isEditing ? editedCourse : course;
   if (!displayCourse) return null;
-
-  if (displayCourse.iconName && (!displayCourse.icon || typeof displayCourse.icon === 'string')) {
-    displayCourse.icon = getIconElement(displayCourse.iconName);
-  }
-
-  if (displayCourse.preferIcon === undefined) {
-    displayCourse.preferIcon = !!displayCourse.iconName && !displayCourse.imageUrl;
-  }
 
   return (
     <div className="min-h-screen flex flex-col">
@@ -552,10 +327,9 @@ const CourseDetails: React.FC = () => {
   );
 };
 
+// Helper function to add the missing saveToLocalStorage function
 const saveToLocalStorage = (course: ProfessionalCourse): void => {
   try {
-    console.log("Saving course to localStorage:", course);
-    
     const storedCourses = localStorage.getItem('professionalCourses');
     if (storedCourses) {
       const courses: ProfessionalCourse[] = JSON.parse(storedCourses);
@@ -573,7 +347,6 @@ const saveToLocalStorage = (course: ProfessionalCourse): void => {
     }
   } catch (error) {
     console.error('Error saving to localStorage:', error);
-    toast.error('Տեղային պահեստում պահպանման սխալ։');
   }
 };
 

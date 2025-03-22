@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { toast } from 'sonner';
 import { v4 as uuidv4 } from 'uuid';
@@ -7,7 +6,6 @@ import { ProfessionalCourse } from './types/ProfessionalCourse';
 import { useAuth } from '@/contexts/AuthContext';
 import { Code, BookText, BrainCircuit, Database, FileCode, Globe } from 'lucide-react';
 import React from 'react';
-import { convertIconNameToComponent } from './utils/courseUtils';
 
 // Mock professional courses data
 const mockProfessionalCourses: ProfessionalCourse[] = [
@@ -15,15 +13,13 @@ const mockProfessionalCourses: ProfessionalCourse[] = [
     id: '1',
     title: 'WEB Front-End',
     subtitle: 'ԴԱՍԸՆԹԱՑ',
-    icon: null,
-    iconName: 'code',
+    icon: React.createElement(Code, { className: "w-16 h-16" }),
     duration: '9 ամիս',
     price: '58,000 ֏',
     buttonText: 'Դիտել',
     color: 'text-amber-500',
     createdBy: 'Արամ Հակոբյան',
     institution: 'ՀՊՏՀ',
-    preferIcon: true,
     description: 'Սովորեք Web կայքերի մշակում՝ օգտագործելով արդի տեխնոլոգիաներ ինչպիսիք են HTML5, CSS3, JavaScript, React և Node.js։ Այս դասընթացը նախատեսված է սկսնակների համար և կօգնի ձեզ դառնալ պրոֆեսիոնալ Front-End ծրագրավորող։',
     lessons: [
       { title: 'Ներածություն Web ծրագրավորման մեջ', duration: '3 ժամ' },
@@ -44,15 +40,13 @@ const mockProfessionalCourses: ProfessionalCourse[] = [
     id: '2',
     title: 'Python (ML / AI)',
     subtitle: 'ԴԱՍԸՆԹԱՑ',
-    icon: null,
-    iconName: 'ai',
+    icon: React.createElement(BrainCircuit, { className: "w-16 h-16" }),
     duration: '7 ամիս',
     price: '68,000 ֏',
     buttonText: 'Դիտել',
     color: 'text-blue-500',
     createdBy: 'Լիլիթ Մարտիրոսյան',
     institution: 'ԵՊՀ',
-    preferIcon: true,
     description: 'Սովորեք Python ծրագրավորում՝ մեքենայական ուսուցման և արհեստական բանականության հիմունքներով։ Այս ինտենսիվ դասընթացը կօգնի ձեզ ծանոթանալ AI/ML ժամանակակից գործիքների հետ։',
     lessons: [
       { title: 'Python հիմունքներ', duration: '10 ժամ' },
@@ -72,57 +66,49 @@ const mockProfessionalCourses: ProfessionalCourse[] = [
     id: '3',
     title: 'Java',
     subtitle: 'ԴԱՍԸՆԹԱՑ',
-    icon: null,
-    iconName: 'book',
+    icon: React.createElement(BookText, { className: "w-16 h-16" }),
     duration: '6 ամիս',
     price: '68,000 ֏',
     buttonText: 'Դիտել',
     color: 'text-red-500',
     createdBy: 'Գարիկ Սարգսյան',
-    institution: 'ՀԱՊՀ',
-    preferIcon: true
+    institution: 'ՀԱՊՀ'
   },
   {
     id: '4',
     title: 'JavaScript',
     subtitle: 'ԴԱՍԸՆԹԱՑ',
-    icon: null,
-    iconName: 'files',
+    icon: React.createElement(FileCode, { className: "w-16 h-16" }),
     duration: '3.5 ամիս',
     price: '58,000 ֏',
     buttonText: 'Դիտել',
     color: 'text-yellow-500',
     createdBy: 'Անի Մուրադյան',
-    institution: 'ՀԱՀ',
-    preferIcon: true
+    institution: 'ՀԱՀ'
   },
   {
     id: '5',
     title: 'PHP',
     subtitle: 'ԴԱՍԸՆԹԱՑ',
-    icon: null,
-    iconName: 'database',
+    icon: React.createElement(Database, { className: "w-16 h-16" }),
     duration: '5 ամիս',
     price: '58,000 ֏',
     buttonText: 'Դիտել',
     color: 'text-purple-500',
     createdBy: 'Վահե Ղազարյան',
-    institution: 'ՀՊՄՀ',
-    preferIcon: true
+    institution: 'ՀՊՄՀ'
   },
   {
     id: '6',
     title: 'C#/.NET',
     subtitle: 'ԴԱՍԸՆԹԱՑ',
-    icon: null,
-    iconName: 'web',
+    icon: React.createElement(Globe, { className: "w-16 h-16" }),
     duration: '6 ամիս',
     price: '68,000 ֏',
     buttonText: 'Դիտել',
     color: 'text-green-500',
     createdBy: 'Տիգրան Դավթյան',
-    institution: 'ՀՌԱՀ',
-    preferIcon: true
+    institution: 'ՀՌԱՀ'
   }
 ];
 
@@ -133,12 +119,7 @@ const initializeProfessionalCourses = (): ProfessionalCourse[] => {
   const storedCourses = localStorage.getItem('professionalCourses');
   if (storedCourses) {
     try {
-      const parsedCourses = JSON.parse(storedCourses);
-      // Ensure icon is set to null and will be created at render time
-      return parsedCourses.map((course: ProfessionalCourse) => ({
-        ...course,
-        icon: null
-      }));
+      return JSON.parse(storedCourses);
     } catch (e) {
       console.error('Error parsing stored professional courses:', e);
     }
@@ -204,15 +185,13 @@ export const useCourseManagement = () => {
   const [newProfessionalCourse, setNewProfessionalCourse] = useState<Partial<ProfessionalCourse>>({
     title: '',
     subtitle: 'ԴԱՍԸՆԹԱՑ',
-    icon: null,
-    iconName: 'code',
+    icon: React.createElement(Code, { className: "w-16 h-16" }),
     duration: '',
     price: '',
     buttonText: 'Դիտել',
     color: 'text-amber-500',
     createdBy: user?.name || '',
     institution: 'ՀՊՏՀ',
-    preferIcon: true,
     imageUrl: undefined,
     description: '',
     lessons: [],
@@ -344,38 +323,27 @@ export const useCourseManagement = () => {
     const courseToAdd: ProfessionalCourse = {
       ...(newProfessionalCourse as ProfessionalCourse),
       id: uuidv4(),
-      icon: null, // Icon will be rendered at runtime from iconName
       createdBy: user?.name || 'Unknown',
       buttonText: newProfessionalCourse.buttonText || 'Դիտել',
       subtitle: newProfessionalCourse.subtitle || 'ԴԱՍԸՆԹԱՑ',
       color: newProfessionalCourse.color || 'text-amber-500',
       institution: newProfessionalCourse.institution || 'ՀՊՏՀ',
-      preferIcon: newProfessionalCourse.preferIcon !== undefined ? newProfessionalCourse.preferIcon : true,
     };
 
     const updatedCourses = [...professionalCourses, courseToAdd];
     setProfessionalCourses(updatedCourses);
-    
-    // Store without icon property for serialization
-    const storageCourses = updatedCourses.map(course => ({
-      ...course,
-      icon: null // Don't store the React element
-    }));
-    
-    localStorage.setItem('professionalCourses', JSON.stringify(storageCourses));
+    localStorage.setItem('professionalCourses', JSON.stringify(updatedCourses));
     
     setNewProfessionalCourse({
       title: '',
       subtitle: 'ԴԱՍԸՆԹԱՑ',
-      icon: null,
-      iconName: 'code',
+      icon: React.createElement(Code, { className: "w-16 h-16" }),
       duration: '',
       price: '',
       buttonText: 'Դիտել',
       color: 'text-amber-500',
       createdBy: user?.name || '',
       institution: 'ՀՊՏՀ',
-      preferIcon: true,
       imageUrl: undefined,
       description: '',
       lessons: [],
@@ -394,25 +362,12 @@ export const useCourseManagement = () => {
       return;
     }
 
-    // Ensure the icon is null and will be created from iconName at render time
-    const courseToUpdate = {
-      ...selectedProfessionalCourse,
-      icon: null
-    };
-
     const updatedCourses = professionalCourses.map(course => 
-      course.id === courseToUpdate.id ? courseToUpdate : course
+      course.id === selectedProfessionalCourse.id ? selectedProfessionalCourse : course
     );
     
     setProfessionalCourses(updatedCourses);
-    
-    // Store without icon property for serialization
-    const storageCourses = updatedCourses.map(course => ({
-      ...course,
-      icon: null // Don't store the React element
-    }));
-    
-    localStorage.setItem('professionalCourses', JSON.stringify(storageCourses));
+    localStorage.setItem('professionalCourses', JSON.stringify(updatedCourses));
     setIsEditDialogOpen(false);
     toast.success('Դասընթացը հաջողությամբ թարմացվել է');
   };
