@@ -264,12 +264,15 @@ const convertToSupabaseCourseFormat = (course: ProfessionalCourse) => {
     // Get the icon type safely
     const iconType = course.icon.type;
     
-    // Add proper null checks for iconType
-    if (iconType && typeof iconType === 'object') {
-      // Then check if it has a 'name' property
-      if ('name' in iconType && iconType.name) {
-        // Now it's safe to access name and convert to lowercase
-        iconName = String(iconType.name).toLowerCase();
+    // Ensure iconType is not null before trying to access it
+    if (iconType) {
+      // Check if iconType is an object
+      if (typeof iconType === 'object') {
+        // Check if it has a 'name' property
+        if (iconType !== null && 'name' in iconType && iconType.name) {
+          // Now it's safe to access name and convert to lowercase
+          iconName = String(iconType.name).toLowerCase();
+        }
       }
     }
   }
