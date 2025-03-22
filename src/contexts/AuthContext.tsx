@@ -51,23 +51,23 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     resetAdminAccount 
   } = useUserOperations(pendingUsers, setPendingUsers, setUser);
 
-  const value = {
-    user,
-    isAuthenticated,
-    isLoading,
-    login,
-    logout,
-    switchRole,
-    registerUser,
-    sendVerificationEmail,
-    verifyEmail,
-    approveRegistration,
-    getPendingUsers,
-    resetAdminAccount
-  };
-
   return (
-    <AuthContext.Provider value={value}>
+    <AuthContext.Provider
+      value={{
+        user,
+        isAuthenticated,
+        isLoading,
+        login,
+        logout,
+        switchRole,
+        registerUser,
+        sendVerificationEmail,
+        verifyEmail,
+        approveRegistration,
+        getPendingUsers,
+        resetAdminAccount
+      }}
+    >
       {children}
     </AuthContext.Provider>
   );

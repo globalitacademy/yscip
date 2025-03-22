@@ -1,16 +1,11 @@
 
-import { ReactElement } from 'react';
-
-export interface CourseLesson {
-  title: string;
-  duration: string;
-}
+import React from 'react';
 
 export interface ProfessionalCourse {
   id: string;
   title: string;
   subtitle: string;
-  icon: ReactElement;
+  icon: React.ReactElement;
   duration: string;
   price: string;
   buttonText: string;
@@ -20,7 +15,7 @@ export interface ProfessionalCourse {
   imageUrl?: string;
   organizationLogo?: string;
   description?: string;
-  lessons?: CourseLesson[];
+  lessons?: { title: string; duration: string }[];
   requirements?: string[];
   outcomes?: string[];
 }

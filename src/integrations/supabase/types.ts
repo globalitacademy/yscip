@@ -194,8 +194,6 @@ export type Database = {
           institution: string | null
           is_persistent: boolean | null
           modules: string[] | null
-          organization_logo: string | null
-          prefer_icon: boolean | null
           price: string
           specialization: string | null
           subtitle: string
@@ -215,8 +213,6 @@ export type Database = {
           institution?: string | null
           is_persistent?: boolean | null
           modules?: string[] | null
-          organization_logo?: string | null
-          prefer_icon?: boolean | null
           price: string
           specialization?: string | null
           subtitle?: string
@@ -236,8 +232,6 @@ export type Database = {
           institution?: string | null
           is_persistent?: boolean | null
           modules?: string[] | null
-          organization_logo?: string | null
-          prefer_icon?: boolean | null
           price?: string
           specialization?: string | null
           subtitle?: string
