@@ -29,14 +29,14 @@ import ModulesPage from './pages/ModulesPage';
 import AdminProjectsPage from './pages/AdminProjectsPage';
 import { AuthProvider } from '@/contexts/AuthContext';
 import { ProjectProvider } from '@/contexts/ProjectContext';
-import { Toaster } from "@/components/ui/toaster"
+import { Toaster } from "sonner";
 
 function App() {
   return (
     <BrowserRouter>
       <AuthProvider>
         <ProjectProvider projectId={null} initialProject={null}>
-          <Toaster />
+          <Toaster position="bottom-right" />
           <Routes>
             <Route path="/" element={<Index />} />
             <Route path="/login" element={<Login />} />
