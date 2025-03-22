@@ -2,8 +2,8 @@
 import React from 'react';
 import { CourseProvider } from '@/components/courses/CourseContext';
 import AllCoursesView from '@/components/courses/AllCoursesView';
-import { Footer } from '@/components/Footer';
-import { Header } from '@/components/Header';
+import Footer from '@/components/Footer';
+import Header from '@/components/Header';
 
 const AllCoursesPage: React.FC = () => {
   return (
