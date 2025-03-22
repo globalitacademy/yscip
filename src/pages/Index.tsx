@@ -4,15 +4,15 @@ import { Button } from '@/components/ui/button';
 import { ArrowRight } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { useInView } from '@/hooks/useInView';
-import Hero from '@/components/hero/Hero';
 import FeaturesSection from '@/components/features';
 import Footer from '@/components/Footer';
 import CoursesSection from '@/components/courses/CoursesSection';
 import ProfessionalCoursesSection from '@/components/courses/ProfessionalCoursesSection';
-import { HomePageModules } from '@/components/educationalCycle/HomePageModules';
+import { HomePageModules } from '@/components/educationalCycle';
 import ProjectTabs from '@/components/projects/ProjectTabs';
 import { ProjectManagementProvider } from '@/contexts/ProjectManagementContext';
 import { useAuth } from '@/contexts/AuthContext';
+import Hero from '@/components/hero/Hero';
 
 const Index = () => {
   const [heroRef, heroInView] = useInView<HTMLDivElement>();

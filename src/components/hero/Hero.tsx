@@ -66,24 +66,6 @@ const Hero: React.FC = () => {
       });
     }
   };
-  
-  // Function to handle category filter
-  const handleCategoryFilter = (category: string) => {
-    const themesSection = document.getElementById('themes-section');
-    if (themesSection) {
-      themesSection.scrollIntoView({ behavior: 'smooth' });
-      
-      // Set URL search parameter for category filtering
-      const url = new URL(window.location.href);
-      url.searchParams.set('category', category);
-      window.history.pushState({}, '', url);
-      
-      // Dispatch a custom event that ThemeGrid can listen for
-      window.dispatchEvent(new CustomEvent('categoryChanged', { 
-        detail: { category } 
-      }));
-    }
-  };
 
   return (
     <section ref={heroRef} className="relative min-h-[90vh] flex items-center justify-center overflow-hidden pt-16 bg-gradient-to-b from-background/20 to-background">
