@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Card, CardContent, CardFooter, CardHeader } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -96,16 +95,14 @@ const ProfessionalCourseCard: React.FC<ProfessionalCourseCardProps> = ({
       </CardContent>
       
       <CardFooter className="pt-4">
-        <Button 
-          variant="outline"
-          className="w-full"
-          onClick={(e) => {
-            // Prevent propagation to avoid triggering edit/delete if user clicks button
-            e.stopPropagation();
-          }}
-        >
-          <Eye className="h-4 w-4 mr-2" /> {course.buttonText || "Մանրամասն"}
-        </Button>
+        <Link to={`/course/${course.id}`} className="w-full">
+          <Button 
+            variant="outline"
+            className="w-full"
+          >
+            <Eye className="h-4 w-4 mr-2" /> {course.buttonText || "Մանրամասն"}
+          </Button>
+        </Link>
       </CardFooter>
     </Card>
   );
