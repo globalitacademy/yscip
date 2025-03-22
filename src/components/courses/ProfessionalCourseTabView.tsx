@@ -1,13 +1,13 @@
 
-import React, { useEffect, useState } from 'react';
+import React, { useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useCourses } from './CourseContext';
 import ProfessionalCourseList from './ProfessionalCourseList';
 import EditProfessionalCourseDialog from './EditProfessionalCourseDialog';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
-import { Button } from '@/components/ui/button';
-import { Loader2, RefreshCcw } from 'lucide-react';
+import { Loader2 } from 'lucide-react';
+import DatabaseSyncButton from '@/components/DatabaseSyncButton';
 
 const ProfessionalCourseTabView: React.FC = () => {
   const { user } = useAuth();
@@ -22,10 +22,8 @@ const ProfessionalCourseTabView: React.FC = () => {
     handleEditProfessionalCourseInit,
     handleDeleteProfessionalCourse,
     loadCoursesFromDatabase,
-    syncCoursesWithDatabase,
     loading
   } = useCourses();
-  const [syncing, setSyncing] = useState(false);
 
   // Load courses from database when component mounts
   useEffect(() => {
@@ -62,19 +60,6 @@ const ProfessionalCourseTabView: React.FC = () => {
     };
   }, [loadCoursesFromDatabase]);
 
-  const handleSyncWithDatabase = async () => {
-    setSyncing(true);
-    try {
-      await syncCoursesWithDatabase();
-      toast.success('Դասընթացները հաջողությամբ համաժամեցվել են');
-    } catch (error) {
-      console.error('Error syncing with database:', error);
-      toast.error('Համաժամեցման ժամանակ սխալ է տեղի ունեցել');
-    } finally {
-      setSyncing(false);
-    }
-  };
-
   const isAdmin = user?.role === 'admin';
 
   if (loading) {
@@ -90,19 +75,7 @@ const ProfessionalCourseTabView: React.FC = () => {
     <>
       <div className="flex justify-between items-center mb-4">
         <h2 className="text-2xl font-bold">Դասընթացներ</h2>
-        <Button 
-          variant="outline"
-          onClick={handleSyncWithDatabase}
-          disabled={syncing}
-          className="flex items-center gap-2"
-        >
-          {syncing ? (
-            <Loader2 className="h-4 w-4 animate-spin" />
-          ) : (
-            <RefreshCcw className="h-4 w-4" />
-          )}
-          Համաժամեցնել բազայի հետ
-        </Button>
+        <DatabaseSyncButton size="default" showLabel={true} />
       </div>
       
       <ProfessionalCourseList
