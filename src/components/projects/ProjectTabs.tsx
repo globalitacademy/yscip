@@ -6,6 +6,7 @@ import AssignedProjectsTab from './AssignedProjectsTab';
 import TeachingProjectsTab from './TeachingProjectsTab';
 import ProjectList from './ProjectList';
 import { ProjectTheme } from '@/data/projectThemes';
+import { ProjectManagementProvider } from '@/contexts/ProjectManagementContext';
 
 interface ProjectTabsProps {
   user: any;
@@ -26,7 +27,9 @@ const ProjectTabs: React.FC<ProjectTabsProps> = ({
     <div className="mb-6">
       <h2 className="text-2xl font-bold mb-6">Նախագծեր</h2>
       
-      <ProjectList />
+      <ProjectManagementProvider>
+        <ProjectList />
+      </ProjectManagementProvider>
       
       {/* Original tabs - keeping as a fallback option 
       <Tabs defaultValue="all-projects" className="mb-6">
