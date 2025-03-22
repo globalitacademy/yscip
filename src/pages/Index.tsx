@@ -1,108 +1,110 @@
 
-import React, { useState, useEffect } from 'react';
-import Header from '@/components/Header';
-import Hero from '@/components/Hero';
-import FeaturesSection from '@/components/features';
+import React, { useEffect } from 'react';
+import { Button } from '@/components/ui/button';
+import { ArrowRight } from 'lucide-react';
+import { Link } from 'react-router-dom';
+import { useInView } from '@/hooks/useInView';
+import Hero from '@/components/hero/Hero';
+import { FeaturesSection } from '@/components/features';
 import Footer from '@/components/Footer';
-import { useAuth } from '@/contexts/AuthContext';
-import { toast } from 'sonner';
-import { projectThemes } from '@/data/projectThemes';
-import UserReservedProjects from '@/components/user/UserReservedProjects';
-import ProjectTabs from '@/components/projects/ProjectTabs';
-import EducationalCycleInfographic from '@/components/educationalCycle';
 import CoursesSection from '@/components/courses/CoursesSection';
 import ProfessionalCoursesSection from '@/components/courses/ProfessionalCoursesSection';
+import { HomePageModules } from '@/components/educationalCycle';
+import ProjectTabs from '@/components/projects/ProjectTabs';
+import { ProjectManagementProvider } from '@/contexts/ProjectManagementContext';
+import { useAuth } from '@/contexts/AuthContext';
 
 const Index = () => {
+  const { heroRef, heroInView } = useInView();
+  const { featuresRef, featuresInView } = useInView();
+  const { coursesRef, coursesInView } = useInView();
   const { user } = useAuth();
-  const [createdProjects, setCreatedProjects] = useState<any[]>([]);
-  const [reservedProjects, setReservedProjects] = useState<any[]>([]);
-  const [assignments, setAssignments] = useState<any[]>([]);
-  
+
+  // Scroll to module on load if URL contains module hash
   useEffect(() => {
-    const storedProjects = localStorage.getItem('createdProjects');
-    if (storedProjects) {
-      try {
-        const parsedProjects = JSON.parse(storedProjects);
-        setCreatedProjects(parsedProjects);
-        console.log('Loaded created projects:', parsedProjects);
-      } catch (e) {
-        console.error('Error parsing stored projects:', e);
-      }
-    }
-    
-    const storedReservations = localStorage.getItem('reservedProjects');
-    if (storedReservations) {
-      try {
-        const parsedReservations = JSON.parse(storedReservations);
-        setReservedProjects(parsedReservations);
-        console.log('Loaded reserved projects:', parsedReservations);
-      } catch (e) {
-        console.error('Error parsing reserved projects:', e);
-      }
-    }
-    
-    const storedAssignments = localStorage.getItem('projectAssignments');
-    if (storedAssignments) {
-      try {
-        const parsedAssignments = JSON.parse(storedAssignments);
-        setAssignments(parsedAssignments);
-        console.log('Loaded assignments:', parsedAssignments);
-      } catch (e) {
-        console.error('Error parsing assignments:', e);
+    const hash = window.location.hash;
+    if (hash) {
+      const id = hash.replace('#', '');
+      const element = document.getElementById(id);
+      if (element) {
+        element.scrollIntoView({ behavior: 'smooth' });
       }
     }
   }, []);
 
-  useEffect(() => {
-    if (user) {
-      const roleMap: Record<string, string> = {
-        'student': 'Ուսանող',
-        'instructor': 'Դասախոս',
-        'admin': 'Ադմինիստրատոր',
-        'supervisor': 'Ղեկավար'
-      };
-      
-      const roleName = roleMap[user.role] || user.role;
-      
-      toast.success(`Մուտք եք գործել որպես ${roleName}`, {
-        duration: 3000,
-        position: 'top-right'
-      });
-    }
-  }, [user]);
-
-  const userReservedProjects = user 
-    ? reservedProjects.filter(rp => rp.userId === user.id)
-    : [];
-
-  const userReservedProjectDetails = userReservedProjects.map(rp => {
-    const project = [...projectThemes, ...createdProjects].find(p => Number(p.id) === Number(rp.projectId));
-    return { ...rp, project };
-  }).filter(rp => rp.project);
+  const userRoleForHero = user?.role || 'guest';
 
   return (
-    <div className="min-h-screen flex flex-col">
-      <Header />
-      <main className="flex-grow">
-        <Hero />
+    <div className="flex flex-col min-h-screen">
+      {/* Hero Section */}
+      <div
+        ref={heroRef}
+        className={`transition-opacity duration-1000 ${
+          heroInView ? 'opacity-100' : 'opacity-0'
+        }`}
+      >
+        <Hero userRole={userRoleForHero} />
+      </div>
+
+      {/* Features Section */}
+      <div
+        ref={featuresRef}
+        className={`transition-opacity duration-1000 ${
+          featuresInView ? 'opacity-100' : 'opacity-0'
+        }`}
+      >
         <FeaturesSection />
-        <div id="themes-section" className="container mx-auto px-4 pb-16">
-          {user && (
-            <UserReservedProjects reservedProjects={userReservedProjectDetails} />
-          )}
+      </div>
+
+      {/* Educational Cycle */}
+      <section className="py-20 bg-gradient-to-b from-gray-50 to-white">
+        <div className="container mx-auto px-4">
+          <div className="text-center mb-12">
+            <h2 className="text-3xl font-bold mb-4">Կրթական ցիկլ</h2>
+            <p className="text-lg text-gray-600 max-w-3xl mx-auto">
+              Մեր կրթական ցիկլը ներառում է տարբեր մոդուլներ, որոնք օգնում են ուսանողներին 
+              զարգացնել իրենց հմտությունները և ձեռք բերել նոր գիտելիքներ:
+            </p>
+          </div>
           
-          <ProjectTabs 
-            user={user} 
-            createdProjects={createdProjects} 
-            assignments={assignments}
-            projectThemes={projectThemes}
-          />
+          <HomePageModules />
+
+          <div className="text-center mt-10">
+            <Link to="/modules">
+              <Button variant="outline" className="mt-4 group">
+                Դիտել բոլոր մոդուլները
+                <ArrowRight className="ml-2 h-4 w-4 transition-transform group-hover:translate-x-1" />
+              </Button>
+            </Link>
+          </div>
         </div>
-        <ProfessionalCoursesSection />
+      </section>
+
+      {/* Courses Section */}
+      <div
+        ref={coursesRef}
+        className={`transition-opacity duration-1000 ${
+          coursesInView ? 'opacity-100' : 'opacity-0'
+        }`}
+        id="courses"
+      >
         <CoursesSection />
-        <EducationalCycleInfographic />
-      </main>
+        <ProfessionalCoursesSection />
+      </div>
+
+      {/* Projects Section */}
+      <div className="container mx-auto px-4 pb-16">
+        <ProjectManagementProvider>
+          <ProjectTabs 
+            user={user}
+            createdProjects={[]} 
+            assignments={[]} 
+            projectThemes={[]}
+          />
+        </ProjectManagementProvider>
+      </div>
+
+      {/* Footer */}
       <Footer />
     </div>
   );

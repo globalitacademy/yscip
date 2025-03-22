@@ -12,12 +12,15 @@ export const useProjectEvents = (
   setProjects: React.Dispatch<React.SetStateAction<ProjectTheme[]>>
 ) => {
   useEffect(() => {
+    // Enable real-time updates for the projects table
     const projectsSubscription = supabase
       .channel('projects-changes')
       .on(
         'postgres_changes',
         { event: '*', schema: 'public', table: 'projects' },
         (payload) => {
+          console.log('Real-time update received:', payload);
+          
           if (payload.eventType === 'INSERT') {
             const newProject = payload.new as any;
             setProjects(prevProjects => {
@@ -30,7 +33,9 @@ export const useProjectEvents = (
                 techStack: newProject.tech_stack || [],
                 createdBy: newProject.created_by,
                 createdAt: newProject.created_at,
-                duration: newProject.duration
+                duration: newProject.duration,
+                complexity: 'Միջին', // Default complexity
+                steps: [] // Initialize empty steps
               };
               
               if (!prevProjects.some(p => p.id === projectToAdd.id)) {

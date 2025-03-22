@@ -1,5 +1,5 @@
 
-import React, { useMemo } from 'react';
+import React, { useEffect, useMemo } from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { filterProjects } from './ProjectUtils';
 import { useProjectManagement } from '@/contexts/ProjectManagementContext';
@@ -16,10 +16,16 @@ const ProjectList: React.FC = () => {
     handleEditInit,
     handleImageChangeInit,
     handleDeleteInit,
-    handleOpenCreateDialog
+    handleOpenCreateDialog,
+    loadProjects
   } = useProjectManagement();
 
   const { user } = useAuth();
+  
+  // Load projects when component mounts
+  useEffect(() => {
+    loadProjects();
+  }, [loadProjects]);
   
   const filteredProjects = useMemo(() => {
     return filterProjects(projects, searchQuery, selectedCategory);
