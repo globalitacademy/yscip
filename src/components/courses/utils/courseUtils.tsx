@@ -1,10 +1,14 @@
-import React from 'react';
+import React, { ReactElement } from 'react';
 import * as lucideIcons from 'lucide-react';
 import { ProfessionalCourse } from '../types/ProfessionalCourse';
 import { supabase } from '@/integrations/supabase/client';
 
 // Event name for course updates
 export const COURSE_UPDATED_EVENT = 'courseUpdated';
+
+// Type for the icon component from lucide-react
+type LucideIcon = typeof lucideIcons[keyof typeof lucideIcons];
+type LucideIconKey = keyof typeof lucideIcons;
 
 export const getIconComponent = (iconType: string | null) => {
   if (!iconType) return null;
@@ -60,7 +64,10 @@ export const saveCourseChanges = async (course: ProfessionalCourse): Promise<boo
         description: course.description,
         // Convert nested objects to JSON strings for storage
         // We can't store React components in the database, so we store the icon name
-        icon_name: iconName
+        icon_name: iconName,
+        // Store arrays as separate records in related tables or as serialized JSON
+        modules: course.lessons?.map(lesson => `${lesson.title}: ${lesson.duration}`) || []
+        // Note: requirements and outcomes are stored in separate tables
       });
 
     if (error) {
@@ -68,6 +75,60 @@ export const saveCourseChanges = async (course: ProfessionalCourse): Promise<boo
       // Fall back to localStorage on error
       saveToLocalStorage(course);
     } else {
+      // Save related data (requirements and outcomes) to their respective tables
+      // This would normally be handled in a transaction, but for now we'll do it sequentially
+      if (course.requirements && course.requirements.length > 0) {
+        try {
+          // Delete existing requirements for this course
+          await supabase.from('course_requirements').delete().eq('course_id', course.id);
+          
+          // Insert new requirements
+          const requirementsToInsert = course.requirements.map(req => ({
+            course_id: course.id,
+            requirement: req
+          }));
+          
+          await supabase.from('course_requirements').insert(requirementsToInsert);
+        } catch (reqError) {
+          console.error('Error saving requirements:', reqError);
+        }
+      }
+      
+      if (course.outcomes && course.outcomes.length > 0) {
+        try {
+          // Delete existing outcomes for this course
+          await supabase.from('course_outcomes').delete().eq('course_id', course.id);
+          
+          // Insert new outcomes
+          const outcomesToInsert = course.outcomes.map(outcome => ({
+            course_id: course.id,
+            outcome: outcome
+          }));
+          
+          await supabase.from('course_outcomes').insert(outcomesToInsert);
+        } catch (outError) {
+          console.error('Error saving outcomes:', outError);
+        }
+      }
+      
+      if (course.lessons && course.lessons.length > 0) {
+        try {
+          // Delete existing lessons for this course
+          await supabase.from('course_lessons').delete().eq('course_id', course.id);
+          
+          // Insert new lessons
+          const lessonsToInsert = course.lessons.map(lesson => ({
+            course_id: course.id,
+            title: lesson.title,
+            duration: lesson.duration
+          }));
+          
+          await supabase.from('course_lessons').insert(lessonsToInsert);
+        } catch (lessonError) {
+          console.error('Error saving lessons:', lessonError);
+        }
+      }
+      
       // Update localStorage to keep in sync
       saveToLocalStorage(course);
       
@@ -128,46 +189,69 @@ const saveToLocalStorage = (course: ProfessionalCourse): void => {
 export const getAllCourses = async (): Promise<ProfessionalCourse[]> => {
   try {
     // Try to get courses from Supabase
-    const { data, error } = await supabase
+    const { data: coursesData, error: coursesError } = await supabase
       .from('courses')
       .select('*');
       
-    if (error) {
-      console.error('Error fetching from Supabase:', error);
-      throw error;
+    if (coursesError) {
+      console.error('Error fetching courses:', coursesError);
+      throw coursesError;
     }
     
-    if (data && data.length > 0) {
-      // Transform the data to include icon components
-      const coursesWithIcons = data.map(course => {
-        // Convert iconName to an actual React component
-        let iconComponent = null;
-        if (course.icon_name && lucideIcons[course.icon_name as keyof typeof lucideIcons]) {
-          const IconComponent = lucideIcons[course.icon_name as keyof typeof lucideIcons];
-          iconComponent = React.createElement(IconComponent, { className: "w-16 h-16" });
-        }
-        
-        return {
-          id: course.id,
-          title: course.title,
-          subtitle: course.subtitle || 'ԴԱՍԸՆԹԱՑ',
-          icon: iconComponent,
-          duration: course.duration,
-          price: course.price,
-          buttonText: course.button_text || 'Դիտել',
-          color: course.color || 'text-amber-500',
-          createdBy: course.created_by || '',
-          institution: course.institution || 'ՀՊՏՀ',
-          imageUrl: course.image_url,
-          organizationLogo: course.organization_logo,
-          description: course.description,
-          lessons: course.lessons || [],
-          requirements: course.requirements || [],
-          outcomes: course.outcomes || []
-        } as ProfessionalCourse;
-      });
+    if (coursesData && coursesData.length > 0) {
+      // Get related data for each course
+      const coursesWithRelatedData = await Promise.all(
+        coursesData.map(async (course) => {
+          // Get lessons for this course
+          const { data: lessonsData } = await supabase
+            .from('course_lessons')
+            .select('*')
+            .eq('course_id', course.id);
+            
+          // Get requirements for this course
+          const { data: requirementsData } = await supabase
+            .from('course_requirements')
+            .select('requirement')
+            .eq('course_id', course.id);
+            
+          // Get outcomes for this course
+          const { data: outcomesData } = await supabase
+            .from('course_outcomes')
+            .select('outcome')
+            .eq('course_id', course.id);
+          
+          // Transform the course data
+          const iconName = course.icon_name;
+          let iconComponent: ReactElement | null = null;
+          
+          if (iconName && typeof iconName === 'string' && iconName in lucideIcons) {
+            const IconComponent = lucideIcons[iconName as LucideIconKey] as LucideIcon;
+            // Use type assertion to help TypeScript understand this is a valid component
+            iconComponent = React.createElement(IconComponent as any, { className: "w-16 h-16" });
+          }
+          
+          return {
+            id: course.id,
+            title: course.title,
+            subtitle: course.subtitle || 'ԴԱՍԸՆԹԱՑ',
+            icon: iconComponent,
+            duration: course.duration,
+            price: course.price,
+            buttonText: course.button_text || 'Դիտել',
+            color: course.color || 'text-amber-500',
+            createdBy: course.created_by || '',
+            institution: course.institution || 'ՀՊՏՀ',
+            imageUrl: course.image_url,
+            organizationLogo: course.organization_logo,
+            description: course.description,
+            lessons: lessonsData || [],
+            requirements: requirementsData ? requirementsData.map(r => r.requirement) : [],
+            outcomes: outcomesData ? outcomesData.map(o => o.outcome) : []
+          } as ProfessionalCourse;
+        })
+      );
       
-      return coursesWithIcons;
+      return coursesWithRelatedData;
     }
     
     // Fall back to localStorage if no data in Supabase
@@ -194,42 +278,63 @@ export const getAllCourses = async (): Promise<ProfessionalCourse[]> => {
 export const getCourseById = async (id: string): Promise<ProfessionalCourse | null> => {
   try {
     // Try to get the course from Supabase
-    const { data, error } = await supabase
+    const { data: course, error: courseError } = await supabase
       .from('courses')
       .select('*')
       .eq('id', id)
-      .maybeSingle(); // Use maybeSingle instead of single to avoid errors
+      .maybeSingle();
       
-    if (error) {
-      console.error('Error fetching from Supabase:', error);
-      throw error;
+    if (courseError) {
+      console.error('Error fetching course:', courseError);
+      throw courseError;
     }
     
-    if (data) {
-      // Convert iconName to an actual React component
-      let iconComponent = null;
-      if (data.icon_name && lucideIcons[data.icon_name as keyof typeof lucideIcons]) {
-        const IconComponent = lucideIcons[data.icon_name as keyof typeof lucideIcons];
-        iconComponent = React.createElement(IconComponent, { className: "w-16 h-16" });
+    if (course) {
+      // Get lessons for this course
+      const { data: lessonsData } = await supabase
+        .from('course_lessons')
+        .select('*')
+        .eq('course_id', id);
+        
+      // Get requirements for this course
+      const { data: requirementsData } = await supabase
+        .from('course_requirements')
+        .select('requirement')
+        .eq('course_id', id);
+        
+      // Get outcomes for this course
+      const { data: outcomesData } = await supabase
+        .from('course_outcomes')
+        .select('outcome')
+        .eq('course_id', id);
+      
+      // Transform the course data
+      const iconName = course.icon_name;
+      let iconComponent: ReactElement | null = null;
+      
+      if (iconName && typeof iconName === 'string' && iconName in lucideIcons) {
+        const IconComponent = lucideIcons[iconName as LucideIconKey] as LucideIcon;
+        // Use type assertion to help TypeScript understand this is a valid component
+        iconComponent = React.createElement(IconComponent as any, { className: "w-16 h-16" });
       }
       
       return {
-        id: data.id,
-        title: data.title,
-        subtitle: data.subtitle || 'ԴԱՍԸՆԹԱՑ',
+        id: course.id,
+        title: course.title,
+        subtitle: course.subtitle || 'ԴԱՍԸՆԹԱՑ',
         icon: iconComponent,
-        duration: data.duration,
-        price: data.price,
-        buttonText: data.button_text || 'Դիտել',
-        color: data.color || 'text-amber-500',
-        createdBy: data.created_by || '',
-        institution: data.institution || 'ՀՊՏՀ',
-        imageUrl: data.image_url,
-        organizationLogo: data.organization_logo,
-        description: data.description,
-        lessons: data.lessons || [],
-        requirements: data.requirements || [],
-        outcomes: data.outcomes || []
+        duration: course.duration,
+        price: course.price,
+        buttonText: course.button_text || 'Դիտել',
+        color: course.color || 'text-amber-500',
+        createdBy: course.created_by || '',
+        institution: course.institution || 'ՀՊՏՀ',
+        imageUrl: course.image_url,
+        organizationLogo: course.organization_logo,
+        description: course.description,
+        lessons: lessonsData || [],
+        requirements: requirementsData ? requirementsData.map(r => r.requirement) : [],
+        outcomes: outcomesData ? outcomesData.map(o => o.outcome) : []
       } as ProfessionalCourse;
     }
     
