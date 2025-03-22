@@ -12,7 +12,8 @@ import { HomePageModules } from '@/components/educationalCycle';
 import ProjectTabs from '@/components/projects/ProjectTabs';
 import { ProjectManagementProvider } from '@/contexts/ProjectManagementContext';
 import { useAuth } from '@/contexts/AuthContext';
-import Hero from '@/components/hero/Hero';
+import Hero from '@/components/hero';
+import Header from '@/components/Header';
 
 const Index = () => {
   const [heroRef, heroInView] = useInView<HTMLDivElement>();
@@ -34,6 +35,9 @@ const Index = () => {
 
   return (
     <div className="flex flex-col min-h-screen">
+      {/* Header */}
+      <Header />
+      
       {/* Hero Section */}
       <div
         ref={heroRef}
