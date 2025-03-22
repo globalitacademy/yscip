@@ -65,11 +65,15 @@ export const getCourseById = async (id: string): Promise<ProfessionalCourse | nu
         console.error('Error fetching outcomes:', e);
       }
 
+      // Create a proper React element for the icon
+      const iconElement = convertIconNameToComponent(course.icon_name);
+
       const formattedCourse: ProfessionalCourse = {
         id: course.id,
         title: course.title,
         subtitle: course.subtitle,
-        icon: convertIconNameToComponent(course.icon_name),
+        icon: iconElement,
+        iconName: course.icon_name,
         duration: course.duration,
         price: course.price,
         buttonText: course.button_text,
@@ -77,6 +81,7 @@ export const getCourseById = async (id: string): Promise<ProfessionalCourse | nu
         createdBy: course.created_by,
         institution: course.institution,
         imageUrl: course.image_url,
+        organizationLogo: course.organization_logo,
         description: course.description,
         lessons: lessons?.map(lesson => ({
           title: lesson.title, 
@@ -128,24 +133,34 @@ const getLocalCourseById = (id: string): ProfessionalCourse | null => {
 };
 
 const convertIconNameToComponent = (iconName: string): React.ReactElement => {
+  let IconComponent;
+  
   switch (iconName.toLowerCase()) {
     case 'book':
-      return React.createElement(Book, { className: "w-16 h-16" });
+      IconComponent = Book;
+      break;
     case 'code':
-      return React.createElement(Code, { className: "w-16 h-16" });
+      IconComponent = Code;
+      break;
     case 'braincircuit':
     case 'brain':
-      return React.createElement(BrainCircuit, { className: "w-16 h-16" });
+      IconComponent = BrainCircuit;
+      break;
     case 'database':
-      return React.createElement(Database, { className: "w-16 h-16" });
+      IconComponent = Database;
+      break;
     case 'filecode':
     case 'file':
-      return React.createElement(FileCode, { className: "w-16 h-16" });
+      IconComponent = FileCode;
+      break;
     case 'globe':
-      return React.createElement(Globe, { className: "w-16 h-16" });
+      IconComponent = Globe;
+      break;
     default:
-      return React.createElement(Book, { className: "w-16 h-16" });
+      IconComponent = Book;
   }
+  
+  return React.createElement(IconComponent, { className: "w-16 h-16" });
 };
 
 const saveToLocalStorage = (course: ProfessionalCourse): void => {
@@ -179,6 +194,9 @@ export const saveCourseChanges = async (course: ProfessionalCourse): Promise<boo
     // First save to localStorage to ensure local synchronization
     saveToLocalStorage(course);
 
+    // Extract the icon name from the course object or from the iconName property
+    const iconName = course.iconName || getIconNameFromElement(course.icon);
+
     // Then try to save to Supabase if available
     try {
       const { error: courseError } = await supabase
@@ -186,6 +204,7 @@ export const saveCourseChanges = async (course: ProfessionalCourse): Promise<boo
         .update({
           title: course.title,
           subtitle: course.subtitle,
+          icon_name: iconName,
           duration: course.duration,
           price: course.price,
           button_text: course.buttonText,
@@ -193,6 +212,7 @@ export const saveCourseChanges = async (course: ProfessionalCourse): Promise<boo
           created_by: course.createdBy,
           institution: course.institution,
           image_url: course.imageUrl,
+          organization_logo: course.organizationLogo,
           description: course.description,
           updated_at: new Date().toISOString()
         })
@@ -203,13 +223,11 @@ export const saveCourseChanges = async (course: ProfessionalCourse): Promise<boo
         // Continue with local storage only
       } else {
         // If course update was successful, also update related tables
-        await Promise.all([
-          supabase.from('course_lessons').delete().eq('course_id', course.id),
-          supabase.from('course_requirements').delete().eq('course_id', course.id),
-          supabase.from('course_outcomes').delete().eq('course_id', course.id)
-        ]);
-
         if (course.lessons && course.lessons.length > 0) {
+          // First delete existing lessons
+          await supabase.from('course_lessons').delete().eq('course_id', course.id);
+          
+          // Then insert new lessons
           const { error: lessonsError } = await supabase
             .from('course_lessons')
             .insert(
@@ -226,6 +244,10 @@ export const saveCourseChanges = async (course: ProfessionalCourse): Promise<boo
         }
 
         if (course.requirements && course.requirements.length > 0) {
+          // First delete existing requirements
+          await supabase.from('course_requirements').delete().eq('course_id', course.id);
+          
+          // Then insert new requirements
           const { error: requirementsError } = await supabase
             .from('course_requirements')
             .insert(
@@ -241,6 +263,10 @@ export const saveCourseChanges = async (course: ProfessionalCourse): Promise<boo
         }
 
         if (course.outcomes && course.outcomes.length > 0) {
+          // First delete existing outcomes
+          await supabase.from('course_outcomes').delete().eq('course_id', course.id);
+          
+          // Then insert new outcomes
           const { error: outcomesError } = await supabase
             .from('course_outcomes')
             .insert(
@@ -269,4 +295,18 @@ export const saveCourseChanges = async (course: ProfessionalCourse): Promise<boo
     console.error('Error saving course changes:', error);
     return false;
   }
+};
+
+// Helper function to extract icon name from React element
+const getIconNameFromElement = (iconElement: React.ReactElement): string => {
+  if (!iconElement) return 'book';
+  
+  const iconType = iconElement.type;
+  const iconName = iconType.displayName || iconType.name;
+  
+  if (iconName) {
+    return iconName.toLowerCase();
+  }
+  
+  return 'book';
 };
