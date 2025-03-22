@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Card, CardContent, CardFooter, CardHeader } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -37,7 +36,10 @@ const ProjectCard: React.FC<ProjectCardProps> = ({
               variant="outline" 
               size="icon" 
               className="h-6 w-6 rounded-full bg-white/80 backdrop-blur-sm" 
-              onClick={() => onEdit(project)}
+              onClick={(e) => {
+                e.stopPropagation(); // Prevent event bubbling
+                onEdit(project);
+              }}
             >
               <Pencil size={12} />
             </Button>
@@ -47,7 +49,10 @@ const ProjectCard: React.FC<ProjectCardProps> = ({
               variant="outline" 
               size="icon" 
               className="h-6 w-6 rounded-full bg-white/80 backdrop-blur-sm" 
-              onClick={() => onImageChange(project)}
+              onClick={(e) => {
+                e.stopPropagation(); // Prevent event bubbling
+                onImageChange(project);
+              }}
             >
               <Image size={12} />
             </Button>
@@ -57,7 +62,10 @@ const ProjectCard: React.FC<ProjectCardProps> = ({
               variant="outline" 
               size="icon" 
               className="h-6 w-6 rounded-full bg-white/80 backdrop-blur-sm" 
-              onClick={() => onDelete(project)}
+              onClick={(e) => {
+                e.stopPropagation(); // Prevent event bubbling
+                onDelete(project);
+              }}
             >
               <Trash size={12} />
             </Button>
