@@ -6,7 +6,17 @@ import { usePendingUsers } from './usePendingUsers';
 import { useSessionCheck } from './useSessionCheck';
 import { useAuthStateChange } from './useAuthStateChange';
 
-export const useAuthSession = () => {
+interface UseAuthSessionResult {
+  user: User | null;
+  isAuthenticated: boolean;
+  pendingUsers: PendingUser[];
+  setUser: (user: User | null) => void;
+  setIsAuthenticated: (value: boolean) => void;
+  setPendingUsers: React.Dispatch<React.SetStateAction<PendingUser[]>>;
+  isLoading: boolean;
+}
+
+export const useAuthSession = (): UseAuthSessionResult => {
   const [user, setUser] = useState<User | null>(null);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
