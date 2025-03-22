@@ -7,7 +7,7 @@ interface InViewOptions {
   rootMargin?: string;
 }
 
-export function useInView<T extends HTMLElement = HTMLElement>(
+export function useInView<T extends HTMLElement = HTMLDivElement>(
   options: InViewOptions = {}
 ): [RefObject<T>, boolean] {
   const { threshold = 0.1, triggerOnce = true, rootMargin = '0px' } = options;

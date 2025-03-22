@@ -15,9 +15,9 @@ import { ProjectManagementProvider } from '@/contexts/ProjectManagementContext';
 import { useAuth } from '@/contexts/AuthContext';
 
 const Index = () => {
-  const [heroRef, heroInView] = useInView();
-  const [featuresRef, featuresInView] = useInView();
-  const [coursesRef, coursesInView] = useInView();
+  const [heroRef, heroInView] = useInView<HTMLDivElement>();
+  const [featuresRef, featuresInView] = useInView<HTMLDivElement>();
+  const [coursesRef, coursesInView] = useInView<HTMLDivElement>();
   const { user } = useAuth();
 
   // Scroll to module on load if URL contains module hash
