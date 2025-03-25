@@ -22,6 +22,11 @@ const ProfessionalCourseList: React.FC<ProfessionalCourseListProps> = ({
 }) => {
   const { user } = useAuth();
 
+  // Filter courses to show only public ones or those created by the current user
+  const visibleCourses = courses.filter(course => 
+    course.is_public || course.createdBy === user?.name
+  );
+
   return (
     <Tabs defaultValue="all" className="w-full">
       <TabsList>
@@ -32,16 +37,16 @@ const ProfessionalCourseList: React.FC<ProfessionalCourseListProps> = ({
       </TabsList>
       
       <TabsContent value="all" className="space-y-4 mt-4">
-        {courses.length === 0 ? (
+        {visibleCourses.length === 0 ? (
           <p className="text-center text-gray-500">Դասընթացներ չկան</p>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {courses.map((course) => (
+            {visibleCourses.map((course) => (
               <ProfessionalCourseCard 
                 key={course.id} 
                 course={course} 
                 isAdmin={isAdmin}
-                canEdit={isAdmin || course.createdBy === user?.id}
+                canEdit={isAdmin || course.createdBy === user?.name}
                 onEdit={onEdit} 
                 onDelete={onDelete} 
               />

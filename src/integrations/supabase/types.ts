@@ -193,6 +193,7 @@ export type Database = {
           image_url: string | null
           institution: string | null
           is_persistent: boolean | null
+          is_public: boolean | null
           modules: string[] | null
           organization_logo: string | null
           prefer_icon: boolean | null
@@ -214,6 +215,7 @@ export type Database = {
           image_url?: string | null
           institution?: string | null
           is_persistent?: boolean | null
+          is_public?: boolean | null
           modules?: string[] | null
           organization_logo?: string | null
           prefer_icon?: boolean | null
@@ -235,6 +237,7 @@ export type Database = {
           image_url?: string | null
           institution?: string | null
           is_persistent?: boolean | null
+          is_public?: boolean | null
           modules?: string[] | null
           organization_logo?: string | null
           prefer_icon?: boolean | null
@@ -486,6 +489,7 @@ export type Database = {
           duration: string | null
           id: number
           image: string | null
+          is_public: boolean | null
           tech_stack: string[] | null
           title: string
           updated_at: string
@@ -498,6 +502,7 @@ export type Database = {
           duration?: string | null
           id?: number
           image?: string | null
+          is_public?: boolean | null
           tech_stack?: string[] | null
           title: string
           updated_at?: string
@@ -510,6 +515,7 @@ export type Database = {
           duration?: string | null
           id?: number
           image?: string | null
+          is_public?: boolean | null
           tech_stack?: string[] | null
           title?: string
           updated_at?: string

@@ -44,7 +44,8 @@ export const projectService = {
         createdBy: project.created_by,
         createdAt: project.created_at,
         duration: project.duration,
-        complexity: 'Միջին' // Default complexity
+        complexity: 'Միջին', // Default complexity
+        is_public: project.is_public
       }));
     } catch (err) {
       console.error('Unexpected error:', err);
@@ -74,6 +75,7 @@ export const projectService = {
           image: project.image,
           created_by: userId,
           duration: project.duration,
+          is_public: project.is_public || false
         });
         
       if (error) {
@@ -102,6 +104,7 @@ export const projectService = {
           title: updates.title,
           description: updates.description,
           category: updates.category,
+          is_public: updates.is_public,
           updated_at: new Date().toISOString()
         })
         .eq('id', projectId);

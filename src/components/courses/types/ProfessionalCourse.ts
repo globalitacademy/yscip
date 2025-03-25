@@ -1,22 +1,28 @@
 
-import React from 'react';
+import { ReactElement } from 'react';
 
 export interface ProfessionalCourse {
   id: string;
   title: string;
   subtitle: string;
-  icon: React.ReactElement;
+  icon: ReactElement;
+  iconName?: string;
   duration: string;
   price: string;
   buttonText: string;
   color: string;
   createdBy: string;
   institution: string;
+  description?: string;
   imageUrl?: string;
   organizationLogo?: string;
-  description?: string;
-  lessons?: { title: string; duration: string }[];
+  lessons?: LessonItem[];
   requirements?: string[];
   outcomes?: string[];
-  iconName?: string; // Added to support storing the icon name in the database
+  is_public?: boolean;
+}
+
+export interface LessonItem {
+  title: string;
+  duration: string;
 }

@@ -17,6 +17,11 @@ const CourseList: React.FC<CourseListProps> = ({ courses, userCourses, isAdmin, 
   const { user } = useAuth();
   const isLecturer = ['lecturer', 'instructor', 'supervisor', 'project_manager'].includes(user?.role || '');
 
+  // Filter courses to show only public ones or those created by current user
+  const visibleCourses = courses.filter(course => 
+    course.is_public || course.createdBy === user?.id
+  );
+
   return (
     <Tabs defaultValue="all" className="w-full">
       <TabsList>
@@ -27,11 +32,11 @@ const CourseList: React.FC<CourseListProps> = ({ courses, userCourses, isAdmin, 
       </TabsList>
       
       <TabsContent value="all" className="space-y-4 mt-4">
-        {courses.length === 0 ? (
+        {visibleCourses.length === 0 ? (
           <p className="text-center text-gray-500">Կուրսեր չկան</p>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {courses.map((course) => (
+            {visibleCourses.map((course) => (
               <CourseCard 
                 key={course.id} 
                 course={course} 

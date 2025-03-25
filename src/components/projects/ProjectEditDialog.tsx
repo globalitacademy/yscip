@@ -7,6 +7,7 @@ import { Label } from '@/components/ui/label';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { ProjectTheme } from '@/data/projectThemes';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Switch } from '@/components/ui/switch';
 
 interface ProjectEditDialogProps {
   open: boolean;
@@ -83,6 +84,14 @@ const ProjectEditDialog: React.FC<ProjectEditDialogProps> = ({
               onChange={(e) => setEditedProject({...editedProject, description: e.target.value})}
               rows={4}
             />
+          </div>
+          <div className="flex items-center space-x-2">
+            <Switch
+              id="project-public"
+              checked={editedProject.is_public || false}
+              onCheckedChange={(checked) => setEditedProject({...editedProject, is_public: checked})}
+            />
+            <Label htmlFor="project-public">Հրապարակայնորեն հասանելի</Label>
           </div>
         </div>
         <DialogFooter className="flex-col sm:flex-row gap-2">

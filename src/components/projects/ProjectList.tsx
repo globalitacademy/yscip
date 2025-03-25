@@ -28,9 +28,13 @@ const ProjectList: React.FC = () => {
   }, [loadProjects]);
   
   // Memoize filtered projects to prevent unnecessary recalculations
+  // Only show public projects or those created by the current user
   const filteredProjects = useMemo(() => {
-    return filterProjects(projects, searchQuery, selectedCategory);
-  }, [projects, searchQuery, selectedCategory]);
+    const visibleProjects = projects.filter(project => 
+      project.is_public || project.createdBy === user?.id
+    );
+    return filterProjects(visibleProjects, searchQuery, selectedCategory);
+  }, [projects, searchQuery, selectedCategory, user?.id]);
   
   // Memoize user's own projects
   const userProjects = useMemo(() => {
