@@ -1,5 +1,5 @@
 
-import React, { useEffect, useMemo } from 'react';
+import React, { useEffect, useMemo, useCallback } from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { filterProjects } from './ProjectUtils';
 import { useProjectManagement } from '@/contexts/ProjectManagementContext';
@@ -27,17 +27,27 @@ const ProjectList: React.FC = () => {
     loadProjects();
   }, [loadProjects]);
   
+  // Memoize filtered projects to prevent unnecessary recalculations
   const filteredProjects = useMemo(() => {
     return filterProjects(projects, searchQuery, selectedCategory);
   }, [projects, searchQuery, selectedCategory]);
   
-  // Filter user's own projects
+  // Memoize user's own projects
   const userProjects = useMemo(() => {
     return projects.filter(project => project.createdBy === user?.id);
   }, [projects, user?.id]);
 
-  const isAdmin = user?.role === 'admin';
-  const isCreator = ['admin', 'instructor', 'supervisor', 'project_manager'].includes(user?.role || '');
+  // Memoize permission checks
+  const isAdmin = useMemo(() => user?.role === 'admin', [user?.role]);
+  const isCreator = useMemo(() => 
+    ['admin', 'instructor', 'supervisor', 'project_manager'].includes(user?.role || ''),
+    [user?.role]
+  );
+
+  // Create memoized handler functions
+  const canEditOrDelete = useCallback((projectCreatorId: string | undefined) => {
+    return isAdmin || projectCreatorId === user?.id;
+  }, [isAdmin, user?.id]);
 
   if (isLoading) {
     return (
@@ -70,9 +80,9 @@ const ProjectList: React.FC = () => {
                 key={project.id} 
                 project={project}
                 className="h-full"
-                onEdit={isAdmin || project.createdBy === user?.id ? handleEditInit : undefined}
-                onImageChange={isAdmin || project.createdBy === user?.id ? handleImageChangeInit : undefined}
-                onDelete={isAdmin || project.createdBy === user?.id ? handleDeleteInit : undefined}
+                onEdit={canEditOrDelete(project.createdBy) ? handleEditInit : undefined}
+                onImageChange={canEditOrDelete(project.createdBy) ? handleImageChangeInit : undefined}
+                onDelete={canEditOrDelete(project.createdBy) ? handleDeleteInit : undefined}
               />
             ))}
           </div>
@@ -103,4 +113,4 @@ const ProjectList: React.FC = () => {
   );
 };
 
-export default ProjectList;
+export default React.memo(ProjectList);

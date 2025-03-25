@@ -14,7 +14,8 @@ export const projectService = {
     try {
       const { data, error } = await supabase
         .from('projects')
-        .select('*');
+        .select('*')
+        .order('created_at', { ascending: false }); // Order by creation date for better UX
       
       if (error) {
         console.error('Error fetching projects:', error);
@@ -22,6 +23,17 @@ export const projectService = {
         throw error;
       }
 
+      if (!data || data.length === 0) {
+        console.log('No projects found in database');
+        // Try to load from localStorage as fallback
+        const localProjects = localStorage.getItem('projects');
+        if (localProjects) {
+          return JSON.parse(localProjects);
+        }
+        return [];
+      }
+
+      // Map database results to ProjectTheme objects
       return data.map(project => ({
         id: project.id,
         title: project.title,
@@ -31,11 +43,18 @@ export const projectService = {
         techStack: project.tech_stack || [],
         createdBy: project.created_by,
         createdAt: project.created_at,
-        duration: project.duration
+        duration: project.duration,
+        complexity: 'Միջին' // Default complexity
       }));
     } catch (err) {
       console.error('Unexpected error:', err);
       toast('Տվյալների ստացման սխալ, օգտագործվում են լոկալ տվյալները');
+      
+      // Try to load from localStorage as fallback
+      const localProjects = localStorage.getItem('projects');
+      if (localProjects) {
+        return JSON.parse(localProjects);
+      }
       return [];
     }
   },
@@ -55,8 +74,7 @@ export const projectService = {
           image: project.image,
           created_by: userId,
           duration: project.duration,
-        })
-        .select();
+        });
         
       if (error) {
         console.error('Error creating project:', error);

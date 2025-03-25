@@ -1,4 +1,5 @@
-import React from 'react';
+
+import React, { useCallback, memo } from 'react';
 import { Card, CardContent, CardFooter, CardHeader } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Eye, Building, User, Pencil, Image, Trash } from 'lucide-react';
@@ -27,6 +28,22 @@ const ProjectCard: React.FC<ProjectCardProps> = ({
   const isCreatedByCurrentUser = project.createdBy === user?.id;
   const creatorName = isCreatedByCurrentUser ? 'Ձեր կողմից' : 'Ուսումնական Կենտրոն';
   
+  // Memoize event handlers to prevent unnecessary re-renders
+  const handleEdit = useCallback((e: React.MouseEvent) => {
+    e.stopPropagation(); // Prevent event bubbling
+    onEdit?.(project);
+  }, [onEdit, project]);
+
+  const handleImageChange = useCallback((e: React.MouseEvent) => {
+    e.stopPropagation(); // Prevent event bubbling
+    onImageChange?.(project);
+  }, [onImageChange, project]);
+
+  const handleDelete = useCallback((e: React.MouseEvent) => {
+    e.stopPropagation(); // Prevent event bubbling
+    onDelete?.(project);
+  }, [onDelete, project]);
+  
   return (
     <Card className={`flex flex-col w-full hover:shadow-md transition-shadow relative ${className || ''}`}>
       {(onEdit || onImageChange || onDelete) && (
@@ -36,10 +53,7 @@ const ProjectCard: React.FC<ProjectCardProps> = ({
               variant="outline" 
               size="icon" 
               className="h-6 w-6 rounded-full bg-white/80 backdrop-blur-sm" 
-              onClick={(e) => {
-                e.stopPropagation(); // Prevent event bubbling
-                onEdit(project);
-              }}
+              onClick={handleEdit}
             >
               <Pencil size={12} />
             </Button>
@@ -49,10 +63,7 @@ const ProjectCard: React.FC<ProjectCardProps> = ({
               variant="outline" 
               size="icon" 
               className="h-6 w-6 rounded-full bg-white/80 backdrop-blur-sm" 
-              onClick={(e) => {
-                e.stopPropagation(); // Prevent event bubbling
-                onImageChange(project);
-              }}
+              onClick={handleImageChange}
             >
               <Image size={12} />
             </Button>
@@ -62,10 +73,7 @@ const ProjectCard: React.FC<ProjectCardProps> = ({
               variant="outline" 
               size="icon" 
               className="h-6 w-6 rounded-full bg-white/80 backdrop-blur-sm" 
-              onClick={(e) => {
-                e.stopPropagation(); // Prevent event bubbling
-                onDelete(project);
-              }}
+              onClick={handleDelete}
             >
               <Trash size={12} />
             </Button>
@@ -84,6 +92,7 @@ const ProjectCard: React.FC<ProjectCardProps> = ({
             src={project.image || 'https://via.placeholder.com/640x360?text=Նախագծի+նկար'} 
             alt={project.title}
             className="w-full h-full object-cover"
+            loading="lazy" // Add lazy loading for better performance
           />
         </div>
         <h3 className="font-bold text-xl">{project.title}</h3>
@@ -127,4 +136,5 @@ const ProjectCard: React.FC<ProjectCardProps> = ({
   );
 };
 
-export default ProjectCard;
+// Memoize the component to prevent unnecessary re-renders
+export default memo(ProjectCard);

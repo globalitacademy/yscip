@@ -1,8 +1,9 @@
 
-import React, { createContext, useState, useContext, ReactNode } from 'react';
+import React, { createContext, useState, useContext, ReactNode, useCallback, useMemo } from 'react';
 import { ProjectTheme } from '@/data/projectThemes';
 import { useProjectOperations } from '@/hooks/useProjectOperations';
 import { useProjectEvents } from '@/components/projects/hooks/useProjectEvents';
+import { useQueryClient } from '@tanstack/react-query';
 
 // Define the context type
 interface ProjectManagementContextType {
@@ -83,23 +84,32 @@ export const ProjectManagementProvider: React.FC<ProjectManagementProviderProps>
   // Set up real-time subscription to project changes
   useProjectEvents(setProjects);
   
-  // Action handlers
-  const handleDelete = async () => {
+  // Get the React Query query client for cache invalidation
+  const queryClient = useQueryClient();
+  
+  // Memoize action handlers with useCallback to prevent unnecessary re-renders
+  const handleDelete = useCallback(async () => {
     if (!selectedProject) return;
     await deleteProject(selectedProject);
     setIsDeleteDialogOpen(false);
     setSelectedProject(null);
-  };
+    
+    // Invalidate projects query cache to refresh data
+    queryClient.invalidateQueries({ queryKey: ['projects'] });
+  }, [selectedProject, deleteProject, queryClient]);
 
-  const handleChangeImage = async () => {
+  const handleChangeImage = useCallback(async () => {
     if (!selectedProject) return;
     await updateProjectImage(selectedProject, newImageUrl);
     setIsImageDialogOpen(false);
     setNewImageUrl('');
     setSelectedProject(null);
-  };
+    
+    // Invalidate projects query cache to refresh data
+    queryClient.invalidateQueries({ queryKey: ['projects'] });
+  }, [selectedProject, newImageUrl, updateProjectImage, queryClient]);
 
-  const handleEditInit = (project: ProjectTheme) => {
+  const handleEditInit = useCallback((project: ProjectTheme) => {
     setSelectedProject(project);
     setEditedProject({
       title: project.title,
@@ -107,38 +117,44 @@ export const ProjectManagementProvider: React.FC<ProjectManagementProviderProps>
       category: project.category,
     });
     setIsEditDialogOpen(true);
-  };
+  }, []);
 
-  const handleSaveEdit = async () => {
+  const handleSaveEdit = useCallback(async () => {
     if (!selectedProject) return;
     await updateProject(selectedProject, editedProject);
     setIsEditDialogOpen(false);
     setEditedProject({});
     setSelectedProject(null);
-  };
+    
+    // Invalidate projects query cache to refresh data
+    queryClient.invalidateQueries({ queryKey: ['projects'] });
+  }, [selectedProject, editedProject, updateProject, queryClient]);
 
-  const handleImageChangeInit = (project: ProjectTheme) => {
+  const handleImageChangeInit = useCallback((project: ProjectTheme) => {
     setSelectedProject(project);
     setNewImageUrl(project.image || '');
     setIsImageDialogOpen(true);
-  };
+  }, []);
 
-  const handleDeleteInit = (project: ProjectTheme) => {
+  const handleDeleteInit = useCallback((project: ProjectTheme) => {
     setSelectedProject(project);
     setIsDeleteDialogOpen(true);
-  };
+  }, []);
 
-  const handleProjectCreated = async (project: ProjectTheme) => {
+  const handleProjectCreated = useCallback(async (project: ProjectTheme) => {
     await createProject(project);
     setIsCreateDialogOpen(false);
-  };
+    
+    // Invalidate projects query cache to refresh data
+    queryClient.invalidateQueries({ queryKey: ['projects'] });
+  }, [createProject, queryClient]);
 
-  const handleOpenCreateDialog = () => {
+  const handleOpenCreateDialog = useCallback(() => {
     setIsCreateDialogOpen(true);
-  };
+  }, []);
 
-  // Combine all values for the context
-  const contextValue: ProjectManagementContextType = {
+  // Memoize context value to prevent unnecessary re-renders
+  const contextValue = useMemo(() => ({
     // State
     searchQuery,
     selectedCategory,
@@ -178,7 +194,14 @@ export const ProjectManagementProvider: React.FC<ProjectManagementProviderProps>
     updateProjectImage,
     deleteProject,
     createProject
-  };
+  }), [
+    searchQuery, selectedCategory, selectedProject, isDeleteDialogOpen, 
+    isImageDialogOpen, isEditDialogOpen, isCreateDialogOpen, newImageUrl, 
+    editedProject, projects, isLoading, loadProjects, handleDelete, 
+    handleChangeImage, handleSaveEdit, handleEditInit, handleImageChangeInit, 
+    handleDeleteInit, handleProjectCreated, handleOpenCreateDialog, 
+    updateProject, updateProjectImage, deleteProject, createProject
+  ]);
 
   return (
     <ProjectManagementContext.Provider value={contextValue}>
