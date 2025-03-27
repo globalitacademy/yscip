@@ -8,7 +8,7 @@ import { Dialog, DialogTrigger } from "@/components/ui/dialog";
 import { toast } from "@/components/ui/use-toast";
 import TaskStatusColumn from './TaskStatusColumn';
 import TaskForm from './TaskForm';
-import { getStatusColor, getStatusText, groupTasksByStatus } from './TaskUtils';
+import { getStatusColor, getStatusText, groupTasksByStatus, normalizeStatus } from './TaskUtils';
 
 interface TaskManagerProps {
   tasks: Task[];
@@ -38,6 +38,7 @@ const TaskManager: React.FC<TaskManagerProps> = ({
 
   const updateStatus = (taskId: string, status: Task['status']) => {
     if (onUpdateTaskStatus) {
+      // Normalize status to be compatible with both systems
       onUpdateTaskStatus(taskId, status);
       toast({
         title: "Առաջադրանքի կարգավիճակը թարմացված է",

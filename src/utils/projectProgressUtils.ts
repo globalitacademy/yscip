@@ -66,21 +66,24 @@ export const generateSampleTasks = (userId: string): Task[] => {
       title: 'Տեխնիկական առաջադրանքի կազմում',
       description: 'Նախագծի տեխնիկական առաջադրանքի մշակում և կազմում',
       status: 'done',
-      assignedTo: userId
+      assignee: userId,
+      dueDate: new Date().toISOString().split('T')[0]
     },
     {
       id: uuidv4(),
       title: 'Ճարտարապետության մշակում',
       description: 'Նախագծի ճարտարապետության նախագծում և սխեմատիկ պատկերում',
-      status: 'in-progress',
-      assignedTo: userId
+      status: 'in progress',
+      assignee: userId,
+      dueDate: new Date().toISOString().split('T')[0]
     },
     {
       id: uuidv4(),
       title: 'UI/UX դիզայն',
       description: 'Օգտագործողի միջերեսի նախատիպի մշակում',
-      status: 'todo',
-      assignedTo: userId
+      status: 'open',
+      assignee: userId,
+      dueDate: new Date().toISOString().split('T')[0]
     }
   ];
 };

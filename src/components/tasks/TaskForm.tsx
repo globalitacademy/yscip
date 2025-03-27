@@ -1,141 +1,160 @@
 
-import React, { useState } from 'react';
-import { User } from '@/data/userRoles';
+import React from 'react';
+import { z } from 'zod';
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
 import { Task } from '@/data/projectThemes';
-import { Button } from '@/components/ui/button';
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
+import { Button } from '@/components/ui/button';
+import {
+  DialogContent,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog';
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import {
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
+} from '@/components/ui/select';
+
+const formSchema = z.object({
+  title: z.string().min(3, { message: 'Վերնագիրը պետք է ունենա առնվազն 3 նիշ' }),
+  description: z.string().min(10, { message: 'Նկարագրությունը պետք է ունենա առնվազն 10 նիշ' }),
+  assignedTo: z.string({ required_error: 'Ընտրեք կատարողին' }),
+  dueDate: z.string({ required_error: 'Ընտրեք վերջնաժամկետը' }),
+});
 
 interface TaskFormProps {
   onSubmit: (task: Omit<Task, 'id'>) => void;
   onClose: () => void;
   currentUserId: string;
-  students: User[];
+  students: any[];
 }
 
-const TaskForm: React.FC<TaskFormProps> = ({
-  onSubmit,
-  onClose,
-  currentUserId,
-  students
-}) => {
-  const [newTask, setNewTask] = useState({
-    title: '',
-    description: '',
-    status: 'todo' as const,
-    assignedTo: currentUserId || '',
-    dueDate: ''
+const TaskForm: React.FC<TaskFormProps> = ({ onSubmit, onClose, currentUserId, students }) => {
+  const form = useForm<z.infer<typeof formSchema>>({
+    resolver: zodResolver(formSchema),
+    defaultValues: {
+      title: '',
+      description: '',
+      assignedTo: '',
+      dueDate: new Date().toISOString().split('T')[0],
+    },
   });
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    onSubmit({
-      ...newTask,
-      createdBy: currentUserId,
-    });
+  const handleSubmit = (values: z.infer<typeof formSchema>) => {
+    const newTask: Omit<Task, 'id'> = {
+      title: values.title,
+      description: values.description,
+      status: 'todo',
+      assignee: values.assignedTo,
+      dueDate: values.dueDate,
+      assignedTo: values.assignedTo,
+      createdBy: currentUserId
+    };
+    onSubmit(newTask);
     onClose();
   };
 
   return (
-    <DialogContent className="sm:max-w-[425px]">
+    <DialogContent className="sm:max-w-[525px]">
       <DialogHeader>
         <DialogTitle>Նոր առաջադրանք</DialogTitle>
-        <DialogDescription>
-          Ավելացրեք նոր առաջադրանք պրոեկտի համար։
-        </DialogDescription>
       </DialogHeader>
-      <form onSubmit={handleSubmit}>
-        <div className="grid gap-4 py-4">
-          <div className="grid gap-2">
-            <Label htmlFor="title">Վերնագիր</Label>
-            <Input
-              id="title"
-              value={newTask.title}
-              onChange={(e) => setNewTask({ ...newTask, title: e.target.value })}
-              required
-            />
-          </div>
-          <div className="grid gap-2">
-            <Label htmlFor="description">Նկարագրություն</Label>
-            <Textarea
-              id="description"
-              value={newTask.description}
-              onChange={(e) => setNewTask({ ...newTask, description: e.target.value })}
-              required
-            />
-          </div>
-          <div className="grid gap-2">
-            <Label htmlFor="status">Կարգավիճակ</Label>
-            <Select 
-              onValueChange={(value) => setNewTask({ ...newTask, status: value as any })}
-              defaultValue={newTask.status}
-            >
-              <SelectTrigger id="status">
-                <SelectValue placeholder="Ընտրեք կարգավիճակը" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="todo">Անելիք</SelectItem>
-                <SelectItem value="in-progress">Ընթացքի մեջ</SelectItem>
-                <SelectItem value="review">Վերանայման</SelectItem>
-                <SelectItem value="done">Ավարտված</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-          <div className="grid gap-2">
-            <Label htmlFor="dueDate">Վերջնաժամկետ</Label>
-            <Input
-              id="dueDate"
-              type="date"
-              value={newTask.dueDate}
-              onChange={(e) => setNewTask({ ...newTask, dueDate: e.target.value })}
-              required
-            />
-          </div>
-          <div className="grid gap-2">
-            <Label htmlFor="assignee">Նշանակված ուսանող</Label>
-            <Select 
-              onValueChange={(value) => setNewTask({ ...newTask, assignedTo: value })}
-              defaultValue={currentUserId || newTask.assignedTo}
-            >
-              <SelectTrigger id="assignee">
-                <SelectValue placeholder="Ընտրեք ուսանող" />
-              </SelectTrigger>
-              <SelectContent>
-                {students.map(student => (
-                  <SelectItem key={student.id} value={student.id} className="flex items-center gap-2">
-                    <div className="flex items-center gap-2">
-                      <Avatar className="h-6 w-6">
-                        <AvatarImage src={student.avatar} alt={student.name} />
-                        <AvatarFallback>{student.name.substring(0, 2)}</AvatarFallback>
-                      </Avatar>
-                      <span>{student.name}</span>
-                    </div>
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-        </div>
-        <DialogFooter>
-          <Button type="submit">Ավելացնել</Button>
-        </DialogFooter>
-      </form>
+
+      <Form {...form}>
+        <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-4">
+          <FormField
+            control={form.control}
+            name="title"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Վերնագիր</FormLabel>
+                <FormControl>
+                  <Input placeholder="Առաջադրանքի վերնագիր" {...field} />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+
+          <FormField
+            control={form.control}
+            name="description"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Նկարագրություն</FormLabel>
+                <FormControl>
+                  <Textarea 
+                    placeholder="Նկարագրեք առաջադրանքը" 
+                    rows={3} 
+                    {...field} 
+                  />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+
+          <FormField
+            control={form.control}
+            name="assignedTo"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Կատարող</FormLabel>
+                <Select onValueChange={field.onChange} defaultValue={field.value}>
+                  <FormControl>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Ընտրեք կատարողին" />
+                    </SelectTrigger>
+                  </FormControl>
+                  <SelectContent>
+                    {students.map((student) => (
+                      <SelectItem key={student.id} value={student.id}>
+                        {student.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+
+          <FormField
+            control={form.control}
+            name="dueDate"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Վերջնաժամկետ</FormLabel>
+                <FormControl>
+                  <Input type="date" {...field} />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+
+          <DialogFooter>
+            <Button type="button" variant="outline" onClick={onClose}>
+              Չեղարկել
+            </Button>
+            <Button type="submit">Ավելացնել</Button>
+          </DialogFooter>
+        </form>
+      </Form>
     </DialogContent>
   );
 };

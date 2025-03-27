@@ -1,111 +1,149 @@
 
 import React from 'react';
 import { Task } from '@/data/projectThemes';
-import { Card } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
-import { Clock, MoreHorizontal, UserIcon } from 'lucide-react';
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import { User } from '@/data/userRoles';
+import { ChevronLeft, ChevronRight, CheckCircle } from 'lucide-react';
+import { 
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger
+} from '@/components/ui/tooltip';
+import { getInitials } from '@/utils/userUtils';
 
 interface TaskStatusColumnProps {
-  status: Task['status'];
-  tasks: Task[];
+  status: 'todo' | 'in-progress' | 'review' | 'done';
   statusText: string;
   statusColor: string;
-  onUpdateStatus: (taskId: string, status: Task['status']) => void;
-  students: User[];
+  tasks: Task[];
+  onUpdateStatus?: (taskId: string, status: Task['status']) => void;
+  students: any[];
 }
 
 const TaskStatusColumn: React.FC<TaskStatusColumnProps> = ({
   status,
-  tasks,
   statusText,
   statusColor,
+  tasks,
   onUpdateStatus,
   students
 }) => {
+  const canMovePrevious = (taskStatus: string) => {
+    return taskStatus !== 'todo' && taskStatus !== 'open';
+  };
+
+  const canMoveNext = (taskStatus: string) => {
+    return taskStatus !== 'done';
+  };
+
+  const moveTaskStatus = (task: Task, direction: 'prev' | 'next') => {
+    if (!onUpdateStatus) return;
+
+    // Map between different status formats based on direction
+    if (direction === 'prev') {
+      if (task.status === 'in-progress' || task.status === 'in progress') {
+        onUpdateStatus(task.id, 'todo');
+      } else if (task.status === 'review') {
+        onUpdateStatus(task.id, 'in-progress');
+      } else if (task.status === 'done') {
+        onUpdateStatus(task.id, 'review');
+      }
+    } else if (direction === 'next') {
+      if (task.status === 'todo' || task.status === 'open') {
+        onUpdateStatus(task.id, 'in-progress');
+      } else if (task.status === 'in-progress' || task.status === 'in progress') {
+        onUpdateStatus(task.id, 'review');
+      } else if (task.status === 'review') {
+        onUpdateStatus(task.id, 'done');
+      }
+    }
+  };
+
+  const getStudentName = (assigneeId: string) => {
+    const student = students.find(s => s.id === assigneeId);
+    return student ? student.name : 'Unknown';
+  };
+
   return (
-    <div className="flex flex-col h-full">
-      <div className={`px-3 py-2 rounded-t-md font-medium text-sm ${statusColor}`}>
-        {statusText} ({tasks.length})
+    <div className="rounded-md border border-border">
+      <div className={`p-3 rounded-t-md ${statusColor}`}>
+        <div className="flex justify-between items-center">
+          <h3 className="font-medium">{statusText}</h3>
+          <span className="text-xs px-2 py-1 rounded-full bg-background/80">
+            {tasks.length}
+          </span>
+        </div>
       </div>
-      <div className="flex-1 bg-accent/30 rounded-b-md p-2 min-h-[300px]">
+      
+      <div className="p-3 space-y-2" style={{ minHeight: '200px' }}>
         {tasks.length === 0 ? (
-          <div className="h-full flex items-center justify-center text-sm text-muted-foreground p-4 text-center">
+          <div className="text-center py-8 text-muted-foreground text-sm">
             Այս կարգավիճակում առաջադրանքներ չկան
           </div>
         ) : (
-          <div className="space-y-2">
-            {tasks.map(task => (
-              <Card key={task.id} className="p-3 shadow-sm hover:shadow transition-shadow">
-                <div className="flex justify-between">
-                  <h5 className="font-medium text-sm">{task.title}</h5>
-                  <DropdownMenu>
-                    <DropdownMenuTrigger asChild>
-                      <Button variant="ghost" size="icon" className="h-6 w-6">
-                        <MoreHorizontal size={14} />
-                      </Button>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent align="end">
-                      <DropdownMenuLabel>Կարգավիճակ</DropdownMenuLabel>
-                      <DropdownMenuSeparator />
-                      {(['todo', 'in-progress', 'review', 'done'] as const)
-                        .filter(s => s !== status)
-                        .map(s => (
-                          <DropdownMenuItem 
-                            key={s}
-                            onClick={() => onUpdateStatus(task.id, s)}
-                          >
-                            {getStatusText(s)}
-                          </DropdownMenuItem>
-                        ))
-                      }
-                    </DropdownMenuContent>
-                  </DropdownMenu>
-                </div>
-                <p className="mt-2 text-xs text-muted-foreground">
-                  {task.description}
-                </p>
-                <div className="mt-3 flex items-center justify-between text-xs">
-                  <div className="flex items-center gap-1">
-                    <UserIcon size={12} className="text-muted-foreground" />
-                    <span className="text-muted-foreground">
-                      {students.find(s => s.id === task.assignedTo)?.name || 'Չնշանակված'}
-                    </span>
-                  </div>
-                  {task.dueDate && (
-                    <Badge variant="outline" className="flex items-center gap-1 text-xs">
-                      <Clock size={10} />
-                      {new Date(task.dueDate).toLocaleDateString('hy-AM')}
-                    </Badge>
+          tasks.map(task => (
+            <div key={task.id} className="p-3 bg-card rounded-md border border-border shadow-sm">
+              <div className="mb-2 font-medium">{task.title}</div>
+              <p className="text-sm text-muted-foreground line-clamp-2 mb-2">
+                {task.description}
+              </p>
+              
+              <div className="flex justify-between items-center mt-2">
+                <TooltipProvider>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <div className="flex items-center gap-1">
+                        <Avatar className="h-6 w-6">
+                          <AvatarImage src="" />
+                          <AvatarFallback className="text-xs">
+                            {getInitials(getStudentName(task.assignee || task.assignedTo || ''))}
+                          </AvatarFallback>
+                        </Avatar>
+                      </div>
+                    </TooltipTrigger>
+                    <TooltipContent>
+                      <p>{getStudentName(task.assignee || task.assignedTo || '')}</p>
+                    </TooltipContent>
+                  </Tooltip>
+                </TooltipProvider>
+                
+                <div className="flex items-center gap-1">
+                  {canMovePrevious(task.status) && onUpdateStatus && (
+                    <Button 
+                      variant="ghost" 
+                      size="icon" 
+                      className="h-6 w-6"
+                      onClick={() => moveTaskStatus(task, 'prev')}
+                      title="Նախորդ կարգավիճակ"
+                    >
+                      <ChevronLeft className="h-4 w-4" />
+                    </Button>
+                  )}
+                  
+                  {canMoveNext(task.status) && onUpdateStatus && (
+                    <Button 
+                      variant="ghost" 
+                      size="icon" 
+                      className="h-6 w-6"
+                      onClick={() => moveTaskStatus(task, 'next')}
+                      title="Հաջորդ կարգավիճակ"
+                    >
+                      <ChevronRight className="h-4 w-4" />
+                    </Button>
+                  )}
+                  
+                  {task.status === 'done' && (
+                    <CheckCircle className="h-4 w-4 text-green-500" />
                   )}
                 </div>
-              </Card>
-            ))}
-          </div>
+              </div>
+            </div>
+          ))
         )}
       </div>
     </div>
   );
 };
 
-function getStatusText(status: Task['status']) {
-  switch (status) {
-    case 'todo': return 'Սպասվող';
-    case 'in-progress': return 'Ընթացքի մեջ';
-    case 'review': return 'Վերանայում';
-    case 'done': return 'Ավարտված';
-    default: return 'Սպասվող';
-  }
-}
-
-export { getStatusText };
 export default TaskStatusColumn;
