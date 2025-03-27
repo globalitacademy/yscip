@@ -5,7 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { cn } from '@/lib/utils';
 import { Badge } from '@/components/ui/badge';
 import { CalendarRange, Clock, AlertCircle } from 'lucide-react';
-import { normalizeStatus } from '@/components/tasks/TaskUtils';
+import { normalizeStatus } from '@/utils/taskUtils';
 
 interface TimelineItem {
   id: string;
@@ -24,7 +24,6 @@ interface ProjectTimelineProps {
 const ProjectTimeline: React.FC<ProjectTimelineProps> = ({ timeline, tasks }) => {
   const today = new Date();
   
-  // Convert timeline events and tasks to unified timeline items
   const timelineItems: TimelineItem[] = [
     ...timeline.map(event => ({
       id: event.id,
@@ -35,7 +34,6 @@ const ProjectTimeline: React.FC<ProjectTimelineProps> = ({ timeline, tasks }) =>
       type: 'event' as const
     })),
     ...tasks.map(task => {
-      // Normalize task status for TimelineItem compatibility
       const normalizedStatus = normalizeStatus(task.status);
       
       return {
@@ -49,7 +47,6 @@ const ProjectTimeline: React.FC<ProjectTimelineProps> = ({ timeline, tasks }) =>
     })
   ].sort((a, b) => a.startDate.getTime() - b.startDate.getTime());
   
-  // Calculate timeline range (1 month)
   const startDate = timelineItems.length > 0 
     ? new Date(Math.min(...timelineItems.map(item => item.startDate.getTime()))) 
     : addDays(today, -15);
@@ -57,7 +54,6 @@ const ProjectTimeline: React.FC<ProjectTimelineProps> = ({ timeline, tasks }) =>
     ? new Date(Math.max(...timelineItems.map(item => item.endDate.getTime()))) 
     : addDays(today, 15);
   
-  // Generate date range (ensure at least 30 days)
   const days = Math.max(30, Math.ceil((endDate.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24)));
   const dateRange = Array.from({ length: days + 1 }, (_, i) => addDays(startDate, i));
   
@@ -94,7 +90,6 @@ const ProjectTimeline: React.FC<ProjectTimelineProps> = ({ timeline, tasks }) =>
       <CardContent>
         <div className="overflow-x-auto pb-4">
           <div className="min-w-[1200px]">
-            {/* Date headers */}
             <div className="flex border-b mb-4">
               <div className="w-[200px] flex-shrink-0 font-medium p-2">Անվանում</div>
               <div className="flex-1 flex">
@@ -114,12 +109,10 @@ const ProjectTimeline: React.FC<ProjectTimelineProps> = ({ timeline, tasks }) =>
               </div>
             </div>
             
-            {/* Month labels */}
             <div className="flex mb-6">
               <div className="w-[200px] flex-shrink-0"></div>
               <div className="flex-1 flex">
                 {dateRange.map((date, i) => {
-                  // Only show label at the first day of month
                   if (i === 0 || format(date, 'MMM') !== format(dateRange[i-1], 'MMM')) {
                     return (
                       <div 
@@ -140,7 +133,6 @@ const ProjectTimeline: React.FC<ProjectTimelineProps> = ({ timeline, tasks }) =>
               </div>
             </div>
             
-            {/* Timeline items */}
             <div className="space-y-2">
               {timelineItems.map(item => {
                 const isLate = item.status !== 'done' && 
@@ -157,7 +149,6 @@ const ProjectTimeline: React.FC<ProjectTimelineProps> = ({ timeline, tasks }) =>
                       </div>
                     </div>
                     <div className="flex-1 relative h-8">
-                      {/* Today indicator */}
                       {isBefore(startDate, today) && isBefore(today, endDate) && (
                         <div 
                           className="absolute top-0 bottom-0 w-px bg-primary z-10"
@@ -167,7 +158,6 @@ const ProjectTimeline: React.FC<ProjectTimelineProps> = ({ timeline, tasks }) =>
                         />
                       )}
                       
-                      {/* The timeline bar */}
                       <div 
                         className={cn(
                           "absolute top-1 h-6 rounded px-2 text-xs flex items-center border",
@@ -189,7 +179,6 @@ const ProjectTimeline: React.FC<ProjectTimelineProps> = ({ timeline, tasks }) =>
               })}
             </div>
             
-            {/* Legend */}
             <div className="mt-8 flex flex-wrap gap-4">
               <Badge variant="outline" className="bg-slate-200/50 border-slate-400">Սպասվող</Badge>
               <Badge variant="outline" className="bg-blue-200/50 border-blue-400">Ընթացքում</Badge>
