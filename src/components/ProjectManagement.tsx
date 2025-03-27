@@ -13,7 +13,8 @@ const ProjectManagementContent: React.FC = () => {
     isCreateDialogOpen, 
     setIsCreateDialogOpen,
     loadProjects,
-    handleProjectCreated
+    handleProjectCreated,
+    projects
   } = useProjectManagement();
   
   // Load projects on component mount
@@ -24,7 +25,7 @@ const ProjectManagementContent: React.FC = () => {
   return (
     <div className="space-y-4">
       <ProjectFilterSection />
-      <ProjectList />
+      <ProjectList projects={projects} />
       <ProjectDialogManager />
 
       <Dialog open={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen}>

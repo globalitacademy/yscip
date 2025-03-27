@@ -6,7 +6,7 @@ import AssignedProjectsTab from './AssignedProjectsTab';
 import TeachingProjectsTab from './TeachingProjectsTab';
 import ProjectList from './ProjectList';
 import { ProjectTheme } from '@/data/projectThemes';
-import { ProjectManagementProvider } from '@/contexts/ProjectManagementContext';
+import { ProjectManagementProvider, useProjectManagement } from '@/contexts/ProjectManagementContext';
 
 interface ProjectTabsProps {
   user: any;
@@ -14,6 +14,11 @@ interface ProjectTabsProps {
   assignments: any[];
   projectThemes: ProjectTheme[];
 }
+
+const ProjectListWithContext: React.FC = () => {
+  const { projects } = useProjectManagement();
+  return <ProjectList projects={projects} />;
+};
 
 const ProjectTabs: React.FC<ProjectTabsProps> = ({ 
   user, 
@@ -28,7 +33,7 @@ const ProjectTabs: React.FC<ProjectTabsProps> = ({
       <h2 className="text-2xl font-bold mb-6">Նախագծեր</h2>
       
       <ProjectManagementProvider>
-        <ProjectList />
+        <ProjectListWithContext />
       </ProjectManagementProvider>
       
       {/* Original tabs - keeping as a fallback option 
