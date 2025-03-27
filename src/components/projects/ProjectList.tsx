@@ -11,7 +11,8 @@ interface ProjectListProps {
 }
 
 const ProjectList: React.FC<ProjectListProps> = ({ projects }) => {
-  if (projects.length === 0) {
+  // Add safety check to handle undefined or null projects
+  if (!projects || projects.length === 0) {
     return (
       <div className="text-center p-10 bg-muted rounded-lg">
         <p className="text-muted-foreground">Այս կատեգորիայում ծրագրեր չկան</p>
