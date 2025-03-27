@@ -35,9 +35,10 @@ const TasksPage: React.FC = () => {
     title: task.title,
     description: task.description,
     status: task.status,
-    assignedTo: task.assignedTo,
+    assignee: task.assignedTo, // Map assignedTo to assignee for Task compatibility
     dueDate: task.dueDate,
-    createdBy: task.createdBy
+    createdBy: task.createdBy,
+    assignedTo: task.assignedTo
   }));
 
   return (
@@ -65,9 +66,13 @@ const TasksPage: React.FC = () => {
           <TaskManager 
             tasks={convertedTasks} 
             onAddTask={handleAddTask}
-            onUpdateTaskStatus={(taskId, status) => 
-              handleUpdateTaskStatus(parseInt(taskId, 10), status)
-            }
+            onUpdateTaskStatus={(taskId, status) => {
+              // Use TaskUtils to normalize the status before passing to the handler
+              const normalizedStatus = status === 'open' ? 'todo' : 
+                       status === 'in progress' ? 'in-progress' : 
+                       status === 'completed' ? 'done' : status;
+              handleUpdateTaskStatus(parseInt(taskId, 10), normalizedStatus);
+            }}
           />
         ) : (
           <SupervisorEmptyState 

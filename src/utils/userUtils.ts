@@ -1,4 +1,3 @@
-
 import { User, UserRole } from '@/types/user';
 import { mockUsers } from '@/data/mockUsers';
 
@@ -37,3 +36,15 @@ export const getStudentsByCourseAndGroup = (course?: string, group?: string): Us
     (!group || group === 'all' || user.group === group)
   );
 };
+
+// Get initials from a name
+export function getInitials(name: string): string {
+  if (!name) return '';
+  
+  return name
+    .split(' ')
+    .map(part => part.charAt(0))
+    .join('')
+    .toUpperCase()
+    .substring(0, 2);
+}

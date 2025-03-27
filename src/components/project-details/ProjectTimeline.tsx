@@ -34,14 +34,29 @@ const ProjectTimeline: React.FC<ProjectTimelineProps> = ({ timeline, tasks }) =>
       status: event.completed ? 'completed' as const : 'todo' as const,
       type: 'event' as const
     })),
-    ...tasks.map(task => ({
-      id: task.id,
-      title: task.title,
-      startDate: task.dueDate ? addDays(parseISO(task.dueDate), -7) : addDays(today, -7), // Assume 7 days for tasks without dates
-      endDate: task.dueDate ? parseISO(task.dueDate) : today,
-      status: task.status,
-      type: 'task' as const
-    }))
+    ...tasks.map(task => {
+      // Normalize task status for TimelineItem compatibility
+      let normalizedStatus: TimelineItem['status'] = 'todo';
+      
+      if (task.status === 'in-progress' || task.status === 'in progress') {
+        normalizedStatus = 'in-progress';
+      } else if (task.status === 'review') {
+        normalizedStatus = 'review';
+      } else if (task.status === 'done' || task.status === 'completed') {
+        normalizedStatus = 'done';
+      } else if (task.status === 'todo' || task.status === 'open') {
+        normalizedStatus = 'todo';
+      }
+      
+      return {
+        id: task.id,
+        title: task.title,
+        startDate: task.dueDate ? addDays(parseISO(task.dueDate), -7) : addDays(today, -7), // Assume 7 days for tasks without dates
+        endDate: task.dueDate ? parseISO(task.dueDate) : today,
+        status: normalizedStatus,
+        type: 'task' as const
+      };
+    })
   ].sort((a, b) => a.startDate.getTime() - b.startDate.getTime());
   
   // Calculate timeline range (1 month)

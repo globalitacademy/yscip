@@ -24,7 +24,7 @@ export interface Task {
   id: string;
   title: string;
   description: string;
-  status: 'todo' | 'in-progress' | 'review' | 'done' | 'open' | 'in progress';
+  status: 'todo' | 'in-progress' | 'review' | 'done' | 'open' | 'in progress' | 'completed';
   assignee: string;
   dueDate: string;
   assignedTo?: string;

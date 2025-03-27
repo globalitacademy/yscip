@@ -34,7 +34,7 @@ const TaskStatusColumn: React.FC<TaskStatusColumnProps> = ({
   };
 
   const canMoveNext = (taskStatus: string) => {
-    return taskStatus !== 'done';
+    return taskStatus !== 'done' && taskStatus !== 'completed';
   };
 
   const moveTaskStatus = (task: Task, direction: 'prev' | 'next') => {
@@ -46,7 +46,7 @@ const TaskStatusColumn: React.FC<TaskStatusColumnProps> = ({
         onUpdateStatus(task.id, 'todo');
       } else if (task.status === 'review') {
         onUpdateStatus(task.id, 'in-progress');
-      } else if (task.status === 'done') {
+      } else if (task.status === 'done' || task.status === 'completed') {
         onUpdateStatus(task.id, 'review');
       }
     } else if (direction === 'next') {
