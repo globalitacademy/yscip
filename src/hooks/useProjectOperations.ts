@@ -148,9 +148,25 @@ export const useProjectOperations = () => {
    * Update a project
    */
   const updateProject = useCallback(async (selectedProject: ProjectTheme, updatedData: Partial<ProjectTheme>) => {
+    // Create a complete data object with all fields
+    const updatePayload = {
+      title: updatedData.title,
+      description: updatedData.description,
+      category: updatedData.category,
+      is_public: updatedData.is_public,
+      complexity: updatedData.complexity,
+      duration: updatedData.duration,
+      tech_stack: updatedData.techStack,
+      detailed_description: updatedData.detailedDescription,
+      steps: updatedData.steps,
+      prerequisites: updatedData.prerequisites,
+      learning_outcomes: updatedData.learningOutcomes,
+      updated_at: new Date().toISOString()
+    };
+    
     const success = await updateProjectMutation.mutateAsync({ 
       projectId: selectedProject.id, 
-      updates: updatedData 
+      updates: updatePayload
     });
     
     if (!success) {

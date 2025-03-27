@@ -1,76 +1,61 @@
 
 import React from 'react';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import CourseCard from './CourseCard';
 import { Course } from './types';
-import { useAuth } from '@/contexts/AuthContext';
+import { ProfessionalCourse } from './types/ProfessionalCourse';
+import CourseCard from './CourseCard';
+import ProfessionalCourseCard from './ProfessionalCourseCard';
+import { FadeIn } from '@/components/LocalTransitions';
+import { useCourseContext } from '@/contexts/CourseContext';
 
 interface CourseListProps {
   courses: Course[];
-  userCourses: Course[];
-  isAdmin: boolean;
-  onEdit: (course: Course) => void;
-  onDelete: (id: string) => void;
+  professionalCourses: ProfessionalCourse[];
 }
 
-const CourseList: React.FC<CourseListProps> = ({ courses, userCourses, isAdmin, onEdit, onDelete }) => {
-  const { user } = useAuth();
-  const isLecturer = ['lecturer', 'instructor', 'supervisor', 'project_manager'].includes(user?.role || '');
-
-  // Filter courses to show only public ones or those created by current user
-  const visibleCourses = courses.filter(course => 
-    course.is_public || course.createdBy === user?.id
-  );
+const CourseList: React.FC<CourseListProps> = ({ courses, professionalCourses }) => {
+  const { handleEditInit } = useCourseContext();
+  
+  // Safety check for empty arrays
+  if ((!courses || courses.length === 0) && (!professionalCourses || professionalCourses.length === 0)) {
+    return (
+      <div className="text-center p-10 bg-muted rounded-lg">
+        <p className="text-muted-foreground">Դասընթացներ չկան</p>
+      </div>
+    );
+  }
 
   return (
-    <Tabs defaultValue="all" className="w-full">
-      <TabsList>
-        <TabsTrigger value="all">Բոլոր կուրսերը</TabsTrigger>
-        {(isAdmin || isLecturer) && (
-          <TabsTrigger value="my">Իմ կուրսերը</TabsTrigger>
-        )}
-      </TabsList>
-      
-      <TabsContent value="all" className="space-y-4 mt-4">
-        {visibleCourses.length === 0 ? (
-          <p className="text-center text-gray-500">Կուրսեր չկան</p>
-        ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {visibleCourses.map((course) => (
-              <CourseCard 
-                key={course.id} 
-                course={course} 
-                isAdmin={isAdmin}
-                canEdit={isAdmin || course.createdBy === user?.id}
-                onEdit={onEdit} 
-                onDelete={onDelete} 
+    <FadeIn className="space-y-8">
+      {professionalCourses && professionalCourses.length > 0 && (
+        <div>
+          <h3 className="text-lg font-medium mb-4">Մասնագիտական դասընթացներ</h3>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {professionalCourses.map((course) => (
+              <ProfessionalCourseCard
+                key={course.id}
+                course={course}
+                onEdit={() => handleEditInit(course, 'professional')}
               />
             ))}
           </div>
-        )}
-      </TabsContent>
-      
-      {(isAdmin || isLecturer) && (
-        <TabsContent value="my" className="space-y-4 mt-4">
-          {userCourses.length === 0 ? (
-            <p className="text-center text-gray-500">Դուք դեռ չունեք ավելացված կուրսեր</p>
-          ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-              {userCourses.map((course) => (
-                <CourseCard 
-                  key={course.id} 
-                  course={course} 
-                  isAdmin={isAdmin}
-                  canEdit={true}
-                  onEdit={onEdit} 
-                  onDelete={onDelete} 
-                />
-              ))}
-            </div>
-          )}
-        </TabsContent>
+        </div>
       )}
-    </Tabs>
+      
+      {courses && courses.length > 0 && (
+        <div>
+          <h3 className="text-lg font-medium mb-4">Ստանդարտ դասընթացներ</h3>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {courses.map((course) => (
+              <CourseCard
+                key={course.id}
+                course={course}
+                onEdit={() => handleEditInit(course, 'standard')}
+              />
+            ))}
+          </div>
+        </div>
+      )}
+    </FadeIn>
   );
 };
 

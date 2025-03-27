@@ -1,9 +1,19 @@
 
-import React from 'react';
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import React, { useState } from 'react';
+import { 
+  Dialog, 
+  DialogContent, 
+  DialogDescription, 
+  DialogFooter, 
+  DialogHeader, 
+  DialogTitle 
+} from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import CourseForm from './CourseForm';
+import ProfessionalCourseForm from './ProfessionalCourseForm';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Course } from './types';
+import { ProfessionalCourse } from './types/ProfessionalCourse';
 
 interface EditCourseDialogProps {
   isOpen: boolean;
@@ -15,6 +25,12 @@ interface EditCourseDialogProps {
   handleAddModuleToEdit: () => void;
   handleRemoveModuleFromEdit: (index: number) => void;
   handleEditCourse: () => void;
+  // New props for professional courses
+  isProfessionalCourse?: boolean;
+  professionalCourse?: Partial<ProfessionalCourse>;
+  setProfessionalCourse?: React.Dispatch<React.SetStateAction<Partial<ProfessionalCourse>>>;
+  courseType: 'standard' | 'professional';
+  setCourseType: (type: 'standard' | 'professional') => void;
 }
 
 const EditCourseDialog: React.FC<EditCourseDialogProps> = ({
@@ -26,28 +42,56 @@ const EditCourseDialog: React.FC<EditCourseDialogProps> = ({
   setNewModule,
   handleAddModuleToEdit,
   handleRemoveModuleFromEdit,
-  handleEditCourse
+  handleEditCourse,
+  isProfessionalCourse = false,
+  professionalCourse,
+  setProfessionalCourse,
+  courseType,
+  setCourseType
 }) => {
-  if (!selectedCourse) return null;
+  if (!selectedCourse && !professionalCourse) return null;
 
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
-      <DialogContent className="sm:max-w-[500px]">
+      <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>Կուրսի խմբագրում</DialogTitle>
           <DialogDescription>
-            Փոփոխեք կուրսի տվյալները ներքևում: Պատրաստ լինելուց հետո սեղմեք "Պահպանել" կոճակը:
+            Փոփոխեք կուրսի բոլոր տվյալները ստորև: Պատրաստ լինելուց հետո սեղմեք "Պահպանել" կոճակը:
           </DialogDescription>
         </DialogHeader>
-        <CourseForm
-          course={selectedCourse}
-          setCourse={(newCourse) => setSelectedCourse(newCourse as Course)}
-          newModule={newModule}
-          setNewModule={setNewModule}
-          handleAddModule={handleAddModuleToEdit}
-          handleRemoveModule={handleRemoveModuleFromEdit}
-          isEdit={true}
-        />
+        
+        <Tabs value={courseType} onValueChange={(value: 'standard' | 'professional') => setCourseType(value)}>
+          <TabsList className="grid grid-cols-2 w-full">
+            <TabsTrigger value="standard">Ստանդարտ դասընթաց</TabsTrigger>
+            <TabsTrigger value="professional">Մասնագիտական դասընթաց</TabsTrigger>
+          </TabsList>
+          
+          <TabsContent value="standard">
+            {selectedCourse && (
+              <CourseForm
+                course={selectedCourse}
+                setCourse={(newCourse) => setSelectedCourse(newCourse as Course)}
+                newModule={newModule}
+                setNewModule={setNewModule}
+                handleAddModule={handleAddModuleToEdit}
+                handleRemoveModule={handleRemoveModuleFromEdit}
+                isEdit={true}
+              />
+            )}
+          </TabsContent>
+          
+          <TabsContent value="professional">
+            {professionalCourse && setProfessionalCourse && (
+              <ProfessionalCourseForm
+                course={professionalCourse}
+                setCourse={setProfessionalCourse}
+                isEdit={true}
+              />
+            )}
+          </TabsContent>
+        </Tabs>
+        
         <DialogFooter>
           <Button type="submit" onClick={handleEditCourse}>
             Պահպանել

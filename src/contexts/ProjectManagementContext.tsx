@@ -1,13 +1,10 @@
-
 import React, { createContext, useState, useContext, ReactNode, useCallback, useMemo } from 'react';
 import { ProjectTheme } from '@/data/projectThemes';
 import { useProjectOperations } from '@/hooks/useProjectOperations';
 import { useProjectEvents } from '@/components/projects/hooks/useProjectEvents';
 import { useQueryClient } from '@tanstack/react-query';
 
-// Define the context type
 interface ProjectManagementContextType {
-  // State
   searchQuery: string;
   selectedCategory: string | null;
   selectedProject: ProjectTheme | null;
@@ -20,7 +17,6 @@ interface ProjectManagementContextType {
   projects: ProjectTheme[];
   isLoading: boolean;
   
-  // State setters
   setSearchQuery: (query: string) => void;
   setSelectedCategory: (category: string | null) => void;
   setSelectedProject: (project: ProjectTheme | null) => void;
@@ -32,7 +28,6 @@ interface ProjectManagementContextType {
   setEditedProject: (project: Partial<ProjectTheme>) => void;
   setProjects: React.Dispatch<React.SetStateAction<ProjectTheme[]>>;
   
-  // Actions
   loadProjects: () => Promise<void>;
   handleDelete: () => Promise<void>;
   handleChangeImage: () => Promise<void>;
@@ -48,17 +43,13 @@ interface ProjectManagementContextType {
   createProject: (project: ProjectTheme) => Promise<boolean>;
 }
 
-// Create the context with a default undefined value
 const ProjectManagementContext = createContext<ProjectManagementContextType | undefined>(undefined);
 
-// Provider props
 interface ProjectManagementProviderProps {
   children: ReactNode;
 }
 
-// Create the provider component
 export const ProjectManagementProvider: React.FC<ProjectManagementProviderProps> = ({ children }) => {
-  // State from ProjectManagement component
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const [selectedProject, setSelectedProject] = useState<ProjectTheme | null>(null);
@@ -69,7 +60,6 @@ export const ProjectManagementProvider: React.FC<ProjectManagementProviderProps>
   const [newImageUrl, setNewImageUrl] = useState('');
   const [editedProject, setEditedProject] = useState<Partial<ProjectTheme>>({});
   
-  // Use our custom hook for project operations
   const {
     projects,
     setProjects,
@@ -81,20 +71,16 @@ export const ProjectManagementProvider: React.FC<ProjectManagementProviderProps>
     createProject
   } = useProjectOperations();
   
-  // Set up real-time subscription to project changes
   useProjectEvents(setProjects);
   
-  // Get the React Query query client for cache invalidation
   const queryClient = useQueryClient();
   
-  // Memoize action handlers with useCallback to prevent unnecessary re-renders
   const handleDelete = useCallback(async () => {
     if (!selectedProject) return;
     await deleteProject(selectedProject);
     setIsDeleteDialogOpen(false);
     setSelectedProject(null);
     
-    // Invalidate projects query cache to refresh data
     queryClient.invalidateQueries({ queryKey: ['projects'] });
   }, [selectedProject, deleteProject, queryClient]);
 
@@ -105,7 +91,6 @@ export const ProjectManagementProvider: React.FC<ProjectManagementProviderProps>
     setNewImageUrl('');
     setSelectedProject(null);
     
-    // Invalidate projects query cache to refresh data
     queryClient.invalidateQueries({ queryKey: ['projects'] });
   }, [selectedProject, newImageUrl, updateProjectImage, queryClient]);
 
@@ -114,7 +99,14 @@ export const ProjectManagementProvider: React.FC<ProjectManagementProviderProps>
     setEditedProject({
       title: project.title,
       description: project.description,
+      detailedDescription: project.detailedDescription || '',
       category: project.category,
+      complexity: project.complexity || 'Միջին',
+      duration: project.duration || '',
+      techStack: project.techStack || [],
+      steps: project.steps || [],
+      prerequisites: project.prerequisites || [],
+      learningOutcomes: project.learningOutcomes || [],
     });
     setIsEditDialogOpen(true);
   }, []);
@@ -126,7 +118,6 @@ export const ProjectManagementProvider: React.FC<ProjectManagementProviderProps>
     setEditedProject({});
     setSelectedProject(null);
     
-    // Invalidate projects query cache to refresh data
     queryClient.invalidateQueries({ queryKey: ['projects'] });
   }, [selectedProject, editedProject, updateProject, queryClient]);
 
@@ -145,7 +136,6 @@ export const ProjectManagementProvider: React.FC<ProjectManagementProviderProps>
     await createProject(project);
     setIsCreateDialogOpen(false);
     
-    // Invalidate projects query cache to refresh data
     queryClient.invalidateQueries({ queryKey: ['projects'] });
   }, [createProject, queryClient]);
 
@@ -153,9 +143,7 @@ export const ProjectManagementProvider: React.FC<ProjectManagementProviderProps>
     setIsCreateDialogOpen(true);
   }, []);
 
-  // Memoize context value to prevent unnecessary re-renders
   const contextValue = useMemo(() => ({
-    // State
     searchQuery,
     selectedCategory,
     selectedProject,
@@ -168,7 +156,6 @@ export const ProjectManagementProvider: React.FC<ProjectManagementProviderProps>
     projects,
     isLoading,
     
-    // State setters
     setSearchQuery,
     setSelectedCategory,
     setSelectedProject,
@@ -180,7 +167,6 @@ export const ProjectManagementProvider: React.FC<ProjectManagementProviderProps>
     setEditedProject,
     setProjects,
     
-    // Actions
     loadProjects,
     handleDelete,
     handleChangeImage,
@@ -210,7 +196,6 @@ export const ProjectManagementProvider: React.FC<ProjectManagementProviderProps>
   );
 };
 
-// Custom hook to use the project management context
 export const useProjectManagement = () => {
   const context = useContext(ProjectManagementContext);
   if (context === undefined) {

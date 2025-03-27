@@ -105,6 +105,14 @@ export const projectService = {
           description: updates.description,
           category: updates.category,
           is_public: updates.is_public,
+          duration: updates.duration,
+          tech_stack: updates.techStack,
+          // New fields
+          complexity: updates.complexity,
+          detailed_description: updates.detailedDescription,
+          steps: updates.steps,
+          prerequisites: updates.prerequisites,
+          learning_outcomes: updates.learningOutcomes,
           updated_at: new Date().toISOString()
         })
         .eq('id', projectId);
