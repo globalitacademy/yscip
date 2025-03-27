@@ -7,7 +7,7 @@ import SupervisorEmptyState from '@/components/supervisor/SupervisorEmptyState';
 import StudentProjectSelector from '@/components/tasks/StudentProjectSelector';
 import { useTasksPageLogic } from '@/hooks/useTasksPageLogic';
 import { Task } from '@/data/projectThemes';
-import { normalizeStatus } from '@/components/tasks/TaskUtils';
+import { normalizeStatus } from '@/utils/taskUtils';
 
 const TasksPage: React.FC = () => {
   const {

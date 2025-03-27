@@ -11,7 +11,7 @@ import {
   TooltipTrigger
 } from '@/components/ui/tooltip';
 import { getInitials } from '@/utils/userUtils';
-import { normalizeStatus } from './TaskUtils';
+import { normalizeStatus } from '@/utils/taskUtils';
 
 interface TaskStatusColumnProps {
   status: 'todo' | 'in-progress' | 'review' | 'done';
@@ -30,12 +30,12 @@ const TaskStatusColumn: React.FC<TaskStatusColumnProps> = ({
   onUpdateStatus,
   students
 }) => {
-  const canMovePrevious = (taskStatus: string) => {
+  const canMovePrevious = (taskStatus: Task['status']) => {
     const normalizedStatus = normalizeStatus(taskStatus);
     return normalizedStatus !== 'todo';
   };
 
-  const canMoveNext = (taskStatus: string) => {
+  const canMoveNext = (taskStatus: Task['status']) => {
     const normalizedStatus = normalizeStatus(taskStatus);
     return normalizedStatus !== 'done';
   };

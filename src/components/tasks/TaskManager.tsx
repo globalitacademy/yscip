@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Task } from '@/data/projectThemes';
 import { getCurrentUser, getUsersByRole, rolePermissions } from '@/data/userRoles';
@@ -8,7 +7,7 @@ import { Dialog, DialogTrigger } from "@/components/ui/dialog";
 import { toast } from "@/components/ui/use-toast";
 import TaskStatusColumn from './TaskStatusColumn';
 import TaskForm from './TaskForm';
-import { getStatusColor, getStatusText, groupTasksByStatus, normalizeStatus } from '@/utils/taskUtils';
+import { getTaskStatusColor, getTaskStatusText, groupTasksByStatus, normalizeStatus } from '@/utils/taskUtils';
 
 interface TaskManagerProps {
   tasks: Task[];
@@ -38,7 +37,6 @@ const TaskManager: React.FC<TaskManagerProps> = ({
 
   const updateStatus = (taskId: string, status: Task['status']) => {
     if (onUpdateTaskStatus) {
-      // Normalize status to be compatible with both systems
       onUpdateTaskStatus(taskId, status);
       toast({
         title: "Առաջադրանքի կարգավիճակը թարմացված է",
@@ -76,8 +74,8 @@ const TaskManager: React.FC<TaskManagerProps> = ({
             key={status}
             status={status}
             tasks={tasksByStatus[status]}
-            statusText={getStatusText(status)}
-            statusColor={getStatusColor(status)}
+            statusText={getTaskStatusText(status)}
+            statusColor={getTaskStatusColor(status)}
             onUpdateStatus={updateStatus}
             students={students}
           />
