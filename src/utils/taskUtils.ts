@@ -1,6 +1,7 @@
 
 import { v4 as uuidv4 } from 'uuid';
 import { Task } from '@/data/projectThemes';
+import { getUsersByRole } from '@/data/userRoles';
 
 // Task status utilities
 export const getTaskStatusColor = (status: Task['status']) => {
@@ -38,6 +39,17 @@ export const groupTasksByStatus = (tasks: Task[]) => {
   };
 };
 
+// Map status between different formats
+export const normalizeStatus = (status: Task['status']): 'todo' | 'in-progress' | 'review' | 'done' => {
+  if (status === 'open') return 'todo';
+  if (status === 'in progress') return 'in-progress';
+  if (status === 'completed') return 'done';
+  if (status === 'todo' || status === 'in-progress' || status === 'review' || status === 'done') {
+    return status;
+  }
+  return 'todo'; // Default case
+};
+
 export class TaskUtils {
   static createTask(title: string, description: string, assignedTo: string): Task {
     return {
@@ -56,14 +68,6 @@ export class TaskUtils {
     );
   }
 
-  // Map between different status formats
-  static normalizeStatus(status: Task['status']): 'todo' | 'in-progress' | 'review' | 'done' {
-    if (status === 'open') return 'todo';
-    if (status === 'in progress') return 'in-progress';
-    if (status === 'completed') return 'done';
-    if (status === 'todo' || status === 'in-progress' || status === 'review' || status === 'done') {
-      return status;
-    }
-    return 'todo'; // Default case
-  }
+  // Use the shared normalizeStatus function
+  static normalizeStatus = normalizeStatus;
 }

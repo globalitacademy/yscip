@@ -7,6 +7,7 @@ import SupervisorEmptyState from '@/components/supervisor/SupervisorEmptyState';
 import StudentProjectSelector from '@/components/tasks/StudentProjectSelector';
 import { useTasksPageLogic } from '@/hooks/useTasksPageLogic';
 import { Task } from '@/data/projectThemes';
+import { normalizeStatus } from '@/components/tasks/TaskUtils';
 
 const TasksPage: React.FC = () => {
   const {
@@ -34,7 +35,7 @@ const TasksPage: React.FC = () => {
     id: String(task.id),
     title: task.title,
     description: task.description,
-    status: task.status,
+    status: normalizeStatus(task.status),
     assignee: task.assignedTo, // Map assignedTo to assignee for Task compatibility
     dueDate: task.dueDate,
     createdBy: task.createdBy,
@@ -67,10 +68,8 @@ const TasksPage: React.FC = () => {
             tasks={convertedTasks} 
             onAddTask={handleAddTask}
             onUpdateTaskStatus={(taskId, status) => {
-              // Use TaskUtils to normalize the status before passing to the handler
-              const normalizedStatus = status === 'open' ? 'todo' : 
-                       status === 'in progress' ? 'in-progress' : 
-                       status === 'completed' ? 'done' : status;
+              // Use normalizeStatus to ensure compatible status values
+              const normalizedStatus = normalizeStatus(status);
               handleUpdateTaskStatus(parseInt(taskId, 10), normalizedStatus);
             }}
           />

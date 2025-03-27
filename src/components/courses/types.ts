@@ -7,4 +7,5 @@ export interface Course {
   duration: string;
   modules: string[];
   createdBy: string;
+  is_public?: boolean;
 }

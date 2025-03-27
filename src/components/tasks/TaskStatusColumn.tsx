@@ -11,6 +11,7 @@ import {
   TooltipTrigger
 } from '@/components/ui/tooltip';
 import { getInitials } from '@/utils/userUtils';
+import { normalizeStatus } from './TaskUtils';
 
 interface TaskStatusColumnProps {
   status: 'todo' | 'in-progress' | 'review' | 'done';
@@ -30,31 +31,35 @@ const TaskStatusColumn: React.FC<TaskStatusColumnProps> = ({
   students
 }) => {
   const canMovePrevious = (taskStatus: string) => {
-    return taskStatus !== 'todo' && taskStatus !== 'open';
+    const normalizedStatus = normalizeStatus(taskStatus);
+    return normalizedStatus !== 'todo';
   };
 
   const canMoveNext = (taskStatus: string) => {
-    return taskStatus !== 'done' && taskStatus !== 'completed';
+    const normalizedStatus = normalizeStatus(taskStatus);
+    return normalizedStatus !== 'done';
   };
 
   const moveTaskStatus = (task: Task, direction: 'prev' | 'next') => {
     if (!onUpdateStatus) return;
 
+    const normalizedStatus = normalizeStatus(task.status);
+    
     // Map between different status formats based on direction
     if (direction === 'prev') {
-      if (task.status === 'in-progress' || task.status === 'in progress') {
+      if (normalizedStatus === 'in-progress') {
         onUpdateStatus(task.id, 'todo');
-      } else if (task.status === 'review') {
+      } else if (normalizedStatus === 'review') {
         onUpdateStatus(task.id, 'in-progress');
-      } else if (task.status === 'done' || task.status === 'completed') {
+      } else if (normalizedStatus === 'done') {
         onUpdateStatus(task.id, 'review');
       }
     } else if (direction === 'next') {
-      if (task.status === 'todo' || task.status === 'open') {
+      if (normalizedStatus === 'todo') {
         onUpdateStatus(task.id, 'in-progress');
-      } else if (task.status === 'in-progress' || task.status === 'in progress') {
+      } else if (normalizedStatus === 'in-progress') {
         onUpdateStatus(task.id, 'review');
-      } else if (task.status === 'review') {
+      } else if (normalizedStatus === 'review') {
         onUpdateStatus(task.id, 'done');
       }
     }
@@ -133,7 +138,7 @@ const TaskStatusColumn: React.FC<TaskStatusColumnProps> = ({
                     </Button>
                   )}
                   
-                  {task.status === 'done' && (
+                  {normalizeStatus(task.status) === 'done' && (
                     <CheckCircle className="h-4 w-4 text-green-500" />
                   )}
                 </div>

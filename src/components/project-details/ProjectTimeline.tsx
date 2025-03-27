@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { format, addDays, isBefore, isAfter, parseISO } from 'date-fns';
 import { Task, TimelineEvent } from '@/data/projectThemes';
@@ -6,6 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { cn } from '@/lib/utils';
 import { Badge } from '@/components/ui/badge';
 import { CalendarRange, Clock, AlertCircle } from 'lucide-react';
+import { normalizeStatus } from '@/components/tasks/TaskUtils';
 
 interface TimelineItem {
   id: string;
@@ -36,24 +36,14 @@ const ProjectTimeline: React.FC<ProjectTimelineProps> = ({ timeline, tasks }) =>
     })),
     ...tasks.map(task => {
       // Normalize task status for TimelineItem compatibility
-      let normalizedStatus: TimelineItem['status'] = 'todo';
-      
-      if (task.status === 'in-progress' || task.status === 'in progress') {
-        normalizedStatus = 'in-progress';
-      } else if (task.status === 'review') {
-        normalizedStatus = 'review';
-      } else if (task.status === 'done' || task.status === 'completed') {
-        normalizedStatus = 'done';
-      } else if (task.status === 'todo' || task.status === 'open') {
-        normalizedStatus = 'todo';
-      }
+      const normalizedStatus = normalizeStatus(task.status);
       
       return {
         id: task.id,
         title: task.title,
         startDate: task.dueDate ? addDays(parseISO(task.dueDate), -7) : addDays(today, -7), // Assume 7 days for tasks without dates
         endDate: task.dueDate ? parseISO(task.dueDate) : today,
-        status: normalizedStatus,
+        status: normalizedStatus === 'done' ? 'completed' as const : normalizedStatus,
         type: 'task' as const
       };
     })
