@@ -3,18 +3,15 @@ import React from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
-import { Label } from '@/components/ui/label';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { ProjectTheme } from '@/data/projectThemes';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Switch } from '@/components/ui/switch';
 
 interface ProjectEditDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   selectedProject: ProjectTheme | null;
   editedProject: Partial<ProjectTheme>;
-  setEditedProject: (project: Partial<ProjectTheme>) => void;
+  setEditedProject: (editedProject: Partial<ProjectTheme>) => void;
   onSave: () => void;
 }
 
@@ -26,18 +23,6 @@ const ProjectEditDialog: React.FC<ProjectEditDialogProps> = ({
   setEditedProject,
   onSave
 }) => {
-  // List of available categories for the select dropdown
-  const categories = [
-    "Կրթություն",
-    "Ֆինտեխ",
-    "Առողջապահություն",
-    "Էլեկտրոնային Առևտուր",
-    "Անշարժ Գույք",
-    "Խաղեր",
-    "Կիբերանվտանգություն",
-    "Արհեստական Բանականություն"
-  ];
-
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-md">
@@ -49,49 +34,29 @@ const ProjectEditDialog: React.FC<ProjectEditDialogProps> = ({
         </DialogHeader>
         <div className="grid gap-4 py-4">
           <div className="flex flex-col gap-2">
-            <Label htmlFor="project-title">Վերնագիր</Label>
+            <label htmlFor="title" className="text-sm font-medium">Վերնագիր</label>
             <Input
-              id="project-title"
-              placeholder="Նախագծի վերնագիր"
+              id="title"
               value={editedProject.title || ''}
-              onChange={(e) => setEditedProject({...editedProject, title: e.target.value})}
+              onChange={(e) => setEditedProject({ ...editedProject, title: e.target.value })}
             />
           </div>
           <div className="flex flex-col gap-2">
-            <Label htmlFor="project-category">Կատեգորիա</Label>
-            <Select 
+            <label htmlFor="category" className="text-sm font-medium">Կատեգորիա</label>
+            <Input
+              id="category"
               value={editedProject.category || ''}
-              onValueChange={(value) => setEditedProject({...editedProject, category: value})}
-            >
-              <SelectTrigger id="project-category">
-                <SelectValue placeholder="Ընտրեք կատեգորիան" />
-              </SelectTrigger>
-              <SelectContent>
-                {categories.map((category) => (
-                  <SelectItem key={category} value={category}>
-                    {category}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+              onChange={(e) => setEditedProject({ ...editedProject, category: e.target.value })}
+            />
           </div>
           <div className="flex flex-col gap-2">
-            <Label htmlFor="project-description">Նկարագրություն</Label>
+            <label htmlFor="description" className="text-sm font-medium">Նկարագրություն</label>
             <Textarea
-              id="project-description"
-              placeholder="Նախագծի նկարագրություն"
+              id="description"
               value={editedProject.description || ''}
-              onChange={(e) => setEditedProject({...editedProject, description: e.target.value})}
+              onChange={(e) => setEditedProject({ ...editedProject, description: e.target.value })}
               rows={4}
             />
-          </div>
-          <div className="flex items-center space-x-2">
-            <Switch
-              id="project-public"
-              checked={editedProject.is_public || false}
-              onCheckedChange={(checked) => setEditedProject({...editedProject, is_public: checked})}
-            />
-            <Label htmlFor="project-public">Հրապարակայնորեն հասանելի</Label>
           </div>
         </div>
         <DialogFooter className="flex-col sm:flex-row gap-2">
