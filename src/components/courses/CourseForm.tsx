@@ -1,4 +1,6 @@
+
 import React from 'react';
+import { useForm } from 'react-hook-form';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
@@ -10,8 +12,8 @@ import { Course } from './types';
 import { useCourseContext } from '@/contexts/CourseContext';
 
 interface CourseFormProps {
-  course: Course;
-  setCourse: (course: Course) => void;
+  course: Partial<Course>;
+  setCourse: (course: Partial<Course>) => void;
   newModule: string;
   setNewModule: (module: string) => void;
   handleAddModule: () => void;
@@ -28,111 +30,84 @@ const CourseForm: React.FC<CourseFormProps> = ({
   handleRemoveModule,
   isEdit = false
 }) => {
+  // Custom form control handlers
+  const handleInputChange = (field: keyof Course, value: any) => {
+    setCourse({ ...course, [field]: value });
+  };
+
   return (
-    <Form>
+    <div className="space-y-4">
       <div className="space-y-4">
-        <FormField
-          control={{ value: course.title, onChange: (value) => setCourse({ ...course, title: value }) }}
-          name="title"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Անվանում</FormLabel>
-              <FormControl>
-                <Input placeholder="Դասընթացի անվանումը" {...field} />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
+        <FormItem>
+          <FormLabel>Անվանում</FormLabel>
+          <Input 
+            placeholder="Դասընթացի անվանումը" 
+            value={course.title || ''}
+            onChange={(e) => handleInputChange('title', e.target.value)}
+          />
+          <FormMessage />
+        </FormItem>
 
-        <FormField
-          control={{ value: course.description, onChange: (value) => setCourse({ ...course, description: value }) }}
-          name="description"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Նկարագրություն</FormLabel>
-              <FormControl>
-                <Textarea placeholder="Դասընթացի նկարագրությունը" {...field} />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
+        <FormItem>
+          <FormLabel>Նկարագրություն</FormLabel>
+          <Textarea 
+            placeholder="Դասընթացի նկարագրությունը" 
+            value={course.description || ''}
+            onChange={(e) => handleInputChange('description', e.target.value)}
+          />
+          <FormMessage />
+        </FormItem>
 
-        <FormField
-          control={{ value: course.instructor, onChange: (value) => setCourse({ ...course, instructor: value }) }}
-          name="instructor"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Դասախոս</FormLabel>
-              <FormControl>
-                <Input placeholder="Դասախոսի անունը" {...field} />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
+        <FormItem>
+          <FormLabel>Դասախոս</FormLabel>
+          <Input 
+            placeholder="Դասախոսի անունը" 
+            value={course.instructor || ''}
+            onChange={(e) => handleInputChange('instructor', e.target.value)}
+          />
+          <FormMessage />
+        </FormItem>
 
-        <FormField
-          control={{ value: course.duration, onChange: (value) => setCourse({ ...course, duration: value }) }}
-          name="duration"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Տևողություն</FormLabel>
-              <FormControl>
-                <Input placeholder="Օրինակ՝ 3 ամիս" {...field} />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
+        <FormItem>
+          <FormLabel>Տևողություն</FormLabel>
+          <Input 
+            placeholder="Օրինակ՝ 3 ամիս" 
+            value={course.duration || ''}
+            onChange={(e) => handleInputChange('duration', e.target.value)}
+          />
+          <FormMessage />
+        </FormItem>
 
-        <FormField
-          control={{
-            value: course.category || '',
-            onChange: (value) => setCourse({ ...course, category: value }),
-          }}
-          name="category"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Կատեգորիա</FormLabel>
-              <Select onValueChange={field.onChange} defaultValue={field.value}>
-                <FormControl>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Ընտրեք կատեգորիա" />
-                  </SelectTrigger>
-                </FormControl>
-                <SelectContent>
-                  {mockSpecializations.map((specialization) => (
-                    <SelectItem key={specialization} value={specialization}>
-                      {specialization}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
+        <FormItem>
+          <FormLabel>Կատեգորիա</FormLabel>
+          <Select 
+            value={course.category || ''} 
+            onValueChange={(value) => handleInputChange('category', value)}
+          >
+            <SelectTrigger>
+              <SelectValue placeholder="Ընտրեք կատեգորիա" />
+            </SelectTrigger>
+            <SelectContent>
+              {mockSpecializations.map((specialization) => (
+                <SelectItem key={specialization} value={specialization}>
+                  {specialization}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+          <FormMessage />
+        </FormItem>
 
-        <FormField
-          control={{ value: course.is_public, onChange: (value) => setCourse({ ...course, is_public: value }) }}
-          name="is_public"
-          render={({ field }) => (
-            <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
-              <div className="space-y-0.5">
-                <FormLabel className="text-sm">Հրապարակային է</FormLabel>
-              </div>
-              <FormControl>
-                <Switch
-                  checked={field.value}
-                  onCheckedChange={field.onChange}
-                />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
+        <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
+          <div className="space-y-0.5">
+            <FormLabel className="text-sm">Հրապարակային է</FormLabel>
+          </div>
+          <Switch
+            checked={course.is_public || false}
+            onCheckedChange={(checked) => handleInputChange('is_public', checked)}
+          />
+          <FormMessage />
+        </FormItem>
 
         <div>
           <FormLabel>Մոդուլներ</FormLabel>
@@ -159,7 +134,7 @@ const CourseForm: React.FC<CourseFormProps> = ({
           </ul>
         </div>
       </div>
-    </Form>
+    </div>
   );
 };
 

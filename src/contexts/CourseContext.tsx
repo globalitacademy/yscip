@@ -59,7 +59,7 @@ export const CourseProvider: React.FC<{ children: ReactNode }> = ({ children }) 
     // Data operations - map to closest equivalents
     loadCourses: async () => {
       await courseManagement.loadCoursesFromDatabase();
-      return true;
+      return;
     },
     handleSearchChange: () => {}, // Not implemented in the refactored hooks
     handleCategoryChange: () => {}, // Not implemented in the refactored hooks
@@ -83,8 +83,13 @@ export const CourseProvider: React.FC<{ children: ReactNode }> = ({ children }) 
     handleCloseDeleteProfessionalDialog: () => {},
     
     // CRUD operations
-    handleCreateCourse: courseManagement.handleAddCourse,
-    handleUpdateCourse: courseManagement.handleUpdateCourse,
+    handleCreateCourse: async (course) => {
+      courseManagement.handleAddCourse(course);
+      return true;
+    },
+    handleUpdateCourse: async (id, courseData) => {
+      return courseManagement.handleUpdateCourse(id, courseData);
+    },
     handleDeleteCourse: courseManagement.handleDeleteCourse,
     handleCreateProfessionalCourse: courseManagement.handleAddProfessionalCourse,
     handleUpdateProfessionalCourse: courseManagement.handleUpdateProfessionalCourse,
@@ -103,7 +108,9 @@ export const CourseProvider: React.FC<{ children: ReactNode }> = ({ children }) 
     // Additional state management
     handleAddModuleToEdit: courseManagement.handleAddModuleToEdit,
     handleRemoveModuleFromEdit: courseManagement.handleRemoveModuleFromEdit,
-    handleEditCourse: courseManagement.handleEditCourse,
+    handleEditCourse: async (id: string, courseData: Partial<Course>) => {
+      return courseManagement.handleUpdateCourse(id, courseData);
+    },
     handleEditInit: courseManagement.handleEditInit,
     handleCreateInit: (type: 'standard' | 'professional') => {
       courseManagement.setCourseType && courseManagement.setCourseType(type);

@@ -79,7 +79,7 @@ const EditCourseDialog: React.FC<EditCourseDialogProps> = ({
             {selectedCourse && (
               <CourseForm
                 course={selectedCourse}
-                setCourse={(newCourse) => setSelectedCourse(newCourse as Course)}
+                setCourse={(updatedCourse) => setSelectedCourse(updatedCourse as Course)}
                 newModule={newModule}
                 setNewModule={setNewModule}
                 handleAddModule={handleAddModuleToEdit}
