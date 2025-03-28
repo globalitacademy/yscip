@@ -18,7 +18,7 @@ const CourseDialogManager: React.FC = () => {
     setNewModule,
     handleAddModuleToEdit,
     handleRemoveModuleFromEdit,
-    handleEditCourse,
+    handleUpdateCourse,
     handleDeleteCourse,
     courseType,
     setCourseType
@@ -35,7 +35,7 @@ const CourseDialogManager: React.FC = () => {
         setNewModule={setNewModule}
         handleAddModuleToEdit={handleAddModuleToEdit}
         handleRemoveModuleFromEdit={handleRemoveModuleFromEdit}
-        handleEditCourse={handleEditCourse}
+        handleEditCourse={handleUpdateCourse}
         isProfessionalCourse={courseType === 'professional'}
         professionalCourse={professionalCourse}
         setProfessionalCourse={setProfessionalCourse}

@@ -100,7 +100,7 @@ export const CourseProvider: React.FC<{ children: ReactNode }> = ({ children }) 
     // Additional state management
     handleAddModuleToEdit: courseManager.handleAddModuleToEdit,
     handleRemoveModuleFromEdit: courseManager.handleRemoveModuleFromEdit,
-    handleEditCourse: courseManager.handleEditCourse,
+    handleEditCourse: courseManager.handleUpdateCourse,  // Fix: Using handleUpdateCourse instead of handleEditCourse
     handleEditInit: courseManager.handleEditInit,
     handleCreateInit: courseManager.handleCreateInit
   };
