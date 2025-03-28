@@ -20,7 +20,7 @@ const ProfessionalCourseTabView: React.FC = () => {
     setSelectedProfessionalCourse,
     isEditDialogOpen,
     setIsEditDialogOpen,
-    handleEditProfessionalCourse,
+    handleUpdateProfessionalCourse,
     handleEditProfessionalCourseInit,
     handleDeleteProfessionalCourse,
     loadCoursesFromDatabase,
@@ -131,7 +131,7 @@ const ProfessionalCourseTabView: React.FC = () => {
         setIsOpen={setIsEditDialogOpen}
         selectedCourse={selectedProfessionalCourse}
         setSelectedCourse={setSelectedProfessionalCourse}
-        handleEditCourse={handleEditProfessionalCourse}
+        handleEditCourse={handleUpdateProfessionalCourse}
       />
     </>
   );

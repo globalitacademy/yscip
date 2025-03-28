@@ -13,7 +13,7 @@ interface EditProfessionalCourseDialogProps {
   setIsOpen: (isOpen: boolean) => void;
   selectedCourse: ProfessionalCourse | null;
   setSelectedCourse: React.Dispatch<React.SetStateAction<ProfessionalCourse | null>>;
-  handleEditCourse: () => void;
+  handleEditCourse: (id: string, courseData: Partial<ProfessionalCourse>) => Promise<boolean>;
 }
 
 const EditProfessionalCourseDialog: React.FC<EditProfessionalCourseDialogProps> = ({
@@ -34,7 +34,7 @@ const EditProfessionalCourseDialog: React.FC<EditProfessionalCourseDialogProps> 
       
       if (success) {
         // Call the provided edit handler from the parent component
-        handleEditCourse();
+        await handleEditCourse(selectedCourse.id, selectedCourse);
         
         toast.success('Դասընթացը հաջողությամբ թարմացվել է');
         setIsOpen(false);

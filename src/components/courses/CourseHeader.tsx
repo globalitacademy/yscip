@@ -13,7 +13,7 @@ const CourseHeader: React.FC<CourseHeaderProps> = ({ canAddCourses }) => {
     setIsAddDialogOpen,
     newProfessionalCourse,
     setNewProfessionalCourse,
-    handleAddProfessionalCourse
+    handleCreateProfessionalCourse
   } = useCourses();
 
   return (
@@ -25,7 +25,7 @@ const CourseHeader: React.FC<CourseHeaderProps> = ({ canAddCourses }) => {
           setIsOpen={setIsAddDialogOpen}
           newCourse={newProfessionalCourse}
           setNewCourse={setNewProfessionalCourse}
-          handleAddCourse={handleAddProfessionalCourse}
+          handleAddCourse={handleCreateProfessionalCourse}
         />
       )}
     </div>

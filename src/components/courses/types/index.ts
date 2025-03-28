@@ -34,6 +34,7 @@ export interface CourseContextType {
   
   // UI states
   isLoading: boolean;
+  loading: boolean; // Added for compatibility
   error: string | null;
   activeCourse: Course | null;
   filteredCourses: Course[];
@@ -50,6 +51,8 @@ export interface CourseContextType {
   isEditProfessionalDialogOpen: boolean;
   isDeleteProfessionalDialogOpen: boolean;
   isCreateDialogOpen: boolean;
+  isAddDialogOpen: boolean; // Added
+  setIsAddDialogOpen: (open: boolean) => void; // Added
   
   // Current editing states
   selectedCourse: Course | null;
@@ -60,6 +63,10 @@ export interface CourseContextType {
   setCourseType: (type: 'standard' | 'professional') => void;
   newModule: string;
   setNewModule: React.Dispatch<React.SetStateAction<string>>;
+  
+  // Added missing properties
+  newProfessionalCourse: Partial<ProfessionalCourse>;
+  setNewProfessionalCourse: React.Dispatch<React.SetStateAction<Partial<ProfessionalCourse> | null>>;
   
   // Edit object states
   courseToEdit: Course | null;
@@ -76,6 +83,9 @@ export interface CourseContextType {
   
   // Data operations
   loadCourses: () => Promise<void>;
+  loadCoursesFromDatabase: () => Promise<void>;
+  loadCoursesFromLocalStorage: () => Promise<boolean>;
+  syncCoursesWithDatabase: () => Promise<void>;
   handleSearchChange: (value: string) => void;
   handleCategoryChange: (value: string | null) => void;
   handleDifficultyChange: (value: string | null) => void;
@@ -102,10 +112,14 @@ export interface CourseContextType {
   handleUpdateProfessionalCourse: (id: string, courseData: Partial<ProfessionalCourse>) => Promise<boolean>;
   handleDeleteProfessionalCourse: (id: string) => Promise<boolean>;
   
+  // New methods to match component usage
+  handleAddProfessionalCourse: (course: Omit<ProfessionalCourse, 'id' | 'createdAt'>) => Promise<boolean>;
+  handleEditProfessionalCourse: (id: string, courseData: Partial<ProfessionalCourse>) => Promise<boolean>;
+  
   // Additional state management
   handleAddModuleToEdit: () => void;
   handleRemoveModuleFromEdit: (index: number) => void;
-  handleEditCourse: () => void;
+  handleEditCourse: (id: string, courseData: Partial<Course>) => Promise<boolean>;
   handleEditInit: (course: Course | ProfessionalCourse, type?: 'standard' | 'professional') => void;
   handleCreateInit: (type: 'standard' | 'professional') => void;
 }

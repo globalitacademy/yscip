@@ -45,6 +45,8 @@ export const CourseProvider: React.FC<{ children: ReactNode }> = ({ children }) 
     isEditProfessionalDialogOpen: courseManager.isEditProfessionalDialogOpen,
     isDeleteProfessionalDialogOpen: courseManager.isDeleteProfessionalDialogOpen,
     isCreateDialogOpen,
+    isAddDialogOpen: false, // Add missing property
+    setIsAddDialogOpen: () => {}, // Add missing method
     
     // Edit object states
     courseToEdit: courseManager.courseToEdit,
@@ -58,6 +60,10 @@ export const CourseProvider: React.FC<{ children: ReactNode }> = ({ children }) 
     setIsCreateDialogOpen,
     setIsEditDialogOpen: courseManager.setIsEditDialogOpen,
     setIsDeleteDialogOpen: courseManager.setIsDeleteDialogOpen,
+    
+    // Additional missing methods
+    handleAddProfessionalCourse: courseManager.handleCreateProfessionalCourse,
+    handleEditProfessionalCourse: courseManager.handleUpdateProfessionalCourse,
     
     // Data operations
     loadCourses: courseManager.loadCourses,
@@ -102,7 +108,15 @@ export const CourseProvider: React.FC<{ children: ReactNode }> = ({ children }) 
     handleRemoveModuleFromEdit: courseManager.handleRemoveModuleFromEdit,
     handleEditCourse: courseManager.handleUpdateCourse,
     handleEditInit: courseManager.handleEditInit,
-    handleCreateInit: courseManager.handleCreateInit
+    handleCreateInit: courseManager.handleCreateInit,
+    
+    // Add missing properties
+    loading: courseManager.isLoading,
+    loadCoursesFromDatabase: async () => {}, 
+    loadCoursesFromLocalStorage: async () => {},
+    syncCoursesWithDatabase: async () => {},
+    newProfessionalCourse: courseManager.professionalCourse || {},
+    setNewProfessionalCourse: courseManager.setProfessionalCourse
   };
 
   return (
