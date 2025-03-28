@@ -19,7 +19,7 @@ export interface Course {
   difficulty?: string;
 }
 
-// Change to export type for isolatedModules compatibility
+// Use export type to fix isolatedModules compatibility
 export type { ProfessionalCourse, LessonItem } from './ProfessionalCourse';
 
 // Explicitly define the CourseContextType interface

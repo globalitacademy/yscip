@@ -59,7 +59,7 @@ export const useCourseManager = ({
 
   const filteredProfessionalCourses = professionalCourses.filter(course => {
     const matchesSearch = course.title.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesCategory = selectedCategory ? course.category === selectedCategory : true;
+    const matchesCategory = selectedCategory && course.category ? course.category === selectedCategory : true;
     return matchesSearch && matchesCategory;
   });
 
@@ -96,31 +96,34 @@ export const useCourseManager = ({
       console.info('Fetching all courses from Supabase');
       const { data: coursesData, error: coursesError } = await supabase
         .from('courses')
-        .select('*');
+        .select('*')
+        .eq('is_public', false);
         
       if (coursesError) {
         console.error('Error fetching courses from Supabase:', coursesError);
         setError(`Error fetching courses: ${coursesError.message}`);
         toast.error('Դասընթացները բեռնելիս սխալ է տեղի ունեցել։');
       } else if (coursesData) {
-        const formattedCourses: Course[] = coursesData.map(item => ({
-          id: item.id,
-          name: item.title,
-          title: item.title,
-          description: item.description || '',
-          specialization: item.specialization || '',
-          instructor: item.created_by || '',
-          duration: item.duration,
-          modules: item.modules || [],
-          prerequisites: item.prerequisites || [],
-          category: item.category || '',
-          createdBy: item.created_by || '',
-          is_public: item.is_public,
-          imageUrl: item.image_url,
-          difficulty: item.difficulty,
-          createdAt: item.created_at,
-          updatedAt: item.updated_at
-        }));
+        const formattedCourses: Course[] = coursesData
+          .filter(item => !item.is_public)
+          .map(item => ({
+            id: item.id,
+            name: item.title,
+            title: item.title,
+            description: item.description || '',
+            specialization: item.specialization || '',
+            instructor: item.created_by || '',
+            duration: item.duration,
+            modules: item.modules || [],
+            prerequisites: [],
+            category: '',
+            createdBy: item.created_by || '',
+            is_public: item.is_public,
+            imageUrl: item.image_url,
+            difficulty: '',
+            createdAt: item.created_at,
+            updatedAt: item.updated_at
+          }));
         
         setCourses(formattedCourses);
         localStorage.setItem('courses', JSON.stringify(formattedCourses));
@@ -258,7 +261,7 @@ export const useCourseManager = ({
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
         instructor: user?.name || 'Unknown Instructor',
-        name: course.title || course.name,
+        name: course.title || course.name || '',
         specialization: course.specialization || '',
       };
       
@@ -273,13 +276,19 @@ export const useCourseManager = ({
         created_by: newCourse.createdBy,
         duration: newCourse.duration,
         modules: newCourse.modules,
-        prerequisites: newCourse.prerequisites,
-        category: newCourse.category,
-        is_public: newCourse.is_public,
-        difficulty: newCourse.difficulty,
+        prerequisites: newCourse.prerequisites || [],
+        category: newCourse.category || '',
+        is_public: false,
+        difficulty: newCourse.difficulty || '',
         image_url: newCourse.imageUrl,
         created_at: newCourse.createdAt,
-        updated_at: newCourse.updatedAt
+        updated_at: newCourse.updatedAt,
+        icon_name: 'book',
+        price: 'Free',
+        subtitle: 'ԴԱՍԸՆԹԱՑ',
+        button_text: 'Դիտել',
+        color: 'text-amber-500',
+        institution: 'ՀՊՏՀ'
       };
       
       const { error } = await supabase.from('courses').insert(supabaseCourseData);

@@ -1,7 +1,8 @@
 
 import React, { createContext, useState, useContext, ReactNode } from 'react';
-import { Course, CourseContextType } from '@/components/courses/types';
+import { Course } from '@/components/courses/types';
 import { ProfessionalCourse } from '@/components/courses/types/ProfessionalCourse';
+import { CourseContextType } from '@/components/courses/types';
 import { useCourseManager } from '@/components/courses/hooks/useCourseManager';
 
 const CourseContext = createContext<CourseContextType | undefined>(undefined);
