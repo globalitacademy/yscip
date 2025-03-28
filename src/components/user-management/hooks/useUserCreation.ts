@@ -3,6 +3,7 @@ import { useState } from 'react';
 import { User, UserRole } from '@/types/user';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
+import { UserCreationDialogState } from '../types/dialogStates';
 
 export const useUserCreation = (
   users: User[],
@@ -10,17 +11,34 @@ export const useUserCreation = (
   showConfirm: (title: string, description: string, action: () => Promise<void>) => void,
   setIsConfirming: React.Dispatch<React.SetStateAction<boolean>>
 ) => {
-  const [openNewUser, setOpenNewUser] = useState(false);
-  const [newUser, setNewUser] = useState<Partial<User>>({
-    name: '',
-    email: '',
-    role: 'student',
-    department: 'Ինֆորմատիկայի ֆակուլտետ',
-    course: '',
-    group: ''
+  const [dialogState, setDialogState] = useState<UserCreationDialogState>({
+    openNewUser: false,
+    newUser: {
+      name: '',
+      email: '',
+      role: 'student',
+      department: 'Ինֆորմատիկայի ֆակուլտետ',
+      course: '',
+      group: ''
+    }
   });
 
+  const setOpenNewUser = (open: boolean) => {
+    setDialogState({
+      ...dialogState,
+      openNewUser: open
+    });
+  };
+
+  const setNewUser = (user: Partial<User>) => {
+    setDialogState({
+      ...dialogState,
+      newUser: user
+    });
+  };
+
   const handleCreateUser = async () => {
+    const { newUser } = dialogState;
     if (!newUser.name || !newUser.email || !newUser.role) {
       toast.error("Խնդրում ենք լրացնել բոլոր պարտադիր դաշտերը");
       return;
@@ -35,7 +53,7 @@ export const useUserCreation = (
         try {
           // First try to create user in Supabase Auth
           const { data: authData, error: authError } = await supabase.auth.admin.createUser({
-            email: newUser.email,
+            email: newUser.email!,
             email_confirm: true,
             user_metadata: {
               name: newUser.name,
@@ -50,8 +68,8 @@ export const useUserCreation = (
             const id = `user-${Date.now()}`;
             const createdUser: User = {
               id,
-              name: newUser.name,
-              email: newUser.email,
+              name: newUser.name!,
+              email: newUser.email!,
               role: newUser.role as UserRole,
               department: newUser.department,
               avatar: `https://api.dicebear.com/7.x/avataaars/svg?seed=${id}`,
@@ -84,8 +102,8 @@ export const useUserCreation = (
               // Add the new user to the local state
               const createdUser: User = {
                 id: authData.user.id,
-                name: newUser.name,
-                email: newUser.email,
+                name: newUser.name!,
+                email: newUser.email!,
                 role: newUser.role as UserRole,
                 department: newUser.department,
                 avatar: `https://api.dicebear.com/7.x/avataaars/svg?seed=${authData.user.id}`,
@@ -103,23 +121,24 @@ export const useUserCreation = (
           toast.error("Սխալ է տեղի ունեցել օգտատիրոջը ստեղծելիս։");
         } finally {
           setIsConfirming(false);
-          setNewUser({
-            name: '',
-            email: '',
-            role: 'student',
-            department: 'Ինֆորմատիկայի ֆակուլտետ',
-            course: '',
-            group: ''
+          setDialogState({
+            openNewUser: false,
+            newUser: {
+              name: '',
+              email: '',
+              role: 'student',
+              department: 'Ինֆորմատիկայի ֆակուլտետ',
+              course: '',
+              group: ''
+            }
           });
-          setOpenNewUser(false);
         }
       }
     );
   };
 
   return {
-    openNewUser,
-    newUser,
+    ...dialogState,
     setOpenNewUser,
     setNewUser,
     handleCreateUser

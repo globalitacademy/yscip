@@ -1,27 +1,43 @@
 
 import { useState } from 'react';
+import { ConfirmDialogState } from '../types/dialogStates';
 
 export const useConfirmDialog = () => {
-  const [showConfirmDialog, setShowConfirmDialog] = useState(false);
-  const [confirmAction, setConfirmAction] = useState<() => Promise<void>>(() => async () => {});
-  const [confirmTitle, setConfirmTitle] = useState('');
-  const [confirmDescription, setConfirmDescription] = useState('');
-  const [isConfirming, setIsConfirming] = useState(false);
+  const [dialogState, setDialogState] = useState<ConfirmDialogState>({
+    showConfirmDialog: false,
+    confirmTitle: '',
+    confirmDescription: '',
+    confirmAction: async () => {},
+    isConfirming: false
+  });
 
   // Function to show confirmation dialog
   const showConfirm = (title: string, description: string, action: () => Promise<void>) => {
-    setConfirmTitle(title);
-    setConfirmDescription(description);
-    setConfirmAction(() => action);
-    setShowConfirmDialog(true);
+    setDialogState({
+      ...dialogState,
+      confirmTitle: title,
+      confirmDescription: description,
+      confirmAction: action,
+      showConfirmDialog: true
+    });
+  };
+
+  const setShowConfirmDialog = (show: boolean) => {
+    setDialogState({
+      ...dialogState,
+      showConfirmDialog: show
+    });
+  };
+
+  const setIsConfirming = (confirming: boolean) => {
+    setDialogState({
+      ...dialogState,
+      isConfirming: confirming
+    });
   };
 
   return {
-    showConfirmDialog,
-    confirmTitle,
-    confirmDescription,
-    confirmAction,
-    isConfirming,
+    ...dialogState,
     setShowConfirmDialog,
     setIsConfirming,
     showConfirm

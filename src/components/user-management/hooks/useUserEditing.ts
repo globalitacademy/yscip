@@ -3,6 +3,7 @@ import { useState } from 'react';
 import { User, UserRole } from '@/types/user';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
+import { UserEditDialogState } from '../types/dialogStates';
 
 export const useUserEditing = (
   users: User[],
@@ -10,33 +11,44 @@ export const useUserEditing = (
   showConfirm: (title: string, description: string, action: () => Promise<void>) => void,
   setIsConfirming: React.Dispatch<React.SetStateAction<boolean>>
 ) => {
-  const [openEditUser, setOpenEditUser] = useState<string | null>(null);
-  const [editUserData, setEditUserData] = useState<Partial<User>>({
-    name: '',
-    email: '',
-    role: 'student',
-    department: 'Ինֆորմատիկայի ֆակուլտետ',
-    course: '',
-    group: ''
+  const [dialogState, setDialogState] = useState<UserEditDialogState>({
+    openEditUser: null,
+    editUserData: {
+      name: '',
+      email: '',
+      role: 'student',
+      department: 'Ինֆորմատիկայի ֆակուլտետ',
+      course: '',
+      group: ''
+    }
   });
 
   const handleEditUser = (userId: string) => {
     const user = users.find(u => u.id === userId);
     if (!user) return;
     
-    setEditUserData({
-      name: user.name,
-      email: user.email,
-      role: user.role,
-      department: user.department,
-      course: user.course,
-      group: user.group
+    setDialogState({
+      openEditUser: userId,
+      editUserData: {
+        name: user.name,
+        email: user.email,
+        role: user.role,
+        department: user.department,
+        course: user.course,
+        group: user.group
+      }
     });
-    
-    setOpenEditUser(userId);
+  };
+  
+  const setEditUserData = (userData: Partial<User>) => {
+    setDialogState({
+      ...dialogState,
+      editUserData: userData
+    });
   };
   
   const handleUpdateUser = async () => {
+    const { openEditUser, editUserData } = dialogState;
     if (!openEditUser) return;
 
     // Show confirmation dialog
@@ -90,23 +102,25 @@ export const useUserEditing = (
           toast.error("Սխալ է տեղի ունեցել օգտատիրոջ տվյալները թարմացնելիս։");
         } finally {
           setIsConfirming(false);
-          setEditUserData({
-            name: '',
-            email: '',
-            role: 'student',
-            department: 'Ինֆորմատիկայի ֆակուլտետ',
-            course: '',
-            group: ''
+          setDialogState({
+            openEditUser: null,
+            editUserData: {
+              name: '',
+              email: '',
+              role: 'student',
+              department: 'Ինֆորմատիկայի ֆակուլտետ',
+              course: '',
+              group: ''
+            }
           });
-          setOpenEditUser(null);
         }
       }
     );
   };
 
   return {
-    openEditUser,
-    editUserData: editUserData,
+    openEditUser: dialogState.openEditUser,
+    editUserData: dialogState.editUserData,
     setEditUserData,
     handleEditUser,
     handleUpdateUser

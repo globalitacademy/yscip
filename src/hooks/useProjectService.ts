@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { ProjectTheme } from '@/data/projectThemes';
@@ -43,12 +42,12 @@ export const useProjectService = () => {
         createdAt: project.created_at,
         updatedAt: project.updated_at || project.created_at,
         duration: project.duration,
-        complexity: project.complexity || 'Միջին',
-        is_public: project.is_public,
-        detailedDescription: project.detailed_description,
-        steps: project.steps,
-        prerequisites: project.prerequisites,
-        learningOutcomes: project.learning_outcomes
+        complexity: 'Միջին',
+        is_public: project.is_public || false,
+        detailedDescription: '',
+        steps: [],
+        prerequisites: [],
+        learningOutcomes: []
       }));
     } catch (error) {
       console.error('Error in fetchProjects:', error);

@@ -11,10 +11,11 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { UserFormData } from './types/formData';
 
 interface UserFormFieldsProps {
-  userData: Partial<User>;
-  onUserDataChange: (userData: Partial<User>) => void;
+  userData: Partial<UserFormData>;
+  onUserDataChange: (userData: Partial<UserFormData>) => void;
   isEditMode?: boolean;
 }
 

@@ -42,9 +42,26 @@ export const useUserService = () => {
   const createUser = async (user: Partial<User>): Promise<User | null> => {
     setLoading(true);
     try {
+      // Make sure we have the required fields
+      if (!user.email || !user.name || !user.role) {
+        toast.error('Սխալ է տեղի ունեցել օգտատեր ստեղծելիս: Պարտադիր դաշտեր բացակայում են։');
+        return null;
+      }
+      
       const { data, error } = await supabase
         .from('users')
-        .insert([user])
+        .insert([{
+          email: user.email,
+          name: user.name,
+          role: user.role,
+          department: user.department,
+          course: user.course,
+          group_name: user.group,
+          avatar: user.avatar,
+          specialization: user.specialization,
+          organization: user.organization,
+          registration_approved: user.registrationApproved
+        }])
         .select()
         .single();
       
@@ -73,7 +90,17 @@ export const useUserService = () => {
     try {
       const { data, error } = await supabase
         .from('users')
-        .update(updates)
+        .update({
+          name: updates.name,
+          role: updates.role,
+          department: updates.department,
+          course: updates.course,
+          group_name: updates.group,
+          avatar: updates.avatar,
+          specialization: updates.specialization,
+          organization: updates.organization,
+          updated_at: new Date().toISOString()
+        })
         .eq('id', id)
         .select()
         .single();
