@@ -10,6 +10,7 @@ export const CourseProvider: React.FC<{ children: ReactNode }> = ({ children }) 
   const [courses, setCourses] = useState<Course[]>([]);
   const [professionalCourses, setProfessionalCourses] = useState<ProfessionalCourse[]>([]);
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
+  const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
   
   const courseManager = useCourseManager({
     courses,
@@ -45,8 +46,8 @@ export const CourseProvider: React.FC<{ children: ReactNode }> = ({ children }) 
     isEditProfessionalDialogOpen: courseManager.isEditProfessionalDialogOpen,
     isDeleteProfessionalDialogOpen: courseManager.isDeleteProfessionalDialogOpen,
     isCreateDialogOpen,
-    isAddDialogOpen: false,
-    setIsAddDialogOpen: () => {}, 
+    isAddDialogOpen,
+    setIsAddDialogOpen,
     
     // Edit object states
     courseToEdit: courseManager.courseToEdit,
@@ -61,7 +62,7 @@ export const CourseProvider: React.FC<{ children: ReactNode }> = ({ children }) 
     setIsEditDialogOpen: courseManager.setIsEditDialogOpen,
     setIsDeleteDialogOpen: courseManager.setIsDeleteDialogOpen,
     
-    // Fixed missing methods
+    // Fixed missing methods with correct implementations
     handleAddProfessionalCourse: courseManager.handleCreateProfessionalCourse,
     handleEditProfessionalCourse: courseManager.handleUpdateProfessionalCourse,
     

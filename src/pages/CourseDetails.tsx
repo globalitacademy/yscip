@@ -28,7 +28,6 @@ const CourseDetails: React.FC = () => {
   const [newOutcome, setNewOutcome] = useState('');
   const { user } = useAuth();
 
-  // Listen for course updates from other components
   useEffect(() => {
     const handleCourseUpdate = (event: CustomEvent<ProfessionalCourse>) => {
       const updatedCourse = event.detail;
@@ -45,7 +44,6 @@ const CourseDetails: React.FC = () => {
     };
   }, [id]);
 
-  // Subscribe to real-time updates for courses
   useEffect(() => {
     if (!id) return;
 
@@ -60,7 +58,6 @@ const CourseDetails: React.FC = () => {
           filter: `id=eq.${id}`
         },
         async () => {
-          // Refetch the course when it's updated in the database
           const courseData = await getCourseById(id);
           if (courseData) {
             setCourse(courseData);
@@ -83,7 +80,6 @@ const CourseDetails: React.FC = () => {
           const courseData = await getCourseById(id);
           
           if (!courseData) {
-            // Create a sample course if not found in database
             const sampleCourse: ProfessionalCourse = {
               id: id,
               title: "Web Development Fundamentals",
@@ -114,7 +110,6 @@ const CourseDetails: React.FC = () => {
               ]
             };
             
-            // Save to database and localStorage
             const success = await saveCourseChanges(sampleCourse);
             if (success) {
               toast.success("Նոր դասընթաց ստեղծվել և պահպանվել է");
@@ -144,28 +139,28 @@ const CourseDetails: React.FC = () => {
     });
   };
 
-  const handleEditCourse = () => {
-    if (!course) return;
+  const handleEditCourse = async (id: string, courseData: Partial<ProfessionalCourse>): Promise<boolean> => {
+    if (!course) return false;
 
-    // Update the course in Supabase and localStorage
     try {
-      saveCourseChanges(course).then(success => {
-        if (success) {
-          toast.success('Դասընթացը հաջողությամբ թարմացվել է');
-          setIsEditDialogOpen(false);
-        } else {
-          toast.error('Դասընթացի թարմացման ժամանակ սխալ է տեղի ունեցել');
-        }
-      });
+      const success = await saveCourseChanges({...course, ...courseData});
+      if (success) {
+        toast.success('Դասընթացը հաջողությամբ թարմացվել է');
+        setIsEditDialogOpen(false);
+        return true;
+      } else {
+        toast.error('Դասընթացի թարմացման ժամանակ սխալ է տեղի ունեցել');
+        return false;
+      }
     } catch (error) {
       console.error('Error updating course:', error);
       toast.error('Դասընթացի թարմացման ժամանակ սխալ է տեղի ունեցել');
+      return false;
     }
   };
 
   const toggleEditMode = async () => {
     if (isEditing) {
-      // Save changes
       if (!editedCourse) return;
       
       const success = await saveCourseChanges(editedCourse);
@@ -176,7 +171,6 @@ const CourseDetails: React.FC = () => {
         toast.error('Դասընթացի թարմացման ժամանակ սխալ է տեղի ունեցել');
       }
     } else {
-      // Enter edit mode
       setEditedCourse(course);
     }
     
@@ -254,7 +248,6 @@ const CourseDetails: React.FC = () => {
     });
   };
 
-  // Check if user can edit this course
   const canEdit = user && (user.role === 'admin' || course?.createdBy === user.name);
 
   if (loading) {

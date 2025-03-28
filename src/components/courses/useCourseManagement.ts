@@ -14,7 +14,7 @@ import {
   syncCoursesToSupabase
 } from './utils/courseUtils';
 
-export const mockSpecializations = ['Ծրագրավորում', 'Տվյալագիտություն', 'Դիզայն', 'Մարկետինգ', 'Բիզնես վերլուծություն'];
+const mockSpecializations = ['Ծրագրավորում', 'Տվյալագիտություն', 'Դիզայն', 'Մարկետինգ', 'Բիզնես վերլուծություն'];
 
 const initialCourses: Course[] = [];
 
@@ -326,7 +326,7 @@ export const useCourseManagement = () => {
       buttonText: courseData.buttonText || 'Դիտել',
       subtitle: courseData.subtitle || 'ԴԱՍԸՆԹԱՑ',
       color: courseData.color || 'text-amber-500',
-      institution: courseData.institution || 'ՀՊՏՀ',
+      institution: courseData.institution || '��ՊՏՀ',
       iconName: 'book',
       is_public: courseData.is_public || false,
       show_on_homepage: courseData.show_on_homepage || false,
@@ -571,6 +571,14 @@ export const useCourseManagement = () => {
     }
   };
 
+  const handleAddProfessionalCourse = useCallback(async (courseData: Omit<ProfessionalCourse, 'id' | 'createdAt'>) => {
+    return handleCreateProfessionalCourse(courseData);
+  }, []);
+
+  const handleUpdateProfessionalCourse = useCallback(async (id: string, courseData: Partial<ProfessionalCourse>) => {
+    return handleUpdateCourse(id, courseData);
+  }, []);
+
   return {
     courses,
     userCourses,
@@ -611,6 +619,8 @@ export const useCourseManagement = () => {
     professionalCourse,
     setProfessionalCourse,
     courseType,
-    setCourseType
+    setCourseType,
+    handleAddProfessionalCourse,
+    handleUpdateProfessionalCourse
   };
 };

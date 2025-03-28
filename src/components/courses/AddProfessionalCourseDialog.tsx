@@ -10,7 +10,7 @@ interface AddProfessionalCourseDialogProps {
   setIsOpen: (isOpen: boolean) => void;
   newCourse: Partial<ProfessionalCourse>;
   setNewCourse: React.Dispatch<React.SetStateAction<Partial<ProfessionalCourse>>>;
-  handleAddCourse: () => void;
+  handleAddCourse: (course: Omit<ProfessionalCourse, 'id' | 'createdAt'>) => Promise<boolean>;
 }
 
 const AddProfessionalCourseDialog: React.FC<AddProfessionalCourseDialogProps> = ({
@@ -20,6 +20,13 @@ const AddProfessionalCourseDialog: React.FC<AddProfessionalCourseDialogProps> = 
   setNewCourse,
   handleAddCourse
 }) => {
+  const handleSubmit = () => {
+    if (newCourse) {
+      // Cast to required type and call the handler
+      handleAddCourse(newCourse as Omit<ProfessionalCourse, 'id' | 'createdAt'>);
+    }
+  };
+
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
       <DialogTrigger asChild>
@@ -37,7 +44,7 @@ const AddProfessionalCourseDialog: React.FC<AddProfessionalCourseDialogProps> = 
           setCourse={setNewCourse}
         />
         <DialogFooter>
-          <Button type="submit" onClick={handleAddCourse}>
+          <Button type="submit" onClick={handleSubmit}>
             Ավելացնել
           </Button>
         </DialogFooter>
