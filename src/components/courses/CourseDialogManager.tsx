@@ -3,6 +3,7 @@ import React from 'react';
 import { useCourseContext } from '@/contexts/CourseContext';
 import DeleteCourseDialog from './DeleteCourseDialog';
 import EditCourseDialog from './EditCourseDialog';
+import { toast } from 'sonner';
 
 const CourseDialogManager: React.FC = () => {
   const {
@@ -26,19 +27,26 @@ const CourseDialogManager: React.FC = () => {
 
   // Function to handle delete based on course type
   const handleDelete = async () => {
-    if (!selectedCourse) return false;
-    
-    // Check if we're dealing with a standard or professional course
-    if (courseType === 'professional' && 'slug' in selectedCourse) {
-      // It's a professional course
-      return selectedCourse.id ? 
-        handleDeleteCourse(selectedCourse.id) : 
-        Promise.resolve(false);
-    } else {
-      // It's a standard course
-      return selectedCourse.id ? 
-        handleDeleteCourse(selectedCourse.id) : 
-        Promise.resolve(false);
+    try {
+      if (!selectedCourse || !selectedCourse.id) {
+        toast.error("Դասընթացը չի գտնվել");
+        return false;
+      }
+      
+      console.log("Deleting course:", selectedCourse.id, "Type:", courseType);
+      
+      // Check if we're dealing with a standard or professional course
+      if (courseType === 'professional') {
+        // It's a professional course
+        return await handleDeleteCourse(selectedCourse.id);
+      } else {
+        // It's a standard course
+        return await handleDeleteCourse(selectedCourse.id);
+      }
+    } catch (error) {
+      console.error("Error in handleDelete:", error);
+      toast.error("Ջնջման ժամանակ սխալ է տեղի ունեցել");
+      return false;
     }
   };
 

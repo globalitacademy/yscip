@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Course } from './types';
 import { ProfessionalCourse } from './types/ProfessionalCourse';
 import { toast } from 'sonner';
+import { Loader2 } from 'lucide-react';
 
 interface DeleteCourseDialogProps {
   isOpen: boolean;
@@ -31,9 +32,13 @@ const DeleteCourseDialog: React.FC<DeleteCourseDialogProps> = ({
       : 'Անանուն դասընթաց';
 
   const handleDeleteClick = async () => {
-    setIsDeleting(true);
     try {
+      setIsDeleting(true);
+      console.log("Deleting course:", selectedCourse);
+      
       const success = await onDelete();
+      console.log("Delete result:", success);
+      
       if (success) {
         toast.success('Դասընթացը հաջողությամբ ջնջվել է');
         setIsOpen(false);
@@ -72,7 +77,7 @@ const DeleteCourseDialog: React.FC<DeleteCourseDialogProps> = ({
             className="w-full sm:w-auto"
             disabled={isDeleting}
           >
-            {isDeleting ? 'Ջնջվում է...' : 'Ջնջել'}
+            {isDeleting ? <> <Loader2 className="mr-2 h-4 w-4 animate-spin" /> Ջնջվում է...</> : 'Ջնջել'}
           </Button>
         </DialogFooter>
       </DialogContent>

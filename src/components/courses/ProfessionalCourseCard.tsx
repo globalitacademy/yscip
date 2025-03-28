@@ -23,6 +23,20 @@ const ProfessionalCourseCard: React.FC<ProfessionalCourseCardProps> = ({
   canEdit = false,
   onClick
 }) => {
+  const handleDelete = (e: React.MouseEvent) => {
+    e.stopPropagation(); // Կանխում է իրադարձությունների տարածումը
+    if (onDelete && course.id) {
+      onDelete(course.id);
+    }
+  };
+
+  const handleEdit = (e: React.MouseEvent) => {
+    e.stopPropagation(); // Կանխում է իրադարձությունների տարածումը
+    if (onEdit) {
+      onEdit(course);
+    }
+  };
+
   return (
     <Card className="flex flex-col w-full hover:shadow-md transition-shadow relative">
       {course.organizationLogo ? (
@@ -47,7 +61,7 @@ const ProfessionalCourseCard: React.FC<ProfessionalCourseCardProps> = ({
             variant="outline" 
             size="icon" 
             className="h-6 w-6 rounded-full" 
-            onClick={() => onEdit && onEdit(course)}
+            onClick={handleEdit}
           >
             <Pencil size={12} />
           </Button>
@@ -55,7 +69,7 @@ const ProfessionalCourseCard: React.FC<ProfessionalCourseCardProps> = ({
             variant="outline" 
             size="icon" 
             className="h-6 w-6 rounded-full" 
-            onClick={() => onDelete && onDelete(course.id)}
+            onClick={handleDelete}
           >
             <Trash size={12} />
           </Button>
