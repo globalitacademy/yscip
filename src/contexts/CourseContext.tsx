@@ -21,54 +21,73 @@ export const CourseProvider: React.FC<{ children: ReactNode }> = ({ children }) 
   });
 
   const contextValue: CourseContextType = {
+    // Collection states
     courses: courseManager.courses,
     userCourses: courseManager.userCourses,
     professionalCourses: courseManager.professionalCourses,
     userProfessionalCourses: courseManager.userProfessionalCourses,
-    isLoading: courseManager.loading,
-    error: null,
-    activeCourse: null,
-    filteredCourses: courseManager.courses,
-    filteredProfessionalCourses: courseManager.professionalCourses,
-    searchTerm: '',
-    selectedCategory: null,
-    selectedDifficulty: null,
-    selectedSort: null,
+    
+    // UI states
+    isLoading: courseManager.isLoading,
+    error: courseManager.error,
+    activeCourse: courseManager.activeCourse,
+    filteredCourses: courseManager.filteredCourses,
+    filteredProfessionalCourses: courseManager.filteredProfessionalCourses,
+    searchTerm: courseManager.searchTerm,
+    selectedCategory: courseManager.selectedCategory,
+    selectedDifficulty: courseManager.selectedDifficulty,
+    selectedSort: courseManager.selectedSort,
+    
+    // Dialog states
     isEditDialogOpen: courseManager.isEditDialogOpen,
     isDeleteDialogOpen: courseManager.isDeleteDialogOpen,
-    isCreateProfessionalDialogOpen: false,
-    isEditProfessionalDialogOpen: false,
-    isDeleteProfessionalDialogOpen: false,
-    courseToEdit: courseManager.courseToEdit,
-    courseToDelete: null,
-    professionalCourseToEdit: courseManager.selectedProfessionalCourse,
-    professionalCourseToDelete: null,
-    loadCourses: courseManager.loadCoursesFromDatabase,
-    handleSearchChange: () => {},
-    handleCategoryChange: () => {},
-    handleDifficultyChange: () => {},
-    handleSortChange: () => {},
-    resetFilters: () => {},
-    handleOpenEditDialog: courseManager.handleEditInit,
-    handleCloseEditDialog: () => courseManager.setIsEditDialogOpen(false),
-    handleOpenDeleteDialog: () => {},
-    handleCloseDeleteDialog: () => courseManager.setIsDeleteDialogOpen(false),
-    handleOpenCreateProfessionalDialog: () => {},
-    handleCloseCreateProfessionalDialog: () => {},
-    handleOpenEditProfessionalDialog: courseManager.handleEditProfessionalCourseInit,
-    handleCloseEditProfessionalDialog: () => {},
-    handleOpenDeleteProfessionalDialog: () => {},
-    handleCloseDeleteProfessionalDialog: () => {},
-    handleCreateCourse: courseManager.handleAddCourse,
-    handleUpdateCourse: async () => false,
-    handleDeleteCourse: courseManager.handleDeleteCourse,
-    handleCreateProfessionalCourse: courseManager.handleAddProfessionalCourse,
-    handleUpdateProfessionalCourse: async () => false,
-    handleDeleteProfessionalCourse: courseManager.handleDeleteProfessionalCourse,
+    isCreateProfessionalDialogOpen: courseManager.isCreateProfessionalDialogOpen,
+    isEditProfessionalDialogOpen: courseManager.isEditProfessionalDialogOpen,
+    isDeleteProfessionalDialogOpen: courseManager.isDeleteProfessionalDialogOpen,
     isCreateDialogOpen,
-    setIsCreateDialogOpen,
+    
+    // Edit object states
+    courseToEdit: courseManager.courseToEdit,
+    courseToDelete: courseManager.courseToDelete,
+    professionalCourseToEdit: courseManager.professionalCourseToEdit,
+    professionalCourseToDelete: courseManager.professionalCourseToDelete,
+    
+    // Collection setters
     setCourses,
     setProfessionalCourses,
+    setIsCreateDialogOpen,
+    setIsEditDialogOpen: courseManager.setIsEditDialogOpen,
+    setIsDeleteDialogOpen: courseManager.setIsDeleteDialogOpen,
+    
+    // Data operations
+    loadCourses: courseManager.loadCourses,
+    handleSearchChange: courseManager.handleSearchChange,
+    handleCategoryChange: courseManager.handleCategoryChange,
+    handleDifficultyChange: courseManager.handleDifficultyChange,
+    handleSortChange: courseManager.handleSortChange,
+    resetFilters: courseManager.resetFilters,
+    
+    // Dialog handlers
+    handleOpenEditDialog: courseManager.handleOpenEditDialog,
+    handleCloseEditDialog: courseManager.handleCloseEditDialog,
+    handleOpenDeleteDialog: courseManager.handleOpenDeleteDialog,
+    handleCloseDeleteDialog: courseManager.handleCloseDeleteDialog,
+    handleOpenCreateProfessionalDialog: courseManager.handleOpenCreateProfessionalDialog,
+    handleCloseCreateProfessionalDialog: courseManager.handleCloseCreateProfessionalDialog,
+    handleOpenEditProfessionalDialog: courseManager.handleOpenEditProfessionalDialog,
+    handleCloseEditProfessionalDialog: courseManager.handleCloseEditProfessionalDialog,
+    handleOpenDeleteProfessionalDialog: courseManager.handleOpenDeleteProfessionalDialog,
+    handleCloseDeleteProfessionalDialog: courseManager.handleCloseDeleteProfessionalDialog,
+    
+    // CRUD operations
+    handleCreateCourse: courseManager.handleCreateCourse,
+    handleUpdateCourse: courseManager.handleUpdateCourse,
+    handleDeleteCourse: courseManager.handleDeleteCourse,
+    handleCreateProfessionalCourse: courseManager.handleCreateProfessionalCourse,
+    handleUpdateProfessionalCourse: courseManager.handleUpdateProfessionalCourse,
+    handleDeleteProfessionalCourse: courseManager.handleDeleteProfessionalCourse,
+    
+    // Current editing states
     selectedCourse: courseManager.selectedCourse,
     setSelectedCourse: courseManager.setSelectedCourse,
     professionalCourse: courseManager.professionalCourse,
@@ -77,13 +96,13 @@ export const CourseProvider: React.FC<{ children: ReactNode }> = ({ children }) 
     setCourseType: courseManager.setCourseType,
     newModule: courseManager.newModule,
     setNewModule: courseManager.setNewModule,
+    
+    // Additional state management
     handleAddModuleToEdit: courseManager.handleAddModuleToEdit,
     handleRemoveModuleFromEdit: courseManager.handleRemoveModuleFromEdit,
     handleEditCourse: courseManager.handleEditCourse,
     handleEditInit: courseManager.handleEditInit,
-    handleCreateInit: courseManager.handleCreateInit,
-    setIsEditDialogOpen: courseManager.setIsEditDialogOpen,
-    setIsDeleteDialogOpen: courseManager.setIsDeleteDialogOpen
+    handleCreateInit: courseManager.handleCreateInit
   };
 
   return (
