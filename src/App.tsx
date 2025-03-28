@@ -1,5 +1,6 @@
+
 import React from 'react';
-import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
+import { BrowserRouter as Router, Route, Routes, Navigate } from 'react-router-dom';
 import { AuthProvider } from './contexts/AuthContext';
 import { CourseProvider } from './contexts/CourseContext';
 import LoginPage from './pages/LoginPage';
@@ -39,6 +40,9 @@ function App() {
             
             {/* Course Details Route */}
             <Route path="/courses/:slug" element={<CourseDetailPage />} />
+            
+            {/* Redirect old /course/:id routes to the new format */}
+            <Route path="/course/:id" element={<Navigate to={(props) => `/courses/${props.match.params.id}`} />} />
             
             {/* 404 - Not Found */}
             <Route path="*" element={<NotFound />} />

@@ -6,6 +6,7 @@ import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/
 import { Button } from '@/components/ui/button';
 import { Calendar, Clock, Award, ArrowLeft, Check } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { toast } from '@/components/ui/use-toast';
 
 const CourseDetail: React.FC = () => {
   const { slug } = useParams<{ slug: string }>();
@@ -19,17 +20,25 @@ const CourseDetail: React.FC = () => {
     if (storedCourses && slug) {
       try {
         const parsedCourses: ProfessionalCourse[] = JSON.parse(storedCourses);
+        console.log("Looking for course with slug/id:", slug);
+        console.log("Available courses:", parsedCourses);
+        
         // Find course by slug or id
         const foundCourse = parsedCourses.find(
           (c) => c.slug === slug || c.id === slug
         );
         
         if (foundCourse) {
+          console.log("Found course:", foundCourse);
           setCourse(foundCourse);
+        } else {
+          console.log("Course not found with slug/id:", slug);
         }
       } catch (e) {
         console.error('Error parsing stored professional courses:', e);
       }
+    } else {
+      console.log("No stored courses or no slug provided");
     }
     setLoading(false);
   }, [slug]);
@@ -52,11 +61,22 @@ const CourseDetail: React.FC = () => {
       <div className="container mx-auto px-4 py-12">
         <div className="text-center">
           <h1 className="text-2xl font-bold mb-4">Դասընթացը չի գտնվել</h1>
+          <p className="text-muted-foreground mb-6">
+            Փորձեք ուրիշ դասընթաց կամ վերադարձեք բոլոր դասընթացների էջ
+          </p>
           <Button onClick={() => navigate('/courses')}>Վերադառնալ դասընթացներ</Button>
         </div>
       </div>
     );
   }
+
+  // Handle registration
+  const handleRegister = () => {
+    toast({
+      title: "Շնորհակալություն գրանցման համար",
+      description: "Ձեր դիմումը հաջողությամբ ուղարկվել է։ Մենք շուտով կկապվենք ձեզ հետ:",
+    });
+  };
 
   return (
     <div className="container mx-auto px-4 py-8">
@@ -176,7 +196,7 @@ const CourseDetail: React.FC = () => {
                 <p className="text-muted-foreground">Ամբողջական դասընթաց</p>
               </div>
               
-              <Button className="w-full mb-4">Գրանցվել դասընթացին</Button>
+              <Button className="w-full mb-4" onClick={handleRegister}>Գրանցվել դասընթացին</Button>
               
               <div className="space-y-4 mt-6">
                 <div className="flex justify-between">

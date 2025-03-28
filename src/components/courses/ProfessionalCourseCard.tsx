@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { Card, CardContent, CardFooter, CardHeader } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -11,6 +12,7 @@ interface ProfessionalCourseCardProps {
   onDelete?: (id: string) => void;
   isAdmin?: boolean;
   canEdit?: boolean;
+  onClick?: () => void;
 }
 
 const ProfessionalCourseCard: React.FC<ProfessionalCourseCardProps> = ({
@@ -18,7 +20,8 @@ const ProfessionalCourseCard: React.FC<ProfessionalCourseCardProps> = ({
   onEdit,
   onDelete,
   isAdmin = false,
-  canEdit = false
+  canEdit = false,
+  onClick
 }) => {
   return (
     <Card className="flex flex-col w-full hover:shadow-md transition-shadow relative">
@@ -95,14 +98,24 @@ const ProfessionalCourseCard: React.FC<ProfessionalCourseCardProps> = ({
       </CardContent>
       
       <CardFooter className="pt-4">
-        <Link to={`/course/${course.id}`} className="w-full">
+        {onClick ? (
           <Button 
             variant="outline"
             className="w-full"
+            onClick={onClick}
           >
             <Eye className="h-4 w-4 mr-2" /> {course.buttonText || "Մանրամասն"}
           </Button>
-        </Link>
+        ) : (
+          <Link to={`/courses/${course.slug || course.id}`} className="w-full">
+            <Button 
+              variant="outline"
+              className="w-full"
+            >
+              <Eye className="h-4 w-4 mr-2" /> {course.buttonText || "Մանրամասն"}
+            </Button>
+          </Link>
+        )}
       </CardFooter>
     </Card>
   );
