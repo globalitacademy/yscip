@@ -40,7 +40,9 @@ export const projectService = {
         createdAt: project.created_at,
         updatedAt: project.updated_at || project.created_at,
         duration: project.duration,
-        complexity: project.complexity || 'Միջին', // Default complexity value
+        // Explicitly define complexity as a property on the returned object
+        // even if it doesn't exist in the database response
+        complexity: 'Միջին', // Default complexity value
         is_public: project.is_public
       }));
     } catch (err) {
