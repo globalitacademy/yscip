@@ -40,7 +40,7 @@ export const useProfessionalCourseOperations = (
       subtitle: courseData.subtitle || 'ԴԱՍԸՆԹԱՑ',
       color: courseData.color || 'text-amber-500',
       institution: courseData.institution || 'ՀՊՏՀ',
-      iconName: 'book',
+      iconName: courseData.iconName || 'book',
       is_public: courseData.is_public || false,
       show_on_homepage: courseData.show_on_homepage || false,
       display_order: courseData.display_order || 0,
@@ -49,6 +49,8 @@ export const useProfessionalCourseOperations = (
     };
 
     try {
+      console.log('Creating new course with data:', courseToAdd);
+      
       // Insert main course data
       const { data, error } = await supabase
         .from('courses')
@@ -66,12 +68,20 @@ export const useProfessionalCourseOperations = (
           image_url: courseToAdd.imageUrl,
           organization_logo: courseToAdd.organizationLogo,
           description: courseToAdd.description,
-          is_public: courseToAdd.is_public
+          is_public: courseToAdd.is_public,
+          show_on_homepage: courseToAdd.show_on_homepage || false,
+          display_order: courseToAdd.display_order || 0,
+          slug: courseToAdd.slug
         })
         .select()
         .single();
 
-      if (error) throw error;
+      if (error) {
+        console.error('Error inserting course:', error);
+        throw error;
+      }
+
+      console.log('Course created successfully:', data);
 
       // Insert course lessons
       if (courseToAdd.lessons && courseToAdd.lessons.length > 0) {

@@ -189,27 +189,32 @@ export const saveCourseChanges = async (course: ProfessionalCourse): Promise<boo
 
     // Save to Supabase
     try {
+      // Create a database-friendly object with snake_case keys to match Supabase columns
+      const dbCourseData = {
+        title: course.title,
+        subtitle: course.subtitle,
+        icon_name: iconName,
+        duration: course.duration,
+        price: course.price,
+        button_text: course.buttonText,
+        color: course.color,
+        created_by: course.createdBy,
+        institution: course.institution,
+        image_url: course.imageUrl,
+        organization_logo: course.organizationLogo,
+        description: course.description,
+        is_public: course.is_public,
+        show_on_homepage: course.show_on_homepage || false,
+        display_order: course.display_order || 0,
+        slug: course.slug || course.id,
+        updated_at: new Date().toISOString()
+      };
+      
+      console.log('Database course data being sent:', dbCourseData);
+
       const { error: courseError } = await supabase
         .from('courses')
-        .update({
-          title: course.title,
-          subtitle: course.subtitle,
-          icon_name: iconName,
-          duration: course.duration,
-          price: course.price,
-          button_text: course.buttonText,
-          color: course.color,
-          created_by: course.createdBy,
-          institution: course.institution,
-          image_url: course.imageUrl,
-          organization_logo: course.organizationLogo,
-          description: course.description,
-          is_public: course.is_public,
-          show_on_homepage: course.show_on_homepage || false,
-          display_order: course.display_order || 0,
-          slug: course.slug || course.id,
-          updated_at: new Date().toISOString()
-        })
+        .update(dbCourseData)
         .eq('id', course.id);
 
       if (courseError) {
@@ -223,6 +228,7 @@ export const saveCourseChanges = async (course: ProfessionalCourse): Promise<boo
           
         if (checkError || !existingCourse) {
           // Course does not exist, let's create it
+          console.log('Course does not exist, creating new course with ID:', course.id);
           const { error: insertError } = await supabase
             .from('courses')
             .insert({
