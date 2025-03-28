@@ -51,8 +51,8 @@ export interface CourseContextType {
   isEditProfessionalDialogOpen: boolean;
   isDeleteProfessionalDialogOpen: boolean;
   isCreateDialogOpen: boolean;
-  isAddDialogOpen: boolean; // Added
-  setIsAddDialogOpen: (open: boolean) => void; // Added
+  isAddDialogOpen: boolean;
+  setIsAddDialogOpen: (open: boolean) => void;
   
   // Current editing states
   selectedCourse: Course | null;
@@ -83,9 +83,9 @@ export interface CourseContextType {
   
   // Data operations
   loadCourses: () => Promise<void>;
-  loadCoursesFromDatabase: () => Promise<void>;
+  loadCoursesFromDatabase: () => Promise<boolean>;
   loadCoursesFromLocalStorage: () => Promise<boolean>;
-  syncCoursesWithDatabase: () => Promise<void>;
+  syncCoursesWithDatabase: () => Promise<boolean>;
   handleSearchChange: (value: string) => void;
   handleCategoryChange: (value: string | null) => void;
   handleDifficultyChange: (value: string | null) => void;
