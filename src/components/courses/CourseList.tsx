@@ -14,7 +14,7 @@ interface CourseListProps {
 }
 
 const CourseList: React.FC<CourseListProps> = ({ courses, professionalCourses }) => {
-  const { handleEditInit } = useCourseContext();
+  const { handleEditInit, handleDeleteCourse } = useCourseContext();
   const { user } = useAuth();
   const isAdmin = user?.role === 'admin';
   
@@ -40,7 +40,7 @@ const CourseList: React.FC<CourseListProps> = ({ courses, professionalCourses })
                 isAdmin={isAdmin}
                 canEdit={isAdmin || course.createdBy === user?.name}
                 onEdit={() => handleEditInit(course, 'professional')}
-                onDelete={(id) => {}} 
+                onDelete={handleDeleteCourse} 
               />
             ))}
           </div>
@@ -58,7 +58,7 @@ const CourseList: React.FC<CourseListProps> = ({ courses, professionalCourses })
                 isAdmin={isAdmin}
                 canEdit={isAdmin || course.createdBy === user?.id}
                 onEdit={() => handleEditInit(course, 'standard')}
-                onDelete={(id) => {}} 
+                onDelete={handleDeleteCourse} 
               />
             ))}
           </div>

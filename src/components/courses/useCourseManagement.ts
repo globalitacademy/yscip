@@ -120,6 +120,31 @@ const mockProfessionalCourses: ProfessionalCourse[] = [
 
 export const mockSpecializations = ['Ծրագրավորում', 'Տվյալագիտություն', 'Դիզայն', 'Մարկետինգ', 'Բիզնես վերլուծություն'];
 
+const mockCourses: Course[] = [
+  {
+    id: '1',
+    name: 'Վեբ ծրագրավորում',
+    description: 'HTML, CSS, JavaScript, React և Node.js օգտագործելով վեբ հավելվածների մշակում',
+    specialization: 'Ծրագրավորում',
+    duration: '4 ամիս',
+    modules: ['HTML/CSS հիմունքներ', 'JavaScript', 'React', 'Node.js/Express', 'Վերջնական նախագիծ'],
+    createdBy: 'admin',
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString()
+  },
+  {
+    id: '2',
+    name: 'Մեքենայական ուսուցում',
+    description: 'Ներածություն մեքենայական ուսուցման մեջ՝ օգտագործելով Python և TensorFlow',
+    specialization: 'Տվյալագիտություն',
+    duration: '6 ամիս',
+    modules: ['Python հիմունքներ', 'Տվյալների վերլուծություն', 'Վիճակագրություն', 'Մեքենայական ուսուցման մոդելներ', 'Խորը ուսուցում', 'Վերջնական նախագիծ'],
+    createdBy: 'admin',
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString()
+  }
+];
+
 const initializeProfessionalCourses = async (): Promise<ProfessionalCourse[]> => {
   try {
     const supabaseCourses = await getAllCoursesFromSupabase();
@@ -147,27 +172,6 @@ const initializeProfessionalCourses = async (): Promise<ProfessionalCourse[]> =>
   }
 };
 
-const mockCourses: Course[] = [
-  {
-    id: '1',
-    name: 'Վեբ ծրագրավորում',
-    description: 'HTML, CSS, JavaScript, React և Node.js օգտագործելով վեբ հավելվածների մշակում',
-    specialization: 'Ծրագրավորում',
-    duration: '4 ամիս',
-    modules: ['HTML/CSS հիմունքներ', 'JavaScript', 'React', 'Node.js/Express', 'Վերջնական նախագիծ'],
-    createdBy: 'admin'
-  },
-  {
-    id: '2',
-    name: 'Մեքենայական ուսուցում',
-    description: 'Ներածություն մեքենայական ուսուցման մեջ՝ օգտագործելով Python և TensorFlow',
-    specialization: 'Տվյալագիտություն',
-    duration: '6 ամիս',
-    modules: ['Python հիմունքներ', 'Տվյալների վերլուծություն', 'Վիճակագրություն', 'Մեքենայական ուսուցման մոդելներ', 'Խորը ուսուցում', 'Վերջնական նախագիծ'],
-    createdBy: 'admin'
-  }
-];
-
 const initializeCourses = (): Course[] => {
   const storedCourses = localStorage.getItem('courses');
   if (storedCourses) {
@@ -188,9 +192,12 @@ export const useCourseManagement = () => {
   
   const [selectedCourse, setSelectedCourse] = useState<Course | null>(null);
   const [selectedProfessionalCourse, setSelectedProfessionalCourse] = useState<ProfessionalCourse | null>(null);
+  const [professionalCourse, setProfessionalCourse] = useState<Partial<ProfessionalCourse>>({});
+  const [courseType, setCourseType] = useState<'standard' | 'professional'>('standard');
   
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   
   const [newCourse, setNewCourse] = useState<Partial<Course>>({
     name: '',
@@ -387,10 +394,12 @@ export const useCourseManagement = () => {
       id: uuidv4(),
       name: newCourse.name,
       description: newCourse.description,
-      specialization: newCourse.specialization,
+      specialization: newCourse.specialization || '',
       duration: newCourse.duration,
       modules: newCourse.modules || [],
-      createdBy: user?.id || 'unknown'
+      createdBy: user?.id || 'unknown',
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString()
     };
 
     const updatedCourses = [...courses, courseToAdd];
@@ -596,6 +605,7 @@ export const useCourseManagement = () => {
     setSelectedProfessionalCourse,
     isAddDialogOpen,
     isEditDialogOpen,
+    isDeleteDialogOpen,
     newCourse,
     newProfessionalCourse,
     newModule,
@@ -605,6 +615,7 @@ export const useCourseManagement = () => {
     setNewModule,
     setIsAddDialogOpen,
     setIsEditDialogOpen,
+    setIsDeleteDialogOpen,
     handleAddCourse,
     handleAddProfessionalCourse,
     handleEditCourse,
@@ -619,6 +630,10 @@ export const useCourseManagement = () => {
     handleDeleteProfessionalCourse,
     loadCoursesFromDatabase,
     syncCoursesWithDatabase,
-    loadCoursesFromLocalStorage
+    loadCoursesFromLocalStorage,
+    professionalCourse,
+    setProfessionalCourse,
+    courseType,
+    setCourseType
   };
 };
