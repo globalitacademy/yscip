@@ -19,44 +19,6 @@ export const useSessionCheck = (
         console.log('Checking initial session...');
         setIsLoading(true);
         
-        // First, check localStorage for a stored user (for compatibility with previous approach)
-        const storedUser = localStorage.getItem('currentUser');
-        if (storedUser) {
-          console.log('Found stored user');
-          const parsedUser = JSON.parse(storedUser);
-          
-          // Check if this is the admin user first - handle admin separately
-          if (parsedUser.email === 'gitedu@bk.ru') {
-            console.log('Admin user found in localStorage');
-            setUser(parsedUser);
-            setIsAuthenticated(true);
-            setIsLoading(false);
-            return;
-          }
-          
-          // For non-admin users, verify with Supabase if possible
-          try {
-            const { data: { session } } = await supabase.auth.getSession();
-            if (session?.user) {
-              console.log('Supabase session exists, using that instead');
-              // Continue with Supabase session below
-            } else {
-              // Just use the stored user if no Supabase session exists
-              console.log('No Supabase session, using stored user');
-              setUser(parsedUser);
-              setIsAuthenticated(true);
-              setIsLoading(false);
-              return;
-            }
-          } catch (error) {
-            console.log('Error checking Supabase session, falling back to stored user');
-            setUser(parsedUser);
-            setIsAuthenticated(true);
-            setIsLoading(false);
-            return;
-          }
-        }
-        
         // Check Supabase session
         const { data: { session } } = await supabase.auth.getSession();
         if (session?.user) {
@@ -89,7 +51,6 @@ export const useSessionCheck = (
               console.log('User authenticated:', loggedInUser.email, loggedInUser.role);
               setUser(loggedInUser);
               setIsAuthenticated(true);
-              localStorage.setItem('currentUser', JSON.stringify(loggedInUser));
             }
           } catch (error) {
             console.error('Error fetching user data from Supabase:', error);

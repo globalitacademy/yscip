@@ -1,24 +1,40 @@
 
 import { useState, useEffect } from 'react';
 import { PendingUser } from '@/types/auth';
+import { supabase } from '@/integrations/supabase/client';
+import { toast } from 'sonner';
 
 export const usePendingUsers = () => {
   const [pendingUsers, setPendingUsers] = useState<PendingUser[]>([]);
 
-  // Load pending users from localStorage on mount
+  // Load pending users from Supabase on mount
   useEffect(() => {
-    const storedPendingUsers = localStorage.getItem('pendingUsers');
-    if (storedPendingUsers) {
-      setPendingUsers(JSON.parse(storedPendingUsers));
-    }
-  }, []);
+    const loadPendingUsers = async () => {
+      try {
+        const { data, error } = await supabase
+          .from('users')
+          .select('*')
+          .eq('registration_approved', false);
+          
+        if (error) throw error;
+        
+        const formatted: PendingUser[] = data.map(user => ({
+          id: user.id,
+          name: user.name,
+          email: user.email,
+          role: user.role,
+          createdAt: user.created_at
+        }));
+        
+        setPendingUsers(formatted);
+      } catch (error) {
+        console.error('Error loading pending users:', error);
+        toast.error('Չհաստատված օգտատերերի բեռնման ժամանակ սխալ է տեղի ունեցել');
+      }
+    };
 
-  // Save pendingUsers to localStorage when it changes
-  useEffect(() => {
-    if (pendingUsers.length > 0) {
-      localStorage.setItem('pendingUsers', JSON.stringify(pendingUsers));
-    }
-  }, [pendingUsers]);
+    loadPendingUsers();
+  }, []);
 
   return { pendingUsers, setPendingUsers };
 };

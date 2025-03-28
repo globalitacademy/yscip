@@ -5,7 +5,6 @@ import { ProfessionalCourse } from '../types';
 import { Book, BrainCircuit, Code, Database, FileCode, Globe } from 'lucide-react';
 import React from 'react';
 import { supabase } from '@/integrations/supabase/client';
-import { getAllCoursesFromLocalStorage, getAllCoursesFromSupabase, syncCoursesToSupabase } from '../utils/courseUtils';
 
 export const useCourseDataLoading = (
   setProfessionalCourses: React.Dispatch<React.SetStateAction<ProfessionalCourse[]>>,
@@ -21,25 +20,14 @@ export const useCourseDataLoading = (
       
       if (coursesError) {
         console.error('Error fetching courses:', coursesError);
-        toast.error('Սխալ դասընթացների ստացման ժամանակ, օգտագործվում են լոկալ տվյալները');
-        await loadCoursesFromLocalStorage();
+        toast.error('Սխալ դասընթացների ստացման ժամանակ');
         return false;
       }
       
       if (!coursesData || coursesData.length === 0) {
-        console.log('No courses found in database, checking local storage');
-        const storedCourses = localStorage.getItem('professionalCourses');
-        if (storedCourses) {
-          const parsedCourses: ProfessionalCourse[] = JSON.parse(storedCourses);
-          setProfessionalCourses(parsedCourses);
-          for (const course of parsedCourses) {
-            await saveCourseChanges(course);
-          }
-          toast.success('Տեղական դասընթացները համաժամեցվել են բազայի հետ');
-        } else {
-          setProfessionalCourses([]);
-          toast.info('Դասընթացներ չկան, ավելացրեք նոր դասընթացներ');
-        }
+        console.log('No courses found in database');
+        setProfessionalCourses([]);
+        toast.info('Դասընթացներ չկան, ավելացրեք նոր դասընթացներ');
         setLoading(false);
         return false;
       }
@@ -112,49 +100,22 @@ export const useCourseDataLoading = (
       }));
       
       setProfessionalCourses(completeCourses);
-      localStorage.setItem('professionalCourses', JSON.stringify(completeCourses));
       return true;
     } catch (error) {
       console.error('Error loading courses from database:', error);
       toast.error('Դասընթացների բեռնման ժամանակ սխալ է տեղի ունեցել');
-      await loadCoursesFromLocalStorage();
       return false;
     } finally {
       setLoading(false);
     }
   }, [setProfessionalCourses, setLoading]);
 
-  // Load courses from localStorage
-  const loadCoursesFromLocalStorage = useCallback(async () => {
-    try {
-      const storedCourses = localStorage.getItem('professionalCourses');
-      if (storedCourses) {
-        const parsedCourses = JSON.parse(storedCourses);
-        if (parsedCourses && parsedCourses.length > 0) {
-          console.log('Loaded courses from localStorage:', parsedCourses.length);
-          setProfessionalCourses(parsedCourses);
-          return true;
-        }
-      }
-      
-      console.log('No courses in localStorage');
-      setProfessionalCourses([]);
-      
-      return false;
-    } catch (error) {
-      console.error('Error loading courses from localStorage:', error);
-      setProfessionalCourses([]);
-      return false;
-    }
-  }, [setProfessionalCourses]);
-
-  // Sync courses with the database
+  // Sync courses with the database - now this just reloads from database
   const syncCoursesWithDatabase = useCallback(async () => {
     setLoading(true);
     toast.info('Դասընթացների համաժամեցում...');
     
     try {
-      await syncCoursesToSupabase();
       await loadCoursesFromDatabase();
       toast.success('Դասընթացները հաջողությամբ համաժամեցվել են');
       return true;
@@ -169,13 +130,6 @@ export const useCourseDataLoading = (
 
   return {
     loadCoursesFromDatabase,
-    loadCoursesFromLocalStorage,
     syncCoursesWithDatabase
   };
-};
-
-// Helper function from courseUtils
-const saveCourseChanges = async (course: ProfessionalCourse): Promise<boolean> => {
-  // This is a simplified version just for type checking, the actual implementation is in courseUtils
-  return true;
 };

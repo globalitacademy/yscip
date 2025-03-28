@@ -4,6 +4,7 @@ import { toast } from 'sonner';
 import { v4 as uuidv4 } from 'uuid';
 import { Course } from '../types';
 import { useAuth } from '@/contexts/AuthContext';
+import { supabase } from '@/integrations/supabase/client';
 
 export const useStandardCourseOperations = (
   courses: Course[],
@@ -13,7 +14,7 @@ export const useStandardCourseOperations = (
 ) => {
   const { user } = useAuth();
 
-  const handleAddCourse = useCallback((newCourseData: Partial<Course>) => {
+  const handleAddCourse = useCallback(async (newCourseData: Partial<Course>) => {
     if (!newCourseData.title || !newCourseData.description || !newCourseData.duration) {
       toast.error('Լրացրեք բոլոր պարտադիր դաշտերը');
       return;
@@ -35,12 +36,37 @@ export const useStandardCourseOperations = (
       updatedAt: new Date().toISOString()
     };
 
-    const updatedCourses = [...courses, courseToAdd];
-    setCourses(updatedCourses);
-    localStorage.setItem('courses', JSON.stringify(updatedCourses));
-    
-    setIsAddDialogOpen(false);
-    toast.success('Կուրսը հաջողությամբ ավելացվել է');
+    try {
+      // Save to database
+      const { error } = await supabase
+        .from('courses')
+        .insert({
+          id: courseToAdd.id,
+          title: courseToAdd.title,
+          description: courseToAdd.description,
+          specialization: courseToAdd.specialization,
+          duration: courseToAdd.duration,
+          modules: courseToAdd.modules,
+          price: '0', // Default value for standard courses
+          icon_name: 'book', // Default icon
+          button_text: 'Դիտել',
+          color: 'text-amber-500',
+          created_by: courseToAdd.createdBy,
+          is_public: courseToAdd.is_public
+        });
+
+      if (error) throw error;
+
+      // Update local state for immediate UI feedback
+      const updatedCourses = [...courses, courseToAdd];
+      setCourses(updatedCourses);
+      
+      setIsAddDialogOpen(false);
+      toast.success('Կուրսը հաջողությամբ ավելացվել է');
+    } catch (error) {
+      console.error('Error adding course:', error);
+      toast.error('Կուրսի ավելացման ժամանակ սխալ է տեղի ունեցել');
+    }
   }, [courses, setCourses, setIsAddDialogOpen, user]);
 
   const handleUpdateStandardCourse = useCallback(async (id: string, courseData: Partial<Course>) => {
@@ -55,15 +81,37 @@ export const useStandardCourseOperations = (
       return false;
     }
 
-    const updatedCourses = courses.map(course => 
-      course.id === id ? { ...course, ...courseData, updatedAt: new Date().toISOString() } : course
-    );
-    
-    setCourses(updatedCourses);
-    localStorage.setItem('courses', JSON.stringify(updatedCourses));
-    setIsEditDialogOpen(false);
-    toast.success('Կուրսը հաջողությամբ թարմացվել է');
-    return true;
+    try {
+      // Update in database
+      const { error } = await supabase
+        .from('courses')
+        .update({
+          title: courseData.title,
+          description: courseData.description,
+          specialization: courseData.specialization,
+          duration: courseData.duration,
+          modules: courseData.modules,
+          is_public: courseData.is_public,
+          updated_at: new Date().toISOString()
+        })
+        .eq('id', id);
+
+      if (error) throw error;
+
+      // Update local state for immediate UI feedback
+      const updatedCourses = courses.map(course => 
+        course.id === id ? { ...course, ...courseData, updatedAt: new Date().toISOString() } : course
+      );
+      
+      setCourses(updatedCourses);
+      setIsEditDialogOpen(false);
+      toast.success('Կուրսը հաջողությամբ թարմացվել է');
+      return true;
+    } catch (error) {
+      console.error('Error updating course:', error);
+      toast.error('Կուրսի թարմացման ժամանակ սխալ է տեղի ունեցել');
+      return false;
+    }
   }, [courses, setCourses, setIsEditDialogOpen]);
 
   const handleDeleteCourse = useCallback(async (id: string) => {
@@ -86,13 +134,21 @@ export const useStandardCourseOperations = (
         toast.error('Դուք չունեք իրավունք ջնջելու այս դասընթացը');
         return false;
       }
+
+      // Delete from database
+      const { error } = await supabase
+        .from('courses')
+        .delete()
+        .eq('id', id);
+
+      if (error) throw error;
       
-      // Update local state first for immediate UI feedback
+      // Update local state for immediate UI feedback
       const updatedCourses = courses.filter(course => course.id !== id);
       setCourses(updatedCourses);
-      localStorage.setItem('courses', JSON.stringify(updatedCourses));
       
       console.log("Standard course successfully deleted");
+      toast.success('Դասընթացը հաջողությամբ ջնջվել է');
       return true;
     } catch (error) {
       console.error('Error in handleDeleteCourse:', error);

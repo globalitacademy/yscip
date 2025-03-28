@@ -2,8 +2,8 @@
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Loader2, RefreshCw } from 'lucide-react';
-import { databaseSyncService } from '@/services/databaseSyncService';
 import { toast } from 'sonner';
+import { supabase } from '@/integrations/supabase/client';
 
 interface DatabaseSyncButtonProps {
   variant?: 'default' | 'outline' | 'ghost';
@@ -31,41 +31,20 @@ const DatabaseSyncButton: React.FC<DatabaseSyncButtonProps> = ({
     toast.info('Տվյալների համաժամեցման գործընթացը սկսվել է...');
     
     try {
-      // First try to load data from localStorage if available
-      const success = await databaseSyncService.loadDataFromLocalStorage(
-        // Progress callback
-        (status: string) => {
-          setSyncProgress(status);
-        }
-      );
-
-      if (success) {
-        toast.success('Տվյալները հաջողությամբ բեռնվել են լոկալ հիշողությունից');
-      }
+      // Trigger custom events to notify components to reload data from the database
+      window.dispatchEvent(new CustomEvent('reload-courses-from-database'));
+      window.dispatchEvent(new CustomEvent('reload-projects-from-database'));
       
-      // Then try to sync with the database (if it fails, we'll at least have local data)
-      try {
-        // Start the synchronization process with progress updates
-        await databaseSyncService.syncAllData(
-          // Progress callback
-          (status: string) => {
-            setSyncProgress(status);
-          }
-        );
-        
-        toast.success('Տվյալները հաջողությամբ համաժամեցվել են բազայի հետ');
-        
-        // Call the onSyncComplete callback if provided
-        if (onSyncComplete) {
-          onSyncComplete();
-        }
-      } catch (syncError) {
-        console.error('Error syncing with database:', syncError);
-        toast.error('Բազայի հետ համաժամեցման ժամանակ սխալ է տեղի ունեցել, լոկալ տվյալներն են օգտագործվում');
+      setSyncProgress('Տվյալները հաջողությամբ համաժամեցվել են');
+      toast.success('Տվյալները հաջողությամբ համաժամեցվել են բազայի հետ');
+      
+      // Call the onSyncComplete callback if provided
+      if (onSyncComplete) {
+        onSyncComplete();
       }
     } catch (error) {
-      console.error('Error loading data:', error);
-      toast.error('Տվյալների բեռնման ժամանակ սխալ է տեղի ունեցել');
+      console.error('Error syncing data:', error);
+      toast.error('Տվյալների համաժամեցման ժամանակ սխալ է տեղի ունեցել');
     } finally {
       setSyncing(false);
       setSyncProgress(null);

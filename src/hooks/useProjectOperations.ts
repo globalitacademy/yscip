@@ -1,3 +1,4 @@
+
 import { useState, useEffect, useCallback } from 'react';
 import { ProjectTheme } from '@/data/projectThemes';
 import { projectService } from '@/services/projectService';
@@ -24,58 +25,30 @@ export const useProjectOperations = () => {
   useEffect(() => {
     if (fetchedProjects && fetchedProjects.length > 0) {
       setProjects(fetchedProjects);
-      // Update localStorage with fetched projects - keeping only database projects
-      localStorage.setItem('projects', JSON.stringify(fetchedProjects));
-    } else {
-      // If no data from query, try to load from localStorage
-      loadProjectsFromLocalStorage();
     }
   }, [fetchedProjects]);
 
-  // Add event listener for reloading projects from localStorage
+  // Add event listener for reloading projects from database
   useEffect(() => {
-    const handleReloadFromLocal = () => {
-      loadProjectsFromLocalStorage();
+    const handleReloadFromDatabase = () => {
+      // Invalidate the query to trigger a refetch
+      queryClient.invalidateQueries({ queryKey: ['projects'] });
     };
 
-    window.addEventListener('reload-projects-from-local', handleReloadFromLocal);
+    window.addEventListener('reload-projects-from-database', handleReloadFromDatabase);
 
     return () => {
-      window.removeEventListener('reload-projects-from-local', handleReloadFromLocal);
+      window.removeEventListener('reload-projects-from-database', handleReloadFromDatabase);
     };
-  }, []);
+  }, [queryClient]);
 
   /**
-   * Load projects from localStorage
-   */
-  const loadProjectsFromLocalStorage = useCallback(async () => {
-    try {
-      const localProjects = localStorage.getItem('projects');
-      if (localProjects) {
-        const parsedProjects = JSON.parse(localProjects);
-        if (parsedProjects && parsedProjects.length > 0) {
-          console.log('Loaded projects from localStorage:', parsedProjects.length);
-          setProjects(parsedProjects);
-          return true;
-        }
-      }
-      return false;
-    } catch (error) {
-      console.error('Error loading projects from localStorage:', error);
-      return false;
-    }
-  }, []);
-
-  /**
-   * Load all projects from the database or localStorage
+   * Load all projects from the database
    */
   const loadProjects = useCallback(async () => {
-    // First try to load from localStorage
-    await loadProjectsFromLocalStorage();
-    
-    // Then refresh from the database by invalidating the query
+    // Refresh from the database by invalidating the query
     queryClient.invalidateQueries({ queryKey: ['projects'] });
-  }, [loadProjectsFromLocalStorage, queryClient]);
+  }, [queryClient]);
 
   // Create mutation for project creation
   const createProjectMutation = useMutation({
@@ -129,19 +102,18 @@ export const useProjectOperations = () => {
    * Create a new project
    */
   const createProject = useCallback(async (project: ProjectTheme) => {
+    // Attempt to create the project in the database
     const success = await createProjectMutation.mutateAsync(project);
     
-    if (!success) {
-      // If the database operation fails, update the local state
-      setProjects(prev => [project, ...prev]);
-      
-      // Also update localStorage
-      const updatedProjects = [project, ...projects];
-      localStorage.setItem('projects', JSON.stringify(updatedProjects));
+    if (success) {
+      // If successful, React Query will automatically refetch the projects
+      return true;
+    } else {
+      // If the database operation fails, inform the user
+      console.error('Failed to create project in the database');
+      return false;
     }
-    
-    return success;
-  }, [createProjectMutation, projects]);
+  }, [createProjectMutation]);
 
   /**
    * Update a project
@@ -163,72 +135,43 @@ export const useProjectOperations = () => {
       updated_at: new Date().toISOString()
     };
     
+    // Attempt to update the project in the database
     const success = await updateProjectMutation.mutateAsync({ 
       projectId: selectedProject.id, 
       updates: updatePayload
     });
     
-    if (!success) {
-      // If the database operation fails, update the local state
-      const updatedProjects = projects.map(p => 
-        p.id === selectedProject.id ? { ...p, ...updatedData } : p
-      );
-      setProjects(updatedProjects);
-      
-      // Also update localStorage
-      localStorage.setItem('projects', JSON.stringify(updatedProjects));
-    }
-    
     return success;
-  }, [updateProjectMutation, projects]);
+  }, [updateProjectMutation]);
 
   /**
    * Update a project's image
    */
   const updateProjectImage = useCallback(async (selectedProject: ProjectTheme, newImageUrl: string) => {
+    // Attempt to update the project image in the database
     const success = await updateProjectImageMutation.mutateAsync({ 
       projectId: selectedProject.id, 
       imageUrl: newImageUrl 
     });
     
-    if (!success) {
-      // If the database operation fails, update the local state
-      const updatedProjects = projects.map(p => 
-        p.id === selectedProject.id ? { ...p, image: newImageUrl } : p
-      );
-      setProjects(updatedProjects);
-      
-      // Also update localStorage
-      localStorage.setItem('projects', JSON.stringify(updatedProjects));
-    }
-    
     return success;
-  }, [updateProjectImageMutation, projects]);
+  }, [updateProjectImageMutation]);
 
   /**
    * Delete a project
    */
   const deleteProject = useCallback(async (selectedProject: ProjectTheme) => {
+    // Attempt to delete the project from the database
     const success = await deleteProjectMutation.mutateAsync(selectedProject.id);
     
-    if (!success) {
-      // If the database operation fails, update the local state
-      const updatedProjects = projects.filter(p => p.id !== selectedProject.id);
-      setProjects(updatedProjects);
-      
-      // Also update localStorage
-      localStorage.setItem('projects', JSON.stringify(updatedProjects));
-    }
-    
     return success;
-  }, [deleteProjectMutation, projects]);
+  }, [deleteProjectMutation]);
 
   return {
     projects,
     setProjects,
     isLoading,
     loadProjects,
-    loadProjectsFromLocalStorage,
     createProject,
     updateProject,
     updateProjectImage,
