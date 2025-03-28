@@ -1,4 +1,3 @@
-
 import { useState, useEffect, useCallback } from 'react';
 import { ProjectTheme } from '@/data/projectThemes';
 import { projectService } from '@/services/projectService';
@@ -25,7 +24,7 @@ export const useProjectOperations = () => {
   useEffect(() => {
     if (fetchedProjects && fetchedProjects.length > 0) {
       setProjects(fetchedProjects);
-      // Update localStorage with fetched projects
+      // Update localStorage with fetched projects - keeping only database projects
       localStorage.setItem('projects', JSON.stringify(fetchedProjects));
     } else {
       // If no data from query, try to load from localStorage

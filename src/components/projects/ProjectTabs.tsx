@@ -1,89 +1,56 @@
-import React from 'react';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import ThemeGrid from '@/components/ThemeGrid';
-import CreatedProjectsTab from './CreatedProjectsTab';
-import AssignedProjectsTab from './AssignedProjectsTab';
-import TeachingProjectsTab from './TeachingProjectsTab';
+
+import React, { useEffect } from 'react';
+import { Tab } from "@/components/ui/tabs";
+import { useAuth } from '@/contexts/AuthContext';
+import { useProjectManagement } from '@/contexts/ProjectManagementContext';
 import ProjectList from './ProjectList';
-import { ProjectTheme } from '@/data/projectThemes';
-import { ProjectManagementProvider, useProjectManagement } from '@/contexts/ProjectManagementContext';
+import ProjectEmptyState from './ProjectEmptyState';
 
-interface ProjectTabsProps {
-  user: any;
-  createdProjects: any[];
-  assignments: any[];
-  projectThemes: ProjectTheme[];
-}
+const ProjectTabs: React.FC = () => {
+  const { user } = useAuth();
+  const { 
+    projects, 
+    loadProjects, 
+    searchQuery, 
+    selectedCategory 
+  } = useProjectManagement();
 
-const ProjectListWithContext: React.FC = () => {
-  const { projects } = useProjectManagement();
-  return <ProjectList projects={projects} />;
-};
+  // Load projects when component mounts
+  useEffect(() => {
+    loadProjects();
+  }, [loadProjects]);
 
-const ProjectTabs: React.FC<ProjectTabsProps> = ({ 
-  user, 
-  createdProjects, 
-  assignments, 
-  projectThemes 
-}) => {
-  const allProjects = [...projectThemes, ...createdProjects];
+  // Filter projects based on search and category
+  const filteredProjects = projects.filter(project => {
+    // Only show projects that are public or created by the current user
+    const visibilityMatch = project.is_public || project.createdBy === user?.id;
+    
+    // Filter by search query
+    const searchMatch = !searchQuery || 
+      project.title?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      project.description?.toLowerCase().includes(searchQuery.toLowerCase());
+    
+    // Filter by selected category
+    const categoryMatch = !selectedCategory || project.category === selectedCategory;
+    
+    return visibilityMatch && searchMatch && categoryMatch;
+  });
+
+  if (filteredProjects.length === 0) {
+    return (
+      <Tab value="all" className="pt-6 focus:outline-none">
+        <ProjectEmptyState 
+          title="Նախագծեր չեն գտնվել"
+          description="Փորձեք փոխել որոնման պարամետրերը կամ ավելացնել նոր նախագիծ։"
+        />
+      </Tab>
+    );
+  }
 
   return (
-    <div className="mb-6">
-      <h2 className="text-2xl font-bold mb-6">Նախագծեր</h2>
-      
-      <ProjectManagementProvider>
-        <ProjectListWithContext />
-      </ProjectManagementProvider>
-      
-      {/* Original tabs - keeping as a fallback option 
-      <Tabs defaultValue="all-projects" className="mb-6">
-        <TabsList className="h-auto mb-6 w-full flex flex-wrap gap-2 justify-start sm:justify-center">
-          <TabsTrigger value="all-projects" className="flex-grow sm:flex-grow-0">Բոլոր Նախագծերը</TabsTrigger>
-          {user?.role !== 'student' && (
-            <TabsTrigger value="created-projects" className="flex-grow sm:flex-grow-0">Ստեղծված Նախագծեր</TabsTrigger>
-          )}
-          {user?.role === 'supervisor' && (
-            <TabsTrigger value="assigned-projects" className="flex-grow sm:flex-grow-0">Հանձնարարված Նախագծեր</TabsTrigger>
-          )}
-          {user?.role === 'instructor' && (
-            <TabsTrigger value="teaching-projects" className="flex-grow sm:flex-grow-0">Դասավանդվող Նախագծեր</TabsTrigger>
-          )}
-        </TabsList>
-        
-        <TabsContent value="all-projects">
-          <ThemeGrid 
-            createdProjects={createdProjects} 
-          />
-        </TabsContent>
-        
-        {user?.role !== 'student' && (
-          <TabsContent value="created-projects">
-            <CreatedProjectsTab projects={createdProjects} userId={user?.id} />
-          </TabsContent>
-        )}
-        
-        {user?.role === 'supervisor' && (
-          <TabsContent value="assigned-projects">
-            <AssignedProjectsTab 
-              assignments={assignments} 
-              userId={user?.id} 
-              allProjects={allProjects}
-            />
-          </TabsContent>
-        )}
-        
-        {user?.role === 'instructor' && (
-          <TabsContent value="teaching-projects">
-            <TeachingProjectsTab 
-              assignedProjects={user.assignedProjects} 
-              allProjects={allProjects}
-            />
-          </TabsContent>
-        )}
-      </Tabs>
-      */}
-    </div>
+    <Tab value="all" className="focus:outline-none">
+      <ProjectList projects={filteredProjects} />
+    </Tab>
   );
 };
 

@@ -1,4 +1,3 @@
-
 import { supabase } from '@/integrations/supabase/client';
 import { ProjectTheme } from '@/data/projectThemes';
 import { toast } from 'sonner';
@@ -25,12 +24,7 @@ export const projectService = {
 
       if (!data || data.length === 0) {
         console.log('No projects found in database');
-        // Try to load from localStorage as fallback
-        const localProjects = localStorage.getItem('projects');
-        if (localProjects) {
-          return JSON.parse(localProjects);
-        }
-        return [];
+        return []; // Return an empty array if no projects are found
       }
 
       // Map database results to ProjectTheme objects
@@ -43,20 +37,15 @@ export const projectService = {
         techStack: project.tech_stack || [],
         createdBy: project.created_by,
         createdAt: project.created_at,
+        updatedAt: project.updated_at || project.created_at,
         duration: project.duration,
-        complexity: 'Միջին', // Default complexity
+        complexity: project.complexity || 'Միջին', // Default complexity
         is_public: project.is_public
       }));
     } catch (err) {
       console.error('Unexpected error:', err);
-      toast('Տվյալների ստացման սխալ, օգտագործվում են լոկալ տվյալները');
-      
-      // Try to load from localStorage as fallback
-      const localProjects = localStorage.getItem('projects');
-      if (localProjects) {
-        return JSON.parse(localProjects);
-      }
-      return [];
+      toast('Տվյալների ստացման սխալ');
+      return []; // Return an empty array on error
     }
   },
 

@@ -34,9 +34,22 @@ const ProjectGrid: React.FC<ProjectGridProps> = ({
     );
   }
 
+  // Filter out template projects - only show database projects
+  const filteredProjects = projects.filter(project => 
+    project.is_public !== undefined // This ensures we only show projects from the database
+  );
+
+  if (filteredProjects.length === 0) {
+    return (
+      <div className="text-center p-10 bg-muted rounded-lg">
+        <p className="text-muted-foreground">Դատաբազայից նախագծեր չեն գտնվել</p>
+      </div>
+    );
+  }
+
   return (
     <FadeIn className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-10">
-      {projects.map((project) => (
+      {filteredProjects.map((project) => (
         <div key={project.id} className="relative">
           <div className="absolute top-4 right-4 z-10 flex gap-2">
             <Button
