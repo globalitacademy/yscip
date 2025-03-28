@@ -25,7 +25,7 @@ const CourseDialogManager: React.FC = () => {
     setCourseType
   } = useCourseContext();
 
-  // Function to handle delete based on course type
+  // Simplified delete handler that properly handles errors
   const handleDelete = async () => {
     try {
       if (!selectedCourse || !selectedCourse.id) {
@@ -33,15 +33,16 @@ const CourseDialogManager: React.FC = () => {
         return false;
       }
       
-      console.log("Deleting course:", selectedCourse.id, "Type:", courseType);
+      console.log("Deleting course with ID:", selectedCourse.id);
+      const success = await handleDeleteCourse(selectedCourse.id);
       
-      // Check if we're dealing with a standard or professional course
-      if (courseType === 'professional') {
-        // It's a professional course
-        return await handleDeleteCourse(selectedCourse.id);
+      if (success) {
+        console.log("Course successfully deleted");
+        return true;
       } else {
-        // It's a standard course
-        return await handleDeleteCourse(selectedCourse.id);
+        console.error("handleDeleteCourse returned false");
+        toast.error("Դասընթացը չի ջնջվել: Սերվերը մերժեց հարցումը");
+        return false;
       }
     } catch (error) {
       console.error("Error in handleDelete:", error);

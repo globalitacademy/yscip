@@ -32,12 +32,14 @@ const DeleteCourseDialog: React.FC<DeleteCourseDialogProps> = ({
       : 'Անանուն դասընթաց';
 
   const handleDeleteClick = async () => {
+    if (isDeleting) return; // Prevent multiple clicks
+    
     try {
       setIsDeleting(true);
-      console.log("Deleting course:", selectedCourse);
+      console.log("DeleteCourseDialog: Starting delete for course:", selectedCourse.id);
       
       const success = await onDelete();
-      console.log("Delete result:", success);
+      console.log("DeleteCourseDialog: Delete result:", success);
       
       if (success) {
         toast.success('Դասընթացը հաջողությամբ ջնջվել է');
@@ -54,7 +56,7 @@ const DeleteCourseDialog: React.FC<DeleteCourseDialogProps> = ({
   };
 
   return (
-    <Dialog open={isOpen} onOpenChange={setIsOpen}>
+    <Dialog open={isOpen} onOpenChange={(value) => !isDeleting && setIsOpen(value)}>
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
           <DialogTitle>Դասընթացի ջնջում</DialogTitle>
@@ -77,7 +79,7 @@ const DeleteCourseDialog: React.FC<DeleteCourseDialogProps> = ({
             className="w-full sm:w-auto"
             disabled={isDeleting}
           >
-            {isDeleting ? <> <Loader2 className="mr-2 h-4 w-4 animate-spin" /> Ջնջվում է...</> : 'Ջնջել'}
+            {isDeleting ? <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> Ջնջվում է...</> : 'Ջնջել'}
           </Button>
         </DialogFooter>
       </DialogContent>
