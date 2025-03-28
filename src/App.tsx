@@ -12,6 +12,7 @@ import CourseCreationPage from './pages/CourseCreationPage';
 import UserManagementPage from './pages/UserManagementPage';
 import CourseManagementPage from './pages/CourseManagementPage';
 import Index from './pages/Index';
+import NotFound from './pages/NotFound';
 
 function App() {
   return (
@@ -35,6 +36,9 @@ function App() {
             <Route path="/projects" element={<ProjectManagementPage />} />
             <Route path="/courses" element={<CoursesPage />} />
             <Route path="/courses/create" element={<CourseCreationPage />} />
+            
+            {/* 404 - Not Found */}
+            <Route path="*" element={<NotFound />} />
           </Routes>
         </Router>
       </CourseProvider>
