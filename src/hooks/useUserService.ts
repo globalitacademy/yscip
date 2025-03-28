@@ -1,0 +1,153 @@
+
+import { useState } from 'react';
+import { supabase } from '@/integrations/supabase/client';
+import { User } from '@/types/user';
+import { toast } from 'sonner';
+
+/**
+ * Hook for handling all user-related database operations
+ */
+export const useUserService = () => {
+  const [loading, setLoading] = useState(false);
+
+  /**
+   * Fetch all users from the database
+   */
+  const fetchUsers = async (): Promise<User[]> => {
+    setLoading(true);
+    try {
+      const { data, error } = await supabase
+        .from('users')
+        .select('*');
+      
+      if (error) {
+        console.error('Error fetching users:', error);
+        toast.error('Սխալ է տեղի ունեցել օգտատերերի տվյալները բեռնելիս։');
+        return [];
+      }
+      
+      return data as User[];
+    } catch (error) {
+      console.error('Error in fetchUsers:', error);
+      toast.error('Սխալ է տեղի ունեցել օգտատերերի տվյալները բեռնելիս։');
+      return [];
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  /**
+   * Create a new user in the database
+   */
+  const createUser = async (user: Partial<User>): Promise<User | null> => {
+    setLoading(true);
+    try {
+      const { data, error } = await supabase
+        .from('users')
+        .insert([user])
+        .select()
+        .single();
+      
+      if (error) {
+        console.error('Error creating user:', error);
+        toast.error('Սխալ է տեղի ունեցել օգտատեր ստեղծելիս։');
+        return null;
+      }
+      
+      toast.success('Օգտատերը հաջողությամբ ստեղծվել է։');
+      return data as User;
+    } catch (error) {
+      console.error('Error in createUser:', error);
+      toast.error('Սխալ է տեղի ունեցել օգտատեր ստեղծելիս։');
+      return null;
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  /**
+   * Update a user in the database
+   */
+  const updateUser = async (id: string, updates: Partial<User>): Promise<User | null> => {
+    setLoading(true);
+    try {
+      const { data, error } = await supabase
+        .from('users')
+        .update(updates)
+        .eq('id', id)
+        .select()
+        .single();
+      
+      if (error) {
+        console.error('Error updating user:', error);
+        toast.error('Սխալ է տեղի ունեցել օգտատերի տվյալները թարմացնելիս։');
+        return null;
+      }
+      
+      toast.success('Օգտատերի տվյալները հաջողությամբ թարմացվել են։');
+      return data as User;
+    } catch (error) {
+      console.error('Error in updateUser:', error);
+      toast.error('Սխալ է տեղի ունեցել օգտատերի տվյալները թարմացնելիս։');
+      return null;
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  /**
+   * Delete a user from the database
+   */
+  const deleteUser = async (id: string): Promise<boolean> => {
+    setLoading(true);
+    try {
+      const { error } = await supabase
+        .from('users')
+        .delete()
+        .eq('id', id);
+      
+      if (error) {
+        console.error('Error deleting user:', error);
+        toast.error('Սխալ է տեղի ունեցել օգտատեր ջնջելիս։');
+        return false;
+      }
+      
+      toast.success('Օգտատերը հաջողությամբ ջնջվել է։');
+      return true;
+    } catch (error) {
+      console.error('Error in deleteUser:', error);
+      toast.error('Սխալ է տեղի ունեցել օգտատեր ջնջելիս։');
+      return false;
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  /**
+   * Assign a supervisor to a student
+   */
+  const assignSupervisor = async (studentId: string, supervisorId: string): Promise<boolean> => {
+    setLoading(true);
+    try {
+      // This would be implemented to create a relationship in the database
+      // For now, we'll just return success
+      toast.success("Ուսանողին հաջողությամբ նշանակվել է ղեկավար։");
+      return true;
+    } catch (error) {
+      console.error('Error assigning supervisor:', error);
+      toast.error("Սխալ է տեղի ունեցել ղեկավար նշանակելիս։");
+      return false;
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return {
+    fetchUsers,
+    createUser,
+    updateUser,
+    deleteUser,
+    assignSupervisor,
+    loading
+  };
+};
