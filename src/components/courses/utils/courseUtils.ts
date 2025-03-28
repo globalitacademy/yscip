@@ -1,3 +1,4 @@
+
 import { supabase } from '@/integrations/supabase/client';
 import { ProfessionalCourse } from '../types/ProfessionalCourse';
 import { toast } from 'sonner';
@@ -149,7 +150,7 @@ export const getAllCoursesFromSupabase = async (): Promise<ProfessionalCourse[]>
         iconName: course.icon_name,
         duration: course.duration,
         price: course.price,
-        buttonText: course.buttonText || "Մանրամասն",
+        buttonText: course.button_text || "Մանրամասն",
         color: course.color,
         createdBy: course.created_by || "",
         institution: course.institution || "",
