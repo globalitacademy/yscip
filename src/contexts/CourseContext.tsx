@@ -1,69 +1,86 @@
-import React, { createContext, useState, useContext, ReactNode, useCallback } from 'react';
-import { Course } from '@/components/courses/types';
-import { ProfessionalCourse } from '@/components/courses/types/ProfessionalCourse';
+
+import React, { createContext, useState, useContext, ReactNode } from 'react';
+import { Course, CourseContextType, ProfessionalCourse } from '@/components/courses/types';
 import { useCourseManager } from '@/components/courses/hooks/useCourseManager';
 
-// Context type definition
-interface CourseContextType {
-  // State
-  courses: Course[];
-  professionalCourses: ProfessionalCourse[];
-  selectedCourse: Course | null;
-  professionalCourse: Partial<ProfessionalCourse>;
-  isEditDialogOpen: boolean;
-  isCreateDialogOpen: boolean;
-  isDeleteDialogOpen: boolean;
-  newModule: string;
-  courseType: 'standard' | 'professional';
-  
-  // State setters
-  setCourses: React.Dispatch<React.SetStateAction<Course[]>>;
-  setProfessionalCourses: React.Dispatch<React.SetStateAction<ProfessionalCourse[]>>;
-  setSelectedCourse: React.Dispatch<React.SetStateAction<Course | null>>;
-  setProfessionalCourse: React.Dispatch<React.SetStateAction<Partial<ProfessionalCourse>>>;
-  setIsEditDialogOpen: (isOpen: boolean) => void;
-  setIsCreateDialogOpen: (isOpen: boolean) => void;
-  setIsDeleteDialogOpen: (isOpen: boolean) => void;
-  setNewModule: React.Dispatch<React.SetStateAction<string>>;
-  setCourseType: (type: 'standard' | 'professional') => void;
-  
-  // Actions
-  loadCourses: () => Promise<void>;
-  handleAddModuleToEdit: () => void;
-  handleRemoveModuleFromEdit: (index: number) => void;
-  handleCreateCourse: () => void;
-  handleEditCourse: () => void;
-  handleDeleteCourse: (courseId: string) => void;
-  handleEditInit: (course: Course | ProfessionalCourse, type: 'standard' | 'professional') => void;
-  handleCreateInit: (type: 'standard' | 'professional') => void;
-}
-
-// Create context
 const CourseContext = createContext<CourseContextType | undefined>(undefined);
 
-// Provider props
-interface CourseProviderProps {
-  children: ReactNode;
-}
-
-// Provider component
-export const CourseProvider: React.FC<CourseProviderProps> = ({ children }) => {
-  const courseManager = useCourseManager();
+export const CourseProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
+  const [courses, setCourses] = useState<Course[]>([]);
+  const [professionalCourses, setProfessionalCourses] = useState<ProfessionalCourse[]>([]);
+  const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
   
+  const courseManager = useCourseManager({
+    courses,
+    setCourses,
+    professionalCourses,
+    setProfessionalCourses,
+    isCreateDialogOpen,
+    setIsCreateDialogOpen
+  });
+
+  const contextValue: CourseContextType = {
+    courses: courseManager.courses,
+    userCourses: courseManager.userCourses,
+    professionalCourses: courseManager.professionalCourses,
+    userProfessionalCourses: courseManager.userProfessionalCourses,
+    isLoading: courseManager.isLoading,
+    error: courseManager.error,
+    activeCourse: courseManager.activeCourse,
+    filteredCourses: courseManager.filteredCourses,
+    filteredProfessionalCourses: courseManager.filteredProfessionalCourses,
+    searchTerm: courseManager.searchTerm,
+    selectedCategory: courseManager.selectedCategory,
+    selectedDifficulty: courseManager.selectedDifficulty,
+    selectedSort: courseManager.selectedSort,
+    isEditDialogOpen: courseManager.isEditDialogOpen,
+    isDeleteDialogOpen: courseManager.isDeleteDialogOpen,
+    isCreateProfessionalDialogOpen: courseManager.isCreateProfessionalDialogOpen,
+    isEditProfessionalDialogOpen: courseManager.isEditProfessionalDialogOpen,
+    isDeleteProfessionalDialogOpen: courseManager.isDeleteProfessionalDialogOpen,
+    courseToEdit: courseManager.courseToEdit,
+    courseToDelete: courseManager.courseToDelete,
+    professionalCourseToEdit: courseManager.professionalCourseToEdit,
+    professionalCourseToDelete: courseManager.professionalCourseToDelete,
+    loadCourses: courseManager.loadCourses,
+    handleSearchChange: courseManager.handleSearchChange,
+    handleCategoryChange: courseManager.handleCategoryChange,
+    handleDifficultyChange: courseManager.handleDifficultyChange,
+    handleSortChange: courseManager.handleSortChange,
+    resetFilters: courseManager.resetFilters,
+    handleOpenEditDialog: courseManager.handleOpenEditDialog,
+    handleCloseEditDialog: courseManager.handleCloseEditDialog,
+    handleOpenDeleteDialog: courseManager.handleOpenDeleteDialog,
+    handleCloseDeleteDialog: courseManager.handleCloseDeleteDialog,
+    handleOpenCreateProfessionalDialog: courseManager.handleOpenCreateProfessionalDialog,
+    handleCloseCreateProfessionalDialog: courseManager.handleCloseCreateProfessionalDialog,
+    handleOpenEditProfessionalDialog: courseManager.handleOpenEditProfessionalDialog,
+    handleCloseEditProfessionalDialog: courseManager.handleCloseEditProfessionalDialog,
+    handleOpenDeleteProfessionalDialog: courseManager.handleOpenDeleteProfessionalDialog,
+    handleCloseDeleteProfessionalDialog: courseManager.handleCloseDeleteProfessionalDialog,
+    handleCreateCourse: courseManager.handleCreateCourse,
+    handleUpdateCourse: courseManager.handleUpdateCourse,
+    handleDeleteCourse: courseManager.handleDeleteCourse,
+    handleCreateProfessionalCourse: courseManager.handleCreateProfessionalCourse,
+    handleUpdateProfessionalCourse: courseManager.handleUpdateProfessionalCourse,
+    handleDeleteProfessionalCourse: courseManager.handleDeleteProfessionalCourse,
+    isCreateDialogOpen,
+    setIsCreateDialogOpen,
+    setCourses,
+    setProfessionalCourses
+  };
+
   return (
-    <CourseContext.Provider value={courseManager}>
+    <CourseContext.Provider value={contextValue}>
       {children}
     </CourseContext.Provider>
   );
 };
 
-// Custom hook for using course context
-export const useCourseContext = () => {
+export const useCourseContext = (): CourseContextType => {
   const context = useContext(CourseContext);
-  
-  if (context === undefined) {
+  if (!context) {
     throw new Error('useCourseContext must be used within a CourseProvider');
   }
-  
   return context;
 };

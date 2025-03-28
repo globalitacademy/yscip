@@ -1,568 +1,463 @@
-import { useState, useEffect, useCallback } from 'react';
-import { toast } from 'sonner';
-import { v4 as uuidv4 } from 'uuid';
-import { Course } from '../types';
-import { ProfessionalCourse } from '../types/ProfessionalCourse';
+import { useState, useEffect } from 'react';
+import { Course, ProfessionalCourse } from '@/components/courses/types';
 import { useAuth } from '@/contexts/AuthContext';
-import { Code, BookText, BrainCircuit, Database, FileCode, Globe, Book } from 'lucide-react';
-import React from 'react';
+import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
-import { 
-  saveCourseChanges, 
-  getAllCoursesFromSupabase, 
-  getAllCoursesFromLocalStorage,
-  syncCoursesToSupabase
-} from '../utils/courseUtils';
 
-export const mockSpecializations = ['Ծրագրավորում', 'Տվյալագիտություն', 'Դիզայն', 'Մարկետինգ', 'Բիզնես վերլուծություն'];
-
-const initialCourses: Course[] = [];
-
-const initializeProfessionalCourses = async (): Promise<ProfessionalCourse[]> => {
-  try {
-    const supabaseCourses = await getAllCoursesFromSupabase();
-    if (supabaseCourses && supabaseCourses.length > 0) {
-      return supabaseCourses;
-    }
-    
-    const storedCourses = localStorage.getItem('professionalCourses');
-    if (storedCourses) {
-      try {
-        const parsedCourses = JSON.parse(storedCourses);
-        for (const course of parsedCourses) {
-          await saveCourseChanges(course);
-        }
-        return parsedCourses;
-      } catch (e) {
-        console.error('Error parsing stored professional courses:', e);
-      }
-    }
-    
-    return [];
-  } catch (error) {
-    console.error('Error initializing professional courses:', error);
-    return [];
-  }
+type UseCourseManagerProps = {
+  courses: Course[];
+  setCourses: React.Dispatch<React.SetStateAction<Course[]>>;
+  professionalCourses: ProfessionalCourse[];
+  setProfessionalCourses: React.Dispatch<React.SetStateAction<ProfessionalCourse[]>>;
+  isCreateDialogOpen: boolean;
+  setIsCreateDialogOpen: React.Dispatch<React.SetStateAction<boolean>>;
 };
 
-const initializeCourses = (): Course[] => {
-  const storedCourses = localStorage.getItem('courses');
-  if (storedCourses) {
-    try {
-      return JSON.parse(storedCourses);
-    } catch (e) {
-      console.error('Error parsing stored courses:', e);
-    }
-  }
-  return initialCourses;
-};
-
-export const useCourseManager = () => {
-  const { user } = useAuth();
-  const [courses, setCourses] = useState<Course[]>(initializeCourses());
-  const [professionalCourses, setProfessionalCourses] = useState<ProfessionalCourse[]>([]);
-  const [loading, setLoading] = useState(true);
+export const useCourseManager = ({
+  courses,
+  setCourses,
+  professionalCourses,
+  setProfessionalCourses,
+  isCreateDialogOpen,
+  setIsCreateDialogOpen
+}: UseCourseManagerProps) => {
   
-  const [selectedCourse, setSelectedCourse] = useState<Course | null>(null);
-  const [selectedProfessionalCourse, setSelectedProfessionalCourse] = useState<ProfessionalCourse | null>(null);
-  const [professionalCourse, setProfessionalCourse] = useState<Partial<ProfessionalCourse>>({});
-  const [courseType, setCourseType] = useState<'standard' | 'professional'>('standard');
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   
-  const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
+  const [searchTerm, setSearchTerm] = useState('');
+  const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
+  const [selectedDifficulty, setSelectedDifficulty] = useState<string | null>(null);
+  const [selectedSort, setSelectedSort] = useState<string | null>(null);
+  
+  const [activeCourse, setActiveCourse] = useState<Course | null>(null);
+  
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+  const [isCreateProfessionalDialogOpen, setIsCreateProfessionalDialogOpen] = useState(false);
+  const [isEditProfessionalDialogOpen, setIsEditProfessionalDialogOpen] = useState(false);
+  const [isDeleteProfessionalDialogOpen, setIsDeleteProfessionalDialogOpen] = useState(false);
   
-  const [newCourse, setNewCourse] = useState<Partial<Course>>({
-    title: '',
-    description: '',
-    specialization: '',
-    instructor: '',
-    duration: '',
-    modules: [],
-    prerequisites: [],
-    category: '',
-    createdBy: user?.id || '',
-    is_public: false
-  });
+  const [courseToEdit, setCourseToEdit] = useState<Course | null>(null);
+  const [courseToDelete, setCourseToDelete] = useState<Course | null>(null);
+  const [professionalCourseToEdit, setProfessionalCourseToEdit] = useState<ProfessionalCourse | null>(null);
+  const [professionalCourseToDelete, setProfessionalCourseToDelete] = useState<ProfessionalCourse | null>(null);
   
-  const [newProfessionalCourse, setNewProfessionalCourse] = useState<Partial<ProfessionalCourse>>({
-    title: '',
-    subtitle: 'ԴԱՍԸՆԹԱՑ',
-    icon: React.createElement(Code, { className: "w-16 h-16" }),
-    duration: '',
-    price: '',
-    buttonText: 'Դիտել',
-    color: 'text-amber-500',
-    createdBy: user?.name || '',
-    institution: 'ՀՊՏՀ',
-    imageUrl: undefined,
-    description: '',
-    lessons: [],
-    requirements: [],
-    outcomes: []
-  });
-  
-  const [newModule, setNewModule] = useState('');
+  const { user } = useAuth();
 
-  useEffect(() => {
-    const loadInitialCourses = async () => {
-      setLoading(true);
-      try {
-        const initialCourses = await initializeProfessionalCourses();
-        setProfessionalCourses(initialCourses);
-      } catch (error) {
-        console.error('Error loading initial courses:', error);
-        toast.error('Դասընթացների բեռնման ժամանակ սխալ է տեղի ունեցել');
-      } finally {
-        setLoading(false);
+  
+  
+  const userCourses = courses.filter(course => course.instructor_id === user?.id);
+  const userProfessionalCourses = professionalCourses.filter(course => course.partner_id === user?.id);
+
+  // Filter courses based on search and filters
+  const filteredCourses = courses.filter(course => {
+    const matchesSearch = course.title.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesCategory = selectedCategory ? course.category === selectedCategory : true;
+    const matchesDifficulty = selectedDifficulty ? course.difficulty === selectedDifficulty : true;
+    return matchesSearch && matchesCategory && matchesDifficulty;
+  });
+
+  const filteredProfessionalCourses = professionalCourses.filter(course => {
+    const matchesSearch = course.title.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesCategory = selectedCategory ? course.category === selectedCategory : true;
+    return matchesSearch && matchesCategory;
+  });
+
+  // Sort courses if a sort option is selected
+  if (selectedSort) {
+    filteredCourses.sort((a, b) => {
+      if (selectedSort === 'newest') {
+        return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
+      } else if (selectedSort === 'oldest') {
+        return new Date(a.created_at).getTime() - new Date(b.created_at).getTime();
+      } else if (selectedSort === 'name_asc') {
+        return a.title.localeCompare(b.title);
+      } else if (selectedSort === 'name_desc') {
+        return b.title.localeCompare(a.title);
       }
-    };
-    
-    loadInitialCourses();
-  }, []);
+      return 0;
+    });
+  }
 
-  const loadCoursesFromDatabase = useCallback(async () => {
+  const loadCourses = async () => {
+    
+    
+    setIsLoading(true);
+    setError(null);
+    
     try {
-      setLoading(true);
+      // Try to load from localStorage first
+      const storedCourses = localStorage.getItem('courses');
+      if (storedCourses) {
+        const parsedCourses = JSON.parse(storedCourses);
+        if (Array.isArray(parsedCourses) && parsedCourses.length > 0) {
+          setCourses(parsedCourses);
+          console.info(`Loaded courses from localStorage: ${parsedCourses.length}`);
+        }
+      }
+      
+      // Then try to fetch from Supabase
+      console.info('Fetching all courses from Supabase');
       const { data: coursesData, error: coursesError } = await supabase
         .from('courses')
         .select('*');
-      
+        
       if (coursesError) {
-        console.error('Error fetching courses:', coursesError);
-        toast.error('Սխալ դասընթացների ստացման ժամանակ, օգտագործվում են լոկալ տվյալները');
-        await loadCoursesFromLocalStorage();
-        return;
+        console.error('Error fetching courses from Supabase:', coursesError);
+        setError(`Error fetching courses: ${coursesError.message}`);
+        toast.error('Դասընթացները բեռնելիս սխալ է տեղի ունեցել։');
+      } else if (coursesData) {
+        setCourses(coursesData as Course[]);
+        localStorage.setItem('courses', JSON.stringify(coursesData));
+        console.info(`Loaded ${coursesData.length} courses from Supabase`);
       }
       
-      if (!coursesData || coursesData.length === 0) {
-        console.log('No courses found in database, checking local storage');
-        const storedCourses = localStorage.getItem('professionalCourses');
-        if (storedCourses) {
-          const parsedCourses: ProfessionalCourse[] = JSON.parse(storedCourses);
-          setProfessionalCourses(parsedCourses);
-          for (const course of parsedCourses) {
-            await saveCourseChanges(course);
-          }
-          toast.success('Տեղական դասընթացները համաժամեցվել են բազայի հետ');
-        } else {
-          setProfessionalCourses([]);
-          toast.info('Դասընթացներ չկան, ավելացրեք նոր դասընթացներ');
-        }
-        setLoading(false);
-        return;
+      // Load professional courses
+      const { data: profCoursesData, error: profCoursesError } = await supabase
+        .from('professional_courses')
+        .select('*');
+        
+      if (profCoursesError) {
+        console.error('Error fetching professional courses:', profCoursesError);
+      } else if (profCoursesData) {
+        setProfessionalCourses(profCoursesData as ProfessionalCourse[]);
       }
-      
-      const completeCourses = await Promise.all(coursesData.map(async (course) => {
-        const { data: lessonsData } = await supabase
-          .from('course_lessons')
-          .select('*')
-          .eq('course_id', course.id);
-        
-        const { data: requirementsData } = await supabase
-          .from('course_requirements')
-          .select('*')
-          .eq('course_id', course.id);
-        
-        const { data: outcomesData } = await supabase
-          .from('course_outcomes')
-          .select('*')
-          .eq('course_id', course.id);
-        
-        let iconComponent;
-        switch ((course.icon_name || '').toLowerCase()) {
-          case 'book':
-            iconComponent = React.createElement(Book, { className: "w-16 h-16" });
-            break;
-          case 'code':
-            iconComponent = React.createElement(Code, { className: "w-16 h-16" });
-            break;
-          case 'braincircuit':
-          case 'brain':
-            iconComponent = React.createElement(BrainCircuit, { className: "w-16 h-16" });
-            break;
-          case 'database':
-            iconComponent = React.createElement(Database, { className: "w-16 h-16" });
-            break;
-          case 'filecode':
-          case 'file':
-            iconComponent = React.createElement(FileCode, { className: "w-16 h-16" });
-            break;
-          case 'globe':
-            iconComponent = React.createElement(Globe, { className: "w-16 h-16" });
-            break;
-          default:
-            iconComponent = React.createElement(Book, { className: "w-16 h-16" });
-        }
-        
-        return {
-          id: course.id,
-          title: course.title,
-          subtitle: course.subtitle,
-          icon: iconComponent,
-          iconName: course.icon_name,
-          duration: course.duration,
-          price: course.price,
-          buttonText: course.button_text,
-          color: course.color,
-          createdBy: course.created_by,
-          institution: course.institution,
-          imageUrl: course.image_url,
-          organizationLogo: course.organization_logo,
-          description: course.description,
-          is_public: course.is_public,
-          lessons: lessonsData?.map(lesson => ({
-            title: lesson.title, 
-            duration: lesson.duration
-          })) || [],
-          requirements: requirementsData?.map(req => req.requirement) || [],
-          outcomes: outcomesData?.map(outcome => outcome.outcome) || []
-        } as ProfessionalCourse;
-      }));
-      
-      setProfessionalCourses(completeCourses);
-      localStorage.setItem('professionalCourses', JSON.stringify(completeCourses));
-    } catch (error) {
-      console.error('Error loading courses from database:', error);
-      toast.error('Դասընթացների բեռնման ժամանակ սխալ է տեղի ունեցել');
-      await loadCoursesFromLocalStorage();
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : 'Unknown error';
+      console.error('Error in loadCourses:', errorMessage);
+      setError(errorMessage);
+      toast.error('Դասընթացները բեռնելիս սխալ է տեղի ունեցել։');
     } finally {
-      setLoading(false);
+      setIsLoading(false);
     }
-  }, []);
-
-  const loadCoursesFromLocalStorage = useCallback(async () => {
-    try {
-      const storedCourses = localStorage.getItem('professionalCourses');
-      if (storedCourses) {
-        const parsedCourses = JSON.parse(storedCourses);
-        if (parsedCourses && parsedCourses.length > 0) {
-          console.log('Loaded courses from localStorage:', parsedCourses.length);
-          setProfessionalCourses(parsedCourses);
-          return true;
-        }
-      }
-      
-      console.log('No courses in localStorage');
-      setProfessionalCourses([]);
-      
-      return false;
-    } catch (error) {
-      console.error('Error loading courses from localStorage:', error);
-      setProfessionalCourses([]);
-      return false;
-    }
-  }, []);
-
-  const userCourses = courses.filter(course => course.createdBy === user?.id);
-  
-  const userProfessionalCourses = professionalCourses.filter(course => course.createdBy === user?.name);
-
-  const handleAddCourse = () => {
-    if (!newCourse.title || !newCourse.description || !newCourse.duration) {
-      toast.error('Լրացրեք բոլոր պարտադիր դաշտերը');
-      return;
-    }
-
-    const courseToAdd: Course = {
-      id: uuidv4(),
-      title: newCourse.title,
-      description: newCourse.description,
-      specialization: newCourse.specialization || '',
-      instructor: newCourse.instructor || '',
-      duration: newCourse.duration,
-      modules: newCourse.modules || [],
-      prerequisites: newCourse.prerequisites || [],
-      category: newCourse.category || '',
-      createdBy: user?.id || 'unknown',
-      is_public: newCourse.is_public || false,
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString()
-    };
-
-    const updatedCourses = [...courses, courseToAdd];
-    setCourses(updatedCourses);
-    localStorage.setItem('courses', JSON.stringify(updatedCourses));
-    
-    setNewCourse({
-      title: '',
-      description: '',
-      specialization: '',
-      instructor: '',
-      duration: '',
-      modules: [],
-      prerequisites: [],
-      category: '',
-      createdBy: user?.id || '',
-      is_public: false
-    });
-    setIsAddDialogOpen(false);
-    toast.success('Կուրսը հաջողությամբ ավելացվել է');
   };
 
-  const handleEditCourse = () => {
-    if (!selectedCourse) return;
-    
-    if (!selectedCourse.title || !selectedCourse.description || !selectedCourse.duration) {
-      toast.error('Լրացրեք բոլոր պարտադիր դաշտերը');
-      return;
-    }
+  // Load courses on initial render
+  useEffect(() => {
+    loadCourses();
+  }, []);
 
-    const updatedCourses = courses.map(course => 
-      course.id === selectedCourse.id ? selectedCourse : course
-    );
-    
-    setCourses(updatedCourses);
-    localStorage.setItem('courses', JSON.stringify(updatedCourses));
+  // Filter handling functions
+  const handleSearchChange = (value: string) => {
+    setSearchTerm(value);
+  };
+
+  const handleCategoryChange = (value: string | null) => {
+    setSelectedCategory(value);
+  };
+
+  const handleDifficultyChange = (value: string | null) => {
+    setSelectedDifficulty(value);
+  };
+
+  const handleSortChange = (value: string | null) => {
+    setSelectedSort(value);
+  };
+
+  const resetFilters = () => {
+    setSearchTerm('');
+    setSelectedCategory(null);
+    setSelectedDifficulty(null);
+    setSelectedSort(null);
+  };
+
+  // Dialog management functions
+  const handleOpenEditDialog = (course: Course) => {
+    setCourseToEdit(course);
+    setIsEditDialogOpen(true);
+  };
+
+  const handleCloseEditDialog = () => {
+    setCourseToEdit(null);
     setIsEditDialogOpen(false);
-    toast.success('Կուրսը հաջողությամբ թարմացվել է');
   };
 
-  const handleEditInit = (course: Course) => {
-    setSelectedCourse({...course});
-    setIsEditDialogOpen(true);
+  const handleOpenDeleteDialog = (course: Course) => {
+    setCourseToDelete(course);
+    setIsDeleteDialogOpen(true);
   };
 
-  const handleEditProfessionalCourseInit = (course: ProfessionalCourse) => {
-    setSelectedProfessionalCourse({...course});
-    setIsEditDialogOpen(true);
+  const handleCloseDeleteDialog = () => {
+    setCourseToDelete(null);
+    setIsDeleteDialogOpen(false);
   };
 
-  const handleAddModule = () => {
-    if (!newModule) return;
-    setNewCourse({
-      ...newCourse,
-      modules: [...(newCourse.modules || []), newModule]
-    });
-    setNewModule('');
+  const handleOpenCreateProfessionalDialog = () => {
+    setIsCreateProfessionalDialogOpen(true);
   };
 
-  const handleRemoveModule = (index: number) => {
-    const updatedModules = [...(newCourse.modules || [])];
-    updatedModules.splice(index, 1);
-    setNewCourse({
-      ...newCourse,
-      modules: updatedModules
-    });
+  const handleCloseCreateProfessionalDialog = () => {
+    setIsCreateProfessionalDialogOpen(false);
   };
 
-  const handleAddModuleToEdit = () => {
-    if (!newModule || !selectedCourse) return;
-    setSelectedCourse({
-      ...selectedCourse,
-      modules: [...selectedCourse.modules, newModule]
-    });
-    setNewModule('');
+  const handleOpenEditProfessionalDialog = (course: ProfessionalCourse) => {
+    setProfessionalCourseToEdit(course);
+    setIsEditProfessionalDialogOpen(true);
   };
 
-  const handleRemoveModuleFromEdit = (index: number) => {
-    if (!selectedCourse) return;
-    const updatedModules = [...selectedCourse.modules];
-    updatedModules.splice(index, 1);
-    setSelectedCourse({
-      ...selectedCourse,
-      modules: updatedModules
-    });
+  const handleCloseEditProfessionalDialog = () => {
+    setProfessionalCourseToEdit(null);
+    setIsEditProfessionalDialogOpen(false);
   };
 
-  const handleDeleteCourse = (id: string) => {
-    const courseToDelete = courses.find(course => course.id === id);
+  const handleOpenDeleteProfessionalDialog = (course: ProfessionalCourse) => {
+    setProfessionalCourseToDelete(course);
+    setIsDeleteProfessionalDialogOpen(true);
+  };
+
+  const handleCloseDeleteProfessionalDialog = () => {
+    setProfessionalCourseToDelete(null);
+    setIsDeleteProfessionalDialogOpen(false);
+  };
+
+  // CRUD operations
+  const handleCreateCourse = async (course: Omit<Course, 'id' | 'created_at'>) => {
     
-    if (courseToDelete && (user?.role === 'admin' || courseToDelete.createdBy === user?.id)) {
-      const updatedCourses = courses.filter(course => course.id !== id);
-      setCourses(updatedCourses);
-      localStorage.setItem('courses', JSON.stringify(updatedCourses));
-      toast.success('Կուրսը հաջողությամբ հեռացվել է');
-    } else {
-      toast.error('Դուք չունեք իրավունք ջնջելու այս կուրսը');
-    }
-  };
-
-  const handleAddProfessionalCourse = async () => {
-    if (!newProfessionalCourse.title || !newProfessionalCourse.duration || !newProfessionalCourse.price) {
-      toast.error('Լրացրեք բոլոր պարտադիր դաշտերը');
-      return;
-    }
-
-    const courseToAdd: ProfessionalCourse = {
-      ...(newProfessionalCourse as ProfessionalCourse),
-      id: uuidv4(),
-      createdBy: user?.name || 'Unknown',
-      buttonText: newProfessionalCourse.buttonText || 'Դիտել',
-      subtitle: newProfessionalCourse.subtitle || 'ԴԱՍԸՆԹԱՑ',
-      color: newProfessionalCourse.color || 'text-amber-500',
-      institution: newProfessionalCourse.institution || 'ՀՊՏՀ',
-      iconName: 'book',
-      is_public: newProfessionalCourse.is_public || false,
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString()
-    };
-
-    const success = await saveCourseChanges(courseToAdd);
-    
-    if (success) {
-      const updatedCourses = [...professionalCourses, courseToAdd];
-      setProfessionalCourses(updatedCourses);
-      
-      setNewProfessionalCourse({
-        title: '',
-        subtitle: 'ԴԱՍԸՆԹԱՑ',
-        icon: React.createElement(Code, { className: "w-16 h-16" }),
-        duration: '',
-        price: '',
-        buttonText: 'Դիտել',
-        color: 'text-amber-500',
-        createdBy: user?.name || '',
-        institution: 'ՀՊՏՀ',
-        imageUrl: undefined,
-        description: '',
-        lessons: [],
-        requirements: [],
-        outcomes: [],
-        is_public: false
-      });
-      setIsAddDialogOpen(false);
-      toast.success('Դասընթացը հաջողությամբ ավելացվել է');
-    } else {
-      toast.error('Դասընթացի ավելացման ժամանակ սխալ է տեղի ունեցել');
-    }
-  };
-
-  const handleEditProfessionalCourse = async () => {
-    if (!selectedProfessionalCourse) return;
-    
-    if (!selectedProfessionalCourse.title || !selectedProfessionalCourse.duration || !selectedProfessionalCourse.price) {
-      toast.error('Լրացրեք բոլոր պարտադիր դաշտերը');
-      return;
-    }
-
-    const success = await saveCourseChanges(selectedProfessionalCourse);
-    
-    if (success) {
-      const updatedCourses = professionalCourses.map(course => 
-        course.id === selectedProfessionalCourse.id ? selectedProfessionalCourse : course
-      );
-      
-      setProfessionalCourses(updatedCourses);
-      setIsEditDialogOpen(false);
-      toast.success('Դասընթացը հաջողությամբ թարմացվել է');
-    } else {
-      toast.error('Դասընթացի թարմացման ժամանակ սխալ է տեղի ունեցել');
-    }
-  };
-
-  const handleDeleteProfessionalCourse = (id: string) => {
-    const courseToDelete = professionalCourses.find(course => course.id === id);
-    
-    if (courseToDelete && user?.role === 'admin') {
-      const updatedCourses = professionalCourses.filter(course => course.id !== id);
-      setProfessionalCourses(updatedCourses);
-      localStorage.setItem('professionalCourses', JSON.stringify(updatedCourses));
-      toast.success('Դասընթացը հաջողությամբ հեռացվել է');
-    } else {
-      toast.error('Դուք չունեք իրավունք ջնջելու այս դասընթացը');
-    }
-  };
-
-  const syncCoursesWithDatabase = async () => {
-    setLoading(true);
-    toast.info('Դասընթացների համաժամեցում...');
     
     try {
-      await syncCoursesToSupabase();
-      await loadCoursesFromDatabase();
-      toast.success('Դասընթացները հաջողությամբ համաժամեցվել են');
-    } catch (error) {
-      console.error('Error syncing courses with database:', error);
-      toast.error('Դասընթացների համաժամեցման ժամանակ սխալ է տեղի ունեցել');
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleCreateInit = (type: 'standard' | 'professional') => {
-    setCourseType(type);
-    
-    if (type === 'standard') {
-      setSelectedCourse({
-        id: '',
-        title: '',
-        description: '',
-        instructor: '',
-        duration: '',
-        modules: [],
-        prerequisites: [],
-        category: '',
-        is_public: false
-      });
-    } else {
-      setProfessionalCourse({
-        title: '',
-        subtitle: 'ԴԱՍԸՆԹԱՑ',
-        icon: React.createElement(Code, { className: "w-16 h-16" }),
-        duration: '',
-        price: '',
-        buttonText: 'Դիտել',
-        color: 'text-amber-500',
-        createdBy: user?.name || '',
-        institution: 'ՀՊՏՀ',
-        imageUrl: '',
-        description: '',
-        lessons: [],
-        requirements: [],
-        outcomes: []
-      });
-    }
-    
-    setIsCreateDialogOpen(true);
-  };
-
-  const handleCreateCourse = async () => {
-    if (courseType === 'standard') {
-      if (!selectedCourse) return;
-      
-      if (!selectedCourse.title || !selectedCourse.description || !selectedCourse.duration) {
-        toast.error('Լրացրեք բոլոր պարտադիր դաշտերը');
-        return;
-      }
+      setIsLoading(true);
       
       const newCourse: Course = {
-        ...selectedCourse,
-        id: uuidv4(),
-        createdBy: user?.id || 'unknown',
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString()
+        id: `course-${Date.now()}`,
+        created_at: new Date().toISOString(),
+        ...course,
+        instructor_id: user?.id || '',
+        instructor_name: user?.name || 'Unknown Instructor',
       };
       
+      // Optimistically update local state
       setCourses(prev => [...prev, newCourse]);
-      localStorage.setItem('courses', JSON.stringify([...courses, newCourse]));
-      toast.success('Դասընթացը հաջողությամբ ստեղծվեց');
-    } else {
-      if (!professionalCourse.title || !professionalCourse.duration) {
-        toast.error('Լրացրեք բոլոր պարտադիր դաշտերը');
-        return;
+      setIsCreateDialogOpen(false);
+      
+      // Attempt to save to Supabase
+      const { error } = await supabase.from('courses').insert(newCourse);
+      
+      if (error) {
+        console.error('Error creating course:', error);
+        // Revert optimistic update if there's an error
+        setCourses(prev => prev.filter(c => c.id !== newCourse.id));
+        toast.error('Դասընթացը ստեղծելիս սխալ է տեղի ունեցել։');
+        return false;
       }
       
-      const newProfCourse: ProfessionalCourse = {
-        ...(professionalCourse as ProfessionalCourse),
-        id: uuidv4(),
-        createdBy: user?.name || 'unknown',
-        iconName: 'book',
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString()
+      toast.success('Դասընթացը հաջողությամբ ստեղծվել է։');
+      return true;
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : 'Unknown error';
+      console.error('Error in handleCreateCourse:', errorMessage);
+      toast.error('Դասընթացը ստեղծելիս սխալ է տեղի ունեցել։');
+      return false;
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleUpdateCourse = async (id: string, courseData: Partial<Course>) => {
+    
+    
+    try {
+      setIsLoading(true);
+      
+      // Optimistically update local state
+      setCourses(prev => 
+        prev.map(course => 
+          course.id === id ? { ...course, ...courseData } : course
+        )
+      );
+      
+      // Close dialog
+      handleCloseEditDialog();
+      
+      // Attempt to update in Supabase
+      const { error } = await supabase
+        .from('courses')
+        .update(courseData)
+        .eq('id', id);
+      
+      if (error) {
+        console.error('Error updating course:', error);
+        // Reload courses to revert changes if there's an error
+        loadCourses();
+        toast.error('Դասընթացը թարմացնելիս սխալ է տեղի ունեցել։');
+        return false;
+      }
+      
+      toast.success('Դասընթացը հաջողությամբ թարմացվել է։');
+      return true;
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : 'Unknown error';
+      console.error('Error in handleUpdateCourse:', errorMessage);
+      toast.error('Դասընթացը թարմացնելիս սխալ է տեղի ունեցել։');
+      return false;
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleDeleteCourse = async (id: string) => {
+    
+    
+    try {
+      setIsLoading(true);
+      
+      // Optimistically update local state
+      const courseToRemove = courses.find(course => course.id === id);
+      setCourses(prev => prev.filter(course => course.id !== id));
+      
+      // Close dialog
+      handleCloseDeleteDialog();
+      
+      // Attempt to delete from Supabase
+      const { error } = await supabase
+        .from('courses')
+        .delete()
+        .eq('id', id);
+      
+      if (error) {
+        console.error('Error deleting course:', error);
+        // Restore course if there's an error
+        if (courseToRemove) {
+          setCourses(prev => [...prev, courseToRemove]);
+        }
+        toast.error('Դասընթացը ջնջելիս սխալ է տեղի ունեցել։');
+        return false;
+      }
+      
+      toast.success('Դասընթացը հաջողությամբ ջնջվել է։');
+      return true;
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : 'Unknown error';
+      console.error('Error in handleDeleteCourse:', errorMessage);
+      toast.error('Դասընթացը ջնջելիս սխալ է տեղի ունեցել։');
+      return false;
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleCreateProfessionalCourse = async (course: Omit<ProfessionalCourse, 'id' | 'created_at'>) => {
+    
+    
+    try {
+      setIsLoading(true);
+      
+      const newCourse: ProfessionalCourse = {
+        id: `prof-course-${Date.now()}`,
+        created_at: new Date().toISOString(),
+        ...course,
+        partner_id: user?.id || '',
+        partner_name: user?.name || 'Unknown Partner',
       };
       
-      const success = await saveCourseChanges(newProfCourse);
+      // Optimistically update local state
+      setProfessionalCourses(prev => [...prev, newCourse]);
+      setIsCreateProfessionalDialogOpen(false);
       
-      if (success) {
-        setProfessionalCourses(prev => [...prev, newProfCourse]);
-        toast.success('Դասընթացը հաջողությամբ ստեղծվեց');
-      } else {
-        toast.error('Դասընթացի ստեղծման ժամանակ սխալ է տեղի ունեցել');
+      // Attempt to save to Supabase
+      const { error } = await supabase.from('professional_courses').insert(newCourse);
+      
+      if (error) {
+        console.error('Error creating professional course:', error);
+        // Revert optimistic update if there's an error
+        setProfessionalCourses(prev => prev.filter(c => c.id !== newCourse.id));
+        toast.error('Մասնագիտական դասընթացը ստեղծելիս սխալ է տեղի ունեցել։');
+        return false;
       }
+      
+      toast.success('Մասնագիտական դասընթացը հաջողությամբ ստեղծվել է։');
+      return true;
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : 'Unknown error';
+      console.error('Error in handleCreateProfessionalCourse:', errorMessage);
+      toast.error('Մասնագիտական դասընթացը ստեղծելիս սխալ է տեղի ունեցել։');
+      return false;
+    } finally {
+      setIsLoading(false);
     }
+  };
+
+  const handleUpdateProfessionalCourse = async (id: string, courseData: Partial<ProfessionalCourse>) => {
     
-    setIsCreateDialogOpen(false);
+    
+    try {
+      setIsLoading(true);
+      
+      // Optimistically update local state
+      setProfessionalCourses(prev => 
+        prev.map(course => 
+          course.id === id ? { ...course, ...courseData } : course
+        )
+      );
+      
+      // Close dialog
+      handleCloseEditProfessionalDialog();
+      
+      // Attempt to update in Supabase
+      const { error } = await supabase
+        .from('professional_courses')
+        .update(courseData)
+        .eq('id', id);
+      
+      if (error) {
+        console.error('Error updating professional course:', error);
+        // Reload courses to revert changes if there's an error
+        loadCourses();
+        toast.error('Մասնագիտական դասընթացը թարմացնելիս սխալ է տեղի ունեցել։');
+        return false;
+      }
+      
+      toast.success('Մասնագիտական դասընթացը հաջողությամբ թարմացվել է։');
+      return true;
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : 'Unknown error';
+      console.error('Error in handleUpdateProfessionalCourse:', errorMessage);
+      toast.error('Մասնագիտական դասընթացը թարմացնելիս սխալ է տեղի ունեցել։');
+      return false;
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleDeleteProfessionalCourse = async (id: string) => {
+    
+    
+    try {
+      setIsLoading(true);
+      
+      // Optimistically update local state
+      const courseToRemove = professionalCourses.find(course => course.id === id);
+      setProfessionalCourses(prev => prev.filter(course => course.id !== id));
+      
+      // Close dialog
+      handleCloseDeleteProfessionalDialog();
+      
+      // Attempt to delete from Supabase
+      const { error } = await supabase
+        .from('professional_courses')
+        .delete()
+        .eq('id', id);
+      
+      if (error) {
+        console.error('Error deleting professional course:', error);
+        // Restore course if there's an error
+        if (courseToRemove) {
+          setProfessionalCourses(prev => [...prev, courseToRemove]);
+        }
+        toast.error('Մասնագիտական դասընթացը ջնջելիս սխալ է տեղի ունեցել։');
+        return false;
+      }
+      
+      toast.success('Մասնագիտական դասընթացը հաջողությամբ ջնջվել է։');
+      return true;
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : 'Unknown error';
+      console.error('Error in handleDeleteProfessionalCourse:', errorMessage);
+      toast.error('Մասնագիտական դասընթացը ջնջելիս սխալ է տեղի ունեցել։');
+      return false;
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return {
@@ -570,43 +465,45 @@ export const useCourseManager = () => {
     userCourses,
     professionalCourses,
     userProfessionalCourses,
-    selectedCourse,
-    selectedProfessionalCourse,
-    setSelectedCourse,
-    setSelectedProfessionalCourse,
-    isAddDialogOpen,
+    isLoading,
+    error,
+    activeCourse,
+    filteredCourses,
+    filteredProfessionalCourses,
+    searchTerm,
+    selectedCategory,
+    selectedDifficulty,
+    selectedSort,
     isEditDialogOpen,
     isDeleteDialogOpen,
-    newCourse,
-    newProfessionalCourse,
-    newModule,
-    loading,
-    setNewCourse,
-    setNewProfessionalCourse,
-    setNewModule,
-    setIsAddDialogOpen,
-    setIsEditDialogOpen,
-    setIsDeleteDialogOpen,
-    handleAddCourse,
-    handleAddProfessionalCourse,
-    handleEditCourse,
-    handleEditProfessionalCourse,
-    handleEditInit,
-    handleEditProfessionalCourseInit,
-    handleAddModule,
-    handleRemoveModule,
-    handleAddModuleToEdit,
-    handleRemoveModuleFromEdit,
-    handleDeleteCourse,
-    handleDeleteProfessionalCourse,
-    loadCoursesFromDatabase,
-    syncCoursesWithDatabase,
-    loadCoursesFromLocalStorage,
-    professionalCourse,
-    setProfessionalCourse,
-    courseType,
-    setCourseType,
-    handleCreateInit,
+    isCreateProfessionalDialogOpen,
+    isEditProfessionalDialogOpen,
+    isDeleteProfessionalDialogOpen,
+    courseToEdit,
+    courseToDelete,
+    professionalCourseToEdit,
+    professionalCourseToDelete,
+    loadCourses,
+    handleSearchChange,
+    handleCategoryChange,
+    handleDifficultyChange,
+    handleSortChange,
+    resetFilters,
+    handleOpenEditDialog,
+    handleCloseEditDialog,
+    handleOpenDeleteDialog,
+    handleCloseDeleteDialog,
+    handleOpenCreateProfessionalDialog,
+    handleCloseCreateProfessionalDialog,
+    handleOpenEditProfessionalDialog,
+    handleCloseEditProfessionalDialog,
+    handleOpenDeleteProfessionalDialog,
+    handleCloseDeleteProfessionalDialog,
     handleCreateCourse,
+    handleUpdateCourse,
+    handleDeleteCourse,
+    handleCreateProfessionalCourse,
+    handleUpdateProfessionalCourse,
+    handleDeleteProfessionalCourse
   };
 };
