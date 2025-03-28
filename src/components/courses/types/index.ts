@@ -20,9 +20,9 @@ export interface Course {
   difficulty?: string;
 }
 
-// Import and export ProfessionalCourse from its module
-import { ProfessionalCourse, LessonItem } from './ProfessionalCourse';
-export { ProfessionalCourse, LessonItem };
+// Import and export ProfessionalCourse from its module - using "export type" syntax
+import type { ProfessionalCourse, LessonItem } from './ProfessionalCourse';
+export type { ProfessionalCourse, LessonItem };
 
 // CourseContextType with all required properties
 export interface CourseContextType {
