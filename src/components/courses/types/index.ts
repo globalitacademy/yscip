@@ -8,6 +8,6 @@ export interface Course {
   modules: string[];
   createdBy: string;
   is_public?: boolean;
-  createdAt?: string;
-  updatedAt?: string;
+  createdAt: string;
+  updatedAt: string;
 }
