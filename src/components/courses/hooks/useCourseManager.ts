@@ -59,7 +59,7 @@ export const useCourseManager = ({
 
   const filteredProfessionalCourses = professionalCourses.filter(course => {
     const matchesSearch = course.title.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesCategory = selectedCategory && course.category ? course.category === selectedCategory : true;
+    const matchesCategory = selectedCategory ? (course.category ? course.category === selectedCategory : false) : true;
     return matchesSearch && matchesCategory;
   });
 
@@ -158,7 +158,8 @@ export const useCourseManager = ({
               organizationLogo: item.organization_logo,
               is_public: item.is_public,
               createdAt: item.created_at,
-              updatedAt: item.updated_at
+              updatedAt: item.updated_at,
+              category: ''
             })) as ProfessionalCourse[];
           
           setProfessionalCourses(professionalCoursesData);

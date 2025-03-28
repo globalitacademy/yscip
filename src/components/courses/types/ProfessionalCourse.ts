@@ -22,6 +22,7 @@ export interface ProfessionalCourse {
   is_public?: boolean;
   createdAt?: string;
   updatedAt?: string;
+  category?: string;
 }
 
 export interface LessonItem {

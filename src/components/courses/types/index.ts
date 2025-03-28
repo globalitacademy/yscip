@@ -22,6 +22,9 @@ export interface Course {
 // Use export type to fix isolatedModules compatibility
 export type { ProfessionalCourse, LessonItem } from './ProfessionalCourse';
 
+// Import the ProfessionalCourse type to use in the CourseContextType
+import { ProfessionalCourse, LessonItem } from './ProfessionalCourse';
+
 // Explicitly define the CourseContextType interface
 export interface CourseContextType {
   courses: Course[];
