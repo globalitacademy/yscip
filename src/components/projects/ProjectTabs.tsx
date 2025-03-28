@@ -1,6 +1,6 @@
 
 import React, { useEffect } from 'react';
-import { Tabs, TabsContent } from "@/components/ui/tabs";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useAuth } from '@/contexts/AuthContext';
 import { useProjectManagement } from '@/contexts/ProjectManagementContext';
 import ProjectList from './ProjectList';
@@ -36,20 +36,22 @@ const ProjectTabs: React.FC = () => {
     return visibilityMatch && searchMatch && categoryMatch;
   });
 
-  if (filteredProjects.length === 0) {
-    return (
-      <TabsContent value="all" className="pt-6 focus:outline-none">
-        <ProjectEmptyState 
-          onAddNewProject={() => {}} 
-        />
-      </TabsContent>
-    );
-  }
-
   return (
-    <TabsContent value="all" className="focus:outline-none">
-      <ProjectList projects={filteredProjects} />
-    </TabsContent>
+    <Tabs defaultValue="all">
+      <TabsList className="w-full mb-4">
+        <TabsTrigger value="all">Բոլոր նախագծերը</TabsTrigger>
+      </TabsList>
+      
+      <TabsContent value="all" className="focus:outline-none">
+        {filteredProjects.length === 0 ? (
+          <ProjectEmptyState 
+            onAddNewProject={() => {}} 
+          />
+        ) : (
+          <ProjectList projects={filteredProjects} />
+        )}
+      </TabsContent>
+    </Tabs>
   );
 };
 

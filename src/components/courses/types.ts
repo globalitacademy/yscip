@@ -1,11 +1,16 @@
-
 export interface Course {
   id: string;
-  name: string;
+  title: string;
   description: string;
-  specialization?: string;
+  instructor: string;
   duration: string;
   modules: string[];
-  createdBy: string;
+  prerequisites: string[];
+  imageUrl?: string;
+  category: string;
   is_public?: boolean;
+  createdBy?: string;
+  learningOutcomes?: string[];
+  createdAt?: string;
+  updatedAt?: string;
 }
