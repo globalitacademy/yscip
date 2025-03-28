@@ -1,4 +1,3 @@
-
 import React, { createContext, useState, useContext, ReactNode, useCallback } from 'react';
 import { Course } from '@/components/courses/types';
 import { ProfessionalCourse } from '@/components/courses/types/ProfessionalCourse';

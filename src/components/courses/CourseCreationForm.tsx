@@ -9,27 +9,19 @@ import { ProfessionalCourse } from './types/ProfessionalCourse';
 import { useCourseContext } from '@/contexts/CourseContext';
 import ProjectFormFooter from '../project-creation/ProjectFormFooter';
 
-interface CourseCreationFormProps {
-  courseType: 'standard' | 'professional';
-  selectedCourse: Course | null;
-  professionalCourse: Partial<ProfessionalCourse>;
-  onCreateCourse: () => void;
-}
-
-const CourseCreationForm: React.FC<CourseCreationFormProps> = ({
-  courseType,
-  selectedCourse,
-  professionalCourse,
-  onCreateCourse
-}) => {
+const CourseCreationForm: React.FC = () => {
   const { 
+    selectedCourse, 
+    professionalCourse,
+    courseType,
+    setCourseType,
     setSelectedCourse, 
     setProfessionalCourse, 
-    setCourseType,
     newModule,
     setNewModule,
     handleAddModuleToEdit,
-    handleRemoveModuleFromEdit
+    handleRemoveModuleFromEdit,
+    handleCreateCourse
   } = useCourseContext();
 
   return (
@@ -68,7 +60,7 @@ const CourseCreationForm: React.FC<CourseCreationFormProps> = ({
           </TabsContent>
         </Tabs>
       </CardContent>
-      <ProjectFormFooter onSubmit={onCreateCourse} />
+      <ProjectFormFooter onSubmit={handleCreateCourse} />
     </Card>
   );
 };

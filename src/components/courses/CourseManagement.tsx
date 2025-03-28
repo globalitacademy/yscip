@@ -3,6 +3,7 @@ import React, { useEffect } from 'react';
 import { Dialog, DialogContent } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Plus } from 'lucide-react';
+import { Link } from 'react-router-dom';
 import { CourseProvider, useCourseContext } from '@/contexts/CourseContext';
 import CourseList from './CourseList';
 import CourseFilterSection from './CourseFilterSection';
@@ -40,6 +41,11 @@ const CourseManagementContent: React.FC = () => {
           <Button onClick={() => handleCreateInit('professional')}>
             <Plus className="h-4 w-4 mr-2" /> Մասնագիտական դասընթաց
           </Button>
+          <Button variant="default" asChild>
+            <Link to="/courses/create">
+              <Plus className="h-4 w-4 mr-2" /> Նոր դասընթաց
+            </Link>
+          </Button>
         </div>
       </div>
       
@@ -49,12 +55,7 @@ const CourseManagementContent: React.FC = () => {
 
       <Dialog open={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen}>
         <DialogContent className="max-w-4xl p-0 overflow-y-auto max-h-screen">
-          <CourseCreationForm 
-            courseType={courseType} 
-            selectedCourse={selectedCourse}
-            professionalCourse={professionalCourse}
-            onCreateCourse={handleCreateCourse}
-          />
+          <CourseCreationForm />
         </DialogContent>
       </Dialog>
     </div>

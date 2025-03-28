@@ -73,11 +73,14 @@ export const useCourseManagement = () => {
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   
   const [newCourse, setNewCourse] = useState<Partial<Course>>({
-    name: '',
+    title: '',
     description: '',
     specialization: '',
+    instructor: '',
     duration: '',
     modules: [],
+    prerequisites: [],
+    category: '',
     createdBy: user?.id || '',
     is_public: false
   });
@@ -256,18 +259,21 @@ export const useCourseManagement = () => {
   const userProfessionalCourses = professionalCourses.filter(course => course.createdBy === user?.name);
 
   const handleAddCourse = () => {
-    if (!newCourse.name || !newCourse.description || !newCourse.duration) {
+    if (!newCourse.title || !newCourse.description || !newCourse.duration) {
       toast.error('Լրացրեք բոլոր պարտադիր դաշտերը');
       return;
     }
 
     const courseToAdd: Course = {
       id: uuidv4(),
-      name: newCourse.name,
+      title: newCourse.title,
       description: newCourse.description,
       specialization: newCourse.specialization || '',
+      instructor: newCourse.instructor || '',
       duration: newCourse.duration,
       modules: newCourse.modules || [],
+      prerequisites: newCourse.prerequisites || [],
+      category: newCourse.category || '',
       createdBy: user?.id || 'unknown',
       is_public: newCourse.is_public || false,
       createdAt: new Date().toISOString(),
@@ -279,11 +285,14 @@ export const useCourseManagement = () => {
     localStorage.setItem('courses', JSON.stringify(updatedCourses));
     
     setNewCourse({
-      name: '',
+      title: '',
       description: '',
       specialization: '',
+      instructor: '',
       duration: '',
       modules: [],
+      prerequisites: [],
+      category: '',
       createdBy: user?.id || '',
       is_public: false
     });
@@ -294,7 +303,7 @@ export const useCourseManagement = () => {
   const handleEditCourse = () => {
     if (!selectedCourse) return;
     
-    if (!selectedCourse.name || !selectedCourse.description || !selectedCourse.duration) {
+    if (!selectedCourse.title || !selectedCourse.description || !selectedCourse.duration) {
       toast.error('Լրացրեք բոլոր պարտադիր դաշտերը');
       return;
     }
