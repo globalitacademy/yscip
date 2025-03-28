@@ -1,5 +1,5 @@
 
-import React from 'react';
+import React, { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import CourseForm from './CourseForm';
@@ -9,8 +9,11 @@ import { ProfessionalCourse } from './types/index';
 import { useCourseContext } from '@/contexts/CourseContext';
 import ProjectFormFooter from '../project-creation/ProjectFormFooter';
 import { toast } from '@/components/ui/use-toast';
+import { useNavigate } from 'react-router-dom';
 
 const CourseCreationForm: React.FC = () => {
+  const navigate = useNavigate();
+  
   const { 
     selectedCourse, 
     professionalCourse,
@@ -26,6 +29,15 @@ const CourseCreationForm: React.FC = () => {
     handleCreateProfessionalCourse
   } = useCourseContext();
 
+  const generateSlug = (title: string): string => {
+    return title
+      .toLowerCase()
+      .replace(/[^\w\s-]/g, '') // Remove non-word chars
+      .replace(/\s+/g, '-') // Replace spaces with -
+      .replace(/--+/g, '-') // Replace multiple - with single -
+      .trim(); // Trim - from start and end
+  };
+
   const handleSubmit = async () => {
     try {
       if (courseType === 'standard' && selectedCourse) {
@@ -35,15 +47,26 @@ const CourseCreationForm: React.FC = () => {
             title: "Դասընթացը ստեղծված է",
             description: "Ստանդարտ դասընթացը հաջողությամբ ստեղծվել է։",
           });
+          
+          // Redirect to courses page
+          navigate('/courses');
           return true;
         }
       } else if (courseType === 'professional' && professionalCourse) {
+        // Generate a slug for the URL if not provided
+        if (!professionalCourse.slug && professionalCourse.title) {
+          professionalCourse.slug = generateSlug(professionalCourse.title);
+        }
+        
         const success = await handleCreateProfessionalCourse(professionalCourse as Omit<ProfessionalCourse, 'id' | 'createdAt'>);
         if (success) {
           toast({
             title: "Դասընթացը ստեղծված է",
             description: "Մասնագիտական դասընթացը հաջողությամբ ստեղծվել է։",
           });
+          
+          // Redirect to courses page
+          navigate('/courses');
           return true;
         }
       } else {

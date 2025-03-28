@@ -26,6 +26,11 @@ export interface ProfessionalCourse {
   instructor?: string;  // Added for compatibility with Course
   modules?: string[];   // Added for compatibility with Course
   prerequisites?: string[];  // Added for compatibility with Course
+  
+  // New fields for display controls
+  show_on_homepage?: boolean;
+  display_order?: number;
+  slug?: string;  // For friendly URLs
 }
 
 export interface LessonItem {

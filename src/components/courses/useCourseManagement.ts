@@ -99,7 +99,10 @@ export const useCourseManagement = () => {
     description: '',
     lessons: [],
     requirements: [],
-    outcomes: []
+    outcomes: [],
+    is_public: false,
+    show_on_homepage: false,
+    display_order: 0
   });
   
   const [newModule, setNewModule] = useState('');
@@ -378,22 +381,34 @@ export const useCourseManagement = () => {
     }
   };
 
-  const handleAddProfessionalCourse = async () => {
-    if (!newProfessionalCourse.title || !newProfessionalCourse.duration || !newProfessionalCourse.price) {
+  const handleCreateProfessionalCourse = async (courseData: Omit<ProfessionalCourse, 'id' | 'createdAt'>) => {
+    if (!courseData.title || !courseData.duration || !courseData.price) {
       toast.error('Լրացրեք բոլոր պարտադիր դաշտերը');
-      return;
+      return false;
+    }
+
+    // Generate slug if not provided
+    if (!courseData.slug && courseData.title) {
+      courseData.slug = courseData.title
+        .toLowerCase()
+        .replace(/[^\w\s-]/g, '')
+        .replace(/\s+/g, '-')
+        .replace(/--+/g, '-')
+        .trim();
     }
 
     const courseToAdd: ProfessionalCourse = {
-      ...(newProfessionalCourse as ProfessionalCourse),
+      ...(courseData as ProfessionalCourse),
       id: uuidv4(),
       createdBy: user?.name || 'Unknown',
-      buttonText: newProfessionalCourse.buttonText || 'Դիտել',
-      subtitle: newProfessionalCourse.subtitle || 'ԴԱՍԸՆԹԱՑ',
-      color: newProfessionalCourse.color || 'text-amber-500',
-      institution: newProfessionalCourse.institution || 'ՀՊՏՀ',
+      buttonText: courseData.buttonText || 'Դիտել',
+      subtitle: courseData.subtitle || 'ԴԱՍԸՆԹԱՑ',
+      color: courseData.color || 'text-amber-500',
+      institution: courseData.institution || 'ՀՊՏՀ',
       iconName: 'book',
-      is_public: newProfessionalCourse.is_public || false,
+      is_public: courseData.is_public || false,
+      show_on_homepage: courseData.show_on_homepage || false,
+      display_order: courseData.display_order || 0,
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString()
     };
@@ -419,28 +434,40 @@ export const useCourseManagement = () => {
         lessons: [],
         requirements: [],
         outcomes: [],
-        is_public: false
+        is_public: false,
+        show_on_homepage: false,
+        display_order: 0
       });
       setIsAddDialogOpen(false);
       toast.success('Դասընթացը հաջողությամբ ավելացվել է');
     } else {
       toast.error('Դասընթացի ավելացման ժամանակ սխալ է տեղի ունեցել');
     }
+    
+    return success;
   };
 
-  const handleEditProfessionalCourse = async () => {
-    if (!selectedProfessionalCourse) return;
+  const handleUpdateProfessionalCourse = async (id: string, courseData: Partial<ProfessionalCourse>) => {
+    if (!selectedProfessionalCourse) return false;
     
-    if (!selectedProfessionalCourse.title || !selectedProfessionalCourse.duration || !selectedProfessionalCourse.price) {
-      toast.error('Լրացրեք բոլոր պարտադիր դաշտերը');
-      return;
+    // Update the course
+    const updatedCourse = { ...selectedProfessionalCourse, ...courseData };
+    
+    // Generate or update slug if title changed
+    if (courseData.title && (!updatedCourse.slug || selectedProfessionalCourse.title !== courseData.title)) {
+      updatedCourse.slug = courseData.title
+        .toLowerCase()
+        .replace(/[^\w\s-]/g, '')
+        .replace(/\s+/g, '-')
+        .replace(/--+/g, '-')
+        .trim();
     }
-
-    const success = await saveCourseChanges(selectedProfessionalCourse);
+    
+    const success = await saveCourseChanges(updatedCourse);
     
     if (success) {
       const updatedCourses = professionalCourses.map(course => 
-        course.id === selectedProfessionalCourse.id ? selectedProfessionalCourse : course
+        course.id === id ? updatedCourse : course
       );
       
       setProfessionalCourses(updatedCourses);
@@ -449,6 +476,8 @@ export const useCourseManagement = () => {
     } else {
       toast.error('Դասընթացի թարմացման ժամանակ սխալ է տեղի ունեցել');
     }
+    
+    return success;
   };
 
   const handleDeleteProfessionalCourse = (id: string) => {

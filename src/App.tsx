@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
 import { AuthProvider } from './contexts/AuthContext';
@@ -13,6 +12,7 @@ import UserManagementPage from './pages/UserManagementPage';
 import CourseManagementPage from './pages/CourseManagementPage';
 import Index from './pages/Index';
 import NotFound from './pages/NotFound';
+import CourseDetailPage from './pages/CourseDetailPage';
 
 function App() {
   return (
@@ -36,6 +36,9 @@ function App() {
             <Route path="/projects" element={<ProjectManagementPage />} />
             <Route path="/courses" element={<CoursesPage />} />
             <Route path="/courses/create" element={<CourseCreationPage />} />
+            
+            {/* Course Details Route */}
+            <Route path="/courses/:slug" element={<CourseDetailPage />} />
             
             {/* 404 - Not Found */}
             <Route path="*" element={<NotFound />} />
