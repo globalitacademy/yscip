@@ -23,6 +23,8 @@ export interface ProfessionalCourse {
   createdAt?: string;
   updatedAt?: string;
   category?: string;
+  instructor?: string;  // Added to make it more compatible with Course
+  modules?: string[];   // Added to make it more compatible with Course
 }
 
 export interface LessonItem {

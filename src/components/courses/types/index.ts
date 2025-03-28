@@ -8,7 +8,7 @@ export interface Course {
   instructor: string;
   duration: string;
   modules: string[];
-  prerequisites?: string[];
+  prerequisites: string[];
   category?: string;
   createdBy?: string;
   is_public?: boolean;
@@ -76,7 +76,7 @@ export interface CourseContextType {
   handleUpdateProfessionalCourse: (id: string, courseData: Partial<ProfessionalCourse>) => Promise<boolean>;
   handleDeleteProfessionalCourse: (id: string) => Promise<boolean>;
   
-  // Missing properties identified in errors
+  // Additional properties needed by components
   selectedCourse: Course | null;
   setSelectedCourse: React.Dispatch<React.SetStateAction<Course | null>>;
   professionalCourse: Partial<ProfessionalCourse> | null;
@@ -88,6 +88,8 @@ export interface CourseContextType {
   handleAddModuleToEdit: () => void;
   handleRemoveModuleFromEdit: (index: number) => void;
   handleEditCourse: () => void;
-  handleEditInit: (course: Course, type?: 'standard' | 'professional') => void;
+  handleEditInit: (course: Course | ProfessionalCourse, type?: 'standard' | 'professional') => void;
   handleCreateInit: (type: 'standard' | 'professional') => void;
+  setIsEditDialogOpen: React.Dispatch<React.SetStateAction<boolean>>;
+  setIsDeleteDialogOpen: React.Dispatch<React.SetStateAction<boolean>>;
 }

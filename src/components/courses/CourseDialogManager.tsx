@@ -46,12 +46,10 @@ const CourseDialogManager: React.FC = () => {
       <DeleteCourseDialog 
         isOpen={isDeleteDialogOpen}
         setIsOpen={setIsDeleteDialogOpen}
-        selectedCourse={courseType === 'standard' ? selectedCourse : professionalCourse}
+        selectedCourse={selectedCourse}
         onDelete={() => selectedCourse?.id ? 
           handleDeleteCourse(selectedCourse.id) : 
-          professionalCourse?.id ? 
-          handleDeleteCourse(professionalCourse.id) : 
-          undefined}
+          Promise.resolve(false)}
       />
     </>
   );

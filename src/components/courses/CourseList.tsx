@@ -1,7 +1,7 @@
 
 import React from 'react';
-import { Course } from './types';
-import { ProfessionalCourse } from './types/ProfessionalCourse';
+import { Course } from './types/index';
+import { ProfessionalCourse } from './types/index';
 import CourseCard from './CourseCard';
 import ProfessionalCourseCard from './ProfessionalCourseCard';
 import { FadeIn } from '@/components/LocalTransitions';
