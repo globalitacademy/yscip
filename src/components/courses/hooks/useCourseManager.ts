@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import { Course, ProfessionalCourse } from '@/components/courses/types';
 import { useAuth } from '@/contexts/AuthContext';
@@ -47,12 +48,13 @@ export const useCourseManager = ({
 
   
   
-  const userCourses = courses.filter(course => course.instructor_id === user?.id);
-  const userProfessionalCourses = professionalCourses.filter(course => course.partner_id === user?.id);
+  const userCourses = courses.filter(course => course.createdBy === user?.id);
+  const userProfessionalCourses = professionalCourses.filter(course => course.createdBy === user?.id);
 
   // Filter courses based on search and filters
   const filteredCourses = courses.filter(course => {
-    const matchesSearch = course.title.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesSearch = course.title?.toLowerCase().includes(searchTerm.toLowerCase()) || 
+                          course.name.toLowerCase().includes(searchTerm.toLowerCase());
     const matchesCategory = selectedCategory ? course.category === selectedCategory : true;
     const matchesDifficulty = selectedDifficulty ? course.difficulty === selectedDifficulty : true;
     return matchesSearch && matchesCategory && matchesDifficulty;
@@ -68,13 +70,13 @@ export const useCourseManager = ({
   if (selectedSort) {
     filteredCourses.sort((a, b) => {
       if (selectedSort === 'newest') {
-        return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
+        return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
       } else if (selectedSort === 'oldest') {
-        return new Date(a.created_at).getTime() - new Date(b.created_at).getTime();
+        return new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime();
       } else if (selectedSort === 'name_asc') {
-        return a.title.localeCompare(b.title);
+        return (a.title || a.name).localeCompare(b.title || b.name);
       } else if (selectedSort === 'name_desc') {
-        return b.title.localeCompare(a.title);
+        return (b.title || b.name).localeCompare(a.title || a.name);
       }
       return 0;
     });
@@ -108,20 +110,65 @@ export const useCourseManager = ({
         setError(`Error fetching courses: ${coursesError.message}`);
         toast.error('Դասընթացները բեռնելիս սխալ է տեղի ունեցել։');
       } else if (coursesData) {
-        setCourses(coursesData as Course[]);
-        localStorage.setItem('courses', JSON.stringify(coursesData));
-        console.info(`Loaded ${coursesData.length} courses from Supabase`);
+        // Convert the database format to our Course interface format
+        const formattedCourses: Course[] = coursesData.map(item => ({
+          id: item.id,
+          name: item.title,
+          title: item.title,
+          description: item.description || '',
+          specialization: item.specialization || '',
+          instructor: item.created_by || '',
+          duration: item.duration,
+          modules: item.modules || [],
+          prerequisites: [],
+          category: '',
+          createdBy: item.created_by || '',
+          is_public: item.is_public,
+          imageUrl: item.image_url,
+          createdAt: item.created_at,
+          updatedAt: item.updated_at
+        }));
+        
+        setCourses(formattedCourses);
+        localStorage.setItem('courses', JSON.stringify(formattedCourses));
+        console.info(`Loaded ${formattedCourses.length} courses from Supabase`);
       }
       
-      // Load professional courses
-      const { data: profCoursesData, error: profCoursesError } = await supabase
-        .from('professional_courses')
-        .select('*');
-        
-      if (profCoursesError) {
-        console.error('Error fetching professional courses:', profCoursesError);
-      } else if (profCoursesData) {
-        setProfessionalCourses(profCoursesData as ProfessionalCourse[]);
+      // Load professional courses using the ProfessionalCourse type
+      try {
+        const { data: profCoursesData, error: profCoursesError } = await supabase
+          .from('courses')
+          .select('*')
+          .eq('is_public', true);
+            
+        if (profCoursesError) {
+          console.error('Error fetching professional courses:', profCoursesError);
+        } else if (profCoursesData) {
+          // Convert the data to our ProfessionalCourse format as needed
+          // This is a simplified version - actual implementation may need more mapping
+          const professionalCoursesData = profCoursesData.map(item => ({
+            id: item.id,
+            title: item.title,
+            subtitle: item.subtitle || 'ԴԱՍԸՆԹԱՑ',
+            iconName: item.icon_name,
+            duration: item.duration,
+            price: item.price || 'Free',
+            buttonText: item.button_text || 'Դիտել',
+            color: item.color || 'text-amber-500',
+            createdBy: item.created_by || '',
+            institution: item.institution || '',
+            description: item.description,
+            imageUrl: item.image_url,
+            organizationLogo: item.organization_logo,
+            is_public: item.is_public,
+            createdAt: item.created_at,
+            updatedAt: item.updated_at
+          })) as ProfessionalCourse[];
+          
+          setProfessionalCourses(professionalCoursesData);
+        }
+      } catch (profError) {
+        console.error('Error processing professional courses:', profError);
       }
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Unknown error';
@@ -212,26 +259,41 @@ export const useCourseManager = ({
   };
 
   // CRUD operations
-  const handleCreateCourse = async (course: Omit<Course, 'id' | 'created_at'>) => {
-    
-    
+  const handleCreateCourse = async (course: Omit<Course, 'id' | 'createdAt'>) => {
     try {
       setIsLoading(true);
       
       const newCourse: Course = {
         id: `course-${Date.now()}`,
-        created_at: new Date().toISOString(),
-        ...course,
-        instructor_id: user?.id || '',
-        instructor_name: user?.name || 'Unknown Instructor',
+        ...course as Course,
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+        instructor: user?.name || 'Unknown Instructor',
+        name: course.title || course.name,
+        specialization: course.specialization || '',
       };
       
       // Optimistically update local state
       setCourses(prev => [...prev, newCourse]);
       setIsCreateDialogOpen(false);
       
+      // Prepare data for Supabase format
+      const supabaseCourseData = {
+        id: newCourse.id,
+        title: newCourse.title || newCourse.name,
+        description: newCourse.description,
+        specialization: newCourse.specialization,
+        created_by: newCourse.createdBy,
+        duration: newCourse.duration,
+        modules: newCourse.modules,
+        is_public: newCourse.is_public,
+        image_url: newCourse.imageUrl,
+        created_at: newCourse.createdAt,
+        updated_at: newCourse.updatedAt
+      };
+      
       // Attempt to save to Supabase
-      const { error } = await supabase.from('courses').insert(newCourse);
+      const { error } = await supabase.from('courses').insert(supabaseCourseData);
       
       if (error) {
         console.error('Error creating course:', error);
@@ -254,8 +316,6 @@ export const useCourseManager = ({
   };
 
   const handleUpdateCourse = async (id: string, courseData: Partial<Course>) => {
-    
-    
     try {
       setIsLoading(true);
       
@@ -269,10 +329,23 @@ export const useCourseManager = ({
       // Close dialog
       handleCloseEditDialog();
       
+      // Convert to Supabase format
+      const supabaseData: Record<string, any> = {};
+      
+      if (courseData.title) supabaseData.title = courseData.title;
+      if (courseData.description) supabaseData.description = courseData.description;
+      if (courseData.specialization) supabaseData.specialization = courseData.specialization;
+      if (courseData.duration) supabaseData.duration = courseData.duration;
+      if (courseData.modules) supabaseData.modules = courseData.modules;
+      if (courseData.is_public !== undefined) supabaseData.is_public = courseData.is_public;
+      if (courseData.imageUrl) supabaseData.image_url = courseData.imageUrl;
+      
+      supabaseData.updated_at = new Date().toISOString();
+      
       // Attempt to update in Supabase
       const { error } = await supabase
         .from('courses')
-        .update(courseData)
+        .update(supabaseData)
         .eq('id', id);
       
       if (error) {
@@ -296,8 +369,6 @@ export const useCourseManager = ({
   };
 
   const handleDeleteCourse = async (id: string) => {
-    
-    
     try {
       setIsLoading(true);
       
@@ -336,26 +407,44 @@ export const useCourseManager = ({
     }
   };
 
-  const handleCreateProfessionalCourse = async (course: Omit<ProfessionalCourse, 'id' | 'created_at'>) => {
-    
-    
+  const handleCreateProfessionalCourse = async (course: Omit<ProfessionalCourse, 'id' | 'createdAt'>) => {
     try {
       setIsLoading(true);
       
       const newCourse: ProfessionalCourse = {
         id: `prof-course-${Date.now()}`,
-        created_at: new Date().toISOString(),
-        ...course,
-        partner_id: user?.id || '',
-        partner_name: user?.name || 'Unknown Partner',
+        ...course as ProfessionalCourse,
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+        createdBy: user?.name || 'Unknown Partner',
       };
       
       // Optimistically update local state
       setProfessionalCourses(prev => [...prev, newCourse]);
       setIsCreateProfessionalDialogOpen(false);
       
+      // Prepare Supabase data
+      const supabaseCourseData = {
+        id: newCourse.id,
+        title: newCourse.title,
+        subtitle: newCourse.subtitle,
+        icon_name: newCourse.iconName,
+        duration: newCourse.duration,
+        price: newCourse.price,
+        button_text: newCourse.buttonText,
+        color: newCourse.color,
+        created_by: newCourse.createdBy,
+        institution: newCourse.institution,
+        image_url: newCourse.imageUrl,
+        organization_logo: newCourse.organizationLogo,
+        description: newCourse.description,
+        is_public: newCourse.is_public,
+        created_at: newCourse.createdAt,
+        updated_at: newCourse.updatedAt
+      };
+      
       // Attempt to save to Supabase
-      const { error } = await supabase.from('professional_courses').insert(newCourse);
+      const { error } = await supabase.from('courses').insert(supabaseCourseData);
       
       if (error) {
         console.error('Error creating professional course:', error);
@@ -378,8 +467,6 @@ export const useCourseManager = ({
   };
 
   const handleUpdateProfessionalCourse = async (id: string, courseData: Partial<ProfessionalCourse>) => {
-    
-    
     try {
       setIsLoading(true);
       
@@ -393,10 +480,28 @@ export const useCourseManager = ({
       // Close dialog
       handleCloseEditProfessionalDialog();
       
+      // Convert to Supabase format
+      const supabaseData: Record<string, any> = {};
+      
+      if (courseData.title) supabaseData.title = courseData.title;
+      if (courseData.subtitle) supabaseData.subtitle = courseData.subtitle;
+      if (courseData.iconName) supabaseData.icon_name = courseData.iconName;
+      if (courseData.duration) supabaseData.duration = courseData.duration;
+      if (courseData.price) supabaseData.price = courseData.price;
+      if (courseData.buttonText) supabaseData.button_text = courseData.buttonText;
+      if (courseData.color) supabaseData.color = courseData.color;
+      if (courseData.institution) supabaseData.institution = courseData.institution;
+      if (courseData.imageUrl) supabaseData.image_url = courseData.imageUrl;
+      if (courseData.organizationLogo) supabaseData.organization_logo = courseData.organizationLogo;
+      if (courseData.description) supabaseData.description = courseData.description;
+      if (courseData.is_public !== undefined) supabaseData.is_public = courseData.is_public;
+      
+      supabaseData.updated_at = new Date().toISOString();
+      
       // Attempt to update in Supabase
       const { error } = await supabase
-        .from('professional_courses')
-        .update(courseData)
+        .from('courses')
+        .update(supabaseData)
         .eq('id', id);
       
       if (error) {
@@ -420,8 +525,6 @@ export const useCourseManager = ({
   };
 
   const handleDeleteProfessionalCourse = async (id: string) => {
-    
-    
     try {
       setIsLoading(true);
       
@@ -434,7 +537,7 @@ export const useCourseManager = ({
       
       // Attempt to delete from Supabase
       const { error } = await supabase
-        .from('professional_courses')
+        .from('courses')
         .delete()
         .eq('id', id);
       
