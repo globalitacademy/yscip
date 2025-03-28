@@ -7,7 +7,8 @@ import {
   Building, 
   FileText, 
   School,
-  BookOpen
+  BookOpen,
+  LayoutDashboard
 } from 'lucide-react';
 import { SidebarMenuGroup } from '../types';
 
@@ -15,6 +16,12 @@ export const adminMenuItems: SidebarMenuGroup[] = [
   {
     title: 'Կառավարում',
     items: [
+      {
+        title: 'Գլխավոր վահանակ',
+        icon: <LayoutDashboard className="h-4 w-4" />,
+        href: '/admin',
+        roles: ['admin']
+      },
       {
         title: 'Օգտատերեր',
         icon: <Users className="h-4 w-4" />,

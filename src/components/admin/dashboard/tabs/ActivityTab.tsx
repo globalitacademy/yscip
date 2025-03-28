@@ -1,48 +1,96 @@
 
 import React from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Activity } from 'lucide-react';
-import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { CheckCircle2, AlertCircle, RotateCw, Clock } from 'lucide-react';
+
+// Sample data for recent activities
+const recentActivities = [
+  {
+    id: 1,
+    user: { name: 'Գարեգին Մ.', avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=1' },
+    action: 'գրանցվել է',
+    target: 'համակարգում',
+    time: '10 րոպե առաջ',
+    status: 'success'
+  },
+  {
+    id: 2,
+    user: { name: 'Անի Ս.', avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=2' },
+    action: 'ավելացրել է նոր նախագիծ',
+    target: 'Տվյալների վերլուծություն',
+    time: '2 ժամ առաջ',
+    status: 'success'
+  },
+  {
+    id: 3,
+    user: { name: 'Արման Հ.', avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=3' },
+    action: 'սպասում է հաստատման',
+    target: 'որպես Դասախոս',
+    time: '4 ժամ առաջ',
+    status: 'pending'
+  },
+  {
+    id: 4,
+    user: { name: 'Լիլիթ Ա.', avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=4' },
+    action: 'թարմացրել է դասընթացը',
+    target: 'Վեբ ծրագրավորում',
+    time: '5 ժամ առաջ',
+    status: 'info'
+  },
+  {
+    id: 5,
+    user: { name: 'Սուրեն Մ.', avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=5' },
+    action: 'ուղարկել է հաղորդագրություն',
+    target: 'աջակցության թիմին',
+    time: '1 օր առաջ',
+    status: 'warning'
+  }
+];
+
+// Status icon component
+const StatusIcon: React.FC<{ status: string }> = ({ status }) => {
+  switch (status) {
+    case 'success':
+      return <CheckCircle2 className="h-4 w-4 text-green-500" />;
+    case 'warning':
+      return <AlertCircle className="h-4 w-4 text-amber-500" />;
+    case 'error':
+      return <AlertCircle className="h-4 w-4 text-red-500" />;
+    case 'pending':
+      return <Clock className="h-4 w-4 text-blue-500" />;
+    case 'info':
+      return <RotateCw className="h-4 w-4 text-sky-500" />;
+    default:
+      return null;
+  }
+};
 
 const ActivityTab: React.FC = () => {
-  // Recent activity mock data
-  const recentActivity = [
-    { id: 1, user: 'Արման Գրիգորյան', action: 'գրանցվել է որպես ուսանող', time: '10 րոպե առաջ', avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=arman' },
-    { id: 2, user: 'Նարե Հարությունյան', action: 'ավելացրել է նոր նախագիծ', time: '32 րոպե առաջ', avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=nare' },
-    { id: 3, user: 'Վահե Սարգսյան', action: 'թարմացրել է իր պրոֆիլը', time: '1 ժամ առաջ', avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=vahe' },
-    { id: 4, user: 'Անի Մկրտչյան', action: 'միացել է «ՎԵԲ ծրագրավորում» կուրսին', time: '3 ժամ առաջ', avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=ani' },
-    { id: 5, user: 'Համլետ Պողոսյան', action: 'հաստատել է ուսանողի նախագիծը', time: '5 ժամ առաջ', avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=hamlet' }
-  ];
-
   return (
     <Card>
       <CardHeader>
-        <CardTitle className="flex items-center gap-2 text-base md:text-lg">
-          <Activity className="h-5 w-5 text-blue-500" />
-          Վերջին գործողություններ
-        </CardTitle>
-        <CardDescription>Օգտատերերի վերջին գործողությունները համակարգում</CardDescription>
+        <CardTitle>Վերջին գործողություններ</CardTitle>
+        <CardDescription>Համակարգում կատարված վերջին գործողությունները</CardDescription>
       </CardHeader>
       <CardContent>
-        <div className="space-y-6">
-          {recentActivity.map(activity => (
-            <div key={activity.id} className="flex items-start gap-4">
+        <div className="space-y-8">
+          {recentActivities.map((activity) => (
+            <div key={activity.id} className="flex items-start space-x-4">
               <Avatar>
-                <AvatarImage src={activity.avatar} alt={activity.user} />
-                <AvatarFallback>{activity.user.substring(0, 2)}</AvatarFallback>
+                <AvatarImage src={activity.user.avatar} alt={activity.user.name} />
+                <AvatarFallback>{activity.user.name.substring(0, 2)}</AvatarFallback>
               </Avatar>
-              <div className="space-y-1">
+              <div className="flex-1 space-y-1">
                 <p className="text-sm font-medium leading-none">
-                  <span className="font-semibold">{activity.user}</span> {activity.action}
+                  <span className="font-bold">{activity.user.name}</span> {activity.action}{' '}
+                  <span className="font-medium">{activity.target}</span>
                 </p>
                 <p className="text-sm text-muted-foreground">{activity.time}</p>
               </div>
+              <StatusIcon status={activity.status} />
             </div>
           ))}
-        </div>
-        <div className="mt-6 text-center">
-          <Button variant="outline">Դիտել բոլոր գործողությունները</Button>
         </div>
       </CardContent>
     </Card>
