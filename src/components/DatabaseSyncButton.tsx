@@ -10,13 +10,15 @@ interface DatabaseSyncButtonProps {
   className?: string;
   size?: 'default' | 'sm' | 'lg' | 'icon';
   showLabel?: boolean;
+  onSyncComplete?: () => void;
 }
 
 const DatabaseSyncButton: React.FC<DatabaseSyncButtonProps> = ({ 
   variant = 'outline',
   className = '',
   size = 'sm',
-  showLabel = true
+  showLabel = true,
+  onSyncComplete
 }) => {
   const [syncing, setSyncing] = useState(false);
   const [syncProgress, setSyncProgress] = useState<string | null>(null);
@@ -52,6 +54,11 @@ const DatabaseSyncButton: React.FC<DatabaseSyncButtonProps> = ({
         );
         
         toast.success('Տվյալները հաջողությամբ համաժամեցվել են բազայի հետ');
+        
+        // Call the onSyncComplete callback if provided
+        if (onSyncComplete) {
+          onSyncComplete();
+        }
       } catch (syncError) {
         console.error('Error syncing with database:', syncError);
         toast.error('Բազայի հետ համաժամեցման ժամանակ սխալ է տեղի ունեցել, լոկալ տվյալներն են օգտագործվում');

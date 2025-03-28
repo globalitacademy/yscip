@@ -8,6 +8,8 @@ import { toast } from 'sonner';
 import { Loader2, AlertTriangle } from 'lucide-react';
 import DatabaseSyncButton from '@/components/DatabaseSyncButton';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
+import { Button } from '@/components/ui/button';
+import AddProfessionalCourseDialog from './AddProfessionalCourseDialog';
 
 const AllCoursesView: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
@@ -18,6 +20,11 @@ const AllCoursesView: React.FC = () => {
     setSelectedProfessionalCourse,
     isEditDialogOpen,
     setIsEditDialogOpen,
+    isAddDialogOpen,
+    setIsAddDialogOpen,
+    newProfessionalCourse,
+    setNewProfessionalCourse,
+    handleAddProfessionalCourse,
     handleUpdateProfessionalCourse,
     handleEditProfessionalCourseInit,
     handleDeleteProfessionalCourse,
@@ -88,6 +95,13 @@ const AllCoursesView: React.FC = () => {
     };
   }, [loadCoursesFromLocalStorage]);
 
+  const handleSyncComplete = () => {
+    // Reload courses after sync completes
+    loadCoursesFromDatabase().catch(err => {
+      console.error('Error reloading courses after sync:', err);
+    });
+  };
+
   if (error) {
     return (
       <Alert variant="destructive" className="mb-4">
@@ -111,7 +125,20 @@ const AllCoursesView: React.FC = () => {
     <div className="space-y-8">
       <div className="flex justify-between items-center mb-4">
         <h2 className="text-2xl font-bold">Մասնագիտական դասընթացներ</h2>
-        <DatabaseSyncButton size="default" showLabel={true} />
+        <div className="flex gap-2">
+          <Button 
+            onClick={() => setIsAddDialogOpen(true)} 
+            size="sm" 
+            className="mr-2"
+          >
+            Ավելացնել նոր դասընթաց
+          </Button>
+          <DatabaseSyncButton 
+            size="default" 
+            showLabel={true} 
+            onSyncComplete={handleSyncComplete}
+          />
+        </div>
       </div>
       
       <ProfessionalCourseList
@@ -120,6 +147,14 @@ const AllCoursesView: React.FC = () => {
         isAdmin={false}
         onEdit={handleEditProfessionalCourseInit}
         onDelete={handleDeleteProfessionalCourse}
+      />
+
+      <AddProfessionalCourseDialog
+        isOpen={isAddDialogOpen}
+        setIsOpen={setIsAddDialogOpen}
+        newCourse={newProfessionalCourse}
+        setNewCourse={setNewProfessionalCourse}
+        handleAddCourse={handleAddProfessionalCourse}
       />
 
       <EditProfessionalCourseDialog
