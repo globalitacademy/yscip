@@ -46,8 +46,8 @@ export const CourseProvider: React.FC<{ children: ReactNode }> = ({ children }) 
     professionalCourseToDelete: null,
     
     // Collection setters
-    setCourses: courseManagement.setCourses,
-    setProfessionalCourses: courseManagement.setProfessionalCourses,
+    setCourses: (courses) => courseManagement.setCourses(courses),
+    setProfessionalCourses: (courses) => courseManagement.setProfessionalCourses(courses),
     setIsCreateDialogOpen: courseManagement.setIsAddDialogOpen,
     setIsEditDialogOpen: courseManagement.setIsEditDialogOpen,
     setIsDeleteDialogOpen: courseManagement.setIsDeleteDialogOpen,
