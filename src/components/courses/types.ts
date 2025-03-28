@@ -1,4 +1,5 @@
 
+
 export interface Course {
   id: string;
   title: string;
@@ -18,3 +19,4 @@ export interface Course {
   updatedAt?: string;
   difficulty?: string;
 }
+

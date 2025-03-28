@@ -1,4 +1,5 @@
 
+
 export interface Course {
   id: string;
   name: string;
@@ -76,3 +77,4 @@ export interface CourseContextType {
   handleUpdateProfessionalCourse: (id: string, courseData: Partial<ProfessionalCourse>) => Promise<boolean>;
   handleDeleteProfessionalCourse: (id: string) => Promise<boolean>;
 }
+
