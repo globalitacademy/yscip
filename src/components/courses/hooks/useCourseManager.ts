@@ -1,6 +1,6 @@
-
 import { useState, useEffect } from 'react';
-import { Course, ProfessionalCourse } from '@/components/courses/types';
+import { Course } from '@/components/courses/types';
+import { ProfessionalCourse } from '@/components/courses/types/ProfessionalCourse';
 import { useAuth } from '@/contexts/AuthContext';
 import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
@@ -46,12 +46,9 @@ export const useCourseManager = ({
   
   const { user } = useAuth();
 
-  
-  
   const userCourses = courses.filter(course => course.createdBy === user?.id);
   const userProfessionalCourses = professionalCourses.filter(course => course.createdBy === user?.id);
 
-  // Filter courses based on search and filters
   const filteredCourses = courses.filter(course => {
     const matchesSearch = course.title?.toLowerCase().includes(searchTerm.toLowerCase()) || 
                           course.name.toLowerCase().includes(searchTerm.toLowerCase());
@@ -66,7 +63,6 @@ export const useCourseManager = ({
     return matchesSearch && matchesCategory;
   });
 
-  // Sort courses if a sort option is selected
   if (selectedSort) {
     filteredCourses.sort((a, b) => {
       if (selectedSort === 'newest') {
@@ -84,12 +80,10 @@ export const useCourseManager = ({
 
   const loadCourses = async () => {
     
-    
     setIsLoading(true);
     setError(null);
     
     try {
-      // Try to load from localStorage first
       const storedCourses = localStorage.getItem('courses');
       if (storedCourses) {
         const parsedCourses = JSON.parse(storedCourses);
@@ -99,7 +93,6 @@ export const useCourseManager = ({
         }
       }
       
-      // Then try to fetch from Supabase
       console.info('Fetching all courses from Supabase');
       const { data: coursesData, error: coursesError } = await supabase
         .from('courses')
@@ -110,7 +103,6 @@ export const useCourseManager = ({
         setError(`Error fetching courses: ${coursesError.message}`);
         toast.error('Դասընթացները բեռնելիս սխալ է տեղի ունեցել։');
       } else if (coursesData) {
-        // Convert the database format to our Course interface format
         const formattedCourses: Course[] = coursesData.map(item => ({
           id: item.id,
           name: item.title,
@@ -120,11 +112,12 @@ export const useCourseManager = ({
           instructor: item.created_by || '',
           duration: item.duration,
           modules: item.modules || [],
-          prerequisites: [],
-          category: '',
+          prerequisites: item.prerequisites || [],
+          category: item.category || '',
           createdBy: item.created_by || '',
           is_public: item.is_public,
           imageUrl: item.image_url,
+          difficulty: item.difficulty,
           createdAt: item.created_at,
           updatedAt: item.updated_at
         }));
@@ -134,7 +127,6 @@ export const useCourseManager = ({
         console.info(`Loaded ${formattedCourses.length} courses from Supabase`);
       }
       
-      // Load professional courses using the ProfessionalCourse type
       try {
         const { data: profCoursesData, error: profCoursesError } = await supabase
           .from('courses')
@@ -144,26 +136,27 @@ export const useCourseManager = ({
         if (profCoursesError) {
           console.error('Error fetching professional courses:', profCoursesError);
         } else if (profCoursesData) {
-          // Convert the data to our ProfessionalCourse format as needed
-          // This is a simplified version - actual implementation may need more mapping
-          const professionalCoursesData = profCoursesData.map(item => ({
-            id: item.id,
-            title: item.title,
-            subtitle: item.subtitle || 'ԴԱՍԸՆԹԱՑ',
-            iconName: item.icon_name,
-            duration: item.duration,
-            price: item.price || 'Free',
-            buttonText: item.button_text || 'Դիտել',
-            color: item.color || 'text-amber-500',
-            createdBy: item.created_by || '',
-            institution: item.institution || '',
-            description: item.description,
-            imageUrl: item.image_url,
-            organizationLogo: item.organization_logo,
-            is_public: item.is_public,
-            createdAt: item.created_at,
-            updatedAt: item.updated_at
-          })) as ProfessionalCourse[];
+          const professionalCoursesData = profCoursesData
+            .filter(item => item.is_public)
+            .map(item => ({
+              id: item.id,
+              title: item.title,
+              subtitle: item.subtitle || 'ԴԱՍԸՆԹԱՑ',
+              icon: null,
+              iconName: item.icon_name,
+              duration: item.duration,
+              price: item.price || 'Free',
+              buttonText: item.button_text || 'Դիտել',
+              color: item.color || 'text-amber-500',
+              createdBy: item.created_by || '',
+              institution: item.institution || '',
+              description: item.description,
+              imageUrl: item.image_url,
+              organizationLogo: item.organization_logo,
+              is_public: item.is_public,
+              createdAt: item.created_at,
+              updatedAt: item.updated_at
+            })) as ProfessionalCourse[];
           
           setProfessionalCourses(professionalCoursesData);
         }
@@ -180,12 +173,10 @@ export const useCourseManager = ({
     }
   };
 
-  // Load courses on initial render
   useEffect(() => {
     loadCourses();
   }, []);
 
-  // Filter handling functions
   const handleSearchChange = (value: string) => {
     setSearchTerm(value);
   };
@@ -209,7 +200,6 @@ export const useCourseManager = ({
     setSelectedSort(null);
   };
 
-  // Dialog management functions
   const handleOpenEditDialog = (course: Course) => {
     setCourseToEdit(course);
     setIsEditDialogOpen(true);
@@ -258,7 +248,6 @@ export const useCourseManager = ({
     setIsDeleteProfessionalDialogOpen(false);
   };
 
-  // CRUD operations
   const handleCreateCourse = async (course: Omit<Course, 'id' | 'createdAt'>) => {
     try {
       setIsLoading(true);
@@ -273,11 +262,9 @@ export const useCourseManager = ({
         specialization: course.specialization || '',
       };
       
-      // Optimistically update local state
       setCourses(prev => [...prev, newCourse]);
       setIsCreateDialogOpen(false);
       
-      // Prepare data for Supabase format
       const supabaseCourseData = {
         id: newCourse.id,
         title: newCourse.title || newCourse.name,
@@ -286,18 +273,19 @@ export const useCourseManager = ({
         created_by: newCourse.createdBy,
         duration: newCourse.duration,
         modules: newCourse.modules,
+        prerequisites: newCourse.prerequisites,
+        category: newCourse.category,
         is_public: newCourse.is_public,
+        difficulty: newCourse.difficulty,
         image_url: newCourse.imageUrl,
         created_at: newCourse.createdAt,
         updated_at: newCourse.updatedAt
       };
       
-      // Attempt to save to Supabase
       const { error } = await supabase.from('courses').insert(supabaseCourseData);
       
       if (error) {
         console.error('Error creating course:', error);
-        // Revert optimistic update if there's an error
         setCourses(prev => prev.filter(c => c.id !== newCourse.id));
         toast.error('Դասընթացը ստեղծելիս սխալ է տեղի ունեցել։');
         return false;
@@ -319,17 +307,14 @@ export const useCourseManager = ({
     try {
       setIsLoading(true);
       
-      // Optimistically update local state
       setCourses(prev => 
         prev.map(course => 
           course.id === id ? { ...course, ...courseData } : course
         )
       );
       
-      // Close dialog
       handleCloseEditDialog();
       
-      // Convert to Supabase format
       const supabaseData: Record<string, any> = {};
       
       if (courseData.title) supabaseData.title = courseData.title;
@@ -337,12 +322,12 @@ export const useCourseManager = ({
       if (courseData.specialization) supabaseData.specialization = courseData.specialization;
       if (courseData.duration) supabaseData.duration = courseData.duration;
       if (courseData.modules) supabaseData.modules = courseData.modules;
+      if (courseData.prerequisites) supabaseData.prerequisites = courseData.prerequisites;
       if (courseData.is_public !== undefined) supabaseData.is_public = courseData.is_public;
       if (courseData.imageUrl) supabaseData.image_url = courseData.imageUrl;
       
       supabaseData.updated_at = new Date().toISOString();
       
-      // Attempt to update in Supabase
       const { error } = await supabase
         .from('courses')
         .update(supabaseData)
@@ -350,7 +335,6 @@ export const useCourseManager = ({
       
       if (error) {
         console.error('Error updating course:', error);
-        // Reload courses to revert changes if there's an error
         loadCourses();
         toast.error('Դասընթացը թարմացնելիս սխալ է տեղի ունեցել։');
         return false;
@@ -372,14 +356,11 @@ export const useCourseManager = ({
     try {
       setIsLoading(true);
       
-      // Optimistically update local state
       const courseToRemove = courses.find(course => course.id === id);
       setCourses(prev => prev.filter(course => course.id !== id));
       
-      // Close dialog
       handleCloseDeleteDialog();
       
-      // Attempt to delete from Supabase
       const { error } = await supabase
         .from('courses')
         .delete()
@@ -387,7 +368,6 @@ export const useCourseManager = ({
       
       if (error) {
         console.error('Error deleting course:', error);
-        // Restore course if there's an error
         if (courseToRemove) {
           setCourses(prev => [...prev, courseToRemove]);
         }
@@ -419,11 +399,8 @@ export const useCourseManager = ({
         createdBy: user?.name || 'Unknown Partner',
       };
       
-      // Optimistically update local state
       setProfessionalCourses(prev => [...prev, newCourse]);
-      setIsCreateProfessionalDialogOpen(false);
       
-      // Prepare Supabase data
       const supabaseCourseData = {
         id: newCourse.id,
         title: newCourse.title,
@@ -438,17 +415,15 @@ export const useCourseManager = ({
         image_url: newCourse.imageUrl,
         organization_logo: newCourse.organizationLogo,
         description: newCourse.description,
-        is_public: newCourse.is_public,
+        is_public: true,
         created_at: newCourse.createdAt,
         updated_at: newCourse.updatedAt
       };
       
-      // Attempt to save to Supabase
       const { error } = await supabase.from('courses').insert(supabaseCourseData);
       
       if (error) {
         console.error('Error creating professional course:', error);
-        // Revert optimistic update if there's an error
         setProfessionalCourses(prev => prev.filter(c => c.id !== newCourse.id));
         toast.error('Մասնագիտական դասընթացը ստեղծելիս սխալ է տեղի ունեցել։');
         return false;
@@ -470,17 +445,14 @@ export const useCourseManager = ({
     try {
       setIsLoading(true);
       
-      // Optimistically update local state
       setProfessionalCourses(prev => 
         prev.map(course => 
           course.id === id ? { ...course, ...courseData } : course
         )
       );
       
-      // Close dialog
       handleCloseEditProfessionalDialog();
       
-      // Convert to Supabase format
       const supabaseData: Record<string, any> = {};
       
       if (courseData.title) supabaseData.title = courseData.title;
@@ -498,7 +470,6 @@ export const useCourseManager = ({
       
       supabaseData.updated_at = new Date().toISOString();
       
-      // Attempt to update in Supabase
       const { error } = await supabase
         .from('courses')
         .update(supabaseData)
@@ -506,7 +477,6 @@ export const useCourseManager = ({
       
       if (error) {
         console.error('Error updating professional course:', error);
-        // Reload courses to revert changes if there's an error
         loadCourses();
         toast.error('Մասնագիտական դասընթացը թարմացնելիս սխալ է տեղի ունեցել։');
         return false;
@@ -528,14 +498,11 @@ export const useCourseManager = ({
     try {
       setIsLoading(true);
       
-      // Optimistically update local state
       const courseToRemove = professionalCourses.find(course => course.id === id);
       setProfessionalCourses(prev => prev.filter(course => course.id !== id));
       
-      // Close dialog
       handleCloseDeleteProfessionalDialog();
       
-      // Attempt to delete from Supabase
       const { error } = await supabase
         .from('courses')
         .delete()
@@ -543,7 +510,6 @@ export const useCourseManager = ({
       
       if (error) {
         console.error('Error deleting professional course:', error);
-        // Restore course if there's an error
         if (courseToRemove) {
           setProfessionalCourses(prev => [...prev, courseToRemove]);
         }
