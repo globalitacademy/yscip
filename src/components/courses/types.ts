@@ -1,8 +1,11 @@
+
 export interface Course {
   id: string;
   title: string;
+  name?: string;
   description: string;
   instructor: string;
+  specialization?: string;
   duration: string;
   modules: string[];
   prerequisites: string[];

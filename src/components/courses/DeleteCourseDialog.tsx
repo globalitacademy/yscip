@@ -20,7 +20,12 @@ const DeleteCourseDialog: React.FC<DeleteCourseDialogProps> = ({
 }) => {
   if (!selectedCourse) return null;
 
-  const courseName = 'name' in selectedCourse ? selectedCourse.name : selectedCourse.title;
+  // Handle both naming conventions (name from old interface, title from new interface)
+  const courseName = 'name' in selectedCourse && selectedCourse.name 
+    ? selectedCourse.name 
+    : 'title' in selectedCourse && selectedCourse.title 
+      ? selectedCourse.title 
+      : 'Անանուն դասընթաց';
 
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
