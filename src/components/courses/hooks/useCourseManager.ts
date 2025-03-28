@@ -77,9 +77,8 @@ export const useCourseManager = () => {
         ...selectedCourse,
         id: uuidv4(),
         createdBy: user?.id || '',
-        // Using updatedAt and createdAt that we added to the Course type
-        updatedAt: new Date().toISOString(),
         createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
       };
       
       const updatedCourses = [newCourse, ...courses];
@@ -106,9 +105,8 @@ export const useCourseManager = () => {
       const newCourse: ProfessionalCourse = {
         ...professionalCourse as ProfessionalCourse,
         id: uuidv4(),
-        // Using updatedAt and createdAt that we added to the ProfessionalCourse type
-        updatedAt: new Date().toISOString(),
         createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
       };
       
       const updatedCourses = [newCourse, ...professionalCourses];
@@ -211,11 +209,15 @@ export const useCourseManager = () => {
     
     if (type === 'standard') {
       setSelectedCourse({
+        id: '',
         name: '',
         specialization: '',
         duration: '',
         description: '',
         modules: [],
+        createdBy: '',
+        createdAt: '',
+        updatedAt: ''
       } as Course);
       setProfessionalCourse({});
     } else {
@@ -226,7 +228,7 @@ export const useCourseManager = () => {
         duration: '',
         price: '',
         color: 'text-amber-500',
-        iconName: 'code',  // Fixed from icon_name to iconName
+        iconName: 'code',
         buttonText: 'Դիտել', 
         is_public: false,
         lessons: [],

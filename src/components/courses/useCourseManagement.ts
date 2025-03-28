@@ -14,136 +14,9 @@ import {
   syncCoursesToSupabase
 } from './utils/courseUtils';
 
-const mockProfessionalCourses: ProfessionalCourse[] = [
-  {
-    id: '1',
-    title: 'WEB Front-End',
-    subtitle: 'ԴԱՍԸՆԹԱՑ',
-    icon: React.createElement(Code, { className: "w-16 h-16" }),
-    duration: '9 ամիս',
-    price: '58,000 ֏',
-    buttonText: 'Դիտել',
-    color: 'text-amber-500',
-    createdBy: 'Արամ Հակոբյան',
-    institution: 'ՀՊՏՀ',
-    description: 'Սովորեք Web կայքերի մշակում՝ օգտագործելով արդի տեխնոլոգիաներ ինչպիսիք են HTML5, CSS3, JavaScript, React և Node.js։ Այս դասընթացը նախատեսված է սկսնակների համար և կօգնի ձեզ դառնալ պրոֆեսիոնալ Front-End ծրագրավորող։',
-    lessons: [
-      { title: 'Ներածություն Web ծրագրավորման մեջ', duration: '3 ժամ' },
-      { title: 'HTML5 հիմունքներ', duration: '6 ժամ' },
-      { title: 'CSS3 և ձևավորում', duration: '8 ժամ' },
-      { title: 'JavaScript հիմունքներ', duration: '12 ժամ' }
-    ],
-    requirements: [
-      'Համակարգչային հիմնական գիտելիքներ',
-      'Տրամաբանական մտածելակերպ'
-    ],
-    outcomes: [
-      'Մշակել ամբողջական ինտերակտիվ վեբ կայքեր',
-      'Աշխատել React-ով միաէջանի հավելվածների հետ'
-    ]
-  },
-  {
-    id: '2',
-    title: 'Python (ML / AI)',
-    subtitle: 'ԴԱՍԸՆԹԱՑ',
-    icon: React.createElement(BrainCircuit, { className: "w-16 h-16" }),
-    duration: '7 ամիս',
-    price: '68,000 ֏',
-    buttonText: 'Դիտել',
-    color: 'text-blue-500',
-    createdBy: 'Լիլիթ Մարտիրոսյան',
-    institution: 'ԵՊՀ',
-    description: 'Սովորեք Python ծրագրավորում՝ մեքենայական ուսուցման և արհեստական բանականության հիմունքներով։ Այս ինտենսիվ դասընթացը կօգնի ձեզ ծանոթանալ AI/ML ժամանակակից գործիքների հետ։',
-    lessons: [
-      { title: 'Python հիմունքներ', duration: '10 ժամ' },
-      { title: 'Տվյալների վերլուծություն NumPy-ով և Pandas-ով', duration: '12 ժամ' },
-      { title: 'Մեքենայական ուսուցման ներածություն', duration: '6 ժամ' }
-    ],
-    requirements: [
-      'Ծրագրավորման բազային իմացություն',
-      'Մաթեմատիկայի և վիճակագրության հիմունքներ'
-    ],
-    outcomes: [
-      'Մշակել մեքենայական ուսուցման մոդելներ',
-      'Վերլուծել և վիզուալիզացնել մեծ տվյալներ'
-    ]
-  },
-  {
-    id: '3',
-    title: 'Java',
-    subtitle: 'ԴԱՍԸՆԹԱՑ',
-    icon: React.createElement(BookText, { className: "w-16 h-16" }),
-    duration: '6 ամիս',
-    price: '68,000 ֏',
-    buttonText: 'Դիտել',
-    color: 'text-red-500',
-    createdBy: 'Գարիկ Սարգսյան',
-    institution: 'ՀԱՊՀ'
-  },
-  {
-    id: '4',
-    title: 'JavaScript',
-    subtitle: 'ԴԱՍԸՆԹԱՑ',
-    icon: React.createElement(FileCode, { className: "w-16 h-16" }),
-    duration: '3.5 ամիս',
-    price: '58,000 ֏',
-    buttonText: 'Դիտել',
-    color: 'text-yellow-500',
-    createdBy: 'Անի Մուրադյան',
-    institution: 'ՀԱՀ'
-  },
-  {
-    id: '5',
-    title: 'PHP',
-    subtitle: 'ԴԱՍԸՆԹԱՑ',
-    icon: React.createElement(Database, { className: "w-16 h-16" }),
-    duration: '5 ամիս',
-    price: '58,000 ֏',
-    buttonText: 'Դիտել',
-    color: 'text-purple-500',
-    createdBy: 'Վահե Ղազարյան',
-    institution: 'ՀՊՄՀ'
-  },
-  {
-    id: '6',
-    title: 'C#/.NET',
-    subtitle: 'ԴԱՍԸՆԹԱՑ',
-    icon: React.createElement(Globe, { className: "w-16 h-16" }),
-    duration: '6 ամիս',
-    price: '68,000 ֏',
-    buttonText: 'Դիտել',
-    color: 'text-green-500',
-    createdBy: 'Տիգրան Դավթյան',
-    institution: 'ՀՌԱՀ'
-  }
-];
-
 export const mockSpecializations = ['Ծրագրավորում', 'Տվյալագիտություն', 'Դիզայն', 'Մարկետինգ', 'Բիզնես վերլուծություն'];
 
-const mockCourses: Course[] = [
-  {
-    id: '1',
-    name: 'Վեբ ծրագրավորում',
-    description: 'HTML, CSS, JavaScript, React և Node.js օգտագործելով վեբ հավելվածների մշակում',
-    specialization: 'Ծրագրավորում',
-    duration: '4 ամիս',
-    modules: ['HTML/CSS հիմունքներ', 'JavaScript', 'React', 'Node.js/Express', 'Վերջնական նախագիծ'],
-    createdBy: 'admin',
-    createdAt: new Date().toISOString(),
-    updatedAt: new Date().toISOString()
-  },
-  {
-    id: '2',
-    name: 'Մեքենայական ուսուցում',
-    description: 'Ներածություն մեքենայական ուսուցման մեջ՝ օգտագործելով Python և TensorFlow',
-    specialization: 'Տվյալագիտություն',
-    duration: '6 ամիս',
-    modules: ['Python հիմունքներ', 'Տվյալների վերլուծություն', 'Վիճակագրություն', 'Մեքենայական ուսուցման մոդելներ', 'Խորը ուսուցում', 'Վերջնական նախագիծ'],
-    createdBy: 'admin',
-    createdAt: new Date().toISOString(),
-    updatedAt: new Date().toISOString()
-  }
-];
+const initialCourses: Course[] = [];
 
 const initializeProfessionalCourses = async (): Promise<ProfessionalCourse[]> => {
   try {
@@ -165,10 +38,10 @@ const initializeProfessionalCourses = async (): Promise<ProfessionalCourse[]> =>
       }
     }
     
-    return mockProfessionalCourses;
+    return [];
   } catch (error) {
     console.error('Error initializing professional courses:', error);
-    return mockProfessionalCourses;
+    return [];
   }
 };
 
@@ -181,7 +54,7 @@ const initializeCourses = (): Course[] => {
       console.error('Error parsing stored courses:', e);
     }
   }
-  return mockCourses;
+  return initialCourses;
 };
 
 export const useCourseManagement = () => {
@@ -205,7 +78,8 @@ export const useCourseManagement = () => {
     specialization: '',
     duration: '',
     modules: [],
-    createdBy: user?.id || ''
+    createdBy: user?.id || '',
+    is_public: false
   });
   
   const [newProfessionalCourse, setNewProfessionalCourse] = useState<Partial<ProfessionalCourse>>({
@@ -269,11 +143,8 @@ export const useCourseManagement = () => {
           }
           toast.success('Տեղական դասընթացները համաժամեցվել են բազայի հետ');
         } else {
-          setProfessionalCourses(mockProfessionalCourses);
-          for (const course of mockProfessionalCourses) {
-            await saveCourseChanges(course);
-          }
-          toast.success('Նմուշային դասընթացները ավելացվել են բազա');
+          setProfessionalCourses([]);
+          toast.info('Դասընթացներ չկան, ավելացրեք նոր դասընթացներ');
         }
         setLoading(false);
         return;
@@ -336,6 +207,7 @@ export const useCourseManagement = () => {
           imageUrl: course.image_url,
           organizationLogo: course.organization_logo,
           description: course.description,
+          is_public: course.is_public,
           lessons: lessonsData?.map(lesson => ({
             title: lesson.title, 
             duration: lesson.duration
@@ -368,14 +240,13 @@ export const useCourseManagement = () => {
         }
       }
       
-      console.log('No courses in localStorage, using mock data');
-      setProfessionalCourses(mockProfessionalCourses);
-      localStorage.setItem('professionalCourses', JSON.stringify(mockProfessionalCourses));
+      console.log('No courses in localStorage');
+      setProfessionalCourses([]);
       
       return false;
     } catch (error) {
       console.error('Error loading courses from localStorage:', error);
-      setProfessionalCourses(mockProfessionalCourses);
+      setProfessionalCourses([]);
       return false;
     }
   }, []);
@@ -398,6 +269,7 @@ export const useCourseManagement = () => {
       duration: newCourse.duration,
       modules: newCourse.modules || [],
       createdBy: user?.id || 'unknown',
+      is_public: newCourse.is_public || false,
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString()
     };
@@ -412,7 +284,8 @@ export const useCourseManagement = () => {
       specialization: '',
       duration: '',
       modules: [],
-      createdBy: user?.id || ''
+      createdBy: user?.id || '',
+      is_public: false
     });
     setIsAddDialogOpen(false);
     toast.success('Կուրսը հաջողությամբ ավելացվել է');
@@ -510,7 +383,10 @@ export const useCourseManagement = () => {
       subtitle: newProfessionalCourse.subtitle || 'ԴԱՍԸՆԹԱՑ',
       color: newProfessionalCourse.color || 'text-amber-500',
       institution: newProfessionalCourse.institution || 'ՀՊՏՀ',
-      iconName: 'book'
+      iconName: 'book',
+      is_public: newProfessionalCourse.is_public || false,
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString()
     };
 
     const success = await saveCourseChanges(courseToAdd);
@@ -533,7 +409,8 @@ export const useCourseManagement = () => {
         description: '',
         lessons: [],
         requirements: [],
-        outcomes: []
+        outcomes: [],
+        is_public: false
       });
       setIsAddDialogOpen(false);
       toast.success('Դասընթացը հաջողությամբ ավելացվել է');

@@ -29,11 +29,20 @@ const CourseTabView: React.FC = () => {
 
   const isAdmin = user?.role === 'admin';
 
+  // Filter out template courses - only show courses with is_public=true or created by current user
+  const filteredCourses = courses.filter(course => 
+    course.is_public || course.createdBy === user?.id
+  );
+  
+  const filteredProfessionalCourses = professionalCourses.filter(course => 
+    course.is_public || course.createdBy === user?.name
+  );
+
   return (
     <>
       <CourseList
-        courses={courses}
-        professionalCourses={professionalCourses}
+        courses={filteredCourses}
+        professionalCourses={filteredProfessionalCourses}
       />
 
       <EditCourseDialog

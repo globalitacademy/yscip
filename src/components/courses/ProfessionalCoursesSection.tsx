@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { FadeIn } from '@/components/LocalTransitions';
 import { Button } from '@/components/ui/button';
@@ -7,118 +8,50 @@ import { Card, CardContent, CardFooter, CardHeader } from '@/components/ui/card'
 import { ProfessionalCourse } from './types/ProfessionalCourse';
 import EditProfessionalCourseDialog from './EditProfessionalCourseDialog';
 import { useAuth } from '@/contexts/AuthContext';
-import { saveCourseChanges, COURSE_UPDATED_EVENT, getAllCoursesFromLocalStorage } from './utils/courseUtils';
+import { saveCourseChanges, COURSE_UPDATED_EVENT, getAllCoursesFromSupabase } from './utils/courseUtils';
 import { toast } from 'sonner';
-
-const initialProfessionalCourses: ProfessionalCourse[] = [
-  {
-    id: '1',
-    title: 'WEB Front-End',
-    subtitle: 'ԴԱՍԸՆԹԱՑ',
-    icon: <Code className="w-16 h-16" />,
-    duration: '9 ամիս',
-    price: '58,000 ֏',
-    buttonText: 'Դիտել',
-    color: 'text-amber-500',
-    createdBy: 'Արամ Հակոբյան',
-    institution: 'ՀՊՏՀ',
-    imageUrl: 'https://images.unsplash.com/photo-1547658719-da2b51169166?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=2000&q=80',
-    organizationLogo: 'https://upload.wikimedia.org/wikipedia/commons/thumb/9/9a/ASUE-Logo.png/220px-ASUE-Logo.png'
-  },
-  {
-    id: '2',
-    title: 'Python (ML / AI)',
-    subtitle: 'ԴԱՍԸՆԹԱՑ',
-    icon: <BrainCircuit className="w-16 h-16" />,
-    duration: '7 ամիս',
-    price: '68,000 ֏',
-    buttonText: 'Դիտել',
-    color: 'text-blue-500',
-    createdBy: 'Լիլիթ Մարտիրոսյան',
-    institution: 'ԵՊՀ',
-    imageUrl: 'https://images.unsplash.com/photo-1526379879527-8559ecfd8bf7?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=2000&q=80'
-  },
-  {
-    id: '3',
-    title: 'Java',
-    subtitle: 'ԴԱՍԸՆԹԱՑ',
-    icon: <BookText className="w-16 h-16" />,
-    duration: '6 ամիս',
-    price: '68,000 ֏',
-    buttonText: 'Դիտել',
-    color: 'text-red-500',
-    createdBy: 'Գարիկ Սարգսյան',
-    institution: 'ՀԱՊՀ',
-    imageUrl: 'https://images.unsplash.com/photo-1516116216624-53e697fedbea?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=2000&q=80'
-  },
-  {
-    id: '4',
-    title: 'JavaScript',
-    subtitle: 'ԴԱՍԸՆԹԱՑ',
-    icon: <FileCode className="w-16 h-16" />,
-    duration: '3.5 ամիս',
-    price: '58,000 ֏',
-    buttonText: 'Դիտել',
-    color: 'text-yellow-500',
-    createdBy: 'Անի Մուրադյան',
-    institution: 'ՀԱՀ',
-    imageUrl: 'https://images.unsplash.com/photo-1555066931-4365d14bab8c?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=2000&q=80'
-  },
-  {
-    id: '5',
-    title: 'PHP',
-    subtitle: 'ԴԱՍԸՆԹԱՑ',
-    icon: <Database className="w-16 h-16" />,
-    duration: '5 ամիս',
-    price: '58,000 ֏',
-    buttonText: 'Դիտել',
-    color: 'text-purple-500',
-    createdBy: 'Վահե Ղազարյան',
-    institution: 'ՀՊՄՀ',
-    imageUrl: 'https://images.unsplash.com/photo-1599507593499-a3f7d7d97667?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=2000&q=80'
-  },
-  {
-    id: '6',
-    title: 'C#/.NET',
-    subtitle: 'ԴԱՍԸՆԹԱՑ',
-    icon: <Globe className="w-16 h-16" />,
-    duration: '6 ամիս',
-    price: '68,000 ֏',
-    buttonText: 'Դիտել',
-    color: 'text-green-500',
-    createdBy: 'Տիգրան Դավթյան',
-    institution: 'ՀՌԱՀ',
-    imageUrl: 'https://images.unsplash.com/photo-1587620962725-abab7fe55159?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=2000&q=80'
-  }
-];
 
 const ProfessionalCoursesSection: React.FC = () => {
   const { user } = useAuth();
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [selectedCourse, setSelectedCourse] = useState<ProfessionalCourse | null>(null);
   const [courses, setCourses] = useState<ProfessionalCourse[]>([]);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const storedCourses = localStorage.getItem('professionalCourses');
-    
-    if (storedCourses) {
+    // Load courses from database directly
+    const loadCourses = async () => {
+      setLoading(true);
       try {
-        const parsedCourses = JSON.parse(storedCourses);
-        if (Array.isArray(parsedCourses) && parsedCourses.length > 0) {
-          setCourses(parsedCourses);
+        const databaseCourses = await getAllCoursesFromSupabase();
+        setCourses(databaseCourses);
+      } catch (error) {
+        console.error('Error loading courses:', error);
+        toast.error('Դասընթացների բեռնման ժամանակ սխալ է տեղի ունեցել');
+        
+        // Try localStorage as fallback
+        const storedCourses = localStorage.getItem('professionalCourses');
+        if (storedCourses) {
+          try {
+            const parsedCourses = JSON.parse(storedCourses);
+            if (Array.isArray(parsedCourses) && parsedCourses.length > 0) {
+              setCourses(parsedCourses);
+            } else {
+              setCourses([]);
+            }
+          } catch (e) {
+            console.error('Error parsing stored courses:', e);
+            setCourses([]);
+          }
         } else {
-          setCourses(initialProfessionalCourses);
-          localStorage.setItem('professionalCourses', JSON.stringify(initialProfessionalCourses));
+          setCourses([]);
         }
-      } catch (e) {
-        console.error('Error parsing stored courses:', e);
-        setCourses(initialProfessionalCourses);
-        localStorage.setItem('professionalCourses', JSON.stringify(initialProfessionalCourses));
+      } finally {
+        setLoading(false);
       }
-    } else {
-      setCourses(initialProfessionalCourses);
-      localStorage.setItem('professionalCourses', JSON.stringify(initialProfessionalCourses));
-    }
+    };
+    
+    loadCourses();
   }, []);
 
   useEffect(() => {
@@ -168,6 +101,40 @@ const ProfessionalCoursesSection: React.FC = () => {
     return user && (user.role === 'admin' || course.createdBy === user.name);
   };
 
+  // Filter courses to only show public ones or those created by the current user
+  const visibleCourses = courses.filter(course => 
+    course.is_public || (user && course.createdBy === user.name)
+  );
+
+  if (loading) {
+    return (
+      <section className="py-16 bg-white">
+        <div className="container mx-auto px-4 text-center">
+          <p>Բեռնում...</p>
+        </div>
+      </section>
+    );
+  }
+
+  if (visibleCourses.length === 0) {
+    return (
+      <section className="py-16 bg-white">
+        <div className="container mx-auto px-4 text-center">
+          <h2 className="text-3xl font-bold mb-4">Ծրագրավորման դասընթացներ</h2>
+          <p className="text-muted-foreground mb-8">Դասընթացներ չկան</p>
+          
+          {user?.role === 'admin' && (
+            <Button asChild variant="outline">
+              <Link to="/courses">
+                Ավելացնել դասընթացներ
+              </Link>
+            </Button>
+          )}
+        </div>
+      </section>
+    );
+  }
+
   return (
     <section className="py-16 bg-white">
       <div className="container mx-auto px-4">
@@ -184,7 +151,7 @@ const ProfessionalCoursesSection: React.FC = () => {
         </FadeIn>
         
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {courses.map((course) => (
+          {visibleCourses.map((course) => (
             <FadeIn key={course.id} delay="delay-200" className="flex">
               <Card className="flex flex-col w-full hover:shadow-md transition-shadow relative">
                 {course.organizationLogo ? (
