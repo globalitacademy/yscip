@@ -2,11 +2,6 @@
 import React from 'react';
 import { Book, BrainCircuit, Code, Database, FileCode, Globe } from 'lucide-react';
 
-/**
- * Converts an icon name to a React component
- * @param iconName The name of the icon to convert
- * @returns A React element representing the icon
- */
 export const convertIconNameToComponent = (iconName: string): React.ReactElement => {
   let IconComponent;
   

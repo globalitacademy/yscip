@@ -2,8 +2,7 @@
 import { supabase } from '@/integrations/supabase/client';
 import { ProfessionalCourse } from '../types/ProfessionalCourse';
 import { toast } from 'sonner';
-import { Book, BrainCircuit, Code, Database, FileCode, Globe } from 'lucide-react';
-import React from 'react';
+import { convertIconNameToComponent } from '@/utils/iconUtils';
 
 // Define the event name as a constant
 export const COURSE_UPDATED_EVENT = 'courseUpdated';
@@ -12,100 +11,93 @@ export const getCourseById = async (id: string): Promise<ProfessionalCourse | nu
   try {
     console.log('Fetching course with ID:', id);
     
-    // First try to fetch from Supabase
-    try {
-      const { data: course, error } = await supabase
-        .from('courses')
-        .select('*')
-        .eq('id', id)
-        .single();
+    // Fetch from Supabase
+    const { data: course, error } = await supabase
+      .from('courses')
+      .select('*')
+      .eq('id', id)
+      .single();
 
-      if (error) {
-        console.error('Error fetching course from Supabase:', error);
-        // If Supabase fails, fall back to local storage
-        const localCourse = getLocalCourseById(id);
-        return localCourse;
-      }
-
-      if (!course) {
-        console.log('Course not found in Supabase, checking local storage');
-        const localCourse = getLocalCourseById(id);
-        return localCourse;
-      }
-
-      let lessons = [], requirements = [], outcomes = [];
-      
-      try {
-        const { data: lessonsData } = await supabase
-          .from('course_lessons')
-          .select('*')
-          .eq('course_id', id);
-          
-        if (lessonsData) lessons = lessonsData;
-      } catch (e) {
-        console.error('Error fetching lessons:', e);
-      }
-      
-      try {
-        const { data: requirementsData } = await supabase
-          .from('course_requirements')
-          .select('*')
-          .eq('course_id', id);
-          
-        if (requirementsData) requirements = requirementsData;
-      } catch (e) {
-        console.error('Error fetching requirements:', e);
-      }
-      
-      try {
-        const { data: outcomesData } = await supabase
-          .from('course_outcomes')
-          .select('*')
-          .eq('course_id', id);
-          
-        if (outcomesData) outcomes = outcomesData;
-      } catch (e) {
-        console.error('Error fetching outcomes:', e);
-      }
-
-      // Create a proper React element for the icon
-      const iconElement = convertIconNameToComponent(course.icon_name);
-
-      const formattedCourse: ProfessionalCourse = {
-        id: course.id,
-        title: course.title,
-        subtitle: course.subtitle,
-        icon: iconElement,
-        iconName: course.icon_name,
-        duration: course.duration,
-        price: course.price,
-        buttonText: course.button_text,
-        color: course.color,
-        createdBy: course.created_by,
-        institution: course.institution,
-        imageUrl: course.image_url,
-        organizationLogo: course.organization_logo,
-        description: course.description,
-        lessons: lessons?.map(lesson => ({
-          title: lesson.title, 
-          duration: lesson.duration
-        })) || [],
-        requirements: requirements?.map(req => req.requirement) || [],
-        outcomes: outcomes?.map(outcome => outcome.outcome) || []
-      };
-
-      // Update local storage for offline access
-      saveToLocalStorage(formattedCourse);
-      
-      return formattedCourse;
-    } catch (supabaseError) {
-      console.error('Error in Supabase fetching:', supabaseError);
-      // If Supabase fails, fall back to local storage
-      const localCourse = getLocalCourseById(id);
-      return localCourse;
+    if (error) {
+      console.error('Error fetching course from Supabase:', error);
+      toast.error('Դասընթացի բեռնման ժամանակ սխալ է տեղի ունեցել');
+      return null;
     }
+
+    if (!course) {
+      console.log('Course not found in Supabase');
+      toast.error('Դասընթացը չի գտնվել');
+      return null;
+    }
+
+    let lessons = [], requirements = [], outcomes = [];
+    
+    try {
+      const { data: lessonsData } = await supabase
+        .from('course_lessons')
+        .select('*')
+        .eq('course_id', id);
+        
+      if (lessonsData) lessons = lessonsData;
+    } catch (e) {
+      console.error('Error fetching lessons:', e);
+    }
+    
+    try {
+      const { data: requirementsData } = await supabase
+        .from('course_requirements')
+        .select('*')
+        .eq('course_id', id);
+        
+      if (requirementsData) requirements = requirementsData;
+    } catch (e) {
+      console.error('Error fetching requirements:', e);
+    }
+    
+    try {
+      const { data: outcomesData } = await supabase
+        .from('course_outcomes')
+        .select('*')
+        .eq('course_id', id);
+        
+      if (outcomesData) outcomes = outcomesData;
+    } catch (e) {
+      console.error('Error fetching outcomes:', e);
+    }
+
+    // Create a proper React element for the icon
+    const iconElement = convertIconNameToComponent(course.icon_name);
+
+    const formattedCourse: ProfessionalCourse = {
+      id: course.id,
+      title: course.title,
+      subtitle: course.subtitle,
+      icon: iconElement,
+      iconName: course.icon_name,
+      duration: course.duration,
+      price: course.price,
+      buttonText: course.button_text,
+      color: course.color,
+      createdBy: course.created_by,
+      institution: course.institution,
+      imageUrl: course.image_url,
+      organizationLogo: course.organization_logo,
+      description: course.description,
+      lessons: lessons?.map(lesson => ({
+        title: lesson.title, 
+        duration: lesson.duration
+      })) || [],
+      requirements: requirements?.map(req => req.requirement) || [],
+      outcomes: outcomes?.map(outcome => outcome.outcome) || [],
+      is_public: course.is_public,
+      show_on_homepage: course.show_on_homepage,
+      display_order: course.display_order
+    };
+
+    return formattedCourse;
   } catch (error) {
     console.error('Error in getCourseById:', error);
+    toast.error('Դասընթացի բեռնման ժամանակ սխալ է տեղի ունեցել');
     return null;
   }
 };
@@ -119,12 +111,13 @@ export const getAllCoursesFromSupabase = async (): Promise<ProfessionalCourse[]>
       
     if (error) {
       console.error('Error fetching courses from Supabase:', error);
-      return getAllCoursesFromLocalStorage();
+      toast.error('Դասընթացների բեռնման ժամանակ սխալ է տեղի ունեցել');
+      return [];
     }
     
     if (!data || data.length === 0) {
-      console.log('No courses found in Supabase, using local storage');
-      return getAllCoursesFromLocalStorage();
+      console.log('No courses found in Supabase');
+      return [];
     }
     
     // Process each course to format it properly
@@ -168,97 +161,18 @@ export const getAllCoursesFromSupabase = async (): Promise<ProfessionalCourse[]>
           duration: lesson.duration
         })) || [],
         requirements: requirementsData?.map(req => req.requirement) || [],
-        outcomes: outcomesData?.map(outcome => outcome.outcome) || []
+        outcomes: outcomesData?.map(outcome => outcome.outcome) || [],
+        is_public: course.is_public,
+        show_on_homepage: course.show_on_homepage,
+        display_order: course.display_order
       };
     }));
-    
-    // Update local storage with the fetched courses
-    localStorage.setItem('professionalCourses', JSON.stringify(formattedCourses));
     
     return formattedCourses;
   } catch (error) {
     console.error('Error fetching all courses from Supabase:', error);
-    return getAllCoursesFromLocalStorage();
-  }
-};
-
-export const getAllCoursesFromLocalStorage = (): ProfessionalCourse[] => {
-  try {
-    const storedCourses = localStorage.getItem('professionalCourses');
-    if (storedCourses) {
-      return JSON.parse(storedCourses);
-    }
+    toast.error('Դասընթացների բեռնման ժամանակ սխալ է տեղի ունեցել');
     return [];
-  } catch (error) {
-    console.error('Error getting courses from localStorage:', error);
-    return [];
-  }
-};
-
-const getLocalCourseById = (id: string): ProfessionalCourse | null => {
-  try {
-    const storedCourses = localStorage.getItem('professionalCourses');
-    if (storedCourses) {
-      const courses: ProfessionalCourse[] = JSON.parse(storedCourses);
-      return courses.find(course => course.id === id) || null;
-    }
-    return null;
-  } catch (error) {
-    console.error('Error getting course from localStorage:', error);
-    return null;
-  }
-};
-
-const convertIconNameToComponent = (iconName: string): React.ReactElement => {
-  let IconComponent;
-  
-  switch (iconName?.toLowerCase()) {
-    case 'book':
-      IconComponent = Book;
-      break;
-    case 'code':
-      IconComponent = Code;
-      break;
-    case 'braincircuit':
-    case 'brain':
-      IconComponent = BrainCircuit;
-      break;
-    case 'database':
-      IconComponent = Database;
-      break;
-    case 'filecode':
-    case 'file':
-      IconComponent = FileCode;
-      break;
-    case 'globe':
-      IconComponent = Globe;
-      break;
-    default:
-      IconComponent = Book;
-  }
-  
-  return React.createElement(IconComponent, { className: "w-16 h-16" });
-};
-
-const saveToLocalStorage = (course: ProfessionalCourse): void => {
-  try {
-    const storedCourses = localStorage.getItem('professionalCourses');
-    if (storedCourses) {
-      const courses: ProfessionalCourse[] = JSON.parse(storedCourses);
-      const existingCourseIndex = courses.findIndex(c => c.id === course.id);
-      
-      if (existingCourseIndex !== -1) {
-        courses[existingCourseIndex] = course;
-      } else {
-        courses.push(course);
-      }
-      
-      localStorage.setItem('professionalCourses', JSON.stringify(courses));
-    } else {
-      localStorage.setItem('professionalCourses', JSON.stringify([course]));
-    }
-  } catch (error) {
-    console.error('Error saving to localStorage:', error);
   }
 };
 
@@ -271,7 +185,7 @@ export const saveCourseChanges = async (course: ProfessionalCourse): Promise<boo
     // Extract the icon name from the course object or from the iconName property
     const iconName = course.iconName || getIconNameFromElement(course.icon);
 
-    // First try to save to Supabase
+    // Save to Supabase
     try {
       const { error: courseError } = await supabase
         .from('courses')
@@ -288,6 +202,9 @@ export const saveCourseChanges = async (course: ProfessionalCourse): Promise<boo
           image_url: course.imageUrl,
           organization_logo: course.organizationLogo,
           description: course.description,
+          is_public: course.is_public,
+          show_on_homepage: course.show_on_homepage,
+          display_order: course.display_order,
           updated_at: new Date().toISOString()
         })
         .eq('id', course.id);
@@ -319,18 +236,21 @@ export const saveCourseChanges = async (course: ProfessionalCourse): Promise<boo
               image_url: course.imageUrl,
               organization_logo: course.organizationLogo,
               description: course.description,
+              is_public: course.is_public,
+              show_on_homepage: course.show_on_homepage,
+              display_order: course.display_order,
               created_at: new Date().toISOString(),
               updated_at: new Date().toISOString()
             });
             
           if (insertError) {
             console.error('Error inserting course in Supabase:', insertError);
-            // Save to localStorage as fallback
-            saveToLocalStorage(course);
+            toast.error('Դասընթացի պահպանման ժամանակ սխալ է տեղի ունեցել');
+            return false;
           }
         } else {
-          // Save to localStorage as fallback
-          saveToLocalStorage(course);
+          toast.error('Դասընթացի թարմացման ժամանակ սխալ է տեղի ունեցել');
+          return false;
         }
       } else {
         // If course update was successful, also update related tables
@@ -394,19 +314,19 @@ export const saveCourseChanges = async (course: ProfessionalCourse): Promise<boo
       }
     } catch (supabaseError) {
       console.error('Error with Supabase operations:', supabaseError);
-      // We've already saved to localStorage, so we can still return true
+      toast.error('Դասընթացի պահպանման ժամանակ սխալ է տեղի ունեցել');
+      return false;
     }
-
-    // Always save to localStorage for offline access
-    saveToLocalStorage(course);
 
     // Notify any listeners about the course change with a custom event
     const event = new CustomEvent(COURSE_UPDATED_EVENT, { detail: course });
     window.dispatchEvent(event);
-
+    
+    toast.success('Դասընթացը հաջողությամբ պահպանվել է');
     return true;
   } catch (error) {
     console.error('Error saving course changes:', error);
+    toast.error('Դասընթացի պահպանման ժամանակ սխալ է տեղի ունեցել');
     return false;
   }
 };
@@ -437,20 +357,11 @@ const getIconNameFromElement = (iconElement: React.ReactElement): string => {
 
 export const syncCoursesToSupabase = async (): Promise<void> => {
   try {
-    // Get all courses from local storage
-    const localCourses = getAllCoursesFromLocalStorage();
+    toast.info('Համաժամեցում բազայի հետ...');
     
-    if (localCourses.length === 0) {
-      console.log('No local courses to sync to Supabase');
-      return;
-    }
+    // Get all courses from Supabase again to refresh local data
+    await getAllCoursesFromSupabase();
     
-    // For each local course, try to save it to Supabase
-    for (const course of localCourses) {
-      await saveCourseChanges(course);
-    }
-    
-    console.log('Successfully synced local courses to Supabase');
     toast.success('Դասընթացները հաջողությամբ համաժամեցվել են բազայի հետ');
   } catch (error) {
     console.error('Error syncing courses to Supabase:', error);

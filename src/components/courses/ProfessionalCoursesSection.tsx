@@ -5,31 +5,87 @@ import { Button } from '@/components/ui/button';
 import { useNavigate } from 'react-router-dom';
 import { ProfessionalCourse } from './types';
 import ProfessionalCourseCard from './ProfessionalCourseCard';
+import { supabase } from '@/integrations/supabase/client';
+import { convertIconNameToComponent } from '@/utils/iconUtils';
+import { toast } from 'sonner';
+import { Loader2 } from 'lucide-react';
 
 const ProfessionalCoursesSection: React.FC = () => {
   const [courses, setCourses] = useState<ProfessionalCourse[]>([]);
+  const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
   
   useEffect(() => {
-    // Load courses from localStorage
-    const storedCourses = localStorage.getItem('professionalCourses');
-    if (storedCourses) {
+    const fetchHomepageCourses = async () => {
+      setLoading(true);
       try {
-        const parsedCourses = JSON.parse(storedCourses);
+        // Fetch all courses from the database
+        const { data, error } = await supabase
+          .from('courses')
+          .select('*')
+          .eq('show_on_homepage', true)
+          .order('display_order', { ascending: true });
         
-        // Filter only courses that should be shown on homepage and sort by display_order
-        const filteredCourses = parsedCourses
-          .filter((course: ProfessionalCourse) => course.show_on_homepage)
-          .sort((a: ProfessionalCourse, b: ProfessionalCourse) => 
-            (a.display_order || 0) - (b.display_order || 0)
-          );
+        if (error) {
+          console.error('Error fetching homepage courses:', error);
+          toast.error('Դասընթացների բեռնման ժամանակ սխալ է տեղի ունեցել');
+          setLoading(false);
+          return;
+        }
+        
+        if (!data || data.length === 0) {
+          setLoading(false);
+          return;
+        }
+        
+        // Process each course to include its icon
+        const processedCourses = data.map(course => {
+          // Create icon component
+          const iconElement = convertIconNameToComponent(course.icon_name);
           
-        setCourses(filteredCourses);
+          return {
+            id: course.id,
+            title: course.title,
+            subtitle: course.subtitle,
+            icon: iconElement,
+            iconName: course.icon_name,
+            duration: course.duration,
+            price: course.price,
+            buttonText: course.button_text,
+            color: course.color,
+            createdBy: course.created_by,
+            institution: course.institution,
+            imageUrl: course.image_url,
+            organizationLogo: course.organization_logo,
+            description: course.description,
+            show_on_homepage: course.show_on_homepage,
+            display_order: course.display_order,
+            slug: course.id // Temporarily using ID as slug if not provided
+          } as ProfessionalCourse;
+        });
+        
+        setCourses(processedCourses);
       } catch (e) {
-        console.error('Error parsing stored professional courses:', e);
+        console.error('Error processing homepage courses:', e);
+        toast.error('Դասընթացների մշակման ժամանակ սխալ է տեղի ունեցել');
+      } finally {
+        setLoading(false);
       }
-    }
+    };
+    
+    fetchHomepageCourses();
   }, []);
+
+  if (loading) {
+    return (
+      <section className="py-12 bg-gradient-to-b from-secondary/20 to-background">
+        <div className="container mx-auto px-4 text-center">
+          <Loader2 className="h-8 w-8 animate-spin mx-auto mb-4" />
+          <p>Դասընթացների բեռնում...</p>
+        </div>
+      </section>
+    );
+  }
 
   if (courses.length === 0) {
     return null;
