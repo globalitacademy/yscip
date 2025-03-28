@@ -1,4 +1,3 @@
-
 import React, { useEffect, lazy, Suspense } from 'react';
 import { Button } from '@/components/ui/button';
 import { ArrowRight } from 'lucide-react';
@@ -104,12 +103,7 @@ const Index = () => {
       <div className="container mx-auto px-4 pb-16">
         <Suspense fallback={<SectionSkeleton />}>
           <ProjectManagementProvider>
-            <ProjectTabs 
-              user={user}
-              createdProjects={[]} 
-              assignments={[]} 
-              projectThemes={[]}
-            />
+            <ProjectTabs />
           </ProjectManagementProvider>
         </Suspense>
       </div>

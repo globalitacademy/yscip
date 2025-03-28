@@ -1,6 +1,6 @@
 
 import React, { useEffect } from 'react';
-import { Tab } from "@/components/ui/tabs";
+import { Tabs, TabsContent } from "@/components/ui/tabs";
 import { useAuth } from '@/contexts/AuthContext';
 import { useProjectManagement } from '@/contexts/ProjectManagementContext';
 import ProjectList from './ProjectList';
@@ -38,19 +38,18 @@ const ProjectTabs: React.FC = () => {
 
   if (filteredProjects.length === 0) {
     return (
-      <Tab value="all" className="pt-6 focus:outline-none">
+      <TabsContent value="all" className="pt-6 focus:outline-none">
         <ProjectEmptyState 
-          title="Նախագծեր չեն գտնվել"
-          description="Փորձեք փոխել որոնման պարամետրերը կամ ավելացնել նոր նախագիծ։"
+          onAddNewProject={() => {}} 
         />
-      </Tab>
+      </TabsContent>
     );
   }
 
   return (
-    <Tab value="all" className="focus:outline-none">
+    <TabsContent value="all" className="focus:outline-none">
       <ProjectList projects={filteredProjects} />
-    </Tab>
+    </TabsContent>
   );
 };
 

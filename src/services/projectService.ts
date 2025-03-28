@@ -1,3 +1,4 @@
+
 import { supabase } from '@/integrations/supabase/client';
 import { ProjectTheme } from '@/data/projectThemes';
 import { toast } from 'sonner';
@@ -39,7 +40,7 @@ export const projectService = {
         createdAt: project.created_at,
         updatedAt: project.updated_at || project.created_at,
         duration: project.duration,
-        complexity: project.complexity || 'Միջին', // Default complexity
+        complexity: project.complexity || 'Միջին', // Default complexity value
         is_public: project.is_public
       }));
     } catch (err) {
