@@ -45,16 +45,14 @@ export const CourseProvider: React.FC<{ children: ReactNode }> = ({ children }) 
     professionalCourseToEdit: courseManagement.selectedProfessionalCourse,
     professionalCourseToDelete: null,
     
-    // Collection setters
-    setCourses: (courses) => {
-      if (courseManagement.setCourses) {
-        courseManagement.setCourses(courses);
-      }
+    // Collection setters - fixing the properties access
+    setCourses: () => {
+      // Not directly available from courseManagement
+      console.warn('setCourses not implemented in CourseContext');
     },
-    setProfessionalCourses: (courses) => {
-      if (courseManagement.setProfessionalCourses) {
-        courseManagement.setProfessionalCourses(courses);
-      }
+    setProfessionalCourses: () => {
+      // Not directly available from courseManagement
+      console.warn('setProfessionalCourses not implemented in CourseContext');
     },
     setIsCreateDialogOpen: courseManagement.setIsAddDialogOpen,
     setIsEditDialogOpen: courseManagement.setIsEditDialogOpen,

@@ -24,6 +24,24 @@ const CourseDialogManager: React.FC = () => {
     setCourseType
   } = useCourseContext();
 
+  // Function to handle delete based on course type
+  const handleDelete = async () => {
+    if (!selectedCourse) return false;
+    
+    // Check if we're dealing with a standard or professional course
+    if (courseType === 'professional' && 'slug' in selectedCourse) {
+      // It's a professional course
+      return selectedCourse.id ? 
+        handleDeleteCourse(selectedCourse.id) : 
+        Promise.resolve(false);
+    } else {
+      // It's a standard course
+      return selectedCourse.id ? 
+        handleDeleteCourse(selectedCourse.id) : 
+        Promise.resolve(false);
+    }
+  };
+
   return (
     <>
       <EditCourseDialog 
@@ -47,9 +65,7 @@ const CourseDialogManager: React.FC = () => {
         isOpen={isDeleteDialogOpen}
         setIsOpen={setIsDeleteDialogOpen}
         selectedCourse={selectedCourse}
-        onDelete={() => selectedCourse?.id ? 
-          handleDeleteCourse(selectedCourse.id) : 
-          Promise.resolve(false)}
+        onDelete={handleDelete}
       />
     </>
   );

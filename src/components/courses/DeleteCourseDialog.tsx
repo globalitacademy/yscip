@@ -4,12 +4,13 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import { Button } from '@/components/ui/button';
 import { Course } from './types';
 import { ProfessionalCourse } from './types/ProfessionalCourse';
+import { toast } from 'sonner';
 
 interface DeleteCourseDialogProps {
   isOpen: boolean;
   setIsOpen: (isOpen: boolean) => void;
   selectedCourse: Course | Partial<ProfessionalCourse> | null;
-  onDelete: () => void;
+  onDelete: () => Promise<boolean>;
 }
 
 const DeleteCourseDialog: React.FC<DeleteCourseDialogProps> = ({
@@ -18,6 +19,8 @@ const DeleteCourseDialog: React.FC<DeleteCourseDialogProps> = ({
   selectedCourse,
   onDelete
 }) => {
+  const [isDeleting, setIsDeleting] = React.useState(false);
+
   if (!selectedCourse) return null;
 
   // Handle both naming conventions (name from old interface, title from new interface)
@@ -26,6 +29,24 @@ const DeleteCourseDialog: React.FC<DeleteCourseDialogProps> = ({
     : 'title' in selectedCourse && selectedCourse.title 
       ? selectedCourse.title 
       : 'Անանուն դասընթաց';
+
+  const handleDeleteClick = async () => {
+    setIsDeleting(true);
+    try {
+      const success = await onDelete();
+      if (success) {
+        toast.success('Դասընթացը հաջողությամբ ջնջվել է');
+        setIsOpen(false);
+      } else {
+        toast.error('Դասընթացը ջնջելիս սխալ է տեղի ունեցել');
+      }
+    } catch (error) {
+      console.error('Error deleting course:', error);
+      toast.error('Դասընթացը ջնջելիս սխալ է տեղի ունեցել');
+    } finally {
+      setIsDeleting(false);
+    }
+  };
 
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
@@ -37,16 +58,21 @@ const DeleteCourseDialog: React.FC<DeleteCourseDialogProps> = ({
           </DialogDescription>
         </DialogHeader>
         <DialogFooter className="flex-col sm:flex-row gap-2">
-          <Button variant="outline" onClick={() => setIsOpen(false)} className="w-full sm:w-auto">Չեղարկել</Button>
+          <Button 
+            variant="outline" 
+            onClick={() => setIsOpen(false)} 
+            className="w-full sm:w-auto"
+            disabled={isDeleting}
+          >
+            Չեղարկել
+          </Button>
           <Button 
             variant="destructive" 
-            onClick={() => {
-              onDelete();
-              setIsOpen(false);
-            }} 
+            onClick={handleDeleteClick} 
             className="w-full sm:w-auto"
+            disabled={isDeleting}
           >
-            Ջնջել
+            {isDeleting ? 'Ջնջվում է...' : 'Ջնջել'}
           </Button>
         </DialogFooter>
       </DialogContent>
