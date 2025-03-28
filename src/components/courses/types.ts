@@ -1,5 +1,4 @@
 
-
 export interface Course {
   id: string;
   title: string;
@@ -11,7 +10,7 @@ export interface Course {
   modules: string[];
   prerequisites: string[];
   imageUrl?: string;
-  category: string;
+  category?: string;
   is_public?: boolean;
   createdBy?: string;
   learningOutcomes?: string[];
@@ -19,4 +18,3 @@ export interface Course {
   updatedAt?: string;
   difficulty?: string;
 }
-

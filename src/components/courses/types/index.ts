@@ -1,22 +1,21 @@
 
-
 export interface Course {
   id: string;
-  name: string;
-  title?: string;
+  name?: string;
+  title: string;
   description: string;
-  specialization: string;
+  specialization?: string;
   instructor: string;
   duration: string;
   modules: string[];
   prerequisites?: string[];
   category?: string;
-  createdBy: string;
+  createdBy?: string;
   is_public?: boolean;
   imageUrl?: string;
   learningOutcomes?: string[];
-  createdAt: string;
-  updatedAt: string;
+  createdAt?: string;
+  updatedAt?: string;
   difficulty?: string;
 }
 
@@ -76,5 +75,19 @@ export interface CourseContextType {
   handleCreateProfessionalCourse: (course: Omit<ProfessionalCourse, 'id' | 'createdAt'>) => Promise<boolean>;
   handleUpdateProfessionalCourse: (id: string, courseData: Partial<ProfessionalCourse>) => Promise<boolean>;
   handleDeleteProfessionalCourse: (id: string) => Promise<boolean>;
+  
+  // Missing properties identified in errors
+  selectedCourse: Course | null;
+  setSelectedCourse: React.Dispatch<React.SetStateAction<Course | null>>;
+  professionalCourse: Partial<ProfessionalCourse> | null;
+  setProfessionalCourse: React.Dispatch<React.SetStateAction<Partial<ProfessionalCourse> | null>>;
+  courseType: 'standard' | 'professional';
+  setCourseType: (type: 'standard' | 'professional') => void;
+  newModule: string;
+  setNewModule: React.Dispatch<React.SetStateAction<string>>;
+  handleAddModuleToEdit: () => void;
+  handleRemoveModuleFromEdit: (index: number) => void;
+  handleEditCourse: () => void;
+  handleEditInit: (course: Course, type?: 'standard' | 'professional') => void;
+  handleCreateInit: (type: 'standard' | 'professional') => void;
 }
-

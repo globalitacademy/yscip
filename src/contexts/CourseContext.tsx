@@ -1,8 +1,6 @@
-
 import React, { createContext, useState, useContext, ReactNode } from 'react';
-import { Course } from '@/components/courses/types';
+import { Course, CourseContextType } from '@/components/courses/types/index';
 import { ProfessionalCourse } from '@/components/courses/types/ProfessionalCourse';
-import { CourseContextType } from '@/components/courses/types/index';
 import { useCourseManager } from '@/components/courses/hooks/useCourseManager';
 
 const CourseContext = createContext<CourseContextType | undefined>(undefined);
@@ -69,7 +67,20 @@ export const CourseProvider: React.FC<{ children: ReactNode }> = ({ children }) 
     isCreateDialogOpen,
     setIsCreateDialogOpen,
     setCourses,
-    setProfessionalCourses
+    setProfessionalCourses,
+    selectedCourse: courseManager.selectedCourse || null,
+    setSelectedCourse: courseManager.setSelectedCourse,
+    professionalCourse: courseManager.professionalCourse || null,
+    setProfessionalCourse: courseManager.setProfessionalCourse,
+    courseType: courseManager.courseType || 'standard',
+    setCourseType: courseManager.setCourseType,
+    newModule: courseManager.newModule || '',
+    setNewModule: courseManager.setNewModule,
+    handleAddModuleToEdit: courseManager.handleAddModuleToEdit,
+    handleRemoveModuleFromEdit: courseManager.handleRemoveModuleFromEdit,
+    handleEditCourse: courseManager.handleEditCourse,
+    handleEditInit: courseManager.handleEditInit,
+    handleCreateInit: courseManager.handleCreateInit
   };
 
   return (

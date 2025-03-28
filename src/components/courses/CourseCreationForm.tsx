@@ -4,7 +4,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import CourseForm from './CourseForm';
 import ProfessionalCourseForm from './ProfessionalCourseForm';
-import { Course } from './types';
+import { Course } from './types/index';
 import { ProfessionalCourse } from './types/ProfessionalCourse';
 import { useCourseContext } from '@/contexts/CourseContext';
 import ProjectFormFooter from '../project-creation/ProjectFormFooter';
@@ -52,15 +52,17 @@ const CourseCreationForm: React.FC = () => {
           </TabsContent>
           
           <TabsContent value="professional">
-            <ProfessionalCourseForm
-              course={professionalCourse}
-              setCourse={setProfessionalCourse}
-              isEdit={false}
-            />
+            {professionalCourse && (
+              <ProfessionalCourseForm
+                course={professionalCourse}
+                setCourse={setProfessionalCourse as React.Dispatch<React.SetStateAction<Partial<ProfessionalCourse>>>}
+                isEdit={false}
+              />
+            )}
           </TabsContent>
         </Tabs>
       </CardContent>
-      <ProjectFormFooter onSubmit={handleCreateCourse} />
+      <ProjectFormFooter onSubmit={() => handleCreateCourse(selectedCourse as Omit<Course, 'id' | 'createdAt'>)} />
     </Card>
   );
 };
