@@ -20,11 +20,7 @@ const CourseTabView: React.FC = () => {
     handleEditInit,
     handleAddModuleToEdit,
     handleRemoveModuleFromEdit,
-    handleDeleteCourse,
-    courseType,
-    setCourseType,
-    professionalCourse,
-    setProfessionalCourse
+    handleDeleteCourse
   } = useCourses();
 
   const isAdmin = user?.role === 'admin';
@@ -46,10 +42,10 @@ const CourseTabView: React.FC = () => {
         handleAddModuleToEdit={handleAddModuleToEdit}
         handleRemoveModuleFromEdit={handleRemoveModuleFromEdit}
         handleEditCourse={handleEditCourse}
-        courseType={courseType}
-        setCourseType={setCourseType}
-        professionalCourse={professionalCourse}
-        setProfessionalCourse={setProfessionalCourse}
+        courseType="standard"
+        setCourseType={() => {}}
+        professionalCourse={{}}
+        setProfessionalCourse={() => {}}
       />
     </>
   );

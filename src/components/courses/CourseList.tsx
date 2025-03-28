@@ -40,7 +40,7 @@ const CourseList: React.FC<CourseListProps> = ({ courses, professionalCourses })
                 isAdmin={isAdmin}
                 canEdit={isAdmin || course.createdBy === user?.name}
                 onEdit={() => handleEditInit(course, 'professional')}
-                onDelete={(id) => {}} // We'll handle deletion through context elsewhere
+                onDelete={(id) => {}} 
               />
             ))}
           </div>
@@ -58,7 +58,7 @@ const CourseList: React.FC<CourseListProps> = ({ courses, professionalCourses })
                 isAdmin={isAdmin}
                 canEdit={isAdmin || course.createdBy === user?.id}
                 onEdit={() => handleEditInit(course, 'standard')}
-                onDelete={(id) => {}} // We'll handle deletion through context elsewhere
+                onDelete={(id) => {}} 
               />
             ))}
           </div>
