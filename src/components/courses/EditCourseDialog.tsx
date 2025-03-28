@@ -53,8 +53,9 @@ const EditCourseDialog: React.FC<EditCourseDialogProps> = ({
   const handleSubmit = () => {
     if (courseType === 'standard' && selectedCourse) {
       handleEditCourse(selectedCourse.id, selectedCourse);
-    } else if (courseType === 'professional' && professionalCourse && professionalCourse.id) {
-      // This would be handled separately for professional courses
+    } else if (courseType === 'professional' && professionalCourse && professionalCourse.id && setProfessionalCourse) {
+      // Handle professional course update if we have proper id and setter
+      handleEditCourse(professionalCourse.id as string, professionalCourse as any);
     }
   };
 

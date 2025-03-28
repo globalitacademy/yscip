@@ -340,6 +340,7 @@ export const useCourseManagement = () => {
     if (success) {
       const updatedCourses = [...professionalCourses, courseToAdd];
       setProfessionalCourses(updatedCourses);
+      localStorage.setItem('professionalCourses', JSON.stringify(updatedCourses));
       
       setNewProfessionalCourse({
         title: '',
@@ -442,54 +443,115 @@ export const useCourseManagement = () => {
       setCourses(updatedCourses);
       localStorage.setItem('courses', JSON.stringify(updatedCourses));
       toast.success('Կուրսը հաջողությամբ հեռացվել է');
+      return true;
     } else {
       toast.error('Դուք չունեք իրավունք ջնջելու այս կուրսը');
+      return false;
     }
   };
 
-  const handleUpdateProfessionalCourse = async (id: string, courseData: Partial<ProfessionalCourse>) => {
-    if (!selectedProfessionalCourse) return false;
-    
-    // Update the course
-    const updatedCourse = { ...selectedProfessionalCourse, ...courseData };
-    
-    // Generate or update slug if title changed
-    if (courseData.title && (!updatedCourse.slug || selectedProfessionalCourse.title !== courseData.title)) {
-      updatedCourse.slug = courseData.title
-        .toLowerCase()
-        .replace(/[^\w\s-]/g, '')
-        .replace(/\s+/g, '-')
-        .replace(/--+/g, '-')
-        .trim();
+  const handleUpdateCourse = async (id: string, courseData: Partial<Course | ProfessionalCourse>) => {
+    if (!id || !courseData) {
+      toast.error('Թարմացման համար տվյալները բացակայում են');
+      return false;
     }
     
-    const success = await saveCourseChanges(updatedCourse);
+    // Check if this is a standard or professional course
+    const isStandard = courses.some(course => course.id === id);
+    const isProfessional = professionalCourses.some(course => course.id === id);
     
-    if (success) {
-      const updatedCourses = professionalCourses.map(course => 
-        course.id === id ? updatedCourse : course
+    if (isStandard) {
+      // Handle standard course update
+      if (!courseData.title || !courseData.description || !courseData.duration) {
+        toast.error('Լրացրեք բոլոր պարտադիր դաշտերը');
+        return false;
+      }
+  
+      const updatedCourses = courses.map(course => 
+        course.id === id ? { ...course, ...courseData, updatedAt: new Date().toISOString() } : course
       );
       
-      setProfessionalCourses(updatedCourses);
+      setCourses(updatedCourses);
+      localStorage.setItem('courses', JSON.stringify(updatedCourses));
       setIsEditDialogOpen(false);
-      toast.success('Դասընթացը հաջողությամբ թարմացվել է');
+      toast.success('Կուրսը հաջողությամբ թարմացվել է');
+      return true;
+    } 
+    else if (isProfessional) {
+      // Handle professional course update
+      if (!courseData.title || !courseData.duration) {
+        toast.error('Լրացրեք բոլոր պարտադիր դաշտերը');
+        return false;
+      }
+      
+      // Find the course to update
+      const courseToUpdate = professionalCourses.find(course => course.id === id);
+      if (!courseToUpdate) {
+        toast.error('Դասընթացը չի գտնվել');
+        return false;
+      }
+      
+      // Update the course
+      const updatedCourse = { 
+        ...courseToUpdate, 
+        ...courseData, 
+        updatedAt: new Date().toISOString(),
+        // Generate or update slug if title changed
+        slug: courseData.title !== courseToUpdate.title
+          ? courseData.title?.toLowerCase().replace(/[^\w\s-]/g, '').replace(/\s+/g, '-').replace(/--+/g, '-').trim()
+          : courseToUpdate.slug
+      } as ProfessionalCourse;
+      
+      const success = await saveCourseChanges(updatedCourse);
+      
+      if (success) {
+        const updatedCourses = professionalCourses.map(course => 
+          course.id === id ? updatedCourse : course
+        );
+        
+        setProfessionalCourses(updatedCourses);
+        localStorage.setItem('professionalCourses', JSON.stringify(updatedCourses));
+        setIsEditDialogOpen(false);
+        toast.success('Դասընթացը հաջողությամբ թարմացվել է');
+      } else {
+        toast.error('Դասընթացի թարմացման ժամանակ սխալ է տեղի ունեցել');
+      }
+      
+      return success;
     } else {
-      toast.error('Դասընթացի թարմացման ժամանակ սխալ է տեղի ունեցել');
+      toast.error('Դասընթացը չի գտնվել');
+      return false;
     }
-    
-    return success;
   };
 
-  const handleDeleteProfessionalCourse = (id: string) => {
+  const handleDeleteProfessionalCourse = async (id: string) => {
     const courseToDelete = professionalCourses.find(course => course.id === id);
     
-    if (courseToDelete && user?.role === 'admin') {
-      const updatedCourses = professionalCourses.filter(course => course.id !== id);
-      setProfessionalCourses(updatedCourses);
-      localStorage.setItem('professionalCourses', JSON.stringify(updatedCourses));
-      toast.success('Դասընթացը հաջողությամբ հեռացվել է');
+    if (courseToDelete && (user?.role === 'admin' || courseToDelete.createdBy === user?.name)) {
+      try {
+        // Try to delete from Supabase first
+        await supabase.from('courses').delete().eq('id', id);
+        await supabase.from('course_lessons').delete().eq('course_id', id);
+        await supabase.from('course_requirements').delete().eq('course_id', id);
+        await supabase.from('course_outcomes').delete().eq('course_id', id);
+        
+        const updatedCourses = professionalCourses.filter(course => course.id !== id);
+        setProfessionalCourses(updatedCourses);
+        localStorage.setItem('professionalCourses', JSON.stringify(updatedCourses));
+        toast.success('Դասընթացը հաջողությամբ հեռացվել է');
+        return true;
+      } catch (error) {
+        console.error('Error deleting course:', error);
+        // Even if Supabase delete fails, remove from local storage
+        const updatedCourses = professionalCourses.filter(course => course.id !== id);
+        setProfessionalCourses(updatedCourses);
+        localStorage.setItem('professionalCourses', JSON.stringify(updatedCourses));
+        toast.success('Դասընթացը հաջողությամբ հեռացվել է տեղական հիշողությունից');
+        return true;
+      }
     } else {
       toast.error('Դուք չունեք իրավունք ջնջելու այս դասընթացը');
+      return false;
     }
   };
 
@@ -534,7 +596,7 @@ export const useCourseManagement = () => {
     handleAddCourse,
     handleCreateProfessionalCourse,
     handleEditCourse,
-    handleUpdateProfessionalCourse,
+    handleUpdateCourse,
     handleEditInit,
     handleEditProfessionalCourseInit,
     handleAddModule,

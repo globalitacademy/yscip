@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Calendar, Clock, Award, ArrowLeft, Check } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { toast } from '@/components/ui/use-toast';
+import { saveCourseChanges, getAllCoursesFromSupabase } from './utils/courseUtils';
 
 const CourseDetail: React.FC = () => {
   const { slug } = useParams<{ slug: string }>();
@@ -15,32 +16,60 @@ const CourseDetail: React.FC = () => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // Load courses from localStorage
-    const storedCourses = localStorage.getItem('professionalCourses');
-    if (storedCourses && slug) {
+    const fetchCourse = async () => {
+      setLoading(true);
+      console.log("Looking for course with slug:", slug);
+      
       try {
-        const parsedCourses: ProfessionalCourse[] = JSON.parse(storedCourses);
-        console.log("Looking for course with slug/id:", slug);
-        console.log("Available courses:", parsedCourses);
-        
-        // Find course by slug or id
-        const foundCourse = parsedCourses.find(
-          (c) => c.slug === slug || c.id === slug
-        );
-        
-        if (foundCourse) {
-          console.log("Found course:", foundCourse);
-          setCourse(foundCourse);
-        } else {
-          console.log("Course not found with slug/id:", slug);
+        // First try to get courses from Supabase
+        const supabaseCourses = await getAllCoursesFromSupabase();
+        if (supabaseCourses && supabaseCourses.length > 0) {
+          console.log("Got courses from Supabase:", supabaseCourses.length);
+          const foundCourse = supabaseCourses.find(c => c.slug === slug || c.id === slug);
+          if (foundCourse) {
+            console.log("Found course in Supabase:", foundCourse.title);
+            setCourse(foundCourse);
+            setLoading(false);
+            return;
+          }
         }
-      } catch (e) {
-        console.error('Error parsing stored professional courses:', e);
+        
+        // If not found in Supabase, try localStorage
+        const storedCourses = localStorage.getItem('professionalCourses');
+        if (storedCourses && slug) {
+          try {
+            const parsedCourses: ProfessionalCourse[] = JSON.parse(storedCourses);
+            console.log("Looking for course with slug/id:", slug);
+            console.log("Available courses in localStorage:", parsedCourses.length);
+            
+            // Find course by slug or id
+            const foundCourse = parsedCourses.find(
+              (c) => c.slug === slug || c.id === slug
+            );
+            
+            if (foundCourse) {
+              console.log("Found course in localStorage:", foundCourse.title);
+              setCourse(foundCourse);
+              
+              // Sync back to Supabase
+              await saveCourseChanges(foundCourse);
+            } else {
+              console.log("Course not found with slug/id:", slug);
+            }
+          } catch (e) {
+            console.error('Error parsing stored professional courses:', e);
+          }
+        } else {
+          console.log("No stored courses or no slug provided");
+        }
+      } catch (error) {
+        console.error("Error fetching course:", error);
       }
-    } else {
-      console.log("No stored courses or no slug provided");
-    }
-    setLoading(false);
+      
+      setLoading(false);
+    };
+    
+    fetchCourse();
   }, [slug]);
 
   if (loading) {
