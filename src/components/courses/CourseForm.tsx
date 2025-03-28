@@ -36,53 +36,53 @@ const CourseForm: React.FC<CourseFormProps> = ({
   return (
     <div className="space-y-4">
       <div className="space-y-4">
-        <FormItem>
-          <FormLabel>Անվանում</FormLabel>
+        <div className="space-y-2">
+          <label htmlFor="title" className="text-sm font-medium">Անվանում</label>
           <Input 
+            id="title"
             placeholder="Դասընթացի անվանումը" 
             value={course.title || ''}
             onChange={(e) => handleInputChange('title', e.target.value)}
           />
-          <FormMessage />
-        </FormItem>
+        </div>
 
-        <FormItem>
-          <FormLabel>Նկարագրություն</FormLabel>
+        <div className="space-y-2">
+          <label htmlFor="description" className="text-sm font-medium">Նկարագրություն</label>
           <Textarea 
+            id="description"
             placeholder="Դասընթացի նկարագրությունը" 
             value={course.description || ''}
             onChange={(e) => handleInputChange('description', e.target.value)}
           />
-          <FormMessage />
-        </FormItem>
+        </div>
 
-        <FormItem>
-          <FormLabel>Դասախոս</FormLabel>
+        <div className="space-y-2">
+          <label htmlFor="instructor" className="text-sm font-medium">Դասախոս</label>
           <Input 
+            id="instructor"
             placeholder="Դասախոսի անունը" 
             value={course.instructor || ''}
             onChange={(e) => handleInputChange('instructor', e.target.value)}
           />
-          <FormMessage />
-        </FormItem>
+        </div>
 
-        <FormItem>
-          <FormLabel>Տևողություն</FormLabel>
+        <div className="space-y-2">
+          <label htmlFor="duration" className="text-sm font-medium">Տևողություն</label>
           <Input 
+            id="duration"
             placeholder="Օրինակ՝ 3 ամիս" 
             value={course.duration || ''}
             onChange={(e) => handleInputChange('duration', e.target.value)}
           />
-          <FormMessage />
-        </FormItem>
+        </div>
 
-        <FormItem>
-          <FormLabel>Կատեգորիա</FormLabel>
+        <div className="space-y-2">
+          <label htmlFor="category" className="text-sm font-medium">Կատեգորիա</label>
           <Select 
             value={course.category || ''} 
             onValueChange={(value) => handleInputChange('category', value)}
           >
-            <SelectTrigger>
+            <SelectTrigger id="category">
               <SelectValue placeholder="Ընտրեք կատեգորիա" />
             </SelectTrigger>
             <SelectContent>
@@ -93,23 +93,22 @@ const CourseForm: React.FC<CourseFormProps> = ({
               ))}
             </SelectContent>
           </Select>
-          <FormMessage />
-        </FormItem>
+        </div>
 
-        <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
+        <div className="flex flex-row items-center justify-between rounded-lg border p-4">
           <div className="space-y-0.5">
-            <FormLabel className="text-sm">Հրապարակային է</FormLabel>
+            <label htmlFor="is_public" className="text-sm font-medium">Հրապարակային է</label>
           </div>
           <Switch
+            id="is_public"
             checked={course.is_public || false}
             onCheckedChange={(checked) => handleInputChange('is_public', checked)}
           />
-          <FormMessage />
-        </FormItem>
+        </div>
 
         <div>
-          <FormLabel>Մոդուլներ</FormLabel>
-          <div className="flex space-x-2">
+          <label className="text-sm font-medium">Մոդուլներ</label>
+          <div className="flex space-x-2 mt-2">
             <Input
               type="text"
               placeholder="Մոդուլի անվանումը"
