@@ -16,4 +16,5 @@ export interface Course {
   learningOutcomes?: string[];
   createdAt?: string;
   updatedAt?: string;
+  difficulty?: string;
 }

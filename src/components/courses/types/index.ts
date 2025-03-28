@@ -25,7 +25,7 @@ export type { ProfessionalCourse, LessonItem } from './ProfessionalCourse';
 // Import the ProfessionalCourse type to use in the CourseContextType
 import { ProfessionalCourse, LessonItem } from './ProfessionalCourse';
 
-// Explicitly define the CourseContextType interface
+// Explicitly define the CourseContextType interface and export it
 export interface CourseContextType {
   courses: Course[];
   userCourses: Course[];
