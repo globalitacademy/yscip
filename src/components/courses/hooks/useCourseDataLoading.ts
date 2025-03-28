@@ -110,7 +110,7 @@ export const useCourseDataLoading = (
     }
   }, [setProfessionalCourses, setLoading]);
 
-  // Sync courses with the database - now this just reloads from database
+  // Sync courses with the database - just reloads from database
   const syncCoursesWithDatabase = useCallback(async () => {
     setLoading(true);
     toast.info('Դասընթացների համաժամեցում...');
@@ -128,8 +128,16 @@ export const useCourseDataLoading = (
     }
   }, [loadCoursesFromDatabase, setLoading]);
 
+  // Add a dummy function for loadCoursesFromLocalStorage to maintain compatibility
+  const loadCoursesFromLocalStorage = useCallback(async () => {
+    // This function now does nothing as we only want to use the database
+    // It's kept for compatibility with existing code
+    return true;
+  }, []);
+
   return {
     loadCoursesFromDatabase,
-    syncCoursesWithDatabase
+    syncCoursesWithDatabase,
+    loadCoursesFromLocalStorage
   };
 };

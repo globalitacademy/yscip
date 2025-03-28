@@ -1,4 +1,3 @@
-
 import { useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useInitialCourseStates, mockSpecializations } from './hooks/useCourseInit';
@@ -46,8 +45,8 @@ export const useCourseManagement = () => {
   // Initialize data loading functions
   const {
     loadCoursesFromDatabase,
-    loadCoursesFromLocalStorage,
-    syncCoursesWithDatabase
+    syncCoursesWithDatabase,
+    loadCoursesFromLocalStorage
   } = useCourseDataLoading(setProfessionalCourses, setLoading);
 
   // Initialize CRUD operations
@@ -103,7 +102,11 @@ export const useCourseManagement = () => {
     const loadInitialCourses = async () => {
       setLoading(true);
       try {
+        // We'll keep calling this method for backward compatibility,
+        // but it's now essentially a no-op
         await loadCoursesFromLocalStorage();
+        
+        // This is the method that actually loads data from the database
         await loadCoursesFromDatabase();
       } catch (error) {
         console.error('Error loading initial courses:', error);

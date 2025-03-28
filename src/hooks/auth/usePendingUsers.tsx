@@ -23,7 +23,12 @@ export const usePendingUsers = () => {
           name: user.name,
           email: user.email,
           role: user.role,
-          createdAt: user.created_at
+          createdAt: user.created_at,
+          // Add required fields for PendingUser type
+          verificationToken: '', // Default empty string
+          verified: false, // Default to false
+          password: '', // Default empty string 
+          registrationApproved: user.registration_approved
         }));
         
         setPendingUsers(formatted);
