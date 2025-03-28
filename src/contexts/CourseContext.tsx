@@ -1,4 +1,3 @@
-
 import React, { createContext, useState, useContext, ReactNode } from 'react';
 import { Course, CourseContextType } from '@/components/courses/types/index';
 import { ProfessionalCourse } from '@/components/courses/types/index';
@@ -100,7 +99,7 @@ export const CourseProvider: React.FC<{ children: ReactNode }> = ({ children }) 
     // Additional state management
     handleAddModuleToEdit: courseManager.handleAddModuleToEdit,
     handleRemoveModuleFromEdit: courseManager.handleRemoveModuleFromEdit,
-    handleEditCourse: courseManager.handleUpdateCourse,  // Fix: Using handleUpdateCourse instead of handleEditCourse
+    handleEditCourse: courseManager.handleUpdateCourse,
     handleEditInit: courseManager.handleEditInit,
     handleCreateInit: courseManager.handleCreateInit
   };

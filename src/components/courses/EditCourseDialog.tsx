@@ -24,11 +24,12 @@ interface EditCourseDialogProps {
   setNewModule: React.Dispatch<React.SetStateAction<string>>;
   handleAddModuleToEdit: () => void;
   handleRemoveModuleFromEdit: (index: number) => void;
-  handleEditCourse: () => void;
+  // Changed signature to match the implementation
+  handleEditCourse: (id: string, courseData: Partial<Course>) => Promise<boolean>;
   // New props for professional courses
   isProfessionalCourse?: boolean;
-  professionalCourse?: Partial<ProfessionalCourse>;
-  setProfessionalCourse?: React.Dispatch<React.SetStateAction<Partial<ProfessionalCourse>>>;
+  professionalCourse?: Partial<ProfessionalCourse> | null;
+  setProfessionalCourse?: React.Dispatch<React.SetStateAction<Partial<ProfessionalCourse> | null>>;
   courseType: 'standard' | 'professional';
   setCourseType: (type: 'standard' | 'professional') => void;
 }
@@ -50,6 +51,14 @@ const EditCourseDialog: React.FC<EditCourseDialogProps> = ({
   setCourseType
 }) => {
   if (!selectedCourse && !professionalCourse) return null;
+
+  const handleSubmit = () => {
+    if (courseType === 'standard' && selectedCourse) {
+      handleEditCourse(selectedCourse.id, selectedCourse);
+    } else if (courseType === 'professional' && professionalCourse && professionalCourse.id) {
+      // This would be handled separately for professional courses
+    }
+  };
 
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
@@ -93,7 +102,7 @@ const EditCourseDialog: React.FC<EditCourseDialogProps> = ({
         </Tabs>
         
         <DialogFooter>
-          <Button type="submit" onClick={handleEditCourse}>
+          <Button type="submit" onClick={handleSubmit}>
             Պահպանել
           </Button>
         </DialogFooter>
