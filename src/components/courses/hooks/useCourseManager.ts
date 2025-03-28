@@ -44,6 +44,11 @@ export const useCourseManager = ({
   const [professionalCourseToEdit, setProfessionalCourseToEdit] = useState<ProfessionalCourse | null>(null);
   const [professionalCourseToDelete, setProfessionalCourseToDelete] = useState<ProfessionalCourse | null>(null);
   
+  const [selectedCourse, setSelectedCourse] = useState<Course | null>(null);
+  const [professionalCourse, setProfessionalCourse] = useState<Partial<ProfessionalCourse> | null>(null);
+  const [courseType, setCourseType] = useState<'standard' | 'professional'>('standard');
+  const [newModule, setNewModule] = useState('');
+  
   const { user } = useAuth();
 
   const userCourses = courses.filter(course => course.createdBy === user?.id);
@@ -539,11 +544,87 @@ export const useCourseManager = ({
     }
   };
 
+  const handleAddModuleToEdit = () => {
+    if (!newModule || !selectedCourse) return;
+    setSelectedCourse({
+      ...selectedCourse,
+      modules: [...selectedCourse.modules, newModule]
+    });
+    setNewModule('');
+  };
+
+  const handleRemoveModuleFromEdit = (index: number) => {
+    if (!selectedCourse) return;
+    const updatedModules = [...selectedCourse.modules];
+    updatedModules.splice(index, 1);
+    setSelectedCourse({
+      ...selectedCourse,
+      modules: updatedModules
+    });
+  };
+
+  const handleEditCourse = async () => {
+    if (courseType === 'standard' && selectedCourse) {
+      return await handleUpdateCourse(selectedCourse.id, selectedCourse);
+    } else if (courseType === 'professional' && professionalCourse && professionalCourseToEdit) {
+      return await handleUpdateProfessionalCourse(
+        professionalCourseToEdit.id, 
+        professionalCourse as Partial<ProfessionalCourse>
+      );
+    }
+    return false;
+  };
+
+  const handleEditInit = (course: Course | ProfessionalCourse, type: 'standard' | 'professional' = 'standard') => {
+    setCourseType(type);
+    if (type === 'standard') {
+      setSelectedCourse(course as Course);
+      setCourseToEdit(course as Course);
+    } else {
+      setProfessionalCourse(course as ProfessionalCourse);
+      setProfessionalCourseToEdit(course as ProfessionalCourse);
+    }
+    setIsEditDialogOpen(true);
+  };
+
+  const handleCreateInit = (type: 'standard' | 'professional') => {
+    setCourseType(type);
+    if (type === 'standard') {
+      setSelectedCourse({
+        id: '',
+        title: '',
+        name: '',
+        description: '',
+        instructor: user?.name || '',
+        duration: '',
+        modules: [],
+        prerequisites: [],
+        createdBy: user?.id || ''
+      });
+    } else {
+      setProfessionalCourse({
+        title: '',
+        subtitle: 'ԴԱՍԸՆԹԱՑ',
+        iconName: 'book',
+        duration: '',
+        price: '',
+        buttonText: 'Դիտել',
+        color: 'text-amber-500',
+        createdBy: user?.name || '',
+        institution: 'ՀՊՏՀ',
+        description: '',
+        icon: null
+      });
+    }
+    setIsCreateDialogOpen(true);
+  };
+
   return {
     courses,
     userCourses,
     professionalCourses,
     userProfessionalCourses,
+    
     isLoading,
     error,
     activeCourse,
@@ -553,21 +634,31 @@ export const useCourseManager = ({
     selectedCategory,
     selectedDifficulty,
     selectedSort,
+    
     isEditDialogOpen,
     isDeleteDialogOpen,
     isCreateProfessionalDialogOpen,
     isEditProfessionalDialogOpen,
     isDeleteProfessionalDialogOpen,
+    
     courseToEdit,
     courseToDelete,
     professionalCourseToEdit,
     professionalCourseToDelete,
+    
+    setCourses,
+    setProfessionalCourses,
+    setIsCreateDialogOpen,
+    setIsEditDialogOpen,
+    setIsDeleteDialogOpen,
+    
     loadCourses,
     handleSearchChange,
     handleCategoryChange,
     handleDifficultyChange,
     handleSortChange,
     resetFilters,
+    
     handleOpenEditDialog,
     handleCloseEditDialog,
     handleOpenDeleteDialog,
@@ -578,11 +669,26 @@ export const useCourseManager = ({
     handleCloseEditProfessionalDialog,
     handleOpenDeleteProfessionalDialog,
     handleCloseDeleteProfessionalDialog,
+    
     handleCreateCourse,
     handleUpdateCourse,
     handleDeleteCourse,
     handleCreateProfessionalCourse,
     handleUpdateProfessionalCourse,
-    handleDeleteProfessionalCourse
+    handleDeleteProfessionalCourse,
+    
+    selectedCourse,
+    setSelectedCourse,
+    professionalCourse,
+    setProfessionalCourse,
+    courseType,
+    setCourseType,
+    newModule,
+    setNewModule,
+    handleAddModuleToEdit,
+    handleRemoveModuleFromEdit,
+    handleEditCourse,
+    handleEditInit,
+    handleCreateInit
   };
 };
