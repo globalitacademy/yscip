@@ -1,3 +1,4 @@
+
 import React, { createContext, useState, useContext, ReactNode } from 'react';
 import { Course, CourseContextType } from '@/components/courses/types/index';
 import { ProfessionalCourse } from '@/components/courses/types/index';

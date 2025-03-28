@@ -24,9 +24,7 @@ interface EditCourseDialogProps {
   setNewModule: React.Dispatch<React.SetStateAction<string>>;
   handleAddModuleToEdit: () => void;
   handleRemoveModuleFromEdit: (index: number) => void;
-  // Changed signature to match the implementation
   handleEditCourse: (id: string, courseData: Partial<Course>) => Promise<boolean>;
-  // New props for professional courses
   isProfessionalCourse?: boolean;
   professionalCourse?: Partial<ProfessionalCourse> | null;
   setProfessionalCourse?: React.Dispatch<React.SetStateAction<Partial<ProfessionalCourse> | null>>;

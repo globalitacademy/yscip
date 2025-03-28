@@ -303,6 +303,72 @@ export const useCourseManagement = () => {
     toast.success('Կուրսը հաջողությամբ ավելացվել է');
   };
 
+  const handleCreateProfessionalCourse = async (courseData: Omit<ProfessionalCourse, 'id' | 'createdAt'>) => {
+    if (!courseData.title || !courseData.duration || !courseData.price) {
+      toast.error('Լրացրեք բոլոր պարտադիր դաշտերը');
+      return false;
+    }
+
+    // Generate slug if not provided
+    if (!courseData.slug && courseData.title) {
+      courseData.slug = courseData.title
+        .toLowerCase()
+        .replace(/[^\w\s-]/g, '')
+        .replace(/\s+/g, '-')
+        .replace(/--+/g, '-')
+        .trim();
+    }
+
+    const courseToAdd: ProfessionalCourse = {
+      ...(courseData as ProfessionalCourse),
+      id: uuidv4(),
+      createdBy: user?.name || 'Unknown',
+      buttonText: courseData.buttonText || 'Դիտել',
+      subtitle: courseData.subtitle || 'ԴԱՍԸՆԹԱՑ',
+      color: courseData.color || 'text-amber-500',
+      institution: courseData.institution || 'ՀՊՏՀ',
+      iconName: 'book',
+      is_public: courseData.is_public || false,
+      show_on_homepage: courseData.show_on_homepage || false,
+      display_order: courseData.display_order || 0,
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString()
+    };
+
+    const success = await saveCourseChanges(courseToAdd);
+    
+    if (success) {
+      const updatedCourses = [...professionalCourses, courseToAdd];
+      setProfessionalCourses(updatedCourses);
+      
+      setNewProfessionalCourse({
+        title: '',
+        subtitle: 'ԴԱՍԸՆԹԱՑ',
+        icon: React.createElement(Code, { className: "w-16 h-16" }),
+        duration: '',
+        price: '',
+        buttonText: 'Դիտել',
+        color: 'text-amber-500',
+        createdBy: user?.name || '',
+        institution: 'ՀՊՏՀ',
+        imageUrl: undefined,
+        description: '',
+        lessons: [],
+        requirements: [],
+        outcomes: [],
+        is_public: false,
+        show_on_homepage: false,
+        display_order: 0
+      });
+      setIsAddDialogOpen(false);
+      toast.success('Դասընթացը հաջողությամբ ավելացվել է');
+    } else {
+      toast.error('Դասընթացի ավելացման ժամանակ սխալ է տեղի ունեցել');
+    }
+    
+    return success;
+  };
+
   const handleEditCourse = () => {
     if (!selectedCourse) return;
     
@@ -379,72 +445,6 @@ export const useCourseManagement = () => {
     } else {
       toast.error('Դուք չունեք իրավունք ջնջելու այս կուրսը');
     }
-  };
-
-  const handleCreateProfessionalCourse = async (courseData: Omit<ProfessionalCourse, 'id' | 'createdAt'>) => {
-    if (!courseData.title || !courseData.duration || !courseData.price) {
-      toast.error('Լրացրեք բոլոր պարտադիր դաշտերը');
-      return false;
-    }
-
-    // Generate slug if not provided
-    if (!courseData.slug && courseData.title) {
-      courseData.slug = courseData.title
-        .toLowerCase()
-        .replace(/[^\w\s-]/g, '')
-        .replace(/\s+/g, '-')
-        .replace(/--+/g, '-')
-        .trim();
-    }
-
-    const courseToAdd: ProfessionalCourse = {
-      ...(courseData as ProfessionalCourse),
-      id: uuidv4(),
-      createdBy: user?.name || 'Unknown',
-      buttonText: courseData.buttonText || 'Դիտել',
-      subtitle: courseData.subtitle || 'ԴԱՍԸՆԹԱՑ',
-      color: courseData.color || 'text-amber-500',
-      institution: courseData.institution || 'ՀՊՏՀ',
-      iconName: 'book',
-      is_public: courseData.is_public || false,
-      show_on_homepage: courseData.show_on_homepage || false,
-      display_order: courseData.display_order || 0,
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString()
-    };
-
-    const success = await saveCourseChanges(courseToAdd);
-    
-    if (success) {
-      const updatedCourses = [...professionalCourses, courseToAdd];
-      setProfessionalCourses(updatedCourses);
-      
-      setNewProfessionalCourse({
-        title: '',
-        subtitle: 'ԴԱՍԸՆԹԱՑ',
-        icon: React.createElement(Code, { className: "w-16 h-16" }),
-        duration: '',
-        price: '',
-        buttonText: 'Դիտել',
-        color: 'text-amber-500',
-        createdBy: user?.name || '',
-        institution: 'ՀՊՏՀ',
-        imageUrl: undefined,
-        description: '',
-        lessons: [],
-        requirements: [],
-        outcomes: [],
-        is_public: false,
-        show_on_homepage: false,
-        display_order: 0
-      });
-      setIsAddDialogOpen(false);
-      toast.success('Դասընթացը հաջողությամբ ավելացվել է');
-    } else {
-      toast.error('Դասընթացի ավելացման ժամանակ սխալ է տեղի ունեցել');
-    }
-    
-    return success;
   };
 
   const handleUpdateProfessionalCourse = async (id: string, courseData: Partial<ProfessionalCourse>) => {
@@ -532,9 +532,9 @@ export const useCourseManagement = () => {
     setIsEditDialogOpen,
     setIsDeleteDialogOpen,
     handleAddCourse,
-    handleAddProfessionalCourse,
+    handleCreateProfessionalCourse,
     handleEditCourse,
-    handleEditProfessionalCourse,
+    handleUpdateProfessionalCourse,
     handleEditInit,
     handleEditProfessionalCourseInit,
     handleAddModule,

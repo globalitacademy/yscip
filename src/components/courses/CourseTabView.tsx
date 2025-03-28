@@ -16,7 +16,7 @@ const CourseTabView: React.FC = () => {
     setIsEditDialogOpen,
     newModule,
     setNewModule,
-    handleEditCourse,
+    handleUpdateCourse,
     handleEditInit,
     handleAddModuleToEdit,
     handleRemoveModuleFromEdit,
@@ -54,7 +54,7 @@ const CourseTabView: React.FC = () => {
         setNewModule={setNewModule}
         handleAddModuleToEdit={handleAddModuleToEdit}
         handleRemoveModuleFromEdit={handleRemoveModuleFromEdit}
-        handleEditCourse={handleEditCourse}
+        handleEditCourse={handleUpdateCourse}
         courseType={courseType}
         setCourseType={setCourseType}
         professionalCourse={professionalCourse}
