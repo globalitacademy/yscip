@@ -1,4 +1,3 @@
-
 import { supabase } from '@/integrations/supabase/client';
 import { ProfessionalCourse } from '../types/ProfessionalCourse';
 import { toast } from 'sonner';
@@ -76,20 +75,20 @@ export const getCourseById = async (id: string): Promise<ProfessionalCourse | nu
       iconName: course.icon_name,
       duration: course.duration,
       price: course.price,
-      buttonText: course.button_text,
+      buttonText: course.button_text || "Մանրամասն",
       color: course.color,
-      createdBy: course.created_by,
-      institution: course.institution,
+      createdBy: course.created_by || "",
+      institution: course.institution || "",
       imageUrl: course.image_url,
       organizationLogo: course.organization_logo,
-      description: course.description,
+      description: course.description || "",
       lessons: lessons?.map(lesson => ({
         title: lesson.title, 
         duration: lesson.duration
       })) || [],
       requirements: requirements?.map(req => req.requirement) || [],
       outcomes: outcomes?.map(outcome => outcome.outcome) || [],
-      is_public: course.is_public,
+      is_public: course.is_public || false,
       show_on_homepage: course.show_on_homepage || false,
       display_order: course.display_order || 0,
       slug: course.slug || course.id
@@ -150,20 +149,20 @@ export const getAllCoursesFromSupabase = async (): Promise<ProfessionalCourse[]>
         iconName: course.icon_name,
         duration: course.duration,
         price: course.price,
-        buttonText: course.button_text,
+        buttonText: course.buttonText || "Մանրամասն",
         color: course.color,
-        createdBy: course.created_by,
-        institution: course.institution,
+        createdBy: course.created_by || "",
+        institution: course.institution || "",
         imageUrl: course.image_url,
         organizationLogo: course.organization_logo,
-        description: course.description,
+        description: course.description || "",
         lessons: lessonsData?.map(lesson => ({
           title: lesson.title, 
           duration: lesson.duration
         })) || [],
         requirements: requirementsData?.map(req => req.requirement) || [],
         outcomes: outcomesData?.map(outcome => outcome.outcome) || [],
-        is_public: course.is_public,
+        is_public: course.is_public || false,
         show_on_homepage: course.show_on_homepage || false,
         display_order: course.display_order || 0,
         slug: course.slug || course.id
