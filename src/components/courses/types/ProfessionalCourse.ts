@@ -25,6 +25,7 @@ export interface ProfessionalCourse {
   category?: string;
   instructor?: string;  // Added for compatibility with Course
   modules?: string[];   // Added for compatibility with Course
+  prerequisites?: string[];  // Added for compatibility with Course
 }
 
 export interface LessonItem {

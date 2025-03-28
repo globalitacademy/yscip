@@ -8,6 +8,7 @@ import { Course } from './types/index';
 import { ProfessionalCourse } from './types/index';
 import { useCourseContext } from '@/contexts/CourseContext';
 import ProjectFormFooter from '../project-creation/ProjectFormFooter';
+import { toast } from '@/components/ui/use-toast';
 
 const CourseCreationForm: React.FC = () => {
   const { 
@@ -21,8 +22,48 @@ const CourseCreationForm: React.FC = () => {
     setNewModule,
     handleAddModuleToEdit,
     handleRemoveModuleFromEdit,
-    handleCreateCourse
+    handleCreateCourse,
+    handleCreateProfessionalCourse
   } = useCourseContext();
+
+  const handleSubmit = async () => {
+    try {
+      if (courseType === 'standard' && selectedCourse) {
+        const success = await handleCreateCourse(selectedCourse as Omit<Course, 'id' | 'createdAt'>);
+        if (success) {
+          toast({
+            title: "Դասընթացը ստեղծված է",
+            description: "Ստանդարտ դասընթացը հաջողությամբ ստեղծվել է։",
+          });
+          return true;
+        }
+      } else if (courseType === 'professional' && professionalCourse) {
+        const success = await handleCreateProfessionalCourse(professionalCourse as Omit<ProfessionalCourse, 'id' | 'createdAt'>);
+        if (success) {
+          toast({
+            title: "Դասընթացը ստեղծված է",
+            description: "Մասնագիտական դասընթացը հաջողությամբ ստեղծվել է։",
+          });
+          return true;
+        }
+      } else {
+        toast({
+          title: "Սխալ",
+          description: "Լրացրեք բոլոր պարտադիր դաշտերը",
+          variant: "destructive",
+        });
+      }
+      return false;
+    } catch (error) {
+      console.error("Error creating course:", error);
+      toast({
+        title: "Սխալ",
+        description: "Դասընթացի ստեղծման ժամանակ սխալ է տեղի ունեցել",
+        variant: "destructive",
+      });
+      return false;
+    }
+  };
 
   return (
     <Card className="shadow-sm">
@@ -62,12 +103,7 @@ const CourseCreationForm: React.FC = () => {
           </TabsContent>
         </Tabs>
       </CardContent>
-      <ProjectFormFooter onSubmit={() => {
-        if (selectedCourse) {
-          return handleCreateCourse(selectedCourse as Omit<Course, 'id' | 'createdAt'>);
-        }
-        return Promise.resolve(false);
-      }} />
+      <ProjectFormFooter onSubmit={handleSubmit} />
     </Card>
   );
 };
