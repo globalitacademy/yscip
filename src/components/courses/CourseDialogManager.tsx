@@ -21,6 +21,7 @@ const CourseDialogManager: React.FC = () => {
     handleRemoveModuleFromEdit,
     handleUpdateCourse,
     handleDeleteCourse,
+    handleDeleteProfessionalCourse,
     courseType,
     setCourseType
   } = useCourseContext();
@@ -29,22 +30,23 @@ const CourseDialogManager: React.FC = () => {
 
   // Enhanced delete handler with better error handling
   const handleDelete = async () => {
-    if (isDeleting) return false;
+    if (isDeleting || !selectedCourse || !selectedCourse.id) {
+      console.error("Delete attempted with invalid state:", { 
+        isDeleting, 
+        selectedCourseExists: !!selectedCourse, 
+        selectedCourseId: selectedCourse?.id 
+      });
+      toast.error("Դասընթացը չի գտնվել");
+      return false;
+    }
     
     try {
       setIsDeleting(true);
-      
-      if (!selectedCourse || !selectedCourse.id) {
-        console.error("Delete attempted with no valid course selected");
-        toast.error("Դասընթացը չի գտնվել");
-        return false;
-      }
-      
       console.log("Starting delete for course:", selectedCourse.id, "of type:", courseType);
       
-      // Determine course type and call appropriate handler
+      // Call the appropriate delete handler based on course type
       const success = courseType === 'professional' 
-        ? await handleDeleteCourse(selectedCourse.id)
+        ? await handleDeleteProfessionalCourse(selectedCourse.id)
         : await handleDeleteCourse(selectedCourse.id);
       
       console.log("Delete operation result:", success);
@@ -54,12 +56,11 @@ const CourseDialogManager: React.FC = () => {
         setIsDeleteDialogOpen(false);
         return true;
       } else {
-        console.error("Course deletion failed - server returned false");
-        toast.error("Դասընթացը չի ջնջվել: Սերվերը մերժեց հարցումը");
+        toast.error("Դասընթացը չի ջնջվել: Գործողությունը ձախողվեց");
         return false;
       }
     } catch (error) {
-      console.error("Fatal error in handleDelete:", error);
+      console.error("Error in handleDelete:", error);
       toast.error("Ջնջման ժամանակ սխալ է տեղի ունեցել");
       return false;
     } finally {

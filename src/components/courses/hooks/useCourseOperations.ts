@@ -124,6 +124,8 @@ export const useCourseOperations = (
       return false;
     }
     
+    console.log("Updating course with ID:", id, "and data:", courseData);
+    
     // Check if this is a standard or professional course
     const isStandard = courses.some(course => course.id === id);
     const isProfessional = professionalCourses.some(course => course.id === id);
@@ -170,22 +172,33 @@ export const useCourseOperations = (
           : courseToUpdate.slug
       } as ProfessionalCourse;
       
-      const success = await saveCourseChanges(updatedCourse);
-      
-      if (success) {
+      try {
+        // First update local state for immediate UI feedback
         const updatedCourses = professionalCourses.map(course => 
           course.id === id ? updatedCourse : course
         );
         
         setProfessionalCourses(updatedCourses);
         localStorage.setItem('professionalCourses', JSON.stringify(updatedCourses));
-        setIsEditDialogOpen(false);
-        toast.success('Դասընթացը հաջողությամբ թարմացվել է');
-      } else {
+        
+        // Then try to save to database
+        const success = await saveCourseChanges(updatedCourse);
+        
+        if (success) {
+          setIsEditDialogOpen(false);
+          toast.success('Դասընթացը հաջողությամբ թարմացվել է');
+        } else {
+          // Even if database update fails, we've already updated local state
+          setIsEditDialogOpen(false);
+          toast.warning('Դասընթացը թարմացվել է տեղական հիշողությունում, բայց տվյալների բազայում չի պահպանվել');
+        }
+        
+        return true; // Local update was successful
+      } catch (error) {
+        console.error('Error updating professional course:', error);
         toast.error('Դասընթացի թարմացման ժամանակ սխալ է տեղի ունեցել');
+        return false;
       }
-      
-      return success;
     } else {
       toast.error('Դասընթացը չի գտնվել');
       return false;
@@ -196,10 +209,12 @@ export const useCourseOperations = (
     return handleUpdateCourse(id, courseData);
   }, [handleUpdateCourse]);
 
-  // Improved delete course handler
+  // Improved delete standard course handler
   const handleDeleteCourse = useCallback(async (id: string) => {
     try {
       console.log("Deleting standard course with ID:", id);
+      
+      // Find the course in the array
       const courseToDelete = courses.find(course => course.id === id);
       
       if (!courseToDelete) {
@@ -216,12 +231,13 @@ export const useCourseOperations = (
         return false;
       }
       
-      // Update local state
+      // Update local state first for immediate UI feedback
       const updatedCourses = courses.filter(course => course.id !== id);
       setCourses(updatedCourses);
       localStorage.setItem('courses', JSON.stringify(updatedCourses));
       
-      console.log("Standard course successfully deleted from local state");
+      console.log("Standard course successfully deleted");
+      toast.success("Դասընթացը հաջողությամբ ջնջվել է");
       return true;
     } catch (error) {
       console.error('Error in handleDeleteCourse:', error);
@@ -256,7 +272,7 @@ export const useCourseOperations = (
     }
     
     try {
-      // First update local state
+      // First update local state for immediate UI feedback
       const updatedCourses = professionalCourses.filter(course => course.id !== id);
       setProfessionalCourses(updatedCourses);
       localStorage.setItem('professionalCourses', JSON.stringify(updatedCourses));
@@ -291,9 +307,9 @@ export const useCourseOperations = (
           toast.warning('Դասընթացը ջնջվել է տեղական հիշողությունից, բայց սերվերը վերադարձրեց սխալ։');
         } else {
           console.log("Successfully deleted course from Supabase");
-          toast.success('Դասընթացը հաջողությամբ ջնջվել է');
         }
         
+        toast.success('Դասընթացը հաջողությամբ ջնջվել է');
         return true;
       } catch (dbError) {
         console.error('Database error in handleDeleteProfessionalCourse:', dbError);

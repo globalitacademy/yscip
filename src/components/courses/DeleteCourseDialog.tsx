@@ -1,5 +1,5 @@
 
-import React from 'react';
+import React, { useState } from 'react';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Course } from './types';
@@ -22,12 +22,12 @@ const DeleteCourseDialog: React.FC<DeleteCourseDialogProps> = ({
   onDelete,
   isDeleting = false
 }) => {
-  const [localDeleting, setLocalDeleting] = React.useState(false);
+  const [localDeleting, setLocalDeleting] = useState(false);
   const isProcessing = isDeleting || localDeleting;
 
   if (!selectedCourse) return null;
 
-  // Handle both naming conventions (name from old interface, title from new interface)
+  // Get course name, handling both naming conventions
   const courseName = 'name' in selectedCourse && selectedCourse.name 
     ? selectedCourse.name 
     : 'title' in selectedCourse && selectedCourse.title 
@@ -39,19 +39,16 @@ const DeleteCourseDialog: React.FC<DeleteCourseDialogProps> = ({
     
     try {
       setLocalDeleting(true);
-      console.log("DeleteCourseDialog: Starting delete for course:", selectedCourse.id);
+      console.log("DeleteCourseDialog: Attempting to delete course:", selectedCourse.id);
       
       const success = await onDelete();
       console.log("DeleteCourseDialog: Delete result:", success);
       
       if (success) {
-        toast.success('Դասընթացը հաջողությամբ ջնջվել է');
         setIsOpen(false);
-      } else {
-        toast.error('Դասընթացը ջնջելիս սխալ է տեղի ունեցել');
       }
     } catch (error) {
-      console.error('Error deleting course:', error);
+      console.error('Error in handleDeleteClick:', error);
       toast.error('Դասընթացը ջնջելիս սխալ է տեղի ունեցել');
     } finally {
       setLocalDeleting(false);

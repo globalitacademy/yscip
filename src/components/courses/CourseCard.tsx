@@ -24,10 +24,21 @@ const CourseCard: React.FC<CourseCardProps> = ({ course, isAdmin, canEdit, onEdi
   const isCreatedByCurrentUser = course.createdBy === user?.id;
 
   // Function to handle delete button click
-  const handleDeleteClick = () => {
+  const handleDeleteClick = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    console.log("Delete button clicked for course:", course.id);
     setSelectedCourse(course);
     setCourseType('standard');
     setIsDeleteDialogOpen(true);
+  };
+  
+  // Function to handle edit button click
+  const handleEditClick = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    console.log("Edit button clicked for course:", course.id);
+    onEdit(course);
   };
   
   return (
@@ -77,7 +88,7 @@ const CourseCard: React.FC<CourseCardProps> = ({ course, isAdmin, canEdit, onEdi
       </CardContent>
       {canEdit && (
         <CardFooter className="flex justify-end gap-2 pt-2">
-          <Button variant="outline" size="sm" onClick={() => onEdit(course)}>
+          <Button variant="outline" size="sm" onClick={handleEditClick}>
             <Edit className="h-4 w-4 mr-1" />
             Խմբագրել
           </Button>
