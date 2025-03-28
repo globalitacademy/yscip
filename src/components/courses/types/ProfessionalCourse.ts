@@ -20,6 +20,8 @@ export interface ProfessionalCourse {
   requirements?: string[];
   outcomes?: string[];
   is_public?: boolean;
+  createdAt?: string;
+  updatedAt?: string;
 }
 
 export interface LessonItem {

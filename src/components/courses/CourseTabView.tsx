@@ -9,7 +9,7 @@ const CourseTabView: React.FC = () => {
   const { user } = useAuth();
   const {
     courses,
-    userCourses,
+    professionalCourses,
     selectedCourse,
     setSelectedCourse,
     isEditDialogOpen,
@@ -20,7 +20,11 @@ const CourseTabView: React.FC = () => {
     handleEditInit,
     handleAddModuleToEdit,
     handleRemoveModuleFromEdit,
-    handleDeleteCourse
+    handleDeleteCourse,
+    courseType,
+    setCourseType,
+    professionalCourse,
+    setProfessionalCourse
   } = useCourses();
 
   const isAdmin = user?.role === 'admin';
@@ -29,10 +33,7 @@ const CourseTabView: React.FC = () => {
     <>
       <CourseList
         courses={courses}
-        userCourses={userCourses}
-        isAdmin={isAdmin}
-        onEdit={handleEditInit}
-        onDelete={handleDeleteCourse}
+        professionalCourses={professionalCourses}
       />
 
       <EditCourseDialog
@@ -45,6 +46,10 @@ const CourseTabView: React.FC = () => {
         handleAddModuleToEdit={handleAddModuleToEdit}
         handleRemoveModuleFromEdit={handleRemoveModuleFromEdit}
         handleEditCourse={handleEditCourse}
+        courseType={courseType}
+        setCourseType={setCourseType}
+        professionalCourse={professionalCourse}
+        setProfessionalCourse={setProfessionalCourse}
       />
     </>
   );

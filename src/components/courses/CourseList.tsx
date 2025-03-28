@@ -6,6 +6,7 @@ import CourseCard from './CourseCard';
 import ProfessionalCourseCard from './ProfessionalCourseCard';
 import { FadeIn } from '@/components/LocalTransitions';
 import { useCourseContext } from '@/contexts/CourseContext';
+import { useAuth } from '@/contexts/AuthContext';
 
 interface CourseListProps {
   courses: Course[];
@@ -14,6 +15,8 @@ interface CourseListProps {
 
 const CourseList: React.FC<CourseListProps> = ({ courses, professionalCourses }) => {
   const { handleEditInit } = useCourseContext();
+  const { user } = useAuth();
+  const isAdmin = user?.role === 'admin';
   
   // Safety check for empty arrays
   if ((!courses || courses.length === 0) && (!professionalCourses || professionalCourses.length === 0)) {
@@ -32,9 +35,12 @@ const CourseList: React.FC<CourseListProps> = ({ courses, professionalCourses })
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {professionalCourses.map((course) => (
               <ProfessionalCourseCard
-                key={course.id}
-                course={course}
+                key={course.id} 
+                course={course} 
+                isAdmin={isAdmin}
+                canEdit={isAdmin || course.createdBy === user?.name}
                 onEdit={() => handleEditInit(course, 'professional')}
+                onDelete={(id) => {}} // We'll handle deletion through context elsewhere
               />
             ))}
           </div>
@@ -49,7 +55,10 @@ const CourseList: React.FC<CourseListProps> = ({ courses, professionalCourses })
               <CourseCard
                 key={course.id}
                 course={course}
+                isAdmin={isAdmin}
+                canEdit={isAdmin || course.createdBy === user?.id}
                 onEdit={() => handleEditInit(course, 'standard')}
+                onDelete={(id) => {}} // We'll handle deletion through context elsewhere
               />
             ))}
           </div>

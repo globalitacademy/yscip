@@ -76,6 +76,9 @@ export const useCourseManager = () => {
       const newCourse: Course = {
         ...selectedCourse,
         id: uuidv4(),
+        createdBy: user?.id || '',
+        // Using updatedAt and createdAt that we added to the Course type
+        updatedAt: new Date().toISOString(),
         createdAt: new Date().toISOString(),
       };
       
@@ -103,6 +106,8 @@ export const useCourseManager = () => {
       const newCourse: ProfessionalCourse = {
         ...professionalCourse as ProfessionalCourse,
         id: uuidv4(),
+        // Using updatedAt and createdAt that we added to the ProfessionalCourse type
+        updatedAt: new Date().toISOString(),
         createdAt: new Date().toISOString(),
       };
       
@@ -118,7 +123,7 @@ export const useCourseManager = () => {
         description: 'Մասնագիտական դասընթացը հաջողությամբ ստեղծվել է',
       });
     }
-  }, [selectedCourse, professionalCourse, courseType, courses, professionalCourses]);
+  }, [selectedCourse, professionalCourse, courseType, courses, professionalCourses, user?.id]);
   
   // Function to edit an existing course
   const handleEditCourse = useCallback(() => {
@@ -126,7 +131,10 @@ export const useCourseManager = () => {
       if (!selectedCourse) return;
       
       const updatedCourses = courses.map(course => 
-        course.id === selectedCourse.id ? { ...selectedCourse, updatedAt: new Date().toISOString() } : course
+        course.id === selectedCourse.id ? { 
+          ...selectedCourse, 
+          updatedAt: new Date().toISOString() 
+        } : course
       );
       
       setCourses(updatedCourses);
@@ -218,8 +226,8 @@ export const useCourseManager = () => {
         duration: '',
         price: '',
         color: 'text-amber-500',
-        icon_name: 'code',
-        prefer_icon: true,
+        iconName: 'code',  // Fixed from icon_name to iconName
+        buttonText: 'Դիտել', 
         is_public: false,
         lessons: [],
         outcomes: [],
