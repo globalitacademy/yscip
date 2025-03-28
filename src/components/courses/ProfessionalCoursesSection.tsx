@@ -19,7 +19,7 @@ const ProfessionalCoursesSection: React.FC = () => {
     const fetchHomepageCourses = async () => {
       setLoading(true);
       try {
-        // Fetch all courses from the database
+        // Fetch courses that should be shown on homepage
         const { data, error } = await supabase
           .from('courses')
           .select('*')
@@ -58,9 +58,9 @@ const ProfessionalCoursesSection: React.FC = () => {
             imageUrl: course.image_url,
             organizationLogo: course.organization_logo,
             description: course.description,
-            show_on_homepage: course.show_on_homepage,
-            display_order: course.display_order,
-            slug: course.id // Temporarily using ID as slug if not provided
+            show_on_homepage: course.show_on_homepage || false,
+            display_order: course.display_order || 0,
+            slug: course.slug || course.id // Use slug if available, otherwise fall back to ID
           } as ProfessionalCourse;
         });
         

@@ -90,8 +90,9 @@ export const getCourseById = async (id: string): Promise<ProfessionalCourse | nu
       requirements: requirements?.map(req => req.requirement) || [],
       outcomes: outcomes?.map(outcome => outcome.outcome) || [],
       is_public: course.is_public,
-      show_on_homepage: course.show_on_homepage,
-      display_order: course.display_order
+      show_on_homepage: course.show_on_homepage || false,
+      display_order: course.display_order || 0,
+      slug: course.slug || course.id
     };
 
     return formattedCourse;
@@ -163,8 +164,9 @@ export const getAllCoursesFromSupabase = async (): Promise<ProfessionalCourse[]>
         requirements: requirementsData?.map(req => req.requirement) || [],
         outcomes: outcomesData?.map(outcome => outcome.outcome) || [],
         is_public: course.is_public,
-        show_on_homepage: course.show_on_homepage,
-        display_order: course.display_order
+        show_on_homepage: course.show_on_homepage || false,
+        display_order: course.display_order || 0,
+        slug: course.slug || course.id
       };
     }));
     
@@ -203,8 +205,9 @@ export const saveCourseChanges = async (course: ProfessionalCourse): Promise<boo
           organization_logo: course.organizationLogo,
           description: course.description,
           is_public: course.is_public,
-          show_on_homepage: course.show_on_homepage,
-          display_order: course.display_order,
+          show_on_homepage: course.show_on_homepage || false,
+          display_order: course.display_order || 0,
+          slug: course.slug || course.id,
           updated_at: new Date().toISOString()
         })
         .eq('id', course.id);
@@ -237,8 +240,9 @@ export const saveCourseChanges = async (course: ProfessionalCourse): Promise<boo
               organization_logo: course.organizationLogo,
               description: course.description,
               is_public: course.is_public,
-              show_on_homepage: course.show_on_homepage,
-              display_order: course.display_order,
+              show_on_homepage: course.show_on_homepage || false,
+              display_order: course.display_order || 0,
+              slug: course.slug || course.id,
               created_at: new Date().toISOString(),
               updated_at: new Date().toISOString()
             });

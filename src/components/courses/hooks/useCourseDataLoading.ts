@@ -90,6 +90,9 @@ export const useCourseDataLoading = (
           organizationLogo: course.organization_logo,
           description: course.description,
           is_public: course.is_public,
+          show_on_homepage: course.show_on_homepage || false,
+          display_order: course.display_order || 0,
+          slug: course.slug || course.id,
           lessons: lessonsData?.map(lesson => ({
             title: lesson.title, 
             duration: lesson.duration

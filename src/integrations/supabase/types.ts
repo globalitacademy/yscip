@@ -187,6 +187,7 @@ export type Database = {
           created_at: string | null
           created_by: string | null
           description: string | null
+          display_order: number | null
           duration: string
           icon_name: string
           id: string
@@ -198,6 +199,8 @@ export type Database = {
           organization_logo: string | null
           prefer_icon: boolean | null
           price: string
+          show_on_homepage: boolean | null
+          slug: string | null
           specialization: string | null
           subtitle: string
           title: string
@@ -209,6 +212,7 @@ export type Database = {
           created_at?: string | null
           created_by?: string | null
           description?: string | null
+          display_order?: number | null
           duration: string
           icon_name: string
           id?: string
@@ -220,6 +224,8 @@ export type Database = {
           organization_logo?: string | null
           prefer_icon?: boolean | null
           price: string
+          show_on_homepage?: boolean | null
+          slug?: string | null
           specialization?: string | null
           subtitle?: string
           title: string
@@ -231,6 +237,7 @@ export type Database = {
           created_at?: string | null
           created_by?: string | null
           description?: string | null
+          display_order?: number | null
           duration?: string
           icon_name?: string
           id?: string
@@ -242,6 +249,8 @@ export type Database = {
           organization_logo?: string | null
           prefer_icon?: boolean | null
           price?: string
+          show_on_homepage?: boolean | null
+          slug?: string | null
           specialization?: string | null
           subtitle?: string
           title?: string
