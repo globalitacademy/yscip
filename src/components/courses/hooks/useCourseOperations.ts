@@ -1,3 +1,4 @@
+
 import { useCallback } from 'react';
 import { toast } from 'sonner';
 import { v4 as uuidv4 } from 'uuid';
@@ -195,91 +196,116 @@ export const useCourseOperations = (
     return handleUpdateCourse(id, courseData);
   }, [handleUpdateCourse]);
 
+  // Improved delete course handler
   const handleDeleteCourse = useCallback(async (id: string) => {
-    const courseToDelete = courses.find(course => course.id === id);
-    
-    if (courseToDelete && (user?.role === 'admin' || courseToDelete.createdBy === user?.id)) {
-      const updatedCourses = courses.filter(course => course.id !== id);
-      setCourses(updatedCourses);
-      localStorage.setItem('courses', JSON.stringify(updatedCourses));
-      toast.success('Կուրսը հաջողությամբ հեռացվել է');
-      return true;
-    } else {
-      toast.error('Դուք չունեք իրավունք ջնջելու այս կուրսը');
-      return false;
-    }
-  }, [courses, setCourses, user]);
-
-  const handleDeleteProfessionalCourse = useCallback(async (id: string) => {
-    console.log("Attempting to delete professional course with ID:", id);
-    
     try {
-      // First try to delete from Supabase
-      console.log("Deleting course from Supabase:", id);
-      const { error } = await supabase.from('courses').delete().eq('id', id);
+      console.log("Deleting standard course with ID:", id);
+      const courseToDelete = courses.find(course => course.id === id);
       
-      if (error) {
-        console.error('Error deleting course from Supabase:', error);
-        // Don't return here, proceed to update local state even if database fails
-      } else {
-        console.log("Successfully deleted course from Supabase");
-        
-        // Attempt to delete related records even if some fail
-        try {
-          await supabase.from('course_lessons').delete().eq('course_id', id);
-        } catch (err) {
-          console.error('Error deleting course lessons:', err);
-        }
-        
-        try {
-          await supabase.from('course_requirements').delete().eq('course_id', id);
-        } catch (err) {
-          console.error('Error deleting course requirements:', err);
-        }
-        
-        try {
-          await supabase.from('course_outcomes').delete().eq('course_id', id);
-        } catch (err) {
-          console.error('Error deleting course outcomes:', err);
-        }
-      }
-      
-      // Find the course to delete (for logging)
-      const courseToDelete = professionalCourses.find(course => course.id === id);
       if (!courseToDelete) {
-        console.error('Course not found in local state:', id);
+        console.error("Course not found in courses array:", id);
+        toast.error('Դասընթացը չի գտնվել');
         return false;
       }
       
-      // If we're not the owner/admin, don't allow deletion
-      if (!(user?.role === 'admin' || courseToDelete.createdBy === user?.name)) {
-        console.error('User does not have permission to delete this course');
+      // Check permissions
+      const canDelete = user?.role === 'admin' || courseToDelete.createdBy === user?.id;
+      if (!canDelete) {
+        console.error("User doesn't have permission to delete this course");
         toast.error('Դուք չունեք իրավունք ջնջելու այս դասընթացը');
         return false;
       }
       
-      console.log("Updating local state to remove course:", id);
-      // Always update local state regardless of Supabase result
+      // Update local state
+      const updatedCourses = courses.filter(course => course.id !== id);
+      setCourses(updatedCourses);
+      localStorage.setItem('courses', JSON.stringify(updatedCourses));
+      
+      console.log("Standard course successfully deleted from local state");
+      return true;
+    } catch (error) {
+      console.error('Error in handleDeleteCourse:', error);
+      toast.error('Դասընթացի ջնջման ժամանակ սխալ է տեղի ունեցել');
+      return false;
+    }
+  }, [courses, setCourses, user]);
+
+  // Completely improved handleDeleteProfessionalCourse function
+  const handleDeleteProfessionalCourse = useCallback(async (id: string) => {
+    console.log("Attempting to delete professional course with ID:", id);
+    
+    if (!id) {
+      console.error("Invalid course ID provided");
+      toast.error("Անվավեր դասընթացի ID");
+      return false;
+    }
+    
+    // First, find the course in local state to check permissions
+    const courseToDelete = professionalCourses.find(course => course.id === id);
+    if (!courseToDelete) {
+      console.error('Course not found in local state:', id);
+      toast.error('Դասընթացը չի գտնվել');
+      return false;
+    }
+    
+    // Check permission to delete
+    if (!(user?.role === 'admin' || courseToDelete.createdBy === user?.name)) {
+      console.error('User does not have permission to delete this course');
+      toast.error('Դուք չունեք իրավունք ջնջելու այս դասընթացը');
+      return false;
+    }
+    
+    try {
+      // First update local state
       const updatedCourses = professionalCourses.filter(course => course.id !== id);
       setProfessionalCourses(updatedCourses);
       localStorage.setItem('professionalCourses', JSON.stringify(updatedCourses));
+      console.log("Course removed from local state:", id);
       
-      console.log("Course successfully deleted from local state");
-      return true;
+      // Then try to delete from database
+      try {
+        // Delete related records first
+        console.log("Deleting related course data from Supabase...");
+        
+        // Using Promise.allSettled to attempt all deletes even if some fail
+        const deleteResults = await Promise.allSettled([
+          supabase.from('course_lessons').delete().eq('course_id', id),
+          supabase.from('course_requirements').delete().eq('course_id', id),
+          supabase.from('course_outcomes').delete().eq('course_id', id)
+        ]);
+        
+        // Log results of related deletions
+        deleteResults.forEach((result, index) => {
+          if (result.status === 'rejected') {
+            console.warn(`Failed to delete related records (group ${index}):`, result.reason);
+          }
+        });
+        
+        // Delete the main course record
+        console.log("Deleting main course record from Supabase:", id);
+        const { error } = await supabase.from('courses').delete().eq('id', id);
+        
+        if (error) {
+          console.error('Error deleting course from Supabase:', error);
+          // We don't return false here because the local state is already updated
+          toast.warning('Դասընթացը ջնջվել է տեղական հիշողությունից, բայց սերվերը վերադարձրեց սխալ։');
+        } else {
+          console.log("Successfully deleted course from Supabase");
+          toast.success('Դասընթացը հաջողությամբ ջնջվել է');
+        }
+        
+        return true;
+      } catch (dbError) {
+        console.error('Database error in handleDeleteProfessionalCourse:', dbError);
+        toast.warning('Դասընթացը ջնջվել է տեղական հիշողությունից, բայց տվյալների բազայում սխալ է տեղի ունեցել։');
+        
+        // Still return true because local state was updated successfully
+        return true;
+      }
     } catch (error) {
       console.error('Unexpected error in handleDeleteProfessionalCourse:', error);
-      
-      // Even if there's an error, try to update local state
-      try {
-        const updatedCourses = professionalCourses.filter(course => course.id !== id);
-        setProfessionalCourses(updatedCourses);
-        localStorage.setItem('professionalCourses', JSON.stringify(updatedCourses));
-        toast.success('Դասընթացը հաջողությամբ հեռացվել է տեղական հիշողությունից');
-        return true;
-      } catch (localError) {
-        console.error('Error updating local state:', localError);
-        return false;
-      }
+      toast.error('Դասընթացի ջնջման ժամանակ սխալ է տեղի ունեցել');
+      return false;
     }
   }, [professionalCourses, setProfessionalCourses, user]);
 

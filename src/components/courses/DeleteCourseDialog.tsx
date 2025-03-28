@@ -12,15 +12,18 @@ interface DeleteCourseDialogProps {
   setIsOpen: (isOpen: boolean) => void;
   selectedCourse: Course | Partial<ProfessionalCourse> | null;
   onDelete: () => Promise<boolean>;
+  isDeleting?: boolean;
 }
 
 const DeleteCourseDialog: React.FC<DeleteCourseDialogProps> = ({
   isOpen,
   setIsOpen,
   selectedCourse,
-  onDelete
+  onDelete,
+  isDeleting = false
 }) => {
-  const [isDeleting, setIsDeleting] = React.useState(false);
+  const [localDeleting, setLocalDeleting] = React.useState(false);
+  const isProcessing = isDeleting || localDeleting;
 
   if (!selectedCourse) return null;
 
@@ -32,10 +35,10 @@ const DeleteCourseDialog: React.FC<DeleteCourseDialogProps> = ({
       : 'Անանուն դասընթաց';
 
   const handleDeleteClick = async () => {
-    if (isDeleting) return; // Prevent multiple clicks
+    if (isProcessing) return; // Prevent multiple clicks
     
     try {
-      setIsDeleting(true);
+      setLocalDeleting(true);
       console.log("DeleteCourseDialog: Starting delete for course:", selectedCourse.id);
       
       const success = await onDelete();
@@ -51,12 +54,12 @@ const DeleteCourseDialog: React.FC<DeleteCourseDialogProps> = ({
       console.error('Error deleting course:', error);
       toast.error('Դասընթացը ջնջելիս սխալ է տեղի ունեցել');
     } finally {
-      setIsDeleting(false);
+      setLocalDeleting(false);
     }
   };
 
   return (
-    <Dialog open={isOpen} onOpenChange={(value) => !isDeleting && setIsOpen(value)}>
+    <Dialog open={isOpen} onOpenChange={(value) => !isProcessing && setIsOpen(value)}>
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
           <DialogTitle>Դասընթացի ջնջում</DialogTitle>
@@ -69,7 +72,7 @@ const DeleteCourseDialog: React.FC<DeleteCourseDialogProps> = ({
             variant="outline" 
             onClick={() => setIsOpen(false)} 
             className="w-full sm:w-auto"
-            disabled={isDeleting}
+            disabled={isProcessing}
           >
             Չեղարկել
           </Button>
@@ -77,9 +80,9 @@ const DeleteCourseDialog: React.FC<DeleteCourseDialogProps> = ({
             variant="destructive" 
             onClick={handleDeleteClick} 
             className="w-full sm:w-auto"
-            disabled={isDeleting}
+            disabled={isProcessing}
           >
-            {isDeleting ? <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> Ջնջվում է...</> : 'Ջնջել'}
+            {isProcessing ? <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> Ջնջվում է...</> : 'Ջնջել'}
           </Button>
         </DialogFooter>
       </DialogContent>

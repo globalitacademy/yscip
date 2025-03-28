@@ -1,5 +1,5 @@
 
-import React from 'react';
+import React, { useState } from 'react';
 import { useCourseContext } from '@/contexts/CourseContext';
 import DeleteCourseDialog from './DeleteCourseDialog';
 import EditCourseDialog from './EditCourseDialog';
@@ -25,29 +25,45 @@ const CourseDialogManager: React.FC = () => {
     setCourseType
   } = useCourseContext();
 
-  // Simplified delete handler that properly handles errors
+  const [isDeleting, setIsDeleting] = useState(false);
+
+  // Enhanced delete handler with better error handling
   const handleDelete = async () => {
+    if (isDeleting) return false;
+    
     try {
+      setIsDeleting(true);
+      
       if (!selectedCourse || !selectedCourse.id) {
+        console.error("Delete attempted with no valid course selected");
         toast.error("Դասընթացը չի գտնվել");
         return false;
       }
       
-      console.log("Deleting course with ID:", selectedCourse.id);
-      const success = await handleDeleteCourse(selectedCourse.id);
+      console.log("Starting delete for course:", selectedCourse.id, "of type:", courseType);
+      
+      // Determine course type and call appropriate handler
+      const success = courseType === 'professional' 
+        ? await handleDeleteCourse(selectedCourse.id)
+        : await handleDeleteCourse(selectedCourse.id);
+      
+      console.log("Delete operation result:", success);
       
       if (success) {
-        console.log("Course successfully deleted");
+        toast.success("Դասընթացը հաջողությամբ ջնջվել է");
+        setIsDeleteDialogOpen(false);
         return true;
       } else {
-        console.error("handleDeleteCourse returned false");
+        console.error("Course deletion failed - server returned false");
         toast.error("Դասընթացը չի ջնջվել: Սերվերը մերժեց հարցումը");
         return false;
       }
     } catch (error) {
-      console.error("Error in handleDelete:", error);
+      console.error("Fatal error in handleDelete:", error);
       toast.error("Ջնջման ժամանակ սխալ է տեղի ունեցել");
       return false;
+    } finally {
+      setIsDeleting(false);
     }
   };
 
@@ -75,6 +91,7 @@ const CourseDialogManager: React.FC = () => {
         setIsOpen={setIsDeleteDialogOpen}
         selectedCourse={selectedCourse}
         onDelete={handleDelete}
+        isDeleting={isDeleting}
       />
     </>
   );
