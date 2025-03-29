@@ -64,8 +64,13 @@ export const CourseProvider: React.FC<{ children: ReactNode }> = ({ children }) 
     
     // Data operations - map to closest equivalents
     loadCourses: async () => {
-      const success = await courseManagement.loadCoursesFromDatabase();
-      return success;
+      try {
+        const success = await courseManagement.loadCoursesFromDatabase();
+        return success;
+      } catch (error) {
+        console.error('Error loading courses:', error);
+        return false;
+      }
     },
     handleSearchChange: () => {}, // Not implemented in the refactored hooks
     handleCategoryChange: () => {}, // Not implemented in the refactored hooks
@@ -125,8 +130,13 @@ export const CourseProvider: React.FC<{ children: ReactNode }> = ({ children }) 
     
     // Additional properties
     loading: courseManagement.loading,
-    loadCoursesFromDatabase: courseManagement.loadCoursesFromDatabase,
-    loadCoursesFromLocalStorage: courseManagement.loadCoursesFromLocalStorage,
+    loadCoursesFromDatabase: async () => {
+      return await courseManagement.loadCoursesFromDatabase();
+    },
+    loadCoursesFromLocalStorage: async () => {
+      await courseManagement.loadCoursesFromLocalStorage();
+      return true;
+    },
     syncCoursesWithDatabase: courseManagement.syncCoursesWithDatabase,
     newProfessionalCourse: courseManagement.newProfessionalCourse,
     setNewProfessionalCourse: courseManagement.setNewProfessionalCourse
