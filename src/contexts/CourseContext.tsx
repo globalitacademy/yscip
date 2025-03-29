@@ -65,11 +65,11 @@ export const CourseProvider: React.FC<{ children: ReactNode }> = ({ children }) 
     // Data operations - map to closest equivalents
     loadCourses: async () => {
       try {
-        const success = await courseManagement.loadCoursesFromDatabase();
-        return success;
+        await courseManagement.loadCoursesFromDatabase();
+        // Don't return a value to match Promise<void> return type
       } catch (error) {
         console.error('Error loading courses:', error);
-        return false;
+        // Don't return a value to match Promise<void> return type
       }
     },
     handleSearchChange: () => {}, // Not implemented in the refactored hooks
