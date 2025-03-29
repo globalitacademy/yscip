@@ -188,22 +188,33 @@ const CourseCreationForm: React.FC = () => {
       if (professionalCourse) {
         if (!validateCourse(professionalCourse)) return false;
         
-        // Ensure required fields are set
-        const courseToSubmit = {
-          ...professionalCourse,
-          createdBy: user?.name || 'Unknown',
-          iconName: professionalCourse.iconName || 'book',
+        // Make sure title is not optional by asserting it exists after validation
+        if (!professionalCourse.title) {
+          toast.error("Դասընթացի վերնագիրը պարտադիր է");
+          return false;
+        }
+        
+        // Create a new object with all required fields guaranteed to be defined
+        const courseToSubmit: Omit<ProfessionalCourse, 'id' | 'createdAt'> = {
+          title: professionalCourse.title,
           subtitle: professionalCourse.subtitle || 'ԴԱՍԸՆԹԱՑ',
+          icon: professionalCourse.icon,
+          iconName: professionalCourse.iconName || 'book',
+          duration: professionalCourse.duration,
+          price: professionalCourse.price,
           buttonText: professionalCourse.buttonText || 'Դիտել',
           color: professionalCourse.color || 'text-amber-500',
+          createdBy: user?.name || 'Unknown',
           institution: professionalCourse.institution || 'ՀՊՏՀ',
-          is_public: true
+          description: professionalCourse.description || '',
+          imageUrl: professionalCourse.imageUrl,
+          organizationLogo: professionalCourse.organizationLogo,
+          lessons: professionalCourse.lessons || [],
+          requirements: professionalCourse.requirements || [],
+          outcomes: professionalCourse.outcomes || [],
+          is_public: professionalCourse.is_public || true,
+          slug: professionalCourse.slug || generateSlug(professionalCourse.title)
         };
-        
-        // Generate a slug for the URL if not provided
-        if (!courseToSubmit.slug && courseToSubmit.title) {
-          courseToSubmit.slug = generateSlug(courseToSubmit.title);
-        }
         
         console.log("Prepared course data for submission:", courseToSubmit);
         
@@ -217,7 +228,7 @@ const CourseCreationForm: React.FC = () => {
         
         // Fall back to context method if direct creation failed
         console.log("Falling back to context method for course creation");
-        const contextResult = await handleCreateProfessionalCourse(courseToSubmit as Omit<ProfessionalCourse, 'id' | 'createdAt'>);
+        const contextResult = await handleCreateProfessionalCourse(courseToSubmit);
         
         if (contextResult) {
           toast.success("Դասընթացը հաջողությամբ ստեղծվել է։");
