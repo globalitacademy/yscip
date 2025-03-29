@@ -1,7 +1,7 @@
 
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
-import { SyncIcon, Loader2 } from 'lucide-react';
+import { RefreshCw, Loader2 } from 'lucide-react';
 import { syncLocalCoursesToDatabase } from '@/utils/syncUtils';
 import { toast } from 'sonner';
 
@@ -28,6 +28,7 @@ const DatabaseSyncButton: React.FC<DatabaseSyncButtonProps> = ({
       
       if (!localCoursesJson || JSON.parse(localCoursesJson).length === 0) {
         toast.info('Համաժամեցման համար լոկալ տվյալներ չկան։');
+        setSyncing(false);
         return;
       }
       
@@ -57,7 +58,7 @@ const DatabaseSyncButton: React.FC<DatabaseSyncButtonProps> = ({
       {syncing ? (
         <Loader2 className="h-4 w-4 animate-spin" />
       ) : (
-        <SyncIcon className="h-4 w-4" />
+        <RefreshCw className="h-4 w-4" />
       )}
       {showLabel && (syncing ? 'Համաժամեցում...' : 'Համաժամեցնել')}
     </Button>

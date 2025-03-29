@@ -64,8 +64,8 @@ export const CourseProvider: React.FC<{ children: ReactNode }> = ({ children }) 
     
     // Data operations - map to closest equivalents
     loadCourses: async () => {
-      await courseManagement.loadCoursesFromDatabase();
-      return;
+      const success = await courseManagement.loadCoursesFromDatabase();
+      return success;
     },
     handleSearchChange: () => {}, // Not implemented in the refactored hooks
     handleCategoryChange: () => {}, // Not implemented in the refactored hooks
