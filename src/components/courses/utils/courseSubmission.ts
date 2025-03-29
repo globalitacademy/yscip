@@ -174,7 +174,48 @@ const insertCourseOutcomes = async (courseId: string, outcomes: string[]): Promi
 };
 
 /**
+ * Saves the course to localStorage as a fallback
+ * when database operations fail
+ */
+const saveToLocalStorage = (courseData: Omit<ProfessionalCourse, 'id' | 'createdAt'>): string => {
+  try {
+    // Generate an ID for the course
+    const courseId = uuidv4();
+    
+    // Create the full course object
+    const course = {
+      ...courseData,
+      id: courseId,
+      createdAt: new Date().toISOString()
+    };
+    
+    // Get existing locally stored courses
+    const localCoursesJson = localStorage.getItem('professional_courses') || '[]';
+    const localCourses = JSON.parse(localCoursesJson);
+    
+    // Add the new course
+    localCourses.push(course);
+    
+    // Save back to localStorage
+    localStorage.setItem('professional_courses', JSON.stringify(localCourses));
+    
+    // Dispatch an event to notify components that the local storage has been updated
+    window.dispatchEvent(new CustomEvent('reload-courses-from-local'));
+    
+    return courseId;
+  } catch (error) {
+    console.error('Error saving course to localStorage:', error);
+    throw createSubmissionError(
+      'Failed to save course to local storage',
+      'saveToLocalStorage',
+      error
+    );
+  }
+};
+
+/**
  * Creates a new course in the database with proper error handling
+ * and falls back to localStorage if database operations fail
  */
 export const createCourseDirectly = async (
   courseData: Omit<ProfessionalCourse, 'id' | 'createdAt'>,
@@ -193,49 +234,70 @@ export const createCourseDirectly = async (
     const courseId = uuidv4();
     const databaseCourseData = mapCourseToDatabaseFormat(courseData, courseId);
     
-    // Insert main course data
-    const { data, error } = await supabase
-      .from('courses')
-      .insert(databaseCourseData)
-      .select();
-    
-    if (error) {
-      console.error('Error inserting course to Supabase:', error);
-      toast.error(`Դասընթացի ստեղծման սխալ: ${error.message}`);
-      return false;
-    }
-    
-    console.log("Course created successfully:", data);
-    
-    // Insert related data if provided
     try {
-      // Using Promise.all to handle all insertions in parallel
-      await Promise.all([
-        courseData.lessons && courseData.lessons.length > 0 
-          ? insertCourseLessons(courseId, courseData.lessons) 
-          : Promise.resolve(),
-          
-        courseData.requirements && courseData.requirements.length > 0 
-          ? insertCourseRequirements(courseId, courseData.requirements) 
-          : Promise.resolve(),
-          
-        courseData.outcomes && courseData.outcomes.length > 0 
-          ? insertCourseOutcomes(courseId, courseData.outcomes) 
-          : Promise.resolve(),
-      ]);
+      // Try to insert the course to Supabase
+      const { data, error } = await supabase
+        .from('courses')
+        .insert(databaseCourseData)
+        .select();
       
-      toast.success("Դասընթացը հաջողությամբ ստեղծվել է։");
-      return true;
-    } catch (insertError) {
-      console.error("Error inserting related course data:", insertError);
-      
-      // Log specific error context if available
-      if ((insertError as CourseSubmissionError).context) {
-        console.error(`Error context: ${(insertError as CourseSubmissionError).context}`);
+      if (error) {
+        // If there's a database error, log it and use localStorage instead
+        console.error('Error inserting course to Supabase:', error);
+        
+        // Check if it's a connectivity issue or policy error
+        if (error.code === '42P17' || error.message.includes('policy') || error.message.includes('recursion')) {
+          toast.warning('Տվյալների բազայի հետ կապ չի հաստատվել: Դասընթացը կպահպանվի լոկալ և համաժամեցվի ավելի ուշ:');
+          
+          // Save to localStorage as a fallback
+          saveToLocalStorage(courseData);
+          return true;
+        }
+        
+        toast.error(`Դասընթացի ստեղծման սխալ: ${error.message}`);
+        return false;
       }
       
-      // Still return true since the main course was created
-      toast.success("Դասընթացը ստեղծվել է, բայց որոշ մանրամասներ չեն պահպանվել։");
+      console.log("Course created successfully:", data);
+      
+      // If main course creation was successful, try to add related data
+      try {
+        // Using Promise.all to handle all insertions in parallel
+        await Promise.all([
+          courseData.lessons && courseData.lessons.length > 0 
+            ? insertCourseLessons(courseId, courseData.lessons) 
+            : Promise.resolve(),
+            
+          courseData.requirements && courseData.requirements.length > 0 
+            ? insertCourseRequirements(courseId, courseData.requirements) 
+            : Promise.resolve(),
+            
+          courseData.outcomes && courseData.outcomes.length > 0 
+            ? insertCourseOutcomes(courseId, courseData.outcomes) 
+            : Promise.resolve(),
+        ]);
+        
+        toast.success("Դասընթացը հաջողությամբ ստեղծվել է։");
+        return true;
+      } catch (insertError) {
+        console.error("Error inserting related course data:", insertError);
+        
+        // Log specific error context if available
+        if ((insertError as CourseSubmissionError).context) {
+          console.error(`Error context: ${(insertError as CourseSubmissionError).context}`);
+        }
+        
+        // Still return true since the main course was created
+        toast.success("Դասընթացը ստեղծվել է, բայց որոշ մանրամասներ չեն պահպանվել։");
+        return true;
+      }
+    } catch (dbError) {
+      // Handle unexpected errors during the Supabase operations
+      console.error('Unexpected error during Supabase operations:', dbError);
+      toast.warning('Տվյալների բազայի հետ կապ չի հաստատվել: Դասընթացը կպահպանվի լոկալ և համաժամեցվի ավելի ուշ:');
+      
+      // Save to localStorage as a fallback
+      saveToLocalStorage(courseData);
       return true;
     }
   } catch (error) {
