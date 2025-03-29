@@ -11,6 +11,7 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { v4 as uuidv4 } from 'uuid';
 import { supabase } from '@/integrations/supabase/client';
+import { BookText } from 'lucide-react';
 
 const CourseCreationForm: React.FC = () => {
   const navigate = useNavigate();
@@ -88,6 +89,9 @@ const CourseCreationForm: React.FC = () => {
       
       const courseId = uuidv4();
       
+      // Create a default icon if none is provided
+      const iconName = courseData.iconName || 'book';
+      
       // Insert main course data
       const { data, error } = await supabase
         .from('courses')
@@ -95,7 +99,7 @@ const CourseCreationForm: React.FC = () => {
           id: courseId,
           title: courseData.title,
           subtitle: courseData.subtitle || 'ԴԱՍԸՆԹԱՑ',
-          icon_name: courseData.iconName || 'book',
+          icon_name: iconName,
           duration: courseData.duration,
           price: courseData.price,
           button_text: courseData.buttonText || 'Դիտել',
@@ -105,7 +109,7 @@ const CourseCreationForm: React.FC = () => {
           image_url: courseData.imageUrl,
           organization_logo: courseData.organizationLogo,
           description: courseData.description || '',
-          is_public: true,
+          is_public: Boolean(courseData.is_public),
           slug: courseData.slug || generateSlug(courseData.title)
         })
         .select();
@@ -185,62 +189,56 @@ const CourseCreationForm: React.FC = () => {
         return false;
       }
 
-      if (professionalCourse) {
-        if (!validateCourse(professionalCourse)) return false;
-        
-        // Make sure title is not optional by asserting it exists after validation
-        if (!professionalCourse.title) {
-          toast.error("Դասընթացի վերնագիրը պարտադիր է");
-          return false;
-        }
-        
-        // Create a new object with all required fields guaranteed to be defined
-        const courseToSubmit: Omit<ProfessionalCourse, 'id' | 'createdAt'> = {
-          title: professionalCourse.title,
-          subtitle: professionalCourse.subtitle || 'ԴԱՍԸՆԹԱՑ',
-          icon: professionalCourse.icon,
-          iconName: professionalCourse.iconName || 'book',
-          duration: professionalCourse.duration,
-          price: professionalCourse.price,
-          buttonText: professionalCourse.buttonText || 'Դիտել',
-          color: professionalCourse.color || 'text-amber-500',
-          createdBy: user?.name || 'Unknown',
-          institution: professionalCourse.institution || 'ՀՊՏՀ',
-          description: professionalCourse.description || '',
-          imageUrl: professionalCourse.imageUrl,
-          organizationLogo: professionalCourse.organizationLogo,
-          lessons: professionalCourse.lessons || [],
-          requirements: professionalCourse.requirements || [],
-          outcomes: professionalCourse.outcomes || [],
-          is_public: professionalCourse.is_public || true,
-          slug: professionalCourse.slug || generateSlug(professionalCourse.title)
-        };
-        
-        console.log("Prepared course data for submission:", courseToSubmit);
-        
-        // Try direct creation first
-        const directResult = await createCourseDirectly(courseToSubmit);
-        if (directResult) {
-          // Redirect to courses page on success
-          setTimeout(() => navigate('/courses'), 1000);
-          return true;
-        }
-        
-        // Fall back to context method if direct creation failed
-        console.log("Falling back to context method for course creation");
-        const contextResult = await handleCreateProfessionalCourse(courseToSubmit);
-        
-        if (contextResult) {
-          toast.success("Դասընթացը հաջողությամբ ստեղծվել է։");
-          // Redirect to courses page
-          setTimeout(() => navigate('/courses'), 1000);
-          return true;
-        } else {
-          toast.error("Դասընթացի ստեղծման ժամանակ սխալ է տեղի ունեցել։");
-        }
-      } else {
-        toast.error("Լրացրեք բոլոր պարտադիր դաշտերը");
+      if (!professionalCourse || !validateCourse(professionalCourse)) {
+        return false;
       }
+      
+      // At this point, we know professionalCourse has title, duration and price
+      // Create a complete object with all required properties for ProfessionalCourse
+      const courseToSubmit: Omit<ProfessionalCourse, 'id' | 'createdAt'> = {
+        title: professionalCourse.title!,
+        subtitle: professionalCourse.subtitle || 'ԴԱՍԸՆԹԱՑ',
+        icon: professionalCourse.icon || <BookText className="h-16 w-16" />,
+        iconName: professionalCourse.iconName || 'book',
+        duration: professionalCourse.duration!,
+        price: professionalCourse.price!,
+        buttonText: professionalCourse.buttonText || 'Դիտել',
+        color: professionalCourse.color || 'text-amber-500',
+        createdBy: user?.name || 'Unknown',
+        institution: professionalCourse.institution || 'ՀՊՏՀ',
+        description: professionalCourse.description || '',
+        imageUrl: professionalCourse.imageUrl,
+        organizationLogo: professionalCourse.organizationLogo,
+        lessons: professionalCourse.lessons || [],
+        requirements: professionalCourse.requirements || [],
+        outcomes: professionalCourse.outcomes || [],
+        is_public: professionalCourse.is_public !== undefined ? professionalCourse.is_public : true,
+        slug: professionalCourse.slug || generateSlug(professionalCourse.title!)
+      };
+      
+      console.log("Prepared course data for submission:", courseToSubmit);
+      
+      // Try direct creation first
+      const directResult = await createCourseDirectly(courseToSubmit);
+      if (directResult) {
+        // Redirect to courses page on success
+        setTimeout(() => navigate('/courses'), 1000);
+        return true;
+      }
+      
+      // Fall back to context method if direct creation failed
+      console.log("Falling back to context method for course creation");
+      const contextResult = await handleCreateProfessionalCourse(courseToSubmit);
+      
+      if (contextResult) {
+        toast.success("Դասընթացը հաջողությամբ ստեղծվել է։");
+        // Redirect to courses page
+        setTimeout(() => navigate('/courses'), 1000);
+        return true;
+      } else {
+        toast.error("Դասընթացի ստեղծման ժամանակ սխալ է տեղի ունեցել։");
+      }
+      
       return false;
     } catch (error) {
       console.error("Error creating course:", error);

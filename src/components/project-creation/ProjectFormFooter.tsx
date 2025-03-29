@@ -28,8 +28,10 @@ const ProjectFormFooter: React.FC<ProjectFormFooterProps> = ({
       console.log("Form submission result:", result);
       
       if (!result) {
-        toast.error("Պահպանման սխալ տեղի ունեցավ:");
+        // Don't show error here, let the onSubmit function handle specific error messages
+        console.log("Form submission unsuccessful");
       } else {
+        // Only show success message here if onSubmit returns true
         toast.success("Հաջողությամբ պահպանվեց");
       }
       return result;
