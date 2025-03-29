@@ -16,18 +16,22 @@ const CourseManagementContent: React.FC = () => {
     isCreateDialogOpen, 
     setIsCreateDialogOpen,
     loadCourses,
-    handleCreateCourse,
     handleCreateInit,
     courses,
-    professionalCourses,
-    selectedCourse,
-    professionalCourse,
-    courseType
+    professionalCourses
   } = useCourseContext();
   
   // Load courses on component mount
   useEffect(() => {
-    loadCourses();
+    const fetchCourses = async () => {
+      try {
+        await loadCourses();
+      } catch (error) {
+        console.error("Error loading courses:", error);
+      }
+    };
+    
+    fetchCourses();
   }, [loadCourses]);
 
   return (

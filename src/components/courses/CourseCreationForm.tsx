@@ -6,13 +6,15 @@ import ProfessionalCourseForm from './ProfessionalCourseForm';
 import { ProfessionalCourse } from './types/index';
 import { useCourseContext } from '@/contexts/CourseContext';
 import ProjectFormFooter from '../project-creation/ProjectFormFooter';
-import { toast } from '@/components/ui/use-toast';
+import { toast } from 'sonner';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
+import { v4 as uuidv4 } from 'uuid';
 
 const CourseCreationForm: React.FC = () => {
   const navigate = useNavigate();
-  const { user } = useAuth();
+  const { user, isAuthenticated } = useAuth();
+  const [isFormValid, setIsFormValid] = useState(false);
   
   const { 
     professionalCourse,
@@ -27,6 +29,28 @@ const CourseCreationForm: React.FC = () => {
     setCourseType('professional');
   }, [setCourseType]);
 
+  // Check if user is authenticated
+  useEffect(() => {
+    if (!isAuthenticated || !user) {
+      toast.error("Դուք պետք է մուտք գործեք համակարգ դասընթաց ստեղծելու համար");
+      navigate('/');
+    }
+  }, [isAuthenticated, user, navigate]);
+
+  // Validate form fields on every change
+  useEffect(() => {
+    if (professionalCourse) {
+      const isValid = Boolean(
+        professionalCourse.title && 
+        professionalCourse.duration && 
+        professionalCourse.price
+      );
+      setIsFormValid(isValid);
+    } else {
+      setIsFormValid(false);
+    }
+  }, [professionalCourse]);
+
   const generateSlug = (title: string): string => {
     return title
       .toLowerCase()
@@ -38,29 +62,17 @@ const CourseCreationForm: React.FC = () => {
 
   const validateCourse = (course: Partial<ProfessionalCourse>): boolean => {
     if (!course.title) {
-      toast({
-        title: "Սխալ",
-        description: "Մուտքագրեք դասընթացի վերնագիրը",
-        variant: "destructive",
-      });
+      toast.error("Մուտքագրեք դասընթացի վերնագիրը");
       return false;
     }
     
     if (!course.duration) {
-      toast({
-        title: "Սխալ",
-        description: "Մուտքագրեք դասընթացի տևողությունը",
-        variant: "destructive",
-      });
+      toast.error("Մուտքագրեք դասընթացի տևողությունը");
       return false;
     }
     
     if (!course.price) {
-      toast({
-        title: "Սխալ",
-        description: "Մուտքագրեք դասընթացի արժեքը",
-        variant: "destructive",
-      });
+      toast.error("Մուտքագրեք դասընթացի արժեքը");
       return false;
     }
     
@@ -71,18 +83,26 @@ const CourseCreationForm: React.FC = () => {
     try {
       console.log("Creating professional course, user:", user);
 
+      if (!isAuthenticated || !user) {
+        toast.error("Դուք պետք է մուտք գործեք համակարգ դասընթաց ստեղծելու համար");
+        return false;
+      }
+
       if (professionalCourse) {
         if (!validateCourse(professionalCourse)) return false;
         
         // Ensure required fields are set
         const courseToSubmit = {
           ...professionalCourse,
+          id: uuidv4(), // Generate unique ID
           createdBy: user?.name || 'Unknown',
           iconName: professionalCourse.iconName || 'book',
           subtitle: professionalCourse.subtitle || 'ԴԱՍԸՆԹԱՑ',
           buttonText: professionalCourse.buttonText || 'Դիտել',
           color: professionalCourse.color || 'text-amber-500',
           institution: professionalCourse.institution || 'ՀՊՏՀ',
+          is_public: true,
+          createdAt: new Date().toISOString()
         };
         
         // Generate a slug for the URL if not provided
@@ -94,30 +114,21 @@ const CourseCreationForm: React.FC = () => {
         
         const success = await handleCreateProfessionalCourse(courseToSubmit as Omit<ProfessionalCourse, 'id' | 'createdAt'>);
         if (success) {
-          toast({
-            title: "Դասընթացը ստեղծված է",
-            description: "Մասնագիտական դասընթացը հաջողությամբ ստեղծվել է։",
-          });
+          toast.success("Դասընթացը հաջողությամբ ստեղծվել է։");
           
           // Redirect to courses page
           navigate('/courses');
           return true;
+        } else {
+          toast.error("Դասընթացի ստեղծման ժամանակ սխալ է տեղի ունեցել։");
         }
       } else {
-        toast({
-          title: "Սխալ",
-          description: "Լրացրեք բոլոր պարտադիր դաշտերը",
-          variant: "destructive",
-        });
+        toast.error("Լրացրեք բոլոր պարտադիր դաշտերը");
       }
       return false;
     } catch (error) {
       console.error("Error creating course:", error);
-      toast({
-        title: "Սխալ",
-        description: "Դասընթացի ստեղծման ժամանակ սխալ է տեղի ունեցել",
-        variant: "destructive",
-      });
+      toast.error(`Դասընթացի ստեղծման ժամանակ սխալ է տեղի ունեցել: ${error instanceof Error ? error.message : 'Անհայտ սխալ'}`);
       return false;
     }
   };
@@ -145,7 +156,11 @@ const CourseCreationForm: React.FC = () => {
           </TabsContent>
         </Tabs>
       </CardContent>
-      <ProjectFormFooter onSubmit={handleSubmit} submitText="Ստեղծել դասընթաց" />
+      <ProjectFormFooter 
+        onSubmit={handleSubmit} 
+        submitText="Ստեղծել դասընթաց" 
+        isDisabled={!isFormValid}
+      />
     </Card>
   );
 };
