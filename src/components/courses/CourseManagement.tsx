@@ -35,9 +35,6 @@ const CourseManagementContent: React.FC = () => {
       <div className="flex justify-between items-center">
         <h2 className="text-2xl font-bold">Դասընթացներ</h2>
         <div className="flex gap-2">
-          <Button variant="outline" onClick={() => handleCreateInit('standard')}>
-            <Plus className="h-4 w-4 mr-2" /> Ստանդարտ դասընթաց
-          </Button>
           <Button onClick={() => handleCreateInit('professional')}>
             <Plus className="h-4 w-4 mr-2" /> Մասնագիտական դասընթաց
           </Button>

@@ -1,10 +1,8 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import CourseForm from './CourseForm';
 import ProfessionalCourseForm from './ProfessionalCourseForm';
-import { Course } from './types/index';
 import { ProfessionalCourse } from './types/index';
 import { useCourseContext } from '@/contexts/CourseContext';
 import ProjectFormFooter from '../project-creation/ProjectFormFooter';
@@ -17,19 +15,17 @@ const CourseCreationForm: React.FC = () => {
   const { user } = useAuth();
   
   const { 
-    selectedCourse, 
     professionalCourse,
     courseType,
     setCourseType,
-    setSelectedCourse, 
-    setProfessionalCourse, 
-    newModule,
-    setNewModule,
-    handleAddModuleToEdit,
-    handleRemoveModuleFromEdit,
-    handleCreateCourse,
+    setProfessionalCourse,
     handleCreateProfessionalCourse
   } = useCourseContext();
+
+  // Force courseType to 'professional' on component mount
+  useEffect(() => {
+    setCourseType('professional');
+  }, [setCourseType]);
 
   const generateSlug = (title: string): string => {
     return title
@@ -40,7 +36,7 @@ const CourseCreationForm: React.FC = () => {
       .trim(); // Trim - from start and end
   };
 
-  const validateCourse = (course: Partial<ProfessionalCourse> | Course): boolean => {
+  const validateCourse = (course: Partial<ProfessionalCourse>): boolean => {
     if (!course.title) {
       toast({
         title: "Սխալ",
@@ -59,8 +55,7 @@ const CourseCreationForm: React.FC = () => {
       return false;
     }
     
-    // Check if we're validating a professional course and if it has a price
-    if (courseType === 'professional' && !('price' in course)) {
+    if (!course.price) {
       toast({
         title: "Սխալ",
         description: "Մուտքագրեք դասընթացի արժեքը",
@@ -74,25 +69,9 @@ const CourseCreationForm: React.FC = () => {
 
   const handleSubmit = async () => {
     try {
-      console.log("Creating course, type:", courseType);
-      console.log("User:", user);
+      console.log("Creating professional course, user:", user);
 
-      if (courseType === 'standard' && selectedCourse) {
-        if (!validateCourse(selectedCourse)) return false;
-        
-        console.log("Creating standard course:", selectedCourse);
-        const success = await handleCreateCourse(selectedCourse as Omit<Course, 'id' | 'createdAt'>);
-        if (success) {
-          toast({
-            title: "Դասընթացը ստեղծված է",
-            description: "Ստանդարտ դասընթացը հաջողությամբ ստեղծվել է։",
-          });
-          
-          // Redirect to courses page
-          navigate('/courses');
-          return true;
-        }
-      } else if (courseType === 'professional' && professionalCourse) {
+      if (professionalCourse) {
         if (!validateCourse(professionalCourse)) return false;
         
         // Ensure required fields are set
@@ -151,24 +130,9 @@ const CourseCreationForm: React.FC = () => {
       </CardHeader>
       <CardContent className="space-y-6">
         <Tabs value={courseType} onValueChange={(value: 'standard' | 'professional') => setCourseType(value)}>
-          <TabsList className="grid grid-cols-2 w-full">
-            <TabsTrigger value="standard">Ստանդարտ դասընթաց</TabsTrigger>
+          <TabsList className="grid grid-cols-1 w-full">
             <TabsTrigger value="professional">Մասնագիտական դասընթաց</TabsTrigger>
           </TabsList>
-          
-          <TabsContent value="standard">
-            {selectedCourse && (
-              <CourseForm
-                course={selectedCourse}
-                setCourse={(newCourse) => setSelectedCourse(newCourse as Course)}
-                newModule={newModule}
-                setNewModule={setNewModule}
-                handleAddModule={handleAddModuleToEdit}
-                handleRemoveModule={handleRemoveModuleFromEdit}
-                isEdit={false}
-              />
-            )}
-          </TabsContent>
           
           <TabsContent value="professional">
             {professionalCourse && (
@@ -181,7 +145,7 @@ const CourseCreationForm: React.FC = () => {
           </TabsContent>
         </Tabs>
       </CardContent>
-      <ProjectFormFooter onSubmit={handleSubmit} />
+      <ProjectFormFooter onSubmit={handleSubmit} submitText="Ստեղծել դասընթաց" />
     </Card>
   );
 };

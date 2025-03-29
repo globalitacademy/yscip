@@ -2,6 +2,7 @@
 import React from 'react';
 import { Button } from '@/components/ui/button';
 import { CardFooter } from '@/components/ui/card';
+import { Loader2 } from 'lucide-react';
 
 interface ProjectFormFooterProps {
   onSubmit: () => Promise<boolean> | boolean;
@@ -19,7 +20,11 @@ const ProjectFormFooter: React.FC<ProjectFormFooterProps> = ({
     
     setIsSubmitting(true);
     try {
-      await onSubmit();
+      const result = await onSubmit();
+      return result;
+    } catch (error) {
+      console.error("Error submitting form:", error);
+      return false;
     } finally {
       setIsSubmitting(false);
     }
@@ -32,7 +37,12 @@ const ProjectFormFooter: React.FC<ProjectFormFooterProps> = ({
         disabled={isSubmitting}
         className="px-6"
       >
-        {isSubmitting ? "Պահպանվում է..." : submitText}
+        {isSubmitting ? (
+          <>
+            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+            Պահպանվում է...
+          </>
+        ) : submitText}
       </Button>
     </CardFooter>
   );
