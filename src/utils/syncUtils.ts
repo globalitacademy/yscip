@@ -10,13 +10,20 @@ import { v4 as uuidv4 } from 'uuid';
  */
 export const syncLocalCoursesToDatabase = async (): Promise<boolean> => {
   try {
-    // Get courses from localStorage
+    // Get courses from localStorage - both regular professional courses and pending courses
     const localCoursesJson = localStorage.getItem('professional_courses');
-    if (!localCoursesJson) {
-      return true; // No local courses to sync
+    const pendingCoursesJson = localStorage.getItem('pending_courses');
+    
+    let localCourses: ProfessionalCourse[] = [];
+    
+    if (localCoursesJson) {
+      localCourses = [...localCourses, ...JSON.parse(localCoursesJson)];
     }
     
-    const localCourses = JSON.parse(localCoursesJson) as ProfessionalCourse[];
+    if (pendingCoursesJson) {
+      localCourses = [...localCourses, ...JSON.parse(pendingCoursesJson)];
+    }
+    
     if (!localCourses.length) {
       return true; // No local courses to sync
     }
@@ -43,34 +50,66 @@ export const syncLocalCoursesToDatabase = async (): Promise<boolean> => {
           .single();
         
         if (existingCourse) {
-          // Course already exists, don't try to insert it again
+          // Course already exists, update it instead of inserting
+          const { error: updateError } = await supabase
+            .from('courses')
+            .update({
+              title: course.title,
+              subtitle: course.subtitle || 'ԴԱՍԸՆԹԱՑ',
+              icon_name: course.iconName || 'book',
+              duration: course.duration,
+              price: course.price,
+              button_text: course.buttonText || 'Դիտել',
+              color: course.color || 'text-amber-500',
+              institution: course.institution || 'ՀՊՏՀ',
+              image_url: course.imageUrl || null,
+              organization_logo: course.organizationLogo || null,
+              description: course.description || null,
+              is_public: course.is_public || false,
+              updated_at: new Date().toISOString(),
+              slug: course.slug || course.title.toLowerCase().replace(/[^\w\s-]/g, '').replace(/\s+/g, '-').replace(/--+/g, '-').trim()
+            })
+            .eq('id', course.id);
+            
+          if (updateError) {
+            console.error(`Error updating course ${course.id}:`, updateError);
+            failCount++;
+            continue;
+          }
+          
+          // Clear related data before re-adding
+          await Promise.all([
+            supabase.from('course_lessons').delete().eq('course_id', course.id),
+            supabase.from('course_requirements').delete().eq('course_id', course.id),
+            supabase.from('course_outcomes').delete().eq('course_id', course.id)
+          ]);
+          
           successCount++;
-          continue;
-        }
-        
-        // Insert the main course
-        const { error: courseError } = await supabase.from('courses').insert({
-          id: course.id,
-          title: course.title,
-          subtitle: course.subtitle || 'ԴԱՍԸՆԹԱՑ',
-          icon_name: course.iconName || 'book',
-          duration: course.duration,
-          price: course.price,
-          button_text: course.buttonText || 'Դիտել',
-          color: course.color || 'text-amber-500',
-          created_by: course.createdBy || 'Unknown',
-          institution: course.institution || 'ՀՊՏՀ',
-          image_url: course.imageUrl || null,
-          organization_logo: course.organizationLogo || null,
-          description: course.description || null,
-          is_public: course.is_public || false,
-          slug: course.slug || course.title.toLowerCase().replace(/[^\w\s-]/g, '').replace(/\s+/g, '-').replace(/--+/g, '-').trim()
-        });
-        
-        if (courseError) {
-          console.error(`Error syncing course ${course.id}:`, courseError);
-          failCount++;
-          continue;
+        } else {
+          // Course doesn't exist, insert it
+          const { error: courseError } = await supabase.from('courses').insert({
+            id: course.id,
+            title: course.title,
+            subtitle: course.subtitle || 'ԴԱՍԸՆԹԱՑ',
+            icon_name: course.iconName || 'book',
+            duration: course.duration,
+            price: course.price,
+            button_text: course.buttonText || 'Դիտել',
+            color: course.color || 'text-amber-500',
+            created_by: course.createdBy || 'Unknown',
+            institution: course.institution || 'ՀՊՏՀ',
+            image_url: course.imageUrl || null,
+            organization_logo: course.organizationLogo || null,
+            description: course.description || null,
+            is_public: course.is_public || false,
+            slug: course.slug || course.title.toLowerCase().replace(/[^\w\s-]/g, '').replace(/\s+/g, '-').replace(/--+/g, '-').trim()
+          });
+          
+          if (courseError) {
+            console.error(`Error syncing course ${course.id}:`, courseError);
+            failCount++;
+            continue;
+          }
         }
         
         // Insert related data if available
@@ -122,6 +161,7 @@ export const syncLocalCoursesToDatabase = async (): Promise<boolean> => {
       toast.success(`${successCount} դասընթաց հաջողությամբ համաժամեցվել է:`);
       // Clear the local courses since they've been synced
       localStorage.removeItem('professional_courses');
+      localStorage.removeItem('pending_courses');
       return true;
     } else if (successCount > 0) {
       // Some courses synced, some failed
@@ -145,11 +185,19 @@ export const syncLocalCoursesToDatabase = async (): Promise<boolean> => {
 export const loadCoursesFromLocalStorage = (): ProfessionalCourse[] => {
   try {
     const localCoursesJson = localStorage.getItem('professional_courses');
-    if (!localCoursesJson) {
-      return [];
+    const pendingCoursesJson = localStorage.getItem('pending_courses');
+    
+    let localCourses: ProfessionalCourse[] = [];
+    
+    if (localCoursesJson) {
+      localCourses = [...localCourses, ...JSON.parse(localCoursesJson)];
     }
     
-    return JSON.parse(localCoursesJson);
+    if (pendingCoursesJson) {
+      localCourses = [...localCourses, ...JSON.parse(pendingCoursesJson)];
+    }
+    
+    return localCourses;
   } catch (error) {
     console.error('Error loading courses from localStorage:', error);
     return [];

@@ -28,9 +28,12 @@ const CourseManagementContent: React.FC = () => {
   
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [loadAttempted, setLoadAttempted] = useState(false); // Flag to prevent infinite loops
   
   // Load courses directly from Supabase
   const loadCoursesDirectly = async () => {
+    if (loadAttempted) return; // Prevent multiple load attempts
+    
     setIsLoading(true);
     setError(null);
     
@@ -109,6 +112,7 @@ const CourseManagementContent: React.FC = () => {
       await loadCourses();
     } finally {
       setIsLoading(false);
+      setLoadAttempted(true); // Mark loading as attempted to prevent loops
     }
   };
   
@@ -120,7 +124,7 @@ const CourseManagementContent: React.FC = () => {
         await loadCoursesDirectly();
         
         // If that fails, fall back to context
-        if (professionalCourses.length === 0) {
+        if (professionalCourses.length === 0 && !loadAttempted) {
           console.log("No courses loaded directly, trying context method");
           await loadCourses();
         }
@@ -131,7 +135,8 @@ const CourseManagementContent: React.FC = () => {
     };
     
     fetchCourses();
-  }, [loadCourses]);
+    // Only run this effect once on mount
+  }, []); // Empty dependency array to run only on mount
 
   return (
     <div className="space-y-4">

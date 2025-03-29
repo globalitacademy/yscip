@@ -1,310 +1,261 @@
 
 import { toast } from 'sonner';
-import { ProfessionalCourse, LessonItem } from '../types';
 import { supabase } from '@/integrations/supabase/client';
+import { ProfessionalCourse } from '../types/ProfessionalCourse';
 import { v4 as uuidv4 } from 'uuid';
 
 /**
- * Error type for course submission operations
- */
-export interface CourseSubmissionError extends Error {
-  context?: string;
-  originalError?: unknown;
-}
-
-/**
- * Creates a properly typed submission error
- */
-const createSubmissionError = (message: string, context?: string, originalError?: unknown): CourseSubmissionError => {
-  const error: CourseSubmissionError = new Error(message) as CourseSubmissionError;
-  error.name = 'CourseSubmissionError';
-  error.context = context;
-  error.originalError = originalError;
-  return error;
-};
-
-/**
- * Generates a URL-friendly slug from a course title
+ * Generates a URL-friendly slug from a title
  */
 export const generateSlug = (title: string): string => {
   return title
     .toLowerCase()
-    .replace(/[^\w\s-]/g, '') // Remove non-word chars
-    .replace(/\s+/g, '-') // Replace spaces with -
-    .replace(/--+/g, '-') // Replace multiple - with single -
-    .trim(); // Trim - from start and end
+    .replace(/[^\w\s-]/g, '') // Remove special characters
+    .replace(/\s+/g, '-')     // Replace spaces with hyphens
+    .replace(/--+/g, '-')     // Replace multiple hyphens with single hyphen
+    .trim();
 };
 
 /**
- * Type guard to validate course data before submission
- */
-export const isValidCourseData = (
-  courseData: Partial<ProfessionalCourse>
-): courseData is Omit<ProfessionalCourse, 'id' | 'createdAt'> => {
-  return (
-    typeof courseData.title === 'string' &&
-    courseData.title.trim().length > 0 &&
-    typeof courseData.duration === 'string' &&
-    courseData.duration.trim().length > 0 &&
-    typeof courseData.price === 'string' &&
-    courseData.price.trim().length > 0 &&
-    typeof courseData.institution === 'string' &&
-    courseData.institution.trim().length > 0
-  );
-};
-
-/**
- * Converts ProfessionalCourse to database format
- */
-interface DatabaseCourseData {
-  id: string;
-  title: string;
-  subtitle: string | null;
-  icon_name: string;
-  duration: string;
-  price: string;
-  button_text: string | null;
-  color: string;
-  created_by: string;
-  institution: string;
-  image_url: string | null;
-  organization_logo: string | null;
-  description: string | null;
-  is_public: boolean;
-  slug: string;
-}
-
-/**
- * Maps a ProfessionalCourse to the format expected by the database
- */
-const mapCourseToDatabaseFormat = (
-  courseData: Omit<ProfessionalCourse, 'id' | 'createdAt'>,
-  courseId: string
-): DatabaseCourseData => {
-  return {
-    id: courseId,
-    title: courseData.title,
-    subtitle: courseData.subtitle || 'ԴԱՍԸՆԹԱՑ',
-    icon_name: courseData.iconName || 'book',
-    duration: courseData.duration,
-    price: courseData.price,
-    button_text: courseData.buttonText || 'Դիտել',
-    color: courseData.color || 'text-amber-500',
-    created_by: courseData.createdBy || 'Unknown',
-    institution: courseData.institution || 'ՀՊՏՀ',
-    image_url: courseData.imageUrl || null,
-    organization_logo: courseData.organizationLogo || null,
-    description: courseData.description || null,
-    is_public: Boolean(courseData.is_public),
-    slug: courseData.slug || generateSlug(courseData.title)
-  };
-};
-
-/**
- * Inserts course lessons into the database
- */
-const insertCourseLessons = async (courseId: string, lessons: LessonItem[]): Promise<void> => {
-  if (!lessons.length) return;
-  
-  const { error } = await supabase
-    .from('course_lessons')
-    .insert(
-      lessons.map(lesson => ({
-        course_id: courseId,
-        title: lesson.title,
-        duration: lesson.duration
-      }))
-    );
-    
-  if (error) {
-    throw createSubmissionError(
-      'Failed to insert course lessons',
-      'insertCourseLessons',
-      error
-    );
-  }
-};
-
-/**
- * Inserts course requirements into the database
- */
-const insertCourseRequirements = async (courseId: string, requirements: string[]): Promise<void> => {
-  if (!requirements.length) return;
-  
-  const { error } = await supabase
-    .from('course_requirements')
-    .insert(
-      requirements.map(requirement => ({
-        course_id: courseId,
-        requirement: requirement
-      }))
-    );
-    
-  if (error) {
-    throw createSubmissionError(
-      'Failed to insert course requirements',
-      'insertCourseRequirements',
-      error
-    );
-  }
-};
-
-/**
- * Inserts course outcomes into the database
- */
-const insertCourseOutcomes = async (courseId: string, outcomes: string[]): Promise<void> => {
-  if (!outcomes.length) return;
-  
-  const { error } = await supabase
-    .from('course_outcomes')
-    .insert(
-      outcomes.map(outcome => ({
-        course_id: courseId,
-        outcome: outcome
-      }))
-    );
-    
-  if (error) {
-    throw createSubmissionError(
-      'Failed to insert course outcomes',
-      'insertCourseOutcomes',
-      error
-    );
-  }
-};
-
-/**
- * Saves the course to localStorage as a fallback
- * when database operations fail
- */
-const saveToLocalStorage = (courseData: Omit<ProfessionalCourse, 'id' | 'createdAt'>): string => {
-  try {
-    // Generate an ID for the course
-    const courseId = uuidv4();
-    
-    // Create the full course object
-    const course = {
-      ...courseData,
-      id: courseId,
-      createdAt: new Date().toISOString()
-    };
-    
-    // Get existing locally stored courses
-    const localCoursesJson = localStorage.getItem('professional_courses') || '[]';
-    const localCourses = JSON.parse(localCoursesJson);
-    
-    // Add the new course
-    localCourses.push(course);
-    
-    // Save back to localStorage
-    localStorage.setItem('professional_courses', JSON.stringify(localCourses));
-    
-    // Dispatch an event to notify components that the local storage has been updated
-    window.dispatchEvent(new CustomEvent('reload-courses-from-local'));
-    
-    return courseId;
-  } catch (error) {
-    console.error('Error saving course to localStorage:', error);
-    throw createSubmissionError(
-      'Failed to save course to local storage',
-      'saveToLocalStorage',
-      error
-    );
-  }
-};
-
-/**
- * Creates a new course in the database with proper error handling
- * and falls back to localStorage if database operations fail
+ * Create a course directly in Supabase, bypassing context
  */
 export const createCourseDirectly = async (
-  courseData: Omit<ProfessionalCourse, 'id' | 'createdAt'>,
-  setIsLoading: (loading: boolean) => void
+  course: Omit<ProfessionalCourse, 'id' | 'createdAt'>,
+  setIsLoading?: React.Dispatch<React.SetStateAction<boolean>>
 ): Promise<boolean> => {
+  if (setIsLoading) setIsLoading(true);
+  
   try {
-    setIsLoading(true);
-    console.log("Creating course directly with Supabase, course data:", courseData);
+    console.log("Creating course directly in Supabase:", course);
     
-    // Validate course data
-    if (!isValidCourseData(courseData)) {
-      toast.error('Դասընթացը պետք է ունենա վերնագիր, տևողություն, գին և հաստատություն');
+    // Generate a UUID for the new course
+    const courseId = uuidv4();
+    
+    // Create slug if not provided
+    const slug = course.slug || generateSlug(course.title);
+    
+    // Insert the main course record
+    const { error: courseError } = await supabase
+      .from('courses')
+      .insert({
+        id: courseId,
+        title: course.title,
+        subtitle: course.subtitle || 'ԴԱՍԸՆԹԱՑ',
+        icon_name: course.iconName || 'book',
+        duration: course.duration,
+        price: course.price,
+        button_text: course.buttonText || 'Դիտել',
+        color: course.color || 'text-amber-500',
+        created_by: course.createdBy || 'Unknown',
+        institution: course.institution || 'ՀՊՏՀ',
+        image_url: course.imageUrl,
+        organization_logo: course.organizationLogo,
+        description: course.description || '',
+        is_public: course.is_public !== undefined ? course.is_public : true,
+        slug: slug
+      });
+      
+    if (courseError) {
+      console.error("Error creating course in Supabase:", courseError);
+      toast.error("Դասընթացի ստեղծման ժամանակ սխալ է տեղի ունեցել");
       return false;
     }
     
-    const courseId = uuidv4();
-    const databaseCourseData = mapCourseToDatabaseFormat(courseData, courseId);
-    
-    try {
-      // Try to insert the course to Supabase
-      const { data, error } = await supabase
-        .from('courses')
-        .insert(databaseCourseData)
-        .select();
-      
-      if (error) {
-        // If there's a database error, log it and use localStorage instead
-        console.error('Error inserting course to Supabase:', error);
+    // Insert lessons if provided
+    if (course.lessons && course.lessons.length > 0) {
+      const { error: lessonsError } = await supabase
+        .from('course_lessons')
+        .insert(
+          course.lessons.map(lesson => ({
+            id: uuidv4(),
+            course_id: courseId,
+            title: lesson.title,
+            duration: lesson.duration
+          }))
+        );
         
-        // Check if it's a connectivity issue or policy error
-        if (error.code === '42P17' || error.message.includes('policy') || error.message.includes('recursion')) {
-          toast.warning('Տվյալների բազայի հետ կապ չի հաստատվել: Դասընթացը կպահպանվի լոկալ և համաժամեցվի ավելի ուշ:');
-          
-          // Save to localStorage as a fallback
-          saveToLocalStorage(courseData);
-          return true;
-        }
-        
-        toast.error(`Դասընթացի ստեղծման սխալ: ${error.message}`);
-        return false;
+      if (lessonsError) {
+        console.error("Error adding lessons:", lessonsError);
+        // Continue with creation despite lesson errors
       }
-      
-      console.log("Course created successfully:", data);
-      
-      // If main course creation was successful, try to add related data
-      try {
-        // Using Promise.all to handle all insertions in parallel
-        await Promise.all([
-          courseData.lessons && courseData.lessons.length > 0 
-            ? insertCourseLessons(courseId, courseData.lessons) 
-            : Promise.resolve(),
-            
-          courseData.requirements && courseData.requirements.length > 0 
-            ? insertCourseRequirements(courseId, courseData.requirements) 
-            : Promise.resolve(),
-            
-          courseData.outcomes && courseData.outcomes.length > 0 
-            ? insertCourseOutcomes(courseId, courseData.outcomes) 
-            : Promise.resolve(),
-        ]);
-        
-        toast.success("Դասընթացը հաջողությամբ ստեղծվել է։");
-        return true;
-      } catch (insertError) {
-        console.error("Error inserting related course data:", insertError);
-        
-        // Log specific error context if available
-        if ((insertError as CourseSubmissionError).context) {
-          console.error(`Error context: ${(insertError as CourseSubmissionError).context}`);
-        }
-        
-        // Still return true since the main course was created
-        toast.success("Դասընթացը ստեղծվել է, բայց որոշ մանրամասներ չեն պահպանվել։");
-        return true;
-      }
-    } catch (dbError) {
-      // Handle unexpected errors during the Supabase operations
-      console.error('Unexpected error during Supabase operations:', dbError);
-      toast.warning('Տվյալների բազայի հետ կապ չի հաստատվել: Դասընթացը կպահպանվի լոկալ և համաժամեցվի ավելի ուշ:');
-      
-      // Save to localStorage as a fallback
-      saveToLocalStorage(courseData);
-      return true;
     }
+    
+    // Insert requirements if provided
+    if (course.requirements && course.requirements.length > 0) {
+      const { error: requirementsError } = await supabase
+        .from('course_requirements')
+        .insert(
+          course.requirements.map(req => ({
+            id: uuidv4(),
+            course_id: courseId,
+            requirement: req
+          }))
+        );
+        
+      if (requirementsError) {
+        console.error("Error adding requirements:", requirementsError);
+        // Continue with creation despite requirement errors
+      }
+    }
+    
+    // Insert outcomes if provided
+    if (course.outcomes && course.outcomes.length > 0) {
+      const { error: outcomesError } = await supabase
+        .from('course_outcomes')
+        .insert(
+          course.outcomes.map(outcome => ({
+            id: uuidv4(),
+            course_id: courseId,
+            outcome: outcome
+          }))
+        );
+        
+      if (outcomesError) {
+        console.error("Error adding outcomes:", outcomesError);
+        // Continue with creation despite outcome errors
+      }
+    }
+    
+    // If we get here, course creation was successful
+    toast.success("Դասընթացը հաջողությամբ ստեղծվել է");
+    return true;
   } catch (error) {
-    console.error("Error during direct course creation:", error);
-    toast.error("Դասընթացի ստեղծման ժամանակ սխալ է տեղի ունեցել");
+    console.error("Error in createCourseDirectly:", error);
+    toast.error("Սերվերի հետ կապի խնդիր։ Դասընթացը պահվել է լոկալ և կսինխրոնացվի ավելի ուշ։");
+    
+    // Save course to localStorage for later synchronization
+    try {
+      const localCourses = JSON.parse(localStorage.getItem('pending_courses') || '[]');
+      course.id = uuidv4(); // Add temporary ID
+      course.createdAt = new Date().toISOString();
+      localCourses.push(course);
+      localStorage.setItem('pending_courses', JSON.stringify(localCourses));
+      toast.success("Դասընթացը պահվել է լոկալ և կսինխրոնացվի կապի վերականգնման դեպքում");
+      return true;
+    } catch (localError) {
+      console.error("Error saving course to localStorage:", localError);
+      return false;
+    }
+  } finally {
+    if (setIsLoading) setIsLoading(false);
+  }
+};
+
+/**
+ * Update a course directly in Supabase
+ */
+export const updateCourseDirectly = async (
+  courseId: string,
+  courseUpdates: Partial<ProfessionalCourse>,
+  setIsLoading?: React.Dispatch<React.SetStateAction<boolean>>
+): Promise<boolean> => {
+  if (setIsLoading) setIsLoading(true);
+  
+  try {
+    // Update the main course record
+    const { error: courseError } = await supabase
+      .from('courses')
+      .update({
+        title: courseUpdates.title,
+        subtitle: courseUpdates.subtitle,
+        icon_name: courseUpdates.iconName,
+        duration: courseUpdates.duration,
+        price: courseUpdates.price,
+        button_text: courseUpdates.buttonText,
+        color: courseUpdates.color,
+        institution: courseUpdates.institution,
+        image_url: courseUpdates.imageUrl,
+        organization_logo: courseUpdates.organizationLogo,
+        description: courseUpdates.description,
+        is_public: courseUpdates.is_public,
+        updated_at: new Date().toISOString(),
+        slug: courseUpdates.slug || (courseUpdates.title ? generateSlug(courseUpdates.title) : undefined)
+      })
+      .eq('id', courseId);
+      
+    if (courseError) {
+      console.error("Error updating course in Supabase:", courseError);
+      toast.error("Դասընթացի թարմացման ժամանակ սխալ է տեղի ունեցել");
+      return false;
+    }
+    
+    // Update lessons
+    if (courseUpdates.lessons) {
+      // First delete existing lessons
+      await supabase.from('course_lessons').delete().eq('course_id', courseId);
+      
+      // Then insert updated lessons
+      if (courseUpdates.lessons.length > 0) {
+        const { error: lessonsError } = await supabase
+          .from('course_lessons')
+          .insert(
+            courseUpdates.lessons.map(lesson => ({
+              id: uuidv4(),
+              course_id: courseId,
+              title: lesson.title,
+              duration: lesson.duration
+            }))
+          );
+          
+        if (lessonsError) {
+          console.error("Error updating lessons:", lessonsError);
+        }
+      }
+    }
+    
+    // Update requirements
+    if (courseUpdates.requirements) {
+      // First delete existing requirements
+      await supabase.from('course_requirements').delete().eq('course_id', courseId);
+      
+      // Then insert updated requirements
+      if (courseUpdates.requirements.length > 0) {
+        const { error: requirementsError } = await supabase
+          .from('course_requirements')
+          .insert(
+            courseUpdates.requirements.map(req => ({
+              id: uuidv4(),
+              course_id: courseId,
+              requirement: req
+            }))
+          );
+          
+        if (requirementsError) {
+          console.error("Error updating requirements:", requirementsError);
+        }
+      }
+    }
+    
+    // Update outcomes
+    if (courseUpdates.outcomes) {
+      // First delete existing outcomes
+      await supabase.from('course_outcomes').delete().eq('course_id', courseId);
+      
+      // Then insert updated outcomes
+      if (courseUpdates.outcomes.length > 0) {
+        const { error: outcomesError } = await supabase
+          .from('course_outcomes')
+          .insert(
+            courseUpdates.outcomes.map(outcome => ({
+              id: uuidv4(),
+              course_id: courseId,
+              outcome: outcome
+            }))
+          );
+          
+        if (outcomesError) {
+          console.error("Error updating outcomes:", outcomesError);
+        }
+      }
+    }
+    
+    toast.success("Դասընթացը հաջողությամբ թարմացվել է");
+    return true;
+  } catch (error) {
+    console.error("Error in updateCourseDirectly:", error);
+    toast.error("Դասընթացի թարմացման ժամանակ սխալ է տեղի ունեցել");
     return false;
   } finally {
-    setIsLoading(false);
+    if (setIsLoading) setIsLoading(false);
   }
 };

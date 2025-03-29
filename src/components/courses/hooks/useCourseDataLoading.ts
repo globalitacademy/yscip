@@ -1,171 +1,158 @@
 
-import { Dispatch, SetStateAction } from 'react';
-import { ProfessionalCourse } from '../types';
+import { useState, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
-import { toast } from 'sonner';
+import { syncLocalCoursesToDatabase } from '@/utils/syncUtils';
+import { ProfessionalCourse } from '../types/ProfessionalCourse';
 import { convertIconNameToComponent } from '@/utils/iconUtils';
-import { loadCoursesFromLocalStorage as loadFromLocalStorage, syncLocalCoursesToDatabase } from '@/utils/syncUtils';
+import { toast } from 'sonner';
 
-/**
- * Hook that provides functions for loading and managing course data
- */
 export const useCourseDataLoading = (
-  setProfessionalCourses: Dispatch<SetStateAction<ProfessionalCourse[]>>,
-  setLoading: Dispatch<SetStateAction<boolean>>
+  setProfessionalCourses: React.Dispatch<React.SetStateAction<ProfessionalCourse[]>>,
+  setLoading: React.Dispatch<React.SetStateAction<boolean>>
 ) => {
+  const [lastLoadTime, setLastLoadTime] = useState<number>(0);
+  
   /**
-   * Loads courses from localStorage and merges them with the state
+   * Load courses from Supabase database
    */
-  const loadCoursesFromLocalStorage = async (): Promise<void> => {
-    try {
-      const localCourses = loadFromLocalStorage();
-      
-      if (localCourses.length > 0) {
-        setProfessionalCourses(prev => {
-          // Create a map of existing courses by ID
-          const existingCoursesMap = new Map(prev.map(course => [course.id, course]));
-          
-          // Add local courses that don't exist in the current state
-          localCourses.forEach(localCourse => {
-            if (!existingCoursesMap.has(localCourse.id)) {
-              existingCoursesMap.set(localCourse.id, localCourse);
-            }
-          });
-          
-          // Convert map back to array
-          return Array.from(existingCoursesMap.values());
-        });
-      }
-    } catch (error) {
-      console.error('Error loading courses from localStorage:', error);
+  const loadCoursesFromDatabase = useCallback(async (): Promise<boolean> => {
+    // Prevent multiple rapid loading attempts
+    const now = Date.now();
+    if (now - lastLoadTime < 1000) {
+      return false; // Debounce: don't load if less than 1 second has passed
     }
-  };
-
-  /**
-   * Loads courses from the Supabase database
-   */
-  const loadCoursesFromDatabase = async (): Promise<boolean> => {
+    
+    setLastLoadTime(now);
     setLoading(true);
+    
     try {
-      // Fetch courses from the database
+      console.log("Loading courses from database");
+      
+      // First, try to sync any local courses to the database
+      await syncLocalCoursesToDatabase();
+      
+      // Load courses from Supabase
       const { data, error } = await supabase
         .from('courses')
-        .select('*');
-      
+        .select('*')
+        .order('created_at', { ascending: false });
+        
       if (error) {
-        console.error('Error fetching courses:', error);
-        
-        // Load from localStorage as fallback
-        await loadCoursesFromLocalStorage();
-        
-        if (error.code === '42P17' || error.message.includes('policy') || error.message.includes('recursion')) {
-          toast.warning('Տվյալների բազայից դասընթացների բեռնումը անհաջող էր: Տեղական տվյալները կօգտագործվեն:');
-        } else {
-          toast.error(`Դասընթացների բեռնման սխալ: ${error.message}`);
-        }
-        
-        setLoading(false);
+        console.error("Error fetching courses from Supabase:", error);
+        toast.error("Դասընթացների բեռնման ժամանակ սխալ է տեղի ունեցել");
         return false;
       }
       
-      // If no courses returned, just set empty array
-      if (!data || data.length === 0) {
+      // If there are courses, fetch additional details for each
+      if (data && data.length > 0) {
+        // Process each course to include related data
+        const coursesWithDetails = await Promise.all(data.map(async (course) => {
+          // Fetch lessons, requirements, and outcomes in parallel
+          const [lessonsResponse, requirementsResponse, outcomesResponse] = await Promise.all([
+            supabase.from('course_lessons').select('*').eq('course_id', course.id),
+            supabase.from('course_requirements').select('*').eq('course_id', course.id),
+            supabase.from('course_outcomes').select('*').eq('course_id', course.id)
+          ]);
+          
+          // Create icon component
+          const iconElement = convertIconNameToComponent(course.icon_name);
+          
+          // Return the complete course object
+          return {
+            id: course.id,
+            title: course.title,
+            subtitle: course.subtitle || 'ԴԱՍԸՆԹԱՑ',
+            icon: iconElement,
+            iconName: course.icon_name,
+            duration: course.duration,
+            price: course.price,
+            buttonText: course.button_text || 'Դիտել',
+            color: course.color || 'text-amber-500',
+            createdBy: course.created_by || '',
+            institution: course.institution || 'ՀՊՏՀ',
+            imageUrl: course.image_url,
+            organizationLogo: course.organization_logo,
+            description: course.description || '',
+            is_public: course.is_public || false,
+            lessons: lessonsResponse.data?.map(lesson => ({
+              title: lesson.title, 
+              duration: lesson.duration
+            })) || [],
+            requirements: requirementsResponse.data?.map(req => req.requirement) || [],
+            outcomes: outcomesResponse.data?.map(outcome => outcome.outcome) || [],
+            slug: course.slug || '',
+            createdAt: course.created_at,
+            updatedAt: course.updated_at
+          } as ProfessionalCourse;
+        }));
+        
+        console.log("Loaded courses from database:", coursesWithDetails.length);
+        setProfessionalCourses(coursesWithDetails);
+        return true;
+      } else {
+        console.log("No courses found in database");
         setProfessionalCourses([]);
-        setLoading(false);
         return true;
       }
-      
-      // Process each course to include lessons, requirements, and outcomes
-      const completeCourses = await Promise.all(data.map(async (course) => {
-        // Fetch additional data for each course
-        const [lessonsResult, requirementsResult, outcomesResult] = await Promise.all([
-          supabase.from('course_lessons').select('*').eq('course_id', course.id),
-          supabase.from('course_requirements').select('*').eq('course_id', course.id),
-          supabase.from('course_outcomes').select('*').eq('course_id', course.id)
-        ]);
-        
-        // Create icon component
-        const iconElement = convertIconNameToComponent(course.icon_name);
-        
-        return {
-          id: course.id,
-          title: course.title,
-          subtitle: course.subtitle,
-          icon: iconElement,
-          iconName: course.icon_name,
-          duration: course.duration,
-          price: course.price,
-          buttonText: course.button_text,
-          color: course.color,
-          createdBy: course.created_by,
-          institution: course.institution,
-          imageUrl: course.image_url,
-          organizationLogo: course.organization_logo,
-          description: course.description,
-          is_public: course.is_public,
-          lessons: lessonsResult.data?.map(lesson => ({
-            title: lesson.title, 
-            duration: lesson.duration
-          })) || [],
-          requirements: requirementsResult.data?.map(req => req.requirement) || [],
-          outcomes: outcomesResult.data?.map(outcome => outcome.outcome) || [],
-          createdAt: course.created_at
-        } as ProfessionalCourse;
-      }));
-      
-      // Merge with any local courses
-      const localCourses = loadFromLocalStorage();
-      const localCoursesIds = new Set(localCourses.map(c => c.id));
-      
-      // Filter out any local courses that exist in the database results
-      const uniqueLocalCourses = localCourses.filter(local => 
-        !completeCourses.some(remote => remote.id === local.id)
-      );
-      
-      // Combine database and local courses
-      const mergedCourses = [...completeCourses, ...uniqueLocalCourses];
-      
-      setProfessionalCourses(mergedCourses);
-      setLoading(false);
-      return true;
     } catch (error) {
-      console.error('Error in loadCoursesFromDatabase:', error);
-      toast.error('Սխալ է տեղի ունեցել դասընթացների տվյալները բեռնելիս։');
-      
-      // Load from localStorage as fallback
-      await loadCoursesFromLocalStorage();
-      
-      setLoading(false);
-      return false;
-    }
-  };
-
-  /**
-   * Synchronizes local courses with the database
-   */
-  const syncCoursesWithDatabase = async (): Promise<boolean> => {
-    setLoading(true);
-    try {
-      const result = await syncLocalCoursesToDatabase();
-      
-      // If successful, reload courses from the database
-      if (result) {
-        await loadCoursesFromDatabase();
-      }
-      
-      return result;
-    } catch (error) {
-      console.error('Error syncing courses with database:', error);
-      toast.error('Դասընթացների համաժամեցման ընթացքում սխալ է տեղի ունեցել։');
+      console.error("Error in loadCoursesFromDatabase:", error);
       return false;
     } finally {
       setLoading(false);
     }
-  };
-
+  }, [lastLoadTime, setProfessionalCourses, setLoading]);
+  
+  /**
+   * Load courses from localStorage (as a fallback)
+   */
+  const loadCoursesFromLocalStorage = useCallback(async (): Promise<boolean> => {
+    try {
+      const storedCourses = localStorage.getItem('professional_courses');
+      if (storedCourses) {
+        const courses = JSON.parse(storedCourses) as ProfessionalCourse[];
+        if (courses.length > 0) {
+          // Process courses to ensure icons are properly created
+          const processedCourses = courses.map(course => ({
+            ...course,
+            icon: convertIconNameToComponent(course.iconName || 'book')
+          }));
+          
+          console.log("Loaded courses from localStorage:", processedCourses.length);
+          setProfessionalCourses(processedCourses);
+          return true;
+        }
+      }
+      return false;
+    } catch (error) {
+      console.error("Error loading courses from localStorage:", error);
+      return false;
+    }
+  }, [setProfessionalCourses]);
+  
+  /**
+   * Synchronize courses with database
+   */
+  const syncCoursesWithDatabase = useCallback(async (): Promise<boolean> => {
+    setLoading(true);
+    try {
+      // First sync any pending courses
+      const success = await syncLocalCoursesToDatabase();
+      
+      // Then reload from the database
+      await loadCoursesFromDatabase();
+      
+      return success;
+    } catch (error) {
+      console.error("Error in syncCoursesWithDatabase:", error);
+      return false;
+    } finally {
+      setLoading(false);
+    }
+  }, [loadCoursesFromDatabase, setLoading]);
+  
   return {
     loadCoursesFromDatabase,
-    syncCoursesWithDatabase,
-    loadCoursesFromLocalStorage
+    loadCoursesFromLocalStorage,
+    syncCoursesWithDatabase
   };
 };

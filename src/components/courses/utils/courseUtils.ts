@@ -1,400 +1,91 @@
 
-import { supabase } from '@/integrations/supabase/client';
 import { ProfessionalCourse } from '../types/ProfessionalCourse';
-import { toast } from 'sonner';
+import { supabase } from '@/integrations/supabase/client';
 import { convertIconNameToComponent } from '@/utils/iconUtils';
+import { createCourseDirectly, updateCourseDirectly } from './courseSubmission';
 
-// Define the event name as a constant
-export const COURSE_UPDATED_EVENT = 'courseUpdated';
+// Event name for course updates
+export const COURSE_UPDATED_EVENT = 'course-updated';
 
+/**
+ * Get a course by ID from Supabase
+ */
 export const getCourseById = async (id: string): Promise<ProfessionalCourse | null> => {
   try {
-    console.log('Fetching course with ID:', id);
-    
-    // Fetch from Supabase
+    // Fetch the course
     const { data: course, error } = await supabase
       .from('courses')
       .select('*')
       .eq('id', id)
       .single();
-
-    if (error) {
-      console.error('Error fetching course from Supabase:', error);
-      toast.error('Դասընթացի բեռնման ժամանակ սխալ է տեղի ունեցել');
+      
+    if (error || !course) {
+      console.error("Error fetching course:", error);
       return null;
     }
-
-    if (!course) {
-      console.log('Course not found in Supabase');
-      toast.error('Դասընթացը չի գտնվել');
-      return null;
-    }
-
-    let lessons = [], requirements = [], outcomes = [];
     
-    try {
-      const { data: lessonsData } = await supabase
-        .from('course_lessons')
-        .select('*')
-        .eq('course_id', id);
-        
-      if (lessonsData) lessons = lessonsData;
-    } catch (e) {
-      console.error('Error fetching lessons:', e);
-    }
+    // Fetch related data
+    const [lessonsResponse, requirementsResponse, outcomesResponse] = await Promise.all([
+      supabase.from('course_lessons').select('*').eq('course_id', id),
+      supabase.from('course_requirements').select('*').eq('course_id', id),
+      supabase.from('course_outcomes').select('*').eq('course_id', id)
+    ]);
     
-    try {
-      const { data: requirementsData } = await supabase
-        .from('course_requirements')
-        .select('*')
-        .eq('course_id', id);
-        
-      if (requirementsData) requirements = requirementsData;
-    } catch (e) {
-      console.error('Error fetching requirements:', e);
-    }
-    
-    try {
-      const { data: outcomesData } = await supabase
-        .from('course_outcomes')
-        .select('*')
-        .eq('course_id', id);
-        
-      if (outcomesData) outcomes = outcomesData;
-    } catch (e) {
-      console.error('Error fetching outcomes:', e);
-    }
-
-    // Create a proper React element for the icon
+    // Create icon element
     const iconElement = convertIconNameToComponent(course.icon_name);
-
-    const formattedCourse: ProfessionalCourse = {
+    
+    // Construct and return the ProfessionalCourse object
+    return {
       id: course.id,
       title: course.title,
-      subtitle: course.subtitle,
+      subtitle: course.subtitle || 'ԴԱՍԸՆԹԱՑ',
       icon: iconElement,
       iconName: course.icon_name,
       duration: course.duration,
       price: course.price,
-      buttonText: course.button_text || "Մանրամասն",
-      color: course.color,
-      createdBy: course.created_by || "",
-      institution: course.institution || "",
+      buttonText: course.button_text || 'Դիտել',
+      color: course.color || 'text-amber-500',
+      createdBy: course.created_by || '',
+      institution: course.institution || 'ՀՊՏՀ',
       imageUrl: course.image_url,
       organizationLogo: course.organization_logo,
-      description: course.description || "",
-      lessons: lessons?.map(lesson => ({
+      description: course.description || '',
+      is_public: course.is_public || false,
+      lessons: lessonsResponse.data?.map(lesson => ({
         title: lesson.title, 
         duration: lesson.duration
       })) || [],
-      requirements: requirements?.map(req => req.requirement) || [],
-      outcomes: outcomes?.map(outcome => outcome.outcome) || [],
-      is_public: course.is_public || false,
-      show_on_homepage: course.show_on_homepage || false,
-      display_order: course.display_order || 0,
-      slug: course.slug || course.id
+      requirements: requirementsResponse.data?.map(req => req.requirement) || [],
+      outcomes: outcomesResponse.data?.map(outcome => outcome.outcome) || [],
+      slug: course.slug || '',
+      createdAt: course.created_at || new Date().toISOString(),
+      updatedAt: course.updated_at || null
     };
-
-    return formattedCourse;
   } catch (error) {
-    console.error('Error in getCourseById:', error);
-    toast.error('Դասընթացի բեռնման ժամանակ սխալ է տեղի ունեցել');
+    console.error("Error in getCourseById:", error);
     return null;
   }
 };
 
-export const getAllCoursesFromSupabase = async (): Promise<ProfessionalCourse[]> => {
-  try {
-    console.log('Fetching all courses from Supabase');
-    const { data, error } = await supabase
-      .from('courses')
-      .select('*');
-      
-    if (error) {
-      console.error('Error fetching courses from Supabase:', error);
-      toast.error('Դասընթացների բեռնման ժամանակ սխալ է տեղի ունեցել');
-      return [];
-    }
-    
-    if (!data || data.length === 0) {
-      console.log('No courses found in Supabase');
-      return [];
-    }
-    
-    // Process each course to format it properly
-    const formattedCourses: ProfessionalCourse[] = await Promise.all(data.map(async (course) => {
-      // Fetch related data for each course
-      const { data: lessonsData } = await supabase
-        .from('course_lessons')
-        .select('*')
-        .eq('course_id', course.id);
-        
-      const { data: requirementsData } = await supabase
-        .from('course_requirements')
-        .select('*')
-        .eq('course_id', course.id);
-        
-      const { data: outcomesData } = await supabase
-        .from('course_outcomes')
-        .select('*')
-        .eq('course_id', course.id);
-        
-      // Create icon component
-      const iconElement = convertIconNameToComponent(course.icon_name);
-      
-      return {
-        id: course.id,
-        title: course.title,
-        subtitle: course.subtitle,
-        icon: iconElement,
-        iconName: course.icon_name,
-        duration: course.duration,
-        price: course.price,
-        buttonText: course.button_text || "Մանրամասն",
-        color: course.color,
-        createdBy: course.created_by || "",
-        institution: course.institution || "",
-        imageUrl: course.image_url,
-        organizationLogo: course.organization_logo,
-        description: course.description || "",
-        lessons: lessonsData?.map(lesson => ({
-          title: lesson.title, 
-          duration: lesson.duration
-        })) || [],
-        requirements: requirementsData?.map(req => req.requirement) || [],
-        outcomes: outcomesData?.map(outcome => outcome.outcome) || [],
-        is_public: course.is_public || false,
-        show_on_homepage: course.show_on_homepage || false,
-        display_order: course.display_order || 0,
-        slug: course.slug || course.id
-      };
-    }));
-    
-    return formattedCourses;
-  } catch (error) {
-    console.error('Error fetching all courses from Supabase:', error);
-    toast.error('Դասընթացների բեռնման ժամանակ սխալ է տեղի ունեցել');
-    return [];
-  }
-};
-
+/**
+ * Save course changes to the database and dispatch an event
+ */
 export const saveCourseChanges = async (course: ProfessionalCourse): Promise<boolean> => {
   try {
-    if (!course) return false;
-
-    console.log('Saving course changes to Supabase:', course);
-
-    // Extract the icon name from the course object or from the iconName property
-    const iconName = course.iconName || getIconNameFromElement(course.icon);
-
-    // Check if required fields are set
-    if (!course.title || !course.duration) {
-      console.error('Required fields missing for course:', course);
-      toast.error('Դասընթացի պահպանման համար անհրաժեշտ է լրացնել բոլոր դաշտերը');
-      return false;
-    }
-    
-    // Generate slug from title if missing
-    if (!course.slug && course.title) {
-      course.slug = course.title
-        .toLowerCase()
-        .replace(/[^\w\s-]/g, '')
-        .replace(/\s+/g, '-')
-        .replace(/--+/g, '-')
-        .trim();
-    }
-
-    console.log('Using icon name:', iconName);
-    console.log('Using slug:', course.slug);
-
-    // Save to Supabase
-    try {
-      // Create a database-friendly object with snake_case keys to match Supabase columns
-      const dbCourseData = {
-        title: course.title,
-        subtitle: course.subtitle,
-        icon_name: iconName,
-        duration: course.duration,
-        price: course.price,
-        button_text: course.buttonText,
-        color: course.color,
-        created_by: course.createdBy,
-        institution: course.institution,
-        image_url: course.imageUrl,
-        organization_logo: course.organizationLogo,
-        description: course.description,
-        is_public: course.is_public,
-        show_on_homepage: course.show_on_homepage || false,
-        display_order: course.display_order || 0,
-        slug: course.slug || course.id,
-        updated_at: new Date().toISOString()
-      };
+    // If the course has an ID, update it, otherwise create a new course
+    const success = course.id 
+      ? await updateCourseDirectly(course.id, course)
+      : await createCourseDirectly(course);
       
-      console.log('Database course data being sent:', dbCourseData);
-
-      const { error: courseError } = await supabase
-        .from('courses')
-        .update(dbCourseData)
-        .eq('id', course.id);
-
-      if (courseError) {
-        console.error('Error updating course in Supabase:', courseError);
-        // Try to check if course exists
-        const { data: existingCourse, error: checkError } = await supabase
-          .from('courses')
-          .select('id')
-          .eq('id', course.id)
-          .maybeSingle();
-          
-        if (checkError || !existingCourse) {
-          // Course does not exist, let's create it
-          console.log('Course does not exist, creating new course with ID:', course.id);
-          const { error: insertError } = await supabase
-            .from('courses')
-            .insert({
-              id: course.id,
-              title: course.title,
-              subtitle: course.subtitle,
-              icon_name: iconName,
-              duration: course.duration,
-              price: course.price,
-              button_text: course.buttonText,
-              color: course.color,
-              created_by: course.createdBy,
-              institution: course.institution,
-              image_url: course.imageUrl,
-              organization_logo: course.organizationLogo,
-              description: course.description,
-              is_public: course.is_public,
-              show_on_homepage: course.show_on_homepage || false,
-              display_order: course.display_order || 0,
-              slug: course.slug || course.id,
-              created_at: new Date().toISOString(),
-              updated_at: new Date().toISOString()
-            });
-            
-          if (insertError) {
-            console.error('Error inserting course in Supabase:', insertError);
-            toast.error('Դասընթացի պահպանման ժամանակ սխալ է տեղի ունեցել');
-            return false;
-          }
-        } else {
-          toast.error('Դասընթացի թարմացման ժամանակ սխալ է տեղի ունեցել');
-          return false;
-        }
-      } else {
-        // If course update was successful, also update related tables
-        if (course.lessons && course.lessons.length > 0) {
-          // First delete existing lessons
-          await supabase.from('course_lessons').delete().eq('course_id', course.id);
-          
-          // Then insert new lessons
-          const { error: lessonsError } = await supabase
-            .from('course_lessons')
-            .insert(
-              course.lessons.map(lesson => ({
-                course_id: course.id,
-                title: lesson.title,
-                duration: lesson.duration
-              }))
-            );
-
-          if (lessonsError) {
-            console.error('Error inserting lessons:', lessonsError);
-          }
-        }
-
-        if (course.requirements && course.requirements.length > 0) {
-          // First delete existing requirements
-          await supabase.from('course_requirements').delete().eq('course_id', course.id);
-          
-          // Then insert new requirements
-          const { error: requirementsError } = await supabase
-            .from('course_requirements')
-            .insert(
-              course.requirements.map(requirement => ({
-                course_id: course.id,
-                requirement: requirement
-              }))
-            );
-
-          if (requirementsError) {
-            console.error('Error inserting requirements:', requirementsError);
-          }
-        }
-
-        if (course.outcomes && course.outcomes.length > 0) {
-          // First delete existing outcomes
-          await supabase.from('course_outcomes').delete().eq('course_id', course.id);
-          
-          // Then insert new outcomes
-          const { error: outcomesError } = await supabase
-            .from('course_outcomes')
-            .insert(
-              course.outcomes.map(outcome => ({
-                course_id: course.id,
-                outcome: outcome
-              }))
-            );
-
-          if (outcomesError) {
-            console.error('Error inserting outcomes:', outcomesError);
-          }
-        }
-      }
-    } catch (supabaseError) {
-      console.error('Error with Supabase operations:', supabaseError);
-      toast.error('Դասընթացի պահպանման ժամանակ սխալ է տեղի ունեցել');
-      return false;
+    if (success) {
+      // Dispatch event to notify any listeners of the update
+      const updateEvent = new CustomEvent(COURSE_UPDATED_EVENT, { detail: course });
+      window.dispatchEvent(updateEvent);
     }
-
-    // Notify any listeners about the course change with a custom event
-    const event = new CustomEvent(COURSE_UPDATED_EVENT, { detail: course });
-    window.dispatchEvent(event);
     
-    toast.success('Դասընթացը հաջողությամբ պահպանվել է');
-    return true;
+    return success;
   } catch (error) {
-    console.error('Error saving course changes:', error);
-    toast.error('Դասընթացի պահպանման ժամանակ սխալ է տեղի ունեցել');
+    console.error("Error saving course changes:", error);
     return false;
-  }
-};
-
-// Helper function to extract icon name from React element
-const getIconNameFromElement = (iconElement: React.ReactElement): string => {
-  if (!iconElement) return 'book';
-  
-  const iconType = iconElement.type;
-  
-  // Check if iconType is a function (component) and access properties safely
-  if (typeof iconType === 'function') {
-    // Try to get displayName or name from the function component
-    // Use type assertion to help TypeScript understand this is a function component
-    const component = iconType as React.FC;
-    const iconName = component.displayName || component.name;
-    if (iconName) {
-      return iconName.toLowerCase();
-    }
-  } else if (typeof iconType === 'string') {
-    // If it's a string (HTML element), use that
-    return iconType.toLowerCase();
-  }
-  
-  // Default fallback
-  return 'book';
-};
-
-export const syncCoursesToSupabase = async (): Promise<void> => {
-  try {
-    toast.info('Համաժամեցում բազայի հետ...');
-    
-    // Get all courses from Supabase again to refresh local data
-    await getAllCoursesFromSupabase();
-    
-    toast.success('Դասընթացները հաջողությամբ համաժամեցվել են բազայի հետ');
-  } catch (error) {
-    console.error('Error syncing courses to Supabase:', error);
-    toast.error('Դասընթացների համաժամեցման ժամանակ սխալ է տեղի ունեցել');
   }
 };
