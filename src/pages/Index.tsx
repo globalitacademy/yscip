@@ -1,3 +1,4 @@
+
 import React, { useEffect, lazy, Suspense } from 'react';
 import { Button } from '@/components/ui/button';
 import { ArrowRight } from 'lucide-react';
@@ -10,7 +11,8 @@ import Hero from '@/components/hero';
 import Header from '@/components/Header';
 
 // Lazy load components that are not immediately visible
-const FeaturesSection = lazy(() => import('@/components/features'));
+// Using more explicit import path to avoid dynamic import issues
+const FeaturesSection = lazy(() => import('@/components/features/FeaturesSection'));
 const CoursesSection = lazy(() => import('@/components/courses/CoursesSection'));
 const ProfessionalCoursesSection = lazy(() => import('@/components/courses/ProfessionalCoursesSection'));
 const EducationalCycleInfographic = lazy(() => import('@/components/educationalCycle/EducationalCycleInfographic'));
