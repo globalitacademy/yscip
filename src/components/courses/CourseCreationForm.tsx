@@ -59,7 +59,8 @@ const CourseCreationForm: React.FC = () => {
       return false;
     }
     
-    if (courseType === 'professional' && !course.price) {
+    // Check if we're validating a professional course and if it has a price
+    if (courseType === 'professional' && !('price' in course)) {
       toast({
         title: "Սխալ",
         description: "Մուտքագրեք դասընթացի արժեքը",
