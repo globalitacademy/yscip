@@ -81,7 +81,7 @@ export interface CourseContextType {
   setIsEditDialogOpen: React.Dispatch<React.SetStateAction<boolean>>;
   setIsDeleteDialogOpen: React.Dispatch<React.SetStateAction<boolean>>;
   
-  // Data operations
+  // Data operations - updated loadCourses to have Promise<void> return type
   loadCourses: () => Promise<void>;
   loadCoursesFromDatabase: () => Promise<boolean>;
   loadCoursesFromLocalStorage: () => Promise<boolean>;

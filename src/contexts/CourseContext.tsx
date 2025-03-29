@@ -62,11 +62,11 @@ export const CourseProvider: React.FC<{ children: ReactNode }> = ({ children }) 
     handleAddProfessionalCourse: courseManagement.handleAddProfessionalCourse,
     handleEditProfessionalCourse: courseManagement.handleUpdateProfessionalCourse,
     
-    // Data operations - map to closest equivalents
+    // Data operations - ensure all return types match
     loadCourses: async () => {
       try {
         await courseManagement.loadCoursesFromDatabase();
-        // Don't return a value to match Promise<void> return type
+        // We need to explicitly return void to match the expected return type
       } catch (error) {
         console.error('Error loading courses:', error);
         // Don't return a value to match Promise<void> return type
