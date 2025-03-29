@@ -11,7 +11,7 @@ import Hero from '@/components/hero';
 import Header from '@/components/Header';
 
 // Lazy load components that are not immediately visible
-// Using more explicit import path to avoid dynamic import issues
+// Using direct file paths instead of index files to avoid dynamic import issues
 const FeaturesSection = lazy(() => import('@/components/features/FeaturesSection'));
 const CoursesSection = lazy(() => import('@/components/courses/CoursesSection'));
 const ProfessionalCoursesSection = lazy(() => import('@/components/courses/ProfessionalCoursesSection'));
