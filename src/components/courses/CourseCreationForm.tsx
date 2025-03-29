@@ -10,11 +10,13 @@ import { toast } from 'sonner';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { v4 as uuidv4 } from 'uuid';
+import { supabase } from '@/integrations/supabase/client';
 
 const CourseCreationForm: React.FC = () => {
   const navigate = useNavigate();
   const { user, isAuthenticated } = useAuth();
   const [isFormValid, setIsFormValid] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
   
   const { 
     professionalCourse,
@@ -79,6 +81,101 @@ const CourseCreationForm: React.FC = () => {
     return true;
   };
 
+  const createCourseDirectly = async (courseData: Omit<ProfessionalCourse, 'id' | 'createdAt'>): Promise<boolean> => {
+    try {
+      setIsLoading(true);
+      console.log("Creating course directly with Supabase, course data:", courseData);
+      
+      const courseId = uuidv4();
+      
+      // Insert main course data
+      const { data, error } = await supabase
+        .from('courses')
+        .insert({
+          id: courseId,
+          title: courseData.title,
+          subtitle: courseData.subtitle || 'ԴԱՍԸՆԹԱՑ',
+          icon_name: courseData.iconName || 'book',
+          duration: courseData.duration,
+          price: courseData.price,
+          button_text: courseData.buttonText || 'Դիտել',
+          color: courseData.color || 'text-amber-500',
+          created_by: user?.name || 'Unknown',
+          institution: courseData.institution || 'ՀՊՏՀ',
+          image_url: courseData.imageUrl,
+          organization_logo: courseData.organizationLogo,
+          description: courseData.description || '',
+          is_public: true,
+          slug: courseData.slug || generateSlug(courseData.title)
+        })
+        .select();
+      
+      if (error) {
+        console.error('Error inserting course to Supabase:', error);
+        toast.error(`Դասընթացի ստեղծման սխալ: ${error.message}`);
+        return false;
+      }
+      
+      console.log("Course created successfully:", data);
+      
+      // Insert related data if provided
+      if (courseData.lessons && courseData.lessons.length > 0) {
+        const { error: lessonsError } = await supabase
+          .from('course_lessons')
+          .insert(
+            courseData.lessons.map(lesson => ({
+              course_id: courseId,
+              title: lesson.title,
+              duration: lesson.duration
+            }))
+          );
+          
+        if (lessonsError) {
+          console.error('Error inserting lessons:', lessonsError);
+        }
+      }
+      
+      if (courseData.requirements && courseData.requirements.length > 0) {
+        const { error: requirementsError } = await supabase
+          .from('course_requirements')
+          .insert(
+            courseData.requirements.map(requirement => ({
+              course_id: courseId,
+              requirement: requirement
+            }))
+          );
+          
+        if (requirementsError) {
+          console.error('Error inserting requirements:', requirementsError);
+        }
+      }
+      
+      if (courseData.outcomes && courseData.outcomes.length > 0) {
+        const { error: outcomesError } = await supabase
+          .from('course_outcomes')
+          .insert(
+            courseData.outcomes.map(outcome => ({
+              course_id: courseId,
+              outcome: outcome
+            }))
+          );
+          
+        if (outcomesError) {
+          console.error('Error inserting outcomes:', outcomesError);
+        }
+      }
+      
+      toast.success("Դասընթացը հաջողությամբ ստեղծվել է։");
+      return true;
+    } catch (error) {
+      console.error("Error during direct course creation:", error);
+      toast.error("Դասընթացի ստեղծման ժամանակ սխալ է տեղի ունեցել");
+      return false;
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   const handleSubmit = async () => {
     try {
       console.log("Creating professional course, user:", user);
@@ -94,15 +191,13 @@ const CourseCreationForm: React.FC = () => {
         // Ensure required fields are set
         const courseToSubmit = {
           ...professionalCourse,
-          id: uuidv4(), // Generate unique ID
           createdBy: user?.name || 'Unknown',
           iconName: professionalCourse.iconName || 'book',
           subtitle: professionalCourse.subtitle || 'ԴԱՍԸՆԹԱՑ',
           buttonText: professionalCourse.buttonText || 'Դիտել',
           color: professionalCourse.color || 'text-amber-500',
           institution: professionalCourse.institution || 'ՀՊՏՀ',
-          is_public: true,
-          createdAt: new Date().toISOString()
+          is_public: true
         };
         
         // Generate a slug for the URL if not provided
@@ -110,14 +205,24 @@ const CourseCreationForm: React.FC = () => {
           courseToSubmit.slug = generateSlug(courseToSubmit.title);
         }
         
-        console.log("Creating professional course:", courseToSubmit);
+        console.log("Prepared course data for submission:", courseToSubmit);
         
-        const success = await handleCreateProfessionalCourse(courseToSubmit as Omit<ProfessionalCourse, 'id' | 'createdAt'>);
-        if (success) {
+        // Try direct creation first
+        const directResult = await createCourseDirectly(courseToSubmit);
+        if (directResult) {
+          // Redirect to courses page on success
+          setTimeout(() => navigate('/courses'), 1000);
+          return true;
+        }
+        
+        // Fall back to context method if direct creation failed
+        console.log("Falling back to context method for course creation");
+        const contextResult = await handleCreateProfessionalCourse(courseToSubmit as Omit<ProfessionalCourse, 'id' | 'createdAt'>);
+        
+        if (contextResult) {
           toast.success("Դասընթացը հաջողությամբ ստեղծվել է։");
-          
           // Redirect to courses page
-          navigate('/courses');
+          setTimeout(() => navigate('/courses'), 1000);
           return true;
         } else {
           toast.error("Դասընթացի ստեղծման ժամանակ սխալ է տեղի ունեցել։");
@@ -159,7 +264,7 @@ const CourseCreationForm: React.FC = () => {
       <ProjectFormFooter 
         onSubmit={handleSubmit} 
         submitText="Ստեղծել դասընթաց" 
-        isDisabled={!isFormValid}
+        isDisabled={!isFormValid || isLoading}
       />
     </Card>
   );

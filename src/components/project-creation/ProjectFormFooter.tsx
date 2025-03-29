@@ -23,9 +23,14 @@ const ProjectFormFooter: React.FC<ProjectFormFooterProps> = ({
     
     setIsSubmitting(true);
     try {
+      console.log("Attempting to submit form...");
       const result = await onSubmit();
+      console.log("Form submission result:", result);
+      
       if (!result) {
         toast.error("Պահպանման սխալ տեղի ունեցավ:");
+      } else {
+        toast.success("Հաջողությամբ պահպանվեց");
       }
       return result;
     } catch (error) {

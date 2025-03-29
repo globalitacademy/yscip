@@ -1,5 +1,5 @@
 
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Dialog, DialogContent } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Plus } from 'lucide-react';
@@ -9,6 +9,10 @@ import CourseList from './CourseList';
 import CourseFilterSection from './CourseFilterSection';
 import CourseDialogManager from './CourseDialogManager';
 import CourseCreationForm from './CourseCreationForm';
+import { toast } from 'sonner';
+import { supabase } from '@/integrations/supabase/client';
+import { ProfessionalCourse } from './types/index';
+import { convertIconNameToComponent } from '@/utils/iconUtils';
 
 // Inner component that uses the context
 const CourseManagementContent: React.FC = () => {
@@ -18,16 +22,111 @@ const CourseManagementContent: React.FC = () => {
     loadCourses,
     handleCreateInit,
     courses,
-    professionalCourses
+    professionalCourses,
+    setProfessionalCourses
   } = useCourseContext();
+  
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  
+  // Load courses directly from Supabase
+  const loadCoursesDirectly = async () => {
+    setIsLoading(true);
+    setError(null);
+    
+    try {
+      console.log("Loading courses directly from Supabase");
+      const { data, error } = await supabase
+        .from('courses')
+        .select('*');
+        
+      if (error) {
+        console.error("Error fetching courses from Supabase:", error);
+        setError("Դասընթացների բեռնման ժամանակ սխալ է տեղի ունեցել");
+        // Try to load via context
+        await loadCourses();
+        return;
+      }
+      
+      console.log("Courses loaded from Supabase:", data);
+      
+      if (data && data.length > 0) {
+        // Process courses
+        const formattedCourses = await Promise.all(data.map(async (course) => {
+          // Fetch related data
+          const { data: lessonsData } = await supabase
+            .from('course_lessons')
+            .select('*')
+            .eq('course_id', course.id);
+            
+          const { data: requirementsData } = await supabase
+            .from('course_requirements')
+            .select('*')
+            .eq('course_id', course.id);
+            
+          const { data: outcomesData } = await supabase
+            .from('course_outcomes')
+            .select('*')
+            .eq('course_id', course.id);
+            
+          // Convert to ProfessionalCourse format
+          const iconElement = convertIconNameToComponent(course.icon_name);
+          
+          return {
+            id: course.id,
+            title: course.title,
+            subtitle: course.subtitle || 'ԴԱՍԸՆԹԱՑ',
+            icon: iconElement,
+            iconName: course.icon_name,
+            duration: course.duration,
+            price: course.price,
+            buttonText: course.button_text || 'Դիտել',
+            color: course.color || 'text-amber-500',
+            createdBy: course.created_by || '',
+            institution: course.institution || 'ՀՊՏՀ',
+            imageUrl: course.image_url,
+            organizationLogo: course.organization_logo,
+            description: course.description || '',
+            is_public: course.is_public || false,
+            lessons: lessonsData?.map(lesson => ({
+              title: lesson.title, 
+              duration: lesson.duration
+            })) || [],
+            requirements: requirementsData?.map(req => req.requirement) || [],
+            outcomes: outcomesData?.map(outcome => outcome.outcome) || [],
+            slug: course.slug || '',
+            createdAt: course.created_at || new Date().toISOString()
+          } as ProfessionalCourse;
+        }));
+        
+        console.log("Formatted courses:", formattedCourses);
+        setProfessionalCourses(formattedCourses);
+      }
+    } catch (e) {
+      console.error("Error in loadCoursesDirectly:", e);
+      setError("Դասընթացների բեռնման ժամանակ սխալ է տեղի ունեցել");
+      // Try to load via context
+      await loadCourses();
+    } finally {
+      setIsLoading(false);
+    }
+  };
   
   // Load courses on component mount
   useEffect(() => {
     const fetchCourses = async () => {
       try {
-        await loadCourses();
+        // Try direct loading first
+        await loadCoursesDirectly();
+        
+        // If that fails, fall back to context
+        if (professionalCourses.length === 0) {
+          console.log("No courses loaded directly, trying context method");
+          await loadCourses();
+        }
       } catch (error) {
         console.error("Error loading courses:", error);
+        toast.error("Դասընթացների բեռնման ժամանակ սխալ է տեղի ունեցել");
       }
     };
     
@@ -51,7 +150,22 @@ const CourseManagementContent: React.FC = () => {
       </div>
       
       <CourseFilterSection />
-      <CourseList courses={courses} professionalCourses={professionalCourses} />
+      
+      {isLoading ? (
+        <div className="flex justify-center p-8">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+        </div>
+      ) : error ? (
+        <div className="text-center p-8 text-red-500">
+          {error}
+        </div>
+      ) : (
+        <CourseList 
+          courses={courses} 
+          professionalCourses={professionalCourses} 
+        />
+      )}
+      
       <CourseDialogManager />
 
       <Dialog open={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen}>
