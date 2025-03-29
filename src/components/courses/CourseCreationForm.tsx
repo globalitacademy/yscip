@@ -10,9 +10,11 @@ import { useCourseContext } from '@/contexts/CourseContext';
 import ProjectFormFooter from '../project-creation/ProjectFormFooter';
 import { toast } from '@/components/ui/use-toast';
 import { useNavigate } from 'react-router-dom';
+import { useAuth } from '@/contexts/AuthContext';
 
 const CourseCreationForm: React.FC = () => {
   const navigate = useNavigate();
+  const { user } = useAuth();
   
   const { 
     selectedCourse, 
@@ -38,9 +40,46 @@ const CourseCreationForm: React.FC = () => {
       .trim(); // Trim - from start and end
   };
 
+  const validateCourse = (course: Partial<ProfessionalCourse> | Course): boolean => {
+    if (!course.title) {
+      toast({
+        title: "Սխալ",
+        description: "Մուտքագրեք դասընթացի վերնագիրը",
+        variant: "destructive",
+      });
+      return false;
+    }
+    
+    if (!course.duration) {
+      toast({
+        title: "Սխալ",
+        description: "Մուտքագրեք դասընթացի տևողությունը",
+        variant: "destructive",
+      });
+      return false;
+    }
+    
+    if (courseType === 'professional' && !course.price) {
+      toast({
+        title: "Սխալ",
+        description: "Մուտքագրեք դասընթացի արժեքը",
+        variant: "destructive",
+      });
+      return false;
+    }
+    
+    return true;
+  };
+
   const handleSubmit = async () => {
     try {
+      console.log("Creating course, type:", courseType);
+      console.log("User:", user);
+
       if (courseType === 'standard' && selectedCourse) {
+        if (!validateCourse(selectedCourse)) return false;
+        
+        console.log("Creating standard course:", selectedCourse);
         const success = await handleCreateCourse(selectedCourse as Omit<Course, 'id' | 'createdAt'>);
         if (success) {
           toast({
@@ -53,12 +92,27 @@ const CourseCreationForm: React.FC = () => {
           return true;
         }
       } else if (courseType === 'professional' && professionalCourse) {
+        if (!validateCourse(professionalCourse)) return false;
+        
+        // Ensure required fields are set
+        const courseToSubmit = {
+          ...professionalCourse,
+          createdBy: user?.name || 'Unknown',
+          iconName: professionalCourse.iconName || 'book',
+          subtitle: professionalCourse.subtitle || 'ԴԱՍԸՆԹԱՑ',
+          buttonText: professionalCourse.buttonText || 'Դիտել',
+          color: professionalCourse.color || 'text-amber-500',
+          institution: professionalCourse.institution || 'ՀՊՏՀ',
+        };
+        
         // Generate a slug for the URL if not provided
-        if (!professionalCourse.slug && professionalCourse.title) {
-          professionalCourse.slug = generateSlug(professionalCourse.title);
+        if (!courseToSubmit.slug && courseToSubmit.title) {
+          courseToSubmit.slug = generateSlug(courseToSubmit.title);
         }
         
-        const success = await handleCreateProfessionalCourse(professionalCourse as Omit<ProfessionalCourse, 'id' | 'createdAt'>);
+        console.log("Creating professional course:", courseToSubmit);
+        
+        const success = await handleCreateProfessionalCourse(courseToSubmit as Omit<ProfessionalCourse, 'id' | 'createdAt'>);
         if (success) {
           toast({
             title: "Դասընթացը ստեղծված է",

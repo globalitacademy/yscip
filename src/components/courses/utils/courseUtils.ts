@@ -187,6 +187,26 @@ export const saveCourseChanges = async (course: ProfessionalCourse): Promise<boo
     // Extract the icon name from the course object or from the iconName property
     const iconName = course.iconName || getIconNameFromElement(course.icon);
 
+    // Check if required fields are set
+    if (!course.title || !course.duration) {
+      console.error('Required fields missing for course:', course);
+      toast.error('Դասընթացի պահպանման համար անհրաժեշտ է լրացնել բոլոր դաշտերը');
+      return false;
+    }
+    
+    // Generate slug from title if missing
+    if (!course.slug && course.title) {
+      course.slug = course.title
+        .toLowerCase()
+        .replace(/[^\w\s-]/g, '')
+        .replace(/\s+/g, '-')
+        .replace(/--+/g, '-')
+        .trim();
+    }
+
+    console.log('Using icon name:', iconName);
+    console.log('Using slug:', course.slug);
+
     // Save to Supabase
     try {
       // Create a database-friendly object with snake_case keys to match Supabase columns
