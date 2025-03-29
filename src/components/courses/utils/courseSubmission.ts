@@ -126,9 +126,13 @@ export const createCourseDirectly = async (
     // Save course to localStorage for later synchronization
     try {
       const localCourses = JSON.parse(localStorage.getItem('pending_courses') || '[]');
-      course.id = uuidv4(); // Add temporary ID
-      course.createdAt = new Date().toISOString();
-      localCourses.push(course);
+      // Fix: don't try to access properties that are not present on the type
+      const courseWithIds = {
+        ...course,
+        id: uuidv4(), // Add temporary ID
+        createdAt: new Date().toISOString() // Add creation timestamp
+      };
+      localCourses.push(courseWithIds);
       localStorage.setItem('pending_courses', JSON.stringify(localCourses));
       toast.success("Դասընթացը պահվել է լոկալ և կսինխրոնացվի կապի վերականգնման դեպքում");
       return true;

@@ -1,4 +1,3 @@
-
 import { ProfessionalCourse } from '../types/ProfessionalCourse';
 import { supabase } from '@/integrations/supabase/client';
 import { convertIconNameToComponent } from '@/utils/iconUtils';
@@ -87,5 +86,73 @@ export const saveCourseChanges = async (course: ProfessionalCourse): Promise<boo
   } catch (error) {
     console.error("Error saving course changes:", error);
     return false;
+  }
+};
+
+/**
+ * Get all courses from Supabase
+ */
+export const getAllCoursesFromSupabase = async (): Promise<ProfessionalCourse[]> => {
+  try {
+    // Fetch all courses
+    const { data: courses, error } = await supabase
+      .from('courses')
+      .select('*')
+      .order('created_at', { ascending: false });
+      
+    if (error) {
+      console.error("Error fetching courses from Supabase:", error);
+      return [];
+    }
+    
+    if (!courses || courses.length === 0) {
+      return [];
+    }
+    
+    // Process each course to include related data
+    const coursesWithDetails = await Promise.all(courses.map(async (course) => {
+      // Fetch related data
+      const [lessonsResponse, requirementsResponse, outcomesResponse] = await Promise.all([
+        supabase.from('course_lessons').select('*').eq('course_id', course.id),
+        supabase.from('course_requirements').select('*').eq('course_id', course.id),
+        supabase.from('course_outcomes').select('*').eq('course_id', course.id)
+      ]);
+      
+      // Create icon element
+      const iconElement = convertIconNameToComponent(course.icon_name);
+      
+      // Return the complete course object
+      return {
+        id: course.id,
+        title: course.title,
+        subtitle: course.subtitle || 'ԴԱՍԸՆԹԱՑ',
+        icon: iconElement,
+        iconName: course.icon_name,
+        duration: course.duration,
+        price: course.price,
+        buttonText: course.button_text || 'Դիտել',
+        color: course.color || 'text-amber-500',
+        createdBy: course.created_by || '',
+        institution: course.institution || 'ՀՊՏՀ',
+        imageUrl: course.image_url,
+        organizationLogo: course.organization_logo,
+        description: course.description || '',
+        is_public: course.is_public || false,
+        lessons: lessonsResponse.data?.map(lesson => ({
+          title: lesson.title, 
+          duration: lesson.duration
+        })) || [],
+        requirements: requirementsResponse.data?.map(req => req.requirement) || [],
+        outcomes: outcomesResponse.data?.map(outcome => outcome.outcome) || [],
+        slug: course.slug || '',
+        createdAt: course.created_at || new Date().toISOString(),
+        updatedAt: course.updated_at || null
+      } as ProfessionalCourse;
+    }));
+    
+    return coursesWithDetails;
+  } catch (error) {
+    console.error("Error in getAllCoursesFromSupabase:", error);
+    return [];
   }
 };
