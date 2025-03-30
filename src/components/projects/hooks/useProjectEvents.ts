@@ -31,10 +31,10 @@ export const useProjectEvents = (
                 image: newProject.image || `https://source.unsplash.com/random/800x600/?${encodeURIComponent(newProject.category)}`,
                 category: newProject.category,
                 techStack: newProject.tech_stack || [],
-                createdBy: newProject.created_by,
-                createdAt: newProject.created_at,
-                updatedAt: newProject.updated_at || newProject.created_at, // Ensure updatedAt is always set
-                duration: newProject.duration || '',
+                createdBy: newProject.created_by || 'system',
+                createdAt: newProject.created_at || new Date().toISOString(),
+                updatedAt: newProject.updated_at || newProject.created_at || new Date().toISOString(),
+                duration: newProject.duration || 'Չսահմանված', // Default value
                 complexity: 'Միջին', // Default complexity
                 steps: [] // Initialize empty steps
               };
@@ -57,8 +57,8 @@ export const useProjectEvents = (
                     image: updatedProject.image || project.image,
                     category: updatedProject.category,
                     techStack: updatedProject.tech_stack || [],
-                    duration: updatedProject.duration,
-                    updatedAt: updatedProject.updated_at || new Date().toISOString() // Ensure updatedAt is set
+                    duration: updatedProject.duration || project.duration || 'Չսահմանված',
+                    updatedAt: updatedProject.updated_at || new Date().toISOString()
                   };
                 }
                 return project;

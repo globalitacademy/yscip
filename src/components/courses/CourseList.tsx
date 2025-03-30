@@ -1,70 +1,189 @@
 
 import React from 'react';
-import { Course } from './types/index';
-import { ProfessionalCourse } from './types/index';
-import CourseCard from './CourseCard';
-import ProfessionalCourseCard from './ProfessionalCourseCard';
-import { FadeIn } from '@/components/LocalTransitions';
+import { Course } from './types';
+import { ProfessionalCourse } from './types/ProfessionalCourse';
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { CheckCircle, Edit2, Trash2, AlertTriangle, Clock } from 'lucide-react';
+import { Link } from 'react-router-dom';
+import { Badge } from '@/components/ui/badge';
 import { useCourseContext } from '@/contexts/CourseContext';
-import { useAuth } from '@/contexts/AuthContext';
+import { useCourses } from './CourseContext';
 
 interface CourseListProps {
   courses: Course[];
   professionalCourses: ProfessionalCourse[];
+  userPermissions?: any;
+  currentUserId?: string;
 }
 
-const CourseList: React.FC<CourseListProps> = ({ courses, professionalCourses }) => {
-  const { handleEditInit, handleDeleteCourse } = useCourseContext();
-  const { user } = useAuth();
-  const isAdmin = user?.role === 'admin';
-  
-  // Safety check for empty arrays
-  if ((!courses || courses.length === 0) && (!professionalCourses || professionalCourses.length === 0)) {
+const CourseList: React.FC<CourseListProps> = ({ 
+  courses, 
+  professionalCourses,
+  userPermissions,
+  currentUserId 
+}) => {
+  const { handleEditInit, handleOpenDeleteDialog } = useCourseContext();
+  const {
+    handleEditProfessionalCourseInit,
+    handleDeleteProfessionalCourse
+  } = useCourses();
+
+  if (courses.length === 0 && professionalCourses.length === 0) {
     return (
-      <div className="text-center p-10 bg-muted rounded-lg">
-        <p className="text-muted-foreground">Դասընթացներ չկան</p>
-      </div>
+      <Card className="bg-muted">
+        <CardContent className="pt-6 text-center">
+          <p className="text-muted-foreground">Դասընթացներ չեն գտնվել</p>
+        </CardContent>
+      </Card>
     );
   }
 
   return (
-    <FadeIn className="space-y-8">
-      {professionalCourses && professionalCourses.length > 0 && (
-        <div>
-          <h3 className="text-lg font-medium mb-4">Մասնագիտական դասընթացներ</h3>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {professionalCourses.map((course) => (
-              <ProfessionalCourseCard
-                key={course.id} 
-                course={course} 
-                isAdmin={isAdmin}
-                canEdit={isAdmin || course.createdBy === user?.name}
-                onEdit={() => handleEditInit(course, 'professional')}
-                onDelete={handleDeleteCourse} 
-              />
-            ))}
+    <div className="space-y-6">
+      {/* Professional Courses Section */}
+      {professionalCourses.length > 0 && (
+        <div className="space-y-4">
+          <h3 className="text-xl font-semibold">Մասնագիտական դասընթացներ</h3>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            {professionalCourses.map((course) => {
+              const canEdit = userPermissions?.canEditCourse(course.createdBy);
+              const canDelete = userPermissions?.canDeleteCourse(course.createdBy);
+              const isOwnCourse = course.createdBy === currentUserId;
+              const pendingApproval = isOwnCourse && !course.is_public && userPermissions?.requiresApproval;
+              
+              return (
+                <Card key={course.id} className="flex flex-col h-full overflow-hidden">
+                  <CardHeader className="pb-4 relative">
+                    {pendingApproval && (
+                      <Badge variant="outline" className="absolute right-4 top-3 bg-amber-50 text-amber-800 border-amber-200">
+                        <Clock className="h-3 w-3 mr-1" /> Սպասում է հաստատման
+                      </Badge>
+                    )}
+                    {course.is_public && (
+                      <Badge variant="outline" className="absolute right-4 top-3 bg-green-50 text-green-800 border-green-200">
+                        <CheckCircle className="h-3 w-3 mr-1" /> Հաստատված
+                      </Badge>
+                    )}
+                    <div className="flex items-center space-x-2">
+                      <div className={`p-2 rounded-full ${course.color}`}>
+                        {course.icon}
+                      </div>
+                      <div>
+                        <CardTitle className="text-lg">{course.title}</CardTitle>
+                        <CardDescription>{course.subtitle}</CardDescription>
+                      </div>
+                    </div>
+                  </CardHeader>
+                  <CardContent className="pb-0 flex-grow">
+                    <p className="line-clamp-2 text-sm text-muted-foreground mb-2">{course.description}</p>
+                    <div className="flex justify-between items-center mt-2">
+                      <div className="text-sm text-muted-foreground">{course.duration}</div>
+                      {course.price && (
+                        <Badge variant="secondary">{course.price} ֏</Badge>
+                      )}
+                    </div>
+                  </CardContent>
+                  <CardFooter className="pt-4 flex justify-between">
+                    <Button variant="default" size="sm" asChild>
+                      <Link to={`/courses/${course.id}`}>{course.buttonText || 'Դիտել'}</Link>
+                    </Button>
+                    <div className="flex gap-2">
+                      {canEdit && (
+                        <Button 
+                          variant="outline" 
+                          size="icon"
+                          onClick={() => handleEditProfessionalCourseInit(course)}
+                        >
+                          <Edit2 className="h-4 w-4" />
+                        </Button>
+                      )}
+                      {canDelete && (
+                        <Button 
+                          variant="outline" 
+                          size="icon"
+                          className="text-destructive"
+                          onClick={() => handleDeleteProfessionalCourse(course.id)}
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      )}
+                    </div>
+                  </CardFooter>
+                </Card>
+              );
+            })}
           </div>
         </div>
       )}
-      
-      {courses && courses.length > 0 && (
-        <div>
-          <h3 className="text-lg font-medium mb-4">Ստանդարտ դասընթացներ</h3>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {courses.map((course) => (
-              <CourseCard
-                key={course.id}
-                course={course}
-                isAdmin={isAdmin}
-                canEdit={isAdmin || course.createdBy === user?.id}
-                onEdit={() => handleEditInit(course, 'standard')}
-                onDelete={handleDeleteCourse} 
-              />
-            ))}
+
+      {/* Standard Courses Section */}
+      {courses.length > 0 && (
+        <div className="space-y-4">
+          <h3 className="text-xl font-semibold">Ստանդարտ դասընթացներ</h3>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            {courses.map((course) => {
+              const canEdit = userPermissions?.canEditCourse(course.createdBy);
+              const canDelete = userPermissions?.canDeleteCourse(course.createdBy);
+              const isOwnCourse = course.createdBy === currentUserId;
+              const pendingApproval = isOwnCourse && !course.is_public && userPermissions?.requiresApproval;
+              
+              return (
+                <Card key={course.id} className="flex flex-col h-full overflow-hidden">
+                  <CardHeader>
+                    {pendingApproval && (
+                      <Badge variant="outline" className="absolute right-4 top-3 bg-amber-50 text-amber-800 border-amber-200">
+                        <Clock className="h-3 w-3 mr-1" /> Սպասում է հաստատման
+                      </Badge>
+                    )}
+                    {course.is_public && (
+                      <Badge variant="outline" className="absolute right-4 top-3 bg-green-50 text-green-800 border-green-200">
+                        <CheckCircle className="h-3 w-3 mr-1" /> Հաստատված
+                      </Badge>
+                    )}
+                    <CardTitle>{course.title}</CardTitle>
+                    <CardDescription>{course.specialization}</CardDescription>
+                  </CardHeader>
+                  <CardContent className="pb-0 flex-grow">
+                    <p className="line-clamp-3 text-sm text-muted-foreground mb-4">{course.description}</p>
+                    <div className="mt-2 flex justify-between">
+                      <span className="text-sm text-muted-foreground">Տևողություն: {course.duration}</span>
+                      <span className="text-sm text-muted-foreground">Հեղինակ: {course.instructor}</span>
+                    </div>
+                  </CardContent>
+                  <CardFooter className="pt-4 flex justify-between">
+                    <Button variant="default" size="sm" asChild>
+                      <Link to={`/courses/${course.id}`}>Դիտել</Link>
+                    </Button>
+                    <div className="flex gap-2">
+                      {canEdit && (
+                        <Button 
+                          variant="outline" 
+                          size="icon"
+                          onClick={() => handleEditInit(course)}
+                        >
+                          <Edit2 className="h-4 w-4" />
+                        </Button>
+                      )}
+                      {canDelete && (
+                        <Button 
+                          variant="outline" 
+                          size="icon"
+                          className="text-destructive"
+                          onClick={() => handleOpenDeleteDialog()}
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      )}
+                    </div>
+                  </CardFooter>
+                </Card>
+              );
+            })}
           </div>
         </div>
       )}
-    </FadeIn>
+    </div>
   );
 };
 

@@ -2,7 +2,7 @@
 import React, { useEffect, useState } from 'react';
 import { Dialog, DialogContent } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
-import { Plus } from 'lucide-react';
+import { Plus, AlertCircle } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { CourseProvider, useCourseContext } from '@/contexts/CourseContext';
 import CourseList from './CourseList';
@@ -13,6 +13,9 @@ import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
 import { ProfessionalCourse } from './types/index';
 import { convertIconNameToComponent } from '@/utils/iconUtils';
+import { Alert, AlertDescription } from '@/components/ui/alert';
+import { useAuth } from '@/contexts/AuthContext';
+import { useCoursePermissions } from '@/hooks/useCoursePermissions';
 
 // Inner component that uses the context
 const CourseManagementContent: React.FC = () => {
@@ -25,6 +28,9 @@ const CourseManagementContent: React.FC = () => {
     professionalCourses,
     setProfessionalCourses
   } = useCourseContext();
+  
+  const { user } = useAuth();
+  const permissions = useCoursePermissions();
   
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -138,20 +144,36 @@ const CourseManagementContent: React.FC = () => {
     // Only run this effect once on mount
   }, []); // Empty dependency array to run only on mount
 
+  // Check if user has permission to manage courses
+  const canManageCourses = permissions.canCreateCourse;
+  
+  if (!user) {
+    return (
+      <Alert variant="destructive">
+        <AlertCircle className="h-4 w-4" />
+        <AlertDescription>
+          Դուք պետք է լինեք մուտք գործած համակարգ դասընթացների կառավարման համար
+        </AlertDescription>
+      </Alert>
+    );
+  }
+
   return (
     <div className="space-y-4">
       <div className="flex justify-between items-center">
         <h2 className="text-2xl font-bold">Դասընթացներ</h2>
-        <div className="flex gap-2">
-          <Button onClick={() => handleCreateInit('professional')}>
-            <Plus className="h-4 w-4 mr-2" /> Մասնագիտական դասընթաց
-          </Button>
-          <Button variant="default" asChild>
-            <Link to="/courses/create">
-              <Plus className="h-4 w-4 mr-2" /> Նոր դասընթաց
-            </Link>
-          </Button>
-        </div>
+        {canManageCourses && (
+          <div className="flex gap-2">
+            <Button onClick={() => handleCreateInit('professional')}>
+              <Plus className="h-4 w-4 mr-2" /> Մասնագիտական դասընթաց
+            </Button>
+            <Button variant="default" asChild>
+              <Link to="/courses/create">
+                <Plus className="h-4 w-4 mr-2" /> Նոր դասընթաց
+              </Link>
+            </Button>
+          </div>
+        )}
       </div>
       
       <CourseFilterSection />
@@ -161,13 +183,16 @@ const CourseManagementContent: React.FC = () => {
           <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
         </div>
       ) : error ? (
-        <div className="text-center p-8 text-red-500">
-          {error}
-        </div>
+        <Alert variant="destructive">
+          <AlertCircle className="h-4 w-4" />
+          <AlertDescription>{error}</AlertDescription>
+        </Alert>
       ) : (
         <CourseList 
           courses={courses} 
           professionalCourses={professionalCourses} 
+          userPermissions={permissions}
+          currentUserId={user?.id || ''}
         />
       )}
       
@@ -178,6 +203,15 @@ const CourseManagementContent: React.FC = () => {
           <CourseCreationForm />
         </DialogContent>
       </Dialog>
+      
+      {permissions.requiresApproval && (
+        <Alert className="mt-6">
+          <AlertCircle className="h-4 w-4" />
+          <AlertDescription>
+            Ձեր ստեղծած դասընթացները պետք է հաստատվեն ադմինիստրատորի կողմից նախքան դրանք կհասանելի դառնան համակարգում
+          </AlertDescription>
+        </Alert>
+      )}
     </div>
   );
 };
