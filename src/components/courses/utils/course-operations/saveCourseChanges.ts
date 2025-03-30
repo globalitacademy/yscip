@@ -28,6 +28,8 @@ export const saveCourseChanges = async (course: ProfessionalCourse): Promise<boo
         image_url: course.imageUrl,
         organization_logo: course.organizationLogo,
         description: course.description,
+        created_by: course.createdBy,
+        instructor: course.instructor,
         is_public: course.is_public,
         updated_at: new Date().toISOString()
       })

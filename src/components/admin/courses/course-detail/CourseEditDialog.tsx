@@ -6,7 +6,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
-import { Loader2 } from 'lucide-react';
+import { Loader2, UserCircle } from 'lucide-react';
 import { ProfessionalCourse } from '@/components/courses/types/ProfessionalCourse';
 import { IconSelector } from '@/components/courses/form-components/IconSelector';
 import { LessonsList } from '@/components/courses/form-components/LessonsList';
@@ -89,6 +89,7 @@ const CourseEditDialog: React.FC<CourseEditDialogProps> = ({
             <TabsTrigger value="lessons">Դասերի ցանկ</TabsTrigger>
             <TabsTrigger value="requirements">Պահանջներ</TabsTrigger>
             <TabsTrigger value="outcomes">Արդյունքներ</TabsTrigger>
+            <TabsTrigger value="author">Հեղինակ</TabsTrigger>
           </TabsList>
           
           <TabsContent value="basic" className="space-y-4">
@@ -195,6 +196,50 @@ const CourseEditDialog: React.FC<CourseEditDialogProps> = ({
               onAddOutcome={handleAddOutcome}
               onRemoveOutcome={handleRemoveOutcome}
             />
+          </TabsContent>
+
+          <TabsContent value="author" className="space-y-4">
+            <div className="bg-amber-50 p-6 rounded-lg border border-amber-200">
+              <div className="flex items-center gap-3 mb-4">
+                <UserCircle className="h-6 w-6 text-amber-700" />
+                <h3 className="font-semibold text-amber-800">Հեղինակի տվյալներ</h3>
+              </div>
+              
+              <div className="space-y-4">
+                <div className="space-y-2">
+                  <Label htmlFor="createdBy">Հեղինակի անուն</Label>
+                  <Input 
+                    id="createdBy" 
+                    value={editedCourse.createdBy || ''} 
+                    onChange={(e) => setEditedCourse({...editedCourse, createdBy: e.target.value})}
+                    placeholder="Օր․՝ Անի Հովհաննիսյան"
+                    className="bg-white"
+                  />
+                </div>
+                
+                <div className="space-y-2">
+                  <Label htmlFor="instructorTitle">Հեղինակի պաշտոն (ըստ ցանկության)</Label>
+                  <Input 
+                    id="instructorTitle" 
+                    value={editedCourse.instructor || ''} 
+                    onChange={(e) => setEditedCourse({...editedCourse, instructor: e.target.value})}
+                    placeholder="Օր․՝ Ավագ դասախոս"
+                    className="bg-white"
+                  />
+                </div>
+                
+                <div className="space-y-2">
+                  <Label htmlFor="organizationLogo">Կազմակերպության լոգոյի URL</Label>
+                  <Input 
+                    id="organizationLogo" 
+                    value={editedCourse.organizationLogo || ''} 
+                    onChange={(e) => setEditedCourse({...editedCourse, organizationLogo: e.target.value})}
+                    placeholder="https://example.com/logo.png"
+                    className="bg-white"
+                  />
+                </div>
+              </div>
+            </div>
           </TabsContent>
         </Tabs>
         

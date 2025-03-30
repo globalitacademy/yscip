@@ -2,9 +2,15 @@
 import React from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { ShieldCheck, CheckCircle, GraduationCap } from 'lucide-react';
+import { ShieldCheck, CheckCircle, GraduationCap, UserCircle } from 'lucide-react';
+import { ProfessionalCourse } from '@/components/courses/types/ProfessionalCourse';
 
-const CourseBenefitsCard: React.FC = () => {
+interface CourseBenefitsCardProps {
+  course?: ProfessionalCourse;
+  onApply?: () => void;
+}
+
+const CourseBenefitsCard: React.FC<CourseBenefitsCardProps> = ({ course, onApply }) => {
   return (
     <Card className="border-0 shadow-lg rounded-xl overflow-hidden bg-gradient-to-br from-indigo-50 to-purple-50">
       <div className="bg-indigo-600 h-2 w-full"></div>
@@ -15,6 +21,18 @@ const CourseBenefitsCard: React.FC = () => {
           </div>
           <h3 className="font-bold text-lg">Ինչու՞ ընտրել այս դասընթացը</h3>
         </div>
+        
+        {course?.createdBy && (
+          <div className="flex items-center gap-2 mb-4 p-3 bg-white bg-opacity-70 rounded-lg">
+            <UserCircle className="h-8 w-8 text-indigo-500" />
+            <div>
+              <p className="font-medium text-gray-800">{course.createdBy}</p>
+              {course.instructor && (
+                <p className="text-xs text-gray-500">{course.instructor}</p>
+              )}
+            </div>
+          </div>
+        )}
         
         <ul className="space-y-4 mb-8">
           <li className="flex items-start gap-3">
@@ -43,8 +61,12 @@ const CourseBenefitsCard: React.FC = () => {
           </li>
         </ul>
         
-        <Button className="w-full rounded-full shadow-md bg-indigo-600 hover:bg-indigo-700 transition-all" size="lg">
-          Գրանցվել դասընթացին
+        <Button 
+          className="w-full rounded-full shadow-md bg-indigo-600 hover:bg-indigo-700 transition-all" 
+          size="lg"
+          onClick={onApply}
+        >
+          {course?.buttonText || 'Գրանցվել դասընթացին'}
         </Button>
       </CardContent>
     </Card>

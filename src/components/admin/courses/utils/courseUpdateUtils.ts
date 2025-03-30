@@ -25,6 +25,8 @@ export const updateCourseDirectly = async (
         image_url: courseData.imageUrl,
         organization_logo: courseData.organizationLogo,
         description: courseData.description,
+        created_by: courseData.createdBy,
+        instructor: courseData.instructor,
         is_public: courseData.is_public,
         updated_at: new Date().toISOString()
       })
