@@ -18,8 +18,19 @@ const CourseBanner: React.FC<CourseBannerProps> = ({
 }) => {
   return (
     <div className="relative mb-8 overflow-hidden">
-      {/* Light blue background */}
-      <div className="absolute inset-0 bg-sky-50"></div>
+      {/* Background with course image and gradient overlay */}
+      <div className="absolute inset-0 bg-sky-50">
+        {course.imageUrl && (
+          <>
+            <img 
+              src={course.imageUrl} 
+              alt={course.title} 
+              className="absolute inset-0 w-full h-full object-cover opacity-20"
+            />
+            <div className="absolute inset-0 bg-gradient-to-b from-blue-500/30 to-sky-50/90"></div>
+          </>
+        )}
+      </div>
       
       <div className="container mx-auto px-6 py-10 relative z-10">
         <Link to="/courses" className="inline-flex items-center text-sm font-medium text-gray-700 hover:text-blue-600 transition-colors mb-5">
