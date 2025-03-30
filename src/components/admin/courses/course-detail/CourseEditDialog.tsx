@@ -1,0 +1,213 @@
+
+import React, { useState } from 'react';
+import { Dialog, DialogContent, DialogTitle, DialogDescription, DialogFooter, DialogHeader } from '@/components/ui/dialog';
+import { Button } from '@/components/ui/button';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Label } from '@/components/ui/label';
+import { Input } from '@/components/ui/input';
+import { Textarea } from '@/components/ui/textarea';
+import { Loader2 } from 'lucide-react';
+import { ProfessionalCourse } from '@/components/courses/types/ProfessionalCourse';
+import { IconSelector } from '@/components/courses/form-components/IconSelector';
+import { LessonsList } from '@/components/courses/form-components/LessonsList';
+import { RequirementsList } from '@/components/courses/form-components/RequirementsList';
+import { OutcomesList } from '@/components/courses/form-components/OutcomesList';
+
+interface CourseEditDialogProps {
+  isOpen: boolean;
+  setIsOpen: (open: boolean) => void;
+  editedCourse: Partial<ProfessionalCourse>;
+  setEditedCourse: React.Dispatch<React.SetStateAction<Partial<ProfessionalCourse>>>;
+  handleSaveChanges: () => Promise<void>;
+  loading: boolean;
+}
+
+const CourseEditDialog: React.FC<CourseEditDialogProps> = ({
+  isOpen,
+  setIsOpen,
+  editedCourse,
+  setEditedCourse,
+  handleSaveChanges,
+  loading
+}) => {
+  const [isIconsOpen, setIsIconsOpen] = useState(false);
+  const [newLesson, setNewLesson] = useState({ title: '', duration: '' });
+  const [newRequirement, setNewRequirement] = useState('');
+  const [newOutcome, setNewOutcome] = useState('');
+  
+  const handleAddLesson = (newLesson) => {
+    const lessons = [...(editedCourse.lessons || []), newLesson];
+    setEditedCourse({ ...editedCourse, lessons });
+  };
+
+  const handleRemoveLesson = (index) => {
+    const lessons = [...(editedCourse.lessons || [])];
+    lessons.splice(index, 1);
+    setEditedCourse({ ...editedCourse, lessons });
+  };
+
+  const handleAddRequirement = (requirement) => {
+    const requirements = [...(editedCourse.requirements || []), requirement];
+    setEditedCourse({ ...editedCourse, requirements });
+  };
+
+  const handleRemoveRequirement = (index) => {
+    const requirements = [...(editedCourse.requirements || [])];
+    requirements.splice(index, 1);
+    setEditedCourse({ ...editedCourse, requirements });
+  };
+
+  const handleAddOutcome = (outcome) => {
+    const outcomes = [...(editedCourse.outcomes || []), outcome];
+    setEditedCourse({ ...editedCourse, outcomes });
+  };
+
+  const handleRemoveOutcome = (index) => {
+    const outcomes = [...(editedCourse.outcomes || [])];
+    outcomes.splice(index, 1);
+    setEditedCourse({ ...editedCourse, outcomes });
+  };
+
+  const handleIconSelect = (iconName) => {
+    setEditedCourse({...editedCourse, iconName});
+    setIsIconsOpen(false);
+  };
+  
+  return (
+    <Dialog open={isOpen} onOpenChange={setIsOpen}>
+      <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
+        <DialogHeader>
+          <DialogTitle>Խմբագրել դասընթացը</DialogTitle>
+          <DialogDescription>
+            Թարմացրեք դասընթացի տվյալները: Պահպանելուց հետո փոփոխությունները կհայտնվեն հանրային էջում:
+          </DialogDescription>
+        </DialogHeader>
+        
+        <Tabs defaultValue="basic">
+          <TabsList className="mb-4">
+            <TabsTrigger value="basic">Հիմնական տվյալներ</TabsTrigger>
+            <TabsTrigger value="lessons">Դասերի ցանկ</TabsTrigger>
+            <TabsTrigger value="requirements">Պահանջներ</TabsTrigger>
+            <TabsTrigger value="outcomes">Արդյունքներ</TabsTrigger>
+          </TabsList>
+          
+          <TabsContent value="basic" className="space-y-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="title">Վերնագիր</Label>
+                <Input 
+                  id="title" 
+                  value={editedCourse.title || ''} 
+                  onChange={(e) => setEditedCourse({...editedCourse, title: e.target.value})}
+                />
+              </div>
+              
+              <div className="space-y-2">
+                <Label htmlFor="subtitle">Ենթավերնագիր</Label>
+                <Input 
+                  id="subtitle" 
+                  value={editedCourse.subtitle || ''} 
+                  onChange={(e) => setEditedCourse({...editedCourse, subtitle: e.target.value})}
+                />
+              </div>
+            </div>
+            
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="duration">Տևողություն</Label>
+                <Input 
+                  id="duration" 
+                  value={editedCourse.duration || ''} 
+                  onChange={(e) => setEditedCourse({...editedCourse, duration: e.target.value})}
+                />
+              </div>
+              
+              <div className="space-y-2">
+                <Label htmlFor="price">Գին</Label>
+                <Input 
+                  id="price" 
+                  value={editedCourse.price || ''} 
+                  onChange={(e) => setEditedCourse({...editedCourse, price: e.target.value})}
+                />
+              </div>
+            </div>
+            
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="imageUrl">Նկարի URL</Label>
+                <Input 
+                  id="imageUrl" 
+                  value={editedCourse.imageUrl || ''} 
+                  onChange={(e) => setEditedCourse({...editedCourse, imageUrl: e.target.value})}
+                  placeholder="https://example.com/image.jpg"
+                />
+              </div>
+              
+              <div className="space-y-2">
+                <Label htmlFor="institution">Հաստատություն</Label>
+                <Input 
+                  id="institution" 
+                  value={editedCourse.institution || ''} 
+                  onChange={(e) => setEditedCourse({...editedCourse, institution: e.target.value})}
+                />
+              </div>
+            </div>
+            
+            <div className="space-y-2">
+              <Label>Պատկերակ</Label>
+              <IconSelector 
+                isIconsOpen={isIconsOpen}
+                setIsIconsOpen={setIsIconsOpen}
+                onIconSelect={handleIconSelect}
+              />
+            </div>
+            
+            <div className="space-y-2">
+              <Label htmlFor="description">Նկարագրություն</Label>
+              <Textarea 
+                id="description" 
+                value={editedCourse.description || ''} 
+                onChange={(e) => setEditedCourse({...editedCourse, description: e.target.value})}
+                rows={5}
+              />
+            </div>
+          </TabsContent>
+          
+          <TabsContent value="lessons">
+            <LessonsList 
+              lessons={editedCourse.lessons || []}
+              onAddLesson={handleAddLesson}
+              onRemoveLesson={handleRemoveLesson}
+            />
+          </TabsContent>
+          
+          <TabsContent value="requirements">
+            <RequirementsList 
+              requirements={editedCourse.requirements || []}
+              onAddRequirement={handleAddRequirement}
+              onRemoveRequirement={handleRemoveRequirement}
+            />
+          </TabsContent>
+          
+          <TabsContent value="outcomes">
+            <OutcomesList 
+              outcomes={editedCourse.outcomes || []}
+              onAddOutcome={handleAddOutcome}
+              onRemoveOutcome={handleRemoveOutcome}
+            />
+          </TabsContent>
+        </Tabs>
+        
+        <DialogFooter>
+          <Button variant="ghost" onClick={() => setIsOpen(false)}>Չեղարկել</Button>
+          <Button onClick={handleSaveChanges} disabled={loading}>
+            {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+            Պահպանել
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+  );
+};
+
+export default CourseEditDialog;
