@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import Header from '@/components/Header';
@@ -11,7 +10,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { convertIconNameToComponent } from '@/utils/iconUtils';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Loader2, Edit, Trash, Eye, Clock, Globe, ShieldCheck, AlertTriangle } from 'lucide-react';
+import { Loader2, Edit, Trash, Eye, Clock, Globe, ShieldCheck, AlertTriangle, CheckCircle } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Dialog, DialogContent, DialogTitle, DialogDescription, DialogFooter, DialogHeader } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
@@ -35,6 +34,7 @@ const CourseDetails: React.FC = () => {
   const [newLesson, setNewLesson] = useState({ title: '', duration: '' });
   const [newRequirement, setNewRequirement] = useState('');
   const [newOutcome, setNewOutcome] = useState('');
+  const [isIconsOpen, setIsIconsOpen] = useState(false);
 
   useEffect(() => {
     const fetchCourse = async () => {
@@ -42,7 +42,6 @@ const CourseDetails: React.FC = () => {
       
       setLoading(true);
       try {
-        // Fetch the course
         const { data, error } = await supabase
           .from('courses')
           .select('*')
@@ -61,25 +60,21 @@ const CourseDetails: React.FC = () => {
           return;
         }
         
-        // Fetch lessons
         const { data: lessonsData } = await supabase
           .from('course_lessons')
           .select('*')
           .eq('course_id', id);
           
-        // Fetch requirements
         const { data: requirementsData } = await supabase
           .from('course_requirements')
           .select('*')
           .eq('course_id', id);
           
-        // Fetch outcomes
         const { data: outcomesData } = await supabase
           .from('course_outcomes')
           .select('*')
           .eq('course_id', id);
         
-        // Create the professional course object
         const iconElement = convertIconNameToComponent(data.icon_name);
         
         const professionalCourse: ProfessionalCourse = {
@@ -119,7 +114,6 @@ const CourseDetails: React.FC = () => {
     
     fetchCourse();
     
-    // Setup realtime subscription for changes
     if (id) {
       const channel = supabase
         .channel('course-changes')
@@ -154,7 +148,6 @@ const CourseDetails: React.FC = () => {
         toast.success('Դասընթացը հաջողությամբ թարմացվել է');
         setIsEditDialogOpen(false);
         
-        // Update the local course object
         setCourse({
           ...course,
           ...editedCourse,
@@ -176,14 +169,12 @@ const CourseDetails: React.FC = () => {
     
     setLoading(true);
     try {
-      // Delete related records first
       await Promise.all([
         supabase.from('course_lessons').delete().eq('course_id', course.id),
         supabase.from('course_requirements').delete().eq('course_id', course.id),
         supabase.from('course_outcomes').delete().eq('course_id', course.id)
       ]);
       
-      // Delete the main course
       const { error } = await supabase
         .from('courses')
         .delete()
@@ -239,6 +230,44 @@ const CourseDetails: React.FC = () => {
     }
   };
 
+  const handleAddLesson = (newLesson) => {
+    const lessons = [...(editedCourse.lessons || []), newLesson];
+    setEditedCourse({ ...editedCourse, lessons });
+  };
+
+  const handleRemoveLesson = (index) => {
+    const lessons = [...(editedCourse.lessons || [])];
+    lessons.splice(index, 1);
+    setEditedCourse({ ...editedCourse, lessons });
+  };
+
+  const handleAddRequirement = (requirement) => {
+    const requirements = [...(editedCourse.requirements || []), requirement];
+    setEditedCourse({ ...editedCourse, requirements });
+  };
+
+  const handleRemoveRequirement = (index) => {
+    const requirements = [...(editedCourse.requirements || [])];
+    requirements.splice(index, 1);
+    setEditedCourse({ ...editedCourse, requirements });
+  };
+
+  const handleAddOutcome = (outcome) => {
+    const outcomes = [...(editedCourse.outcomes || []), outcome];
+    setEditedCourse({ ...editedCourse, outcomes });
+  };
+
+  const handleRemoveOutcome = (index) => {
+    const outcomes = [...(editedCourse.outcomes || [])];
+    outcomes.splice(index, 1);
+    setEditedCourse({ ...editedCourse, outcomes });
+  };
+
+  const handleIconSelect = (iconName) => {
+    setEditedCourse({...editedCourse, iconName});
+    setIsIconsOpen(false);
+  };
+
   const canEdit = user && (user.role === 'admin' || course?.createdBy === user.name);
 
   if (loading && !course) {
@@ -278,7 +307,6 @@ const CourseDetails: React.FC = () => {
       <Header />
       
       <main className="flex-1 container mx-auto px-4 py-8">
-        {/* Course Header with Actions */}
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 gap-4">
           <div>
             <h1 className="text-3xl font-bold">{course.title}</h1>
@@ -323,7 +351,6 @@ const CourseDetails: React.FC = () => {
           )}
         </div>
         
-        {/* Course Status Badge */}
         <div className="mb-6">
           {course.is_public ? (
             <Badge variant="outline" className="bg-green-50 text-green-700 border-green-200">
@@ -336,7 +363,6 @@ const CourseDetails: React.FC = () => {
           )}
         </div>
         
-        {/* Course Banner */}
         <div className="relative rounded-lg overflow-hidden bg-gradient-to-r from-primary/10 to-secondary/10 mb-8">
           <div className="absolute inset-0 bg-gradient-to-r from-primary/10 to-secondary/10"></div>
           <div className="container mx-auto px-4 py-12 relative z-10">
@@ -386,7 +412,6 @@ const CourseDetails: React.FC = () => {
           </div>
         </div>
         
-        {/* Course Content */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           <div className="lg:col-span-2">
             <Tabs defaultValue="description">
@@ -470,7 +495,6 @@ const CourseDetails: React.FC = () => {
             </Tabs>
           </div>
           
-          {/* Sidebar */}
           <div>
             <Card>
               <CardContent className="pt-6">
@@ -517,7 +541,6 @@ const CourseDetails: React.FC = () => {
       
       <Footer />
       
-      {/* Edit Dialog */}
       <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
         <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
@@ -600,8 +623,9 @@ const CourseDetails: React.FC = () => {
               <div className="space-y-2">
                 <Label>Պատկերակ</Label>
                 <IconSelector 
-                  selectedIcon={editedCourse.iconName || 'book'} 
-                  onSelectIcon={(iconName) => setEditedCourse({...editedCourse, iconName})}
+                  isIconsOpen={isIconsOpen}
+                  setIsIconsOpen={setIsIconsOpen}
+                  onIconSelect={handleIconSelect}
                 />
               </div>
               
@@ -619,27 +643,24 @@ const CourseDetails: React.FC = () => {
             <TabsContent value="lessons">
               <LessonsList 
                 lessons={editedCourse.lessons || []}
-                setLessons={(lessons) => setEditedCourse({...editedCourse, lessons})}
-                newLesson={newLesson}
-                setNewLesson={setNewLesson}
+                onAddLesson={handleAddLesson}
+                onRemoveLesson={handleRemoveLesson}
               />
             </TabsContent>
             
             <TabsContent value="requirements">
               <RequirementsList 
                 requirements={editedCourse.requirements || []}
-                setRequirements={(requirements) => setEditedCourse({...editedCourse, requirements})}
-                newRequirement={newRequirement}
-                setNewRequirement={setNewRequirement}
+                onAddRequirement={handleAddRequirement}
+                onRemoveRequirement={handleRemoveRequirement}
               />
             </TabsContent>
             
             <TabsContent value="outcomes">
               <OutcomesList 
                 outcomes={editedCourse.outcomes || []}
-                setOutcomes={(outcomes) => setEditedCourse({...editedCourse, outcomes})}
-                newOutcome={newOutcome}
-                setNewOutcome={setNewOutcome}
+                onAddOutcome={handleAddOutcome}
+                onRemoveOutcome={handleRemoveOutcome}
               />
             </TabsContent>
           </Tabs>
@@ -654,7 +675,6 @@ const CourseDetails: React.FC = () => {
         </DialogContent>
       </Dialog>
       
-      {/* Delete Confirmation Dialog */}
       <Dialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
         <DialogContent>
           <DialogHeader>

@@ -5,7 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { PlusCircle, X } from 'lucide-react';
 
-interface OutcomesListProps {
+export interface OutcomesListProps {
   outcomes: string[] | undefined;
   onAddOutcome: (outcome: string) => void;
   onRemoveOutcome: (index: number) => void;

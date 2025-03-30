@@ -3,9 +3,8 @@ import React from 'react';
 import { Button } from "@/components/ui/button";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { ChevronDown, Code, BookText, BrainCircuit, Database, FileCode, Globe } from 'lucide-react';
-import { ProfessionalCourse } from '../types/ProfessionalCourse';
 
-interface IconSelectorProps {
+export interface IconSelectorProps {
   isIconsOpen: boolean;
   setIsIconsOpen: (isOpen: boolean) => void;
   onIconSelect: (iconName: string) => void;

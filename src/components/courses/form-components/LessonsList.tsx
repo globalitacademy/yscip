@@ -4,9 +4,9 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { PlusCircle, X } from 'lucide-react';
-import { ProfessionalCourse, LessonItem } from '../types/ProfessionalCourse';
+import { LessonItem } from '../types/ProfessionalCourse';
 
-interface LessonsListProps {
+export interface LessonsListProps {
   lessons: LessonItem[] | undefined;
   onAddLesson: (lesson: LessonItem) => void;
   onRemoveLesson: (index: number) => void;

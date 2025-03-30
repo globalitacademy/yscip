@@ -5,7 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { PlusCircle, X } from 'lucide-react';
 
-interface RequirementsListProps {
+export interface RequirementsListProps {
   requirements: string[] | undefined;
   onAddRequirement: (requirement: string) => void;
   onRemoveRequirement: (index: number) => void;
