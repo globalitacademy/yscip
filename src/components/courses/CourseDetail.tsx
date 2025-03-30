@@ -62,7 +62,13 @@ const CourseDetail: React.FC = () => {
   }, [id, slug, navigate]);
 
   const handleApply = () => {
-    toast.success('Դիմումն ուղարկված է');
+    toast.success('Դիմումն ուղարկված է', {
+      description: 'Շուտով կզանգահարենք ձեզ',
+      action: {
+        label: 'Փակել',
+        onClick: () => console.log('Toast closed')
+      },
+    });
   };
 
   if (loading) {
@@ -76,29 +82,44 @@ const CourseDetail: React.FC = () => {
   const canEdit = user && (user.role === 'admin' || course?.createdBy === user.name);
 
   return (
-    <div className="container mx-auto px-4 py-8">
+    <div className="container mx-auto px-4 py-8 max-w-6xl">
       {/* Course Header Banner */}
       <CourseBanner course={course} canEdit={canEdit} handleApply={handleApply} />
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         {/* Main Content */}
         <div className="lg:col-span-2">
-          <Tabs defaultValue="description">
-            <TabsList className="mb-6">
-              <TabsTrigger value="description">Նկարագրություն</TabsTrigger>
-              <TabsTrigger value="curriculum">Դասընթացի պլան</TabsTrigger>
-              <TabsTrigger value="outcomes">Ակնկալվող արդյունքներ</TabsTrigger>
+          <Tabs defaultValue="description" className="w-full">
+            <TabsList className="mb-6 bg-gray-100 p-1 rounded-lg w-full">
+              <TabsTrigger 
+                value="description" 
+                className="flex-1 data-[state=active]:bg-white data-[state=active]:text-indigo-700 data-[state=active]:shadow-sm rounded-md"
+              >
+                Նկարագրություն
+              </TabsTrigger>
+              <TabsTrigger 
+                value="curriculum" 
+                className="flex-1 data-[state=active]:bg-white data-[state=active]:text-indigo-700 data-[state=active]:shadow-sm rounded-md"
+              >
+                Դասընթացի պլան
+              </TabsTrigger>
+              <TabsTrigger 
+                value="outcomes" 
+                className="flex-1 data-[state=active]:bg-white data-[state=active]:text-indigo-700 data-[state=active]:shadow-sm rounded-md"
+              >
+                Արդյունքներ
+              </TabsTrigger>
             </TabsList>
 
-            <TabsContent value="description" className="space-y-6">
+            <TabsContent value="description" className="space-y-6 focus:outline-none">
               <CourseDescription course={course} />
             </TabsContent>
 
-            <TabsContent value="curriculum">
+            <TabsContent value="curriculum" className="focus:outline-none">
               <CourseCurriculumTab course={course} />
             </TabsContent>
 
-            <TabsContent value="outcomes">
+            <TabsContent value="outcomes" className="focus:outline-none">
               <CourseOutcomesTab course={course} />
             </TabsContent>
           </Tabs>
