@@ -8,6 +8,7 @@ export interface IconSelectorProps {
   isIconsOpen: boolean;
   setIsIconsOpen: (isOpen: boolean) => void;
   onIconSelect: (iconName: string) => void;
+  selectedIcon?: string;
 }
 
 const iconOptions = [
@@ -19,7 +20,7 @@ const iconOptions = [
   { label: 'Վեբ', value: 'web', icon: <Globe className="h-5 w-5" /> },
 ];
 
-export const IconSelector: React.FC<IconSelectorProps> = ({ isIconsOpen, setIsIconsOpen, onIconSelect }) => {
+export const IconSelector: React.FC<IconSelectorProps> = ({ isIconsOpen, setIsIconsOpen, onIconSelect, selectedIcon }) => {
   return (
     <Collapsible
       open={isIconsOpen}
@@ -28,7 +29,7 @@ export const IconSelector: React.FC<IconSelectorProps> = ({ isIconsOpen, setIsIc
     >
       <CollapsibleTrigger asChild>
         <div className="flex items-center justify-between cursor-pointer p-2">
-          <span>Ընտրել պատկերակ</span>
+          <span>Ընտրել պատկերակ {selectedIcon && `(Ընտրված՝ ${selectedIcon})`}</span>
           <ChevronDown className={`h-4 w-4 transition-transform ${isIconsOpen ? 'transform rotate-180' : ''}`} />
         </div>
       </CollapsibleTrigger>
@@ -37,7 +38,7 @@ export const IconSelector: React.FC<IconSelectorProps> = ({ isIconsOpen, setIsIc
           {iconOptions.map((option) => (
             <Button
               key={option.value}
-              variant="outline"
+              variant={selectedIcon === option.value ? "default" : "outline"}
               className="flex flex-col items-center p-2 h-auto"
               onClick={() => onIconSelect(option.value)}
             >
