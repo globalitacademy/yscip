@@ -31,34 +31,10 @@ const CourseEditDialog: React.FC<CourseEditDialogProps> = ({
   loading
 }) => {
   const [isIconsOpen, setIsIconsOpen] = useState(false);
-  const [logoOption, setLogoOption] = useState(editedCourse.organizationLogo ? 'url' : 'upload');
-  const [imageOption, setImageOption] = useState(editedCourse.imageUrl ? 'url' : 'upload');
   
   const handleIconSelect = (iconName: string) => {
     setEditedCourse({...editedCourse, iconName});
     setIsIconsOpen(false);
-  };
-  
-  const handleLogoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      const reader = new FileReader();
-      reader.onload = (event) => {
-        setEditedCourse({ ...editedCourse, organizationLogo: event.target?.result as string });
-      };
-      reader.readAsDataURL(file);
-    }
-  };
-
-  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      const reader = new FileReader();
-      reader.onload = (event) => {
-        setEditedCourse({ ...editedCourse, imageUrl: event.target?.result as string });
-      };
-      reader.readAsDataURL(file);
-    }
   };
   
   return (
@@ -86,10 +62,7 @@ const CourseEditDialog: React.FC<CourseEditDialogProps> = ({
               setEditedCourse={setEditedCourse}
               isIconsOpen={isIconsOpen}
               setIsIconsOpen={setIsIconsOpen}
-              imageOption={imageOption}
-              setImageOption={setImageOption}
               handleIconSelect={handleIconSelect}
-              handleImageUpload={handleImageUpload}
             />
           </TabsContent>
           
@@ -118,9 +91,6 @@ const CourseEditDialog: React.FC<CourseEditDialogProps> = ({
             <AuthorTab 
               editedCourse={editedCourse}
               setEditedCourse={setEditedCourse}
-              logoOption={logoOption}
-              setLogoOption={setLogoOption}
-              handleLogoUpload={handleLogoUpload}
             />
           </TabsContent>
         </Tabs>

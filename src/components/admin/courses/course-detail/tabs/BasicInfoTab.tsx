@@ -3,20 +3,16 @@ import React from 'react';
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Link, Image } from 'lucide-react';
 import { ProfessionalCourse } from '@/components/courses/types/ProfessionalCourse';
 import { IconSelector } from '@/components/courses/form-components/IconSelector';
+import { MediaUploader } from '@/components/courses/form-components/MediaUploader';
 
 interface BasicInfoTabProps {
   editedCourse: Partial<ProfessionalCourse>;
   setEditedCourse: React.Dispatch<React.SetStateAction<Partial<ProfessionalCourse>>>;
   isIconsOpen: boolean;
   setIsIconsOpen: (open: boolean) => void;
-  imageOption: string;
-  setImageOption: (option: string) => void;
   handleIconSelect: (iconName: string) => void;
-  handleImageUpload: (e: React.ChangeEvent<HTMLInputElement>) => void;
 }
 
 export const BasicInfoTab: React.FC<BasicInfoTabProps> = ({
@@ -24,11 +20,12 @@ export const BasicInfoTab: React.FC<BasicInfoTabProps> = ({
   setEditedCourse,
   isIconsOpen,
   setIsIconsOpen,
-  imageOption,
-  setImageOption,
-  handleIconSelect,
-  handleImageUpload
+  handleIconSelect
 }) => {
+  const handleImageChange = (imageUrl: string) => {
+    setEditedCourse({...editedCourse, imageUrl});
+  };
+
   return (
     <div className="space-y-4">
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -73,59 +70,14 @@ export const BasicInfoTab: React.FC<BasicInfoTabProps> = ({
       
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div className="space-y-2">
-          <Label>Դասընթացի նկար</Label>
-          <Tabs value={imageOption} onValueChange={setImageOption} className="w-full">
-            <TabsList className="grid w-full grid-cols-2">
-              <TabsTrigger value="upload">Ներբեռնել</TabsTrigger>
-              <TabsTrigger value="url">URL</TabsTrigger>
-            </TabsList>
-            <TabsContent value="upload">
-              <div className="border rounded-md p-4 text-center bg-white">
-                <label htmlFor="imageUpload" className="cursor-pointer flex flex-col items-center">
-                  <Image className="h-8 w-8 mb-2 text-amber-700" />
-                  <span>Ներբեռնել նկար</span>
-                  <input
-                    id="imageUpload"
-                    type="file"
-                    accept="image/*"
-                    className="hidden"
-                    onChange={handleImageUpload}
-                  />
-                </label>
-                {editedCourse.imageUrl && (
-                  <div className="mt-4">
-                    <img 
-                      src={editedCourse.imageUrl} 
-                      alt="Course Image Preview" 
-                      className="max-h-32 mx-auto"
-                    />
-                  </div>
-                )}
-              </div>
-            </TabsContent>
-            <TabsContent value="url">
-              <div className="border rounded-md p-4 bg-white">
-                <div className="flex items-center">
-                  <Link className="h-5 w-5 mr-2 text-amber-700" />
-                  <Input
-                    value={editedCourse.imageUrl || ''}
-                    onChange={(e) => setEditedCourse({...editedCourse, imageUrl: e.target.value})}
-                    placeholder="https://example.com/image.jpg"
-                    className="bg-white"
-                  />
-                </div>
-                {editedCourse.imageUrl && (
-                  <div className="mt-4">
-                    <img 
-                      src={editedCourse.imageUrl} 
-                      alt="Course Image Preview" 
-                      className="max-h-32 mx-auto"
-                    />
-                  </div>
-                )}
-              </div>
-            </TabsContent>
-          </Tabs>
+          <MediaUploader 
+            mediaUrl={editedCourse.imageUrl}
+            onMediaChange={handleImageChange}
+            label="Դասընթացի նկար"
+            uploadLabel="Ներբեռնել նկար"
+            placeholder="https://example.com/image.jpg"
+            previewHeight="max-h-32"
+          />
         </div>
         
         <div className="space-y-2">
