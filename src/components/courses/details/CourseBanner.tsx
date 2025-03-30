@@ -16,11 +16,6 @@ const CourseBanner: React.FC<CourseBannerProps> = ({
   canEdit = false,
   handleApply
 }) => {
-  // Define gradient color class based on course color
-  const gradientColorClass = course.color ? 
-    `from-${course.color.replace('text-', '')}/30` : 
-    'from-blue-500/30';
-
   return (
     <div className="relative mb-8 overflow-hidden">
       {/* Light blue background */}
@@ -33,7 +28,7 @@ const CourseBanner: React.FC<CourseBannerProps> = ({
                 alt={course.title} 
                 className="absolute inset-0 w-full h-full object-cover opacity-30"
               />
-              <div className={`absolute inset-0 bg-gradient-to-l ${gradientColorClass} to-sky-50/95`}></div>
+              <div className="absolute inset-0 bg-gradient-to-l from-blue-500/30 to-sky-50/95"></div>
             </div>
           </>
         )}
