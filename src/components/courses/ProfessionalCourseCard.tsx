@@ -4,7 +4,7 @@ import { Card, CardContent, CardFooter, CardHeader } from '@/components/ui/card'
 import { Button } from '@/components/ui/button';
 import { ProfessionalCourse } from './types/ProfessionalCourse';
 import { Eye, Pencil, Trash, Building, User } from 'lucide-react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 
 interface ProfessionalCourseCardProps {
   course: ProfessionalCourse;
@@ -23,17 +23,29 @@ const ProfessionalCourseCard: React.FC<ProfessionalCourseCardProps> = ({
   canEdit = false,
   onClick
 }) => {
+  const navigate = useNavigate();
+  
   const handleDelete = (e: React.MouseEvent) => {
-    e.stopPropagation(); // Կանխում է իրադարձությունների տարածումը
+    e.stopPropagation(); // Prevent event propagation
     if (onDelete && course.id) {
       onDelete(course.id);
     }
   };
 
   const handleEdit = (e: React.MouseEvent) => {
-    e.stopPropagation(); // Կանխում է իրադարձությունների տարածումը
+    e.stopPropagation(); // Prevent event propagation
     if (onEdit) {
       onEdit(course);
+    }
+  };
+  
+  const handleViewClick = () => {
+    if (onClick) {
+      onClick();
+    } else {
+      // Navigate programmatically to handle dynamic slug/id routing
+      const path = course.slug ? `/courses/${course.slug}` : `/courses/${course.id}`;
+      navigate(path);
     }
   };
 
@@ -112,24 +124,13 @@ const ProfessionalCourseCard: React.FC<ProfessionalCourseCardProps> = ({
       </CardContent>
       
       <CardFooter className="pt-4">
-        {onClick ? (
-          <Button 
-            variant="outline"
-            className="w-full"
-            onClick={onClick}
-          >
-            <Eye className="h-4 w-4 mr-2" /> {course.buttonText || "Մանրամասն"}
-          </Button>
-        ) : (
-          <Link to={`/courses/${course.slug || course.id}`} className="w-full">
-            <Button 
-              variant="outline"
-              className="w-full"
-            >
-              <Eye className="h-4 w-4 mr-2" /> {course.buttonText || "Մանրամասն"}
-            </Button>
-          </Link>
-        )}
+        <Button 
+          variant="outline"
+          className="w-full"
+          onClick={handleViewClick}
+        >
+          <Eye className="h-4 w-4 mr-2" /> {course.buttonText || "Մանրամասն"}
+        </Button>
       </CardFooter>
     </Card>
   );
