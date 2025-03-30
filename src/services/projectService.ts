@@ -185,6 +185,9 @@ export const projectService = {
       const storedProjects = localStorage.getItem('local_projects');
       let projects: ProjectTheme[] = storedProjects ? JSON.parse(storedProjects) : [];
       
+      // Get current timestamp for updating
+      const currentTimestamp = new Date().toISOString();
+      
       // Ensure the project has all required fields
       const completeProject: ProjectTheme = {
         id: project.id,
@@ -194,8 +197,8 @@ export const projectService = {
         techStack: project.techStack || [],
         image: project.image || '',
         createdBy: project.createdBy || 'local-user',
-        createdAt: project.createdAt || new Date().toISOString(),
-        updatedAt: project.updatedAt || new Date().toISOString(),
+        createdAt: project.createdAt || currentTimestamp,
+        updatedAt: currentTimestamp, // Always set the current timestamp for updatedAt
         duration: project.duration || '',
         complexity: project.complexity || 'Միջին',
         is_public: project.is_public || false,
@@ -279,7 +282,10 @@ export const projectService = {
     try {
       const { error } = await supabase
         .from('projects')
-        .update({ image: imageUrl })
+        .update({ 
+          image: imageUrl,
+          updated_at: new Date().toISOString()
+        })
         .eq('id', projectId);
         
       if (error) {
@@ -292,6 +298,7 @@ export const projectService = {
           const index = projects.findIndex((p: ProjectTheme) => p.id === projectId);
           if (index >= 0) {
             projects[index].image = imageUrl;
+            // Set the updated timestamp
             projects[index].updatedAt = new Date().toISOString();
             localStorage.setItem('local_projects', JSON.stringify(projects));
           }
@@ -313,6 +320,7 @@ export const projectService = {
         const index = projects.findIndex((p: ProjectTheme) => p.id === projectId);
         if (index >= 0) {
           projects[index].image = imageUrl;
+          // Set the updated timestamp
           projects[index].updatedAt = new Date().toISOString();
           localStorage.setItem('local_projects', JSON.stringify(projects));
         }

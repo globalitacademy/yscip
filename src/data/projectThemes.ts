@@ -1,4 +1,3 @@
-
 export interface ProjectTheme {
   id: number;
   title: string;
@@ -10,6 +9,7 @@ export interface ProjectTheme {
   duration?: string;
   createdBy?: string;
   createdAt?: string;
+  updatedAt?: string;  // Added this property
   tasks?: Task[];
   timeline?: TimelineEvent[];
   is_public?: boolean;
