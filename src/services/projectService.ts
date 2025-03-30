@@ -108,7 +108,7 @@ export const projectService = {
           title: project.title,
           description: project.description,
           category: project.category,
-          tech_stack: project.techStack,
+          tech_stack: project.techStack || [], // Ensure we have a default value
           image: project.image,
           created_by: userId,
           duration: project.duration,
@@ -131,7 +131,7 @@ export const projectService = {
           title: project.title || '',
           description: project.description || '',
           category: project.category || '',
-          techStack: project.techStack || [],
+          techStack: project.techStack || [], // Ensure we have a default array
           image: defaultImage,
           createdBy: userId || 'local-user',
           createdAt: new Date().toISOString(),
@@ -168,7 +168,7 @@ export const projectService = {
         title: project.title || '',
         description: project.description || '',
         category: project.category || '',
-        techStack: project.techStack || [],
+        techStack: project.techStack || [], // Ensure we have a default array
         image: defaultImage,
         createdBy: userId || 'local-user',
         createdAt: new Date().toISOString(),
@@ -206,7 +206,7 @@ export const projectService = {
         title: project.title || '',
         description: project.description || '',
         category: project.category || '',
-        techStack: project.techStack || [],
+        techStack: project.techStack || [], // Ensure we have a default array
         image: project.image || `https://source.unsplash.com/random/800x600/?${encodeURIComponent(project.category || 'project')}`,
         createdBy: project.createdBy || 'local-user',
         createdAt: project.createdAt || currentTimestamp,

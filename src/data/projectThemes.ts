@@ -5,7 +5,7 @@ export interface ProjectTheme {
   description: string;
   image: string;  // Changed from optional to required
   category: string;
-  techStack?: string[];
+  techStack: string[];  // Changed from optional to required
   complexity?: string;
   duration?: string;
   createdBy?: string;

@@ -25,7 +25,7 @@ const ProjectCreationForm: React.FC<ProjectCreationFormProps> = ({ onProjectCrea
     category: '',
     complexity: 'Սկսնակ' as 'Սկսնակ' | 'Միջին' | 'Առաջադեմ',
     duration: '',
-    techStack: [] as string[],
+    techStack: [] as string[], // Ensure this is initialized as an empty array
     steps: [] as string[],
     prerequisites: [] as string[],
     learningOutcomes: [] as string[],
@@ -61,7 +61,8 @@ const ProjectCreationForm: React.FC<ProjectCreationFormProps> = ({ onProjectCrea
         createdBy: userId,
         createdAt: currentTime,
         updatedAt: currentTime,
-        image: imageUrl
+        image: imageUrl,
+        techStack: newProject.techStack || [] // Ensure techStack is provided and defaults to empty array
       };
 
       // Save project to localStorage as backup
