@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -25,7 +24,7 @@ const ProjectCreationForm: React.FC<ProjectCreationFormProps> = ({ onProjectCrea
     category: '',
     complexity: 'Սկսնակ' as 'Սկսնակ' | 'Միջին' | 'Առաջադեմ',
     duration: '',
-    techStack: [] as string[], // Ensure this is initialized as an empty array
+    techStack: [] as string[],
     steps: [] as string[],
     prerequisites: [] as string[],
     learningOutcomes: [] as string[],

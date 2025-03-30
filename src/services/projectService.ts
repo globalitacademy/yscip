@@ -50,7 +50,7 @@ export const projectService = {
         image: project.image || `https://source.unsplash.com/random/800x600/?${encodeURIComponent(project.category)}`,
         category: project.category,
         techStack: project.tech_stack || [],
-        createdBy: project.created_by,
+        createdBy: project.created_by || 'system', // Ensure createdBy has a default value
         createdAt: project.created_at,
         updatedAt: project.updated_at || project.created_at,
         duration: project.duration,
