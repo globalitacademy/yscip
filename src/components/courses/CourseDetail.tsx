@@ -2,7 +2,7 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { ProfessionalCourse } from './types/ProfessionalCourse';
-import { getCourseById } from './utils/courseUtils';
+import { getCourseById, getCourseBySlug } from './utils/courseUtils';
 import { toast } from 'sonner';
 import { 
   Book, CheckCircle, Clock, Edit, 
@@ -16,7 +16,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 
 const CourseDetail: React.FC = () => {
-  const { id } = useParams<{ id: string }>();
+  const { id, slug } = useParams<{ id?: string; slug?: string }>();
   const navigate = useNavigate();
   const { user } = useAuth();
   const [course, setCourse] = useState<ProfessionalCourse | null>(null);
@@ -25,31 +25,47 @@ const CourseDetail: React.FC = () => {
   
   useEffect(() => {
     const fetchCourse = async () => {
-      if (!id) {
-        setLoading(false);
-        return;
-      }
-
+      setLoading(true);
       try {
-        const courseData = await getCourseById(id);
+        let courseData;
+        // Եթե ունենք slug, օգտագործում ենք այն
+        if (slug) {
+          courseData = await getCourseBySlug(slug);
+        } 
+        // Եթե ունենք id, օգտագործում ենք այն
+        else if (id) {
+          courseData = await getCourseById(id);
+        } 
+        // Եթե ոչ id, ոչ slug չկա
+        else {
+          setLoading(false);
+          toast.error('Դասընթացի ճանապարհը սխալ է տրված');
+          navigate('/courses');
+          return;
+        }
+
         if (courseData) {
           setCourse(courseData);
         } else {
           toast.error('Դասընթացը չհաջողվեց գտնել');
+          navigate('/courses');
         }
       } catch (error) {
         console.error('Error fetching course:', error);
         toast.error('Դասընթացի բեռնման ժամանակ սխալ է տեղի ունեցել');
+        navigate('/courses');
       } finally {
         setLoading(false);
       }
     };
 
     fetchCourse();
-  }, [id]);
+  }, [id, slug, navigate]);
 
   const handleEditCourse = () => {
-    navigate(`/course/${id}`);
+    if (course?.id) {
+      navigate(`/course/${course.id}`);
+    }
   };
 
   const handleApply = () => {

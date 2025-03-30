@@ -45,12 +45,6 @@ function App() {
             <Route path="/courses/:slug" element={<CourseDetailPage />} />
             <Route path="/course/:id" element={<CourseDetails />} />
             
-            {/* Redirect old /course/:id routes to the new format */}
-            <Route 
-              path="/course/:id" 
-              element={<Navigate to="/courses/:id" replace />} 
-            />
-            
             {/* 404 - Not Found */}
             <Route path="*" element={<NotFound />} />
           </Routes>
