@@ -6,7 +6,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
-import { Loader2, UserCircle } from 'lucide-react';
+import { Loader2, UserCircle, Link, Upload } from 'lucide-react';
 import { ProfessionalCourse } from '@/components/courses/types/ProfessionalCourse';
 import { IconSelector } from '@/components/courses/form-components/IconSelector';
 import { LessonsList } from '@/components/courses/form-components/LessonsList';
@@ -34,6 +34,7 @@ const CourseEditDialog: React.FC<CourseEditDialogProps> = ({
   const [newLesson, setNewLesson] = useState({ title: '', duration: '' });
   const [newRequirement, setNewRequirement] = useState('');
   const [newOutcome, setNewOutcome] = useState('');
+  const [logoOption, setLogoOption] = useState(editedCourse.organizationLogo ? 'url' : 'upload');
   
   const handleAddLesson = (newLesson) => {
     const lessons = [...(editedCourse.lessons || []), newLesson];
@@ -71,6 +72,17 @@ const CourseEditDialog: React.FC<CourseEditDialogProps> = ({
   const handleIconSelect = (iconName) => {
     setEditedCourse({...editedCourse, iconName});
     setIsIconsOpen(false);
+  };
+  
+  const handleLogoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onload = (event) => {
+        setEditedCourse({ ...editedCourse, organizationLogo: event.target?.result as string });
+      };
+      reader.readAsDataURL(file);
+    }
   };
   
   return (
@@ -229,14 +241,59 @@ const CourseEditDialog: React.FC<CourseEditDialogProps> = ({
                 </div>
                 
                 <div className="space-y-2">
-                  <Label htmlFor="organizationLogo">Կազմակերպության լոգոյի URL</Label>
-                  <Input 
-                    id="organizationLogo" 
-                    value={editedCourse.organizationLogo || ''} 
-                    onChange={(e) => setEditedCourse({...editedCourse, organizationLogo: e.target.value})}
-                    placeholder="https://example.com/logo.png"
-                    className="bg-white"
-                  />
+                  <Label>Կազմակերպության լոգո</Label>
+                  <Tabs value={logoOption} onValueChange={setLogoOption} className="w-full">
+                    <TabsList className="grid w-full grid-cols-2">
+                      <TabsTrigger value="upload">Ներբեռնել</TabsTrigger>
+                      <TabsTrigger value="url">URL</TabsTrigger>
+                    </TabsList>
+                    <TabsContent value="upload">
+                      <div className="border rounded-md p-4 text-center bg-white">
+                        <label htmlFor="logoUpload" className="cursor-pointer flex flex-col items-center">
+                          <Upload className="h-8 w-8 mb-2 text-amber-700" />
+                          <span>Ներբեռնել լոգո</span>
+                          <input
+                            id="logoUpload"
+                            type="file"
+                            accept="image/*"
+                            className="hidden"
+                            onChange={handleLogoUpload}
+                          />
+                        </label>
+                        {editedCourse.organizationLogo && (
+                          <div className="mt-4">
+                            <img 
+                              src={editedCourse.organizationLogo} 
+                              alt="Organization Logo Preview" 
+                              className="max-h-20 mx-auto"
+                            />
+                          </div>
+                        )}
+                      </div>
+                    </TabsContent>
+                    <TabsContent value="url">
+                      <div className="border rounded-md p-4 bg-white">
+                        <div className="flex items-center">
+                          <Link className="h-5 w-5 mr-2 text-amber-700" />
+                          <Input
+                            value={editedCourse.organizationLogo || ''}
+                            onChange={(e) => setEditedCourse({...editedCourse, organizationLogo: e.target.value})}
+                            placeholder="https://example.com/logo.jpg"
+                            className="bg-white"
+                          />
+                        </div>
+                        {editedCourse.organizationLogo && (
+                          <div className="mt-4">
+                            <img 
+                              src={editedCourse.organizationLogo} 
+                              alt="Organization Logo Preview" 
+                              className="max-h-20 mx-auto"
+                            />
+                          </div>
+                        )}
+                      </div>
+                    </TabsContent>
+                  </Tabs>
                 </div>
               </div>
             </div>
