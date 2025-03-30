@@ -56,7 +56,7 @@ export const getCourseById = async (id: string): Promise<ProfessionalCourse | nu
         duration: lesson.duration
       })) || [],
       requirements: requirementsResponse.data?.map(req => req.requirement) || [],
-      outcomes: outcomesResponse.data?.map(outcome => outcome.outcome) || [],
+      outcomes: outcomesData?.map(outcome => outcome.outcome) || [],
       slug: course.slug || '',
       createdAt: course.created_at || new Date().toISOString(),
       updatedAt: course.updated_at || null

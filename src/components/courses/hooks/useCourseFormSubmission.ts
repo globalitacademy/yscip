@@ -33,8 +33,11 @@ export const useCourseFormSubmission = ({
       }
 
       if (!professionalCourse || !validateCourse(professionalCourse)) {
+        toast.error("Դասընթացի տվյալները սխալ են։ Խնդրում ենք լրացնել բոլոր պարտադիր դաշտերը։");
         return false;
       }
+      
+      setIsLoading(true);
       
       // At this point, we know professionalCourse has title, duration and price since validateCourse passed
       // Create a complete object with all required properties for ProfessionalCourse
@@ -65,6 +68,7 @@ export const useCourseFormSubmission = ({
       const directResult = await createCourseDirectly(courseToSubmit, setIsLoading);
       if (directResult) {
         // Redirect to courses page on success
+        toast.success("Դասընթացը հաջողությամբ ստեղծվել է։");
         setTimeout(() => navigate('/courses'), 1000);
         return true;
       }
@@ -87,6 +91,8 @@ export const useCourseFormSubmission = ({
       console.error("Error creating course:", error);
       toast.error(`Դասընթացի ստեղծման ժամանակ սխալ է տեղի ունեցել: ${error instanceof Error ? error.message : 'Անհայտ սխալ'}`);
       return false;
+    } finally {
+      setIsLoading(false);
     }
   };
 

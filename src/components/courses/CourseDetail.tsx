@@ -2,7 +2,7 @@
 import React, { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import { ProfessionalCourse } from './types/ProfessionalCourse';
-import { getCourseById, getAllCoursesFromSupabase } from './utils/courseUtils';
+import { getCourseById } from './utils/courseUtils';
 import { toast } from 'sonner';
 import { Book } from 'lucide-react';
 
