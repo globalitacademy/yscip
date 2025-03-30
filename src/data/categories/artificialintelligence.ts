@@ -28,7 +28,8 @@ export const aiProjects: ProjectTheme[] = [
       "Flask API-ներով աշխատանք",
       "WebRTC և առցանց ձայնային մշակում",
       "Մեքենայական ուսուցման ծառայությունների արդյունաբերական տեղակայում"
-    ]
+    ],
+    createdBy: "system" // Added required createdBy property
   },
   {
     id: 6,
@@ -56,6 +57,7 @@ export const aiProjects: ProjectTheme[] = [
       "Բժշկական տվյալների պահպանության իրականացում",
       "Արհեստական բանականության մոդելի մեկնաբանելիություն",
       "Ռեալ աշխարհի բժշկական տվյալների հետ աշխատանք"
-    ]
+    ],
+    createdBy: "system" // Added required createdBy property
   }
 ];

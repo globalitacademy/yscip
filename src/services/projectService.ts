@@ -51,7 +51,7 @@ export const projectService = {
         category: project.category,
         techStack: project.tech_stack || [],
         createdBy: project.created_by || 'system', // Ensure createdBy has a default value
-        createdAt: project.created_at,
+        createdAt: project.created_at || new Date().toISOString(), // Ensure createdAt has a default value
         updatedAt: project.updated_at || project.created_at,
         duration: project.duration,
         complexity: 'Միջին',
@@ -209,7 +209,7 @@ export const projectService = {
         techStack: project.techStack || [], // Ensure we have a default array
         image: project.image || `https://source.unsplash.com/random/800x600/?${encodeURIComponent(project.category || 'project')}`,
         createdBy: project.createdBy || 'local-user',
-        createdAt: project.createdAt || currentTimestamp,
+        createdAt: project.createdAt || currentTimestamp, // Ensure createdAt is provided
         updatedAt: currentTimestamp, // Always set the current timestamp for updatedAt
         duration: project.duration || '',
         complexity: project.complexity || 'Միջին',

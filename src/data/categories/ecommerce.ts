@@ -27,6 +27,7 @@ export const ecommerceProjects: ProjectTheme[] = [
       "Վճարումների մշակման ինտեգրում",
       "Օգտագործողի նույնականացման ներդրում",
       "Ծրագրի կառավարում պրոդուկտային միջավայրում"
-    ]
+    ],
+    createdBy: "system" // Added required createdBy property
   }
 ];

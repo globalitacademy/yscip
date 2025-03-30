@@ -27,6 +27,7 @@ export const healthcareProjects: ProjectTheme[] = [
       "Երրորդ կողմի API-ների ինտեգրում",
       "Օրացույցի կառավարման ծրագրավորում",
       "Ռեալ ժամանակում ծանուցումների ներդրում"
-    ]
+    ],
+    createdBy: "system" // Added required createdBy property
   }
 ];

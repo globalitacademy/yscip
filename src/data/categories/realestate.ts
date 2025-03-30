@@ -28,6 +28,7 @@ export const realEstateProjects: ProjectTheme[] = [
       "Վերադիր իրականության (AR) ծրագրավորում",
       "Տեղադրության և տարածական տվյալների հետ աշխատանք",
       "Մասշտաբավորվող մոբայլ հավելվածների ճարտարապետություն"
-    ]
+    ],
+    createdBy: "system" // Added required createdBy property
   }
 ];

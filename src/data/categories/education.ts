@@ -28,6 +28,7 @@ export const educationProjects: ProjectTheme[] = [
       "Տեսանյութերի հոսքային հեռարձակման ներդրում",
       "Օգտագործողի իրավասությունների ճարտարապետություն",
       "Բարդ տվյալների բազայի սխեմաների նախագծում"
-    ]
+    ],
+    createdBy: "system" // Added required createdBy property
   }
 ];
