@@ -1,7 +1,7 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { ProjectTheme } from '@/data/projectThemes';
-import { projectService } from '@/services/projectService';
+import * as projectService from '@/services/projectService';
 import { useAuth } from '@/contexts/AuthContext';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 
@@ -23,7 +23,7 @@ export const useProjectOperations = () => {
 
   // Update local state when query data changes
   useEffect(() => {
-    if (fetchedProjects && fetchedProjects.length > 0) {
+    if (fetchedProjects && Array.isArray(fetchedProjects) && fetchedProjects.length > 0) {
       setProjects(fetchedProjects);
     }
   }, [fetchedProjects]);
@@ -53,7 +53,7 @@ export const useProjectOperations = () => {
   // Create mutation for project creation
   const createProjectMutation = useMutation({
     mutationFn: async (project: ProjectTheme) => 
-      projectService.createProject(project, user?.id),
+      projectService.createProject(project),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['projects'] });
     },
@@ -71,18 +71,6 @@ export const useProjectOperations = () => {
     },
     onError: (error) => {
       console.error('Error updating project:', error);
-    }
-  });
-
-  // Create mutation for project image updates
-  const updateProjectImageMutation = useMutation({
-    mutationFn: async ({ projectId, imageUrl }: { projectId: number, imageUrl: string }) => 
-      projectService.updateProjectImage(projectId, imageUrl),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['projects'] });
-    },
-    onError: (error) => {
-      console.error('Error updating project image:', error);
     }
   });
 
@@ -119,26 +107,10 @@ export const useProjectOperations = () => {
    * Update a project
    */
   const updateProject = useCallback(async (selectedProject: ProjectTheme, updatedData: Partial<ProjectTheme>) => {
-    // Create a complete data object with all fields
-    const updatePayload = {
-      title: updatedData.title,
-      description: updatedData.description,
-      category: updatedData.category,
-      is_public: updatedData.is_public,
-      complexity: updatedData.complexity,
-      duration: updatedData.duration,
-      tech_stack: updatedData.techStack,
-      detailed_description: updatedData.detailedDescription,
-      steps: updatedData.steps,
-      prerequisites: updatedData.prerequisites,
-      learning_outcomes: updatedData.learningOutcomes,
-      updated_at: new Date().toISOString()
-    };
-    
     // Attempt to update the project in the database
     const success = await updateProjectMutation.mutateAsync({ 
       projectId: selectedProject.id, 
-      updates: updatePayload
+      updates: updatedData
     });
     
     return success;
@@ -148,14 +120,14 @@ export const useProjectOperations = () => {
    * Update a project's image
    */
   const updateProjectImage = useCallback(async (selectedProject: ProjectTheme, newImageUrl: string) => {
-    // Attempt to update the project image in the database
-    const success = await updateProjectImageMutation.mutateAsync({ 
+    // Attempt to update the project image in the database by calling updateProject
+    const success = await updateProjectMutation.mutateAsync({ 
       projectId: selectedProject.id, 
-      imageUrl: newImageUrl 
+      updates: { image: newImageUrl }
     });
     
     return success;
-  }, [updateProjectImageMutation]);
+  }, [updateProjectMutation]);
 
   /**
    * Delete a project

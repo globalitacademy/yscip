@@ -170,7 +170,7 @@ const CourseList: React.FC<CourseListProps> = ({
                           variant="outline" 
                           size="icon"
                           className="text-destructive"
-                          onClick={() => handleOpenDeleteDialog()}
+                          onClick={() => handleOpenDeleteDialog(course)}
                         >
                           <Trash2 className="h-4 w-4" />
                         </Button>
