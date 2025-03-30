@@ -120,13 +120,26 @@ export const projectService = {
         toast.warning('Տվյալների բազայի հետ կապի խնդիր է առաջացել, նախագիծը պահվել է լոկալ');
         
         // Save to localStorage for offline support
-        this.saveProjectLocally({
-          ...project,
+        const localProject = {
           id: tempId,
-          createdAt: new Date().toISOString(),
+          title: project.title || '',
+          description: project.description || '',
+          category: project.category || '',
+          techStack: project.techStack || [],
+          image: project.image || '',
           createdBy: userId || 'local-user',
-          updatedAt: new Date().toISOString()
-        } as ProjectTheme);
+          createdAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString(),
+          duration: project.duration || '',
+          complexity: project.complexity || 'Միջին',
+          is_public: project.is_public || false,
+          detailedDescription: project.detailedDescription || '',
+          steps: project.steps || [],
+          prerequisites: project.prerequisites || [],
+          learningOutcomes: project.learningOutcomes || []
+        };
+        
+        this.saveProjectLocally(localProject);
         
         return true; // Return true since we saved locally
       }
@@ -138,13 +151,26 @@ export const projectService = {
       
       // Save to localStorage as fallback
       const tempId = typeof project.id === 'number' ? project.id : Date.now();
-      this.saveProjectLocally({
-        ...project,
+      const localProject = {
         id: tempId,
-        createdAt: new Date().toISOString(),
+        title: project.title || '',
+        description: project.description || '',
+        category: project.category || '',
+        techStack: project.techStack || [],
+        image: project.image || '',
         createdBy: userId || 'local-user',
-        updatedAt: new Date().toISOString()
-      } as ProjectTheme);
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+        duration: project.duration || '',
+        complexity: project.complexity || 'Միջին',
+        is_public: project.is_public || false,
+        detailedDescription: project.detailedDescription || '',
+        steps: project.steps || [],
+        prerequisites: project.prerequisites || [],
+        learningOutcomes: project.learningOutcomes || []
+      };
+      
+      this.saveProjectLocally(localProject);
       
       toast.warning('Տվյալների բազայի հետ կապի սխալ, նախագիծը պահվել է լոկալ');
       return true; // Return true since we saved locally
@@ -154,20 +180,40 @@ export const projectService = {
   /**
    * Save a project locally in localStorage
    */
-  saveProjectLocally(project: ProjectTheme): void {
+  saveProjectLocally(project: Partial<ProjectTheme> & { id: number }): void {
     try {
       const storedProjects = localStorage.getItem('local_projects');
-      let projects = storedProjects ? JSON.parse(storedProjects) : [];
+      let projects: ProjectTheme[] = storedProjects ? JSON.parse(storedProjects) : [];
+      
+      // Ensure the project has all required fields
+      const completeProject: ProjectTheme = {
+        id: project.id,
+        title: project.title || '',
+        description: project.description || '',
+        category: project.category || '',
+        techStack: project.techStack || [],
+        image: project.image || '',
+        createdBy: project.createdBy || 'local-user',
+        createdAt: project.createdAt || new Date().toISOString(),
+        updatedAt: project.updatedAt || new Date().toISOString(),
+        duration: project.duration || '',
+        complexity: project.complexity || 'Միջին',
+        is_public: project.is_public || false,
+        detailedDescription: project.detailedDescription || '',
+        steps: project.steps || [],
+        prerequisites: project.prerequisites || [],
+        learningOutcomes: project.learningOutcomes || []
+      };
       
       const index = projects.findIndex((p: ProjectTheme) => p.id === project.id);
       if (index >= 0) {
-        projects[index] = project;
+        projects[index] = completeProject;
       } else {
-        projects.push(project);
+        projects.push(completeProject);
       }
       
       localStorage.setItem('local_projects', JSON.stringify(projects));
-      console.log('Project saved locally:', project.title);
+      console.log('Project saved locally:', completeProject.title);
     } catch (error) {
       console.error('Error saving project to localStorage:', error);
     }
@@ -195,11 +241,13 @@ export const projectService = {
         console.error('Error updating project in Supabase:', error);
         
         // Update locally
-        this.saveProjectLocally({
+        const localProject = {
           ...updates,
           id: projectId,
           updatedAt: new Date().toISOString()
-        } as ProjectTheme);
+        };
+        
+        this.saveProjectLocally(localProject);
         
         toast.warning('Տվյալների բազայի հետ կապի խնդիր է առաջացել, նախագիծը պահվել է լոկալ');
         return true; // Return true since we saved locally
@@ -211,11 +259,13 @@ export const projectService = {
       console.error('Unexpected error updating project:', err);
       
       // Update locally
-      this.saveProjectLocally({
+      const localProject = {
         ...updates,
         id: projectId,
         updatedAt: new Date().toISOString()
-      } as ProjectTheme);
+      };
+      
+      this.saveProjectLocally(localProject);
       
       toast.warning('Տվյալների բազայի հետ կապի սխալ, նախագիծը պահվել է լոկալ');
       return true; // Return true since we saved locally
@@ -242,6 +292,7 @@ export const projectService = {
           const index = projects.findIndex((p: ProjectTheme) => p.id === projectId);
           if (index >= 0) {
             projects[index].image = imageUrl;
+            projects[index].updatedAt = new Date().toISOString();
             localStorage.setItem('local_projects', JSON.stringify(projects));
           }
         }
@@ -262,6 +313,7 @@ export const projectService = {
         const index = projects.findIndex((p: ProjectTheme) => p.id === projectId);
         if (index >= 0) {
           projects[index].image = imageUrl;
+          projects[index].updatedAt = new Date().toISOString();
           localStorage.setItem('local_projects', JSON.stringify(projects));
         }
       }
