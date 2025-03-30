@@ -1,115 +1,122 @@
 
 import React from 'react';
 import { ProfessionalCourse } from '../types/ProfessionalCourse';
-import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Edit, Globe, Share2, User, Clock, Book, ArrowRight } from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
+import { Link } from 'react-router-dom';
+import { ArrowLeft, Pencil } from 'lucide-react';
+import { cn } from '@/lib/utils';
 
 interface CourseBannerProps {
   course: ProfessionalCourse;
-  canEdit: boolean;
+  canEdit?: boolean;
   handleApply: () => void;
 }
 
-const CourseBanner: React.FC<CourseBannerProps> = ({ course, canEdit, handleApply }) => {
-  const navigate = useNavigate();
-  
-  const handleEditCourse = () => {
-    if (course?.id) {
-      navigate(`/course/${course.id}`);
-    }
-  };
-  
+const CourseBanner: React.FC<CourseBannerProps> = ({ 
+  course, 
+  canEdit = false,
+  handleApply
+}) => {
   return (
-    <div className="relative rounded-xl overflow-hidden bg-gradient-to-r from-blue-50 via-indigo-50 to-purple-50 mb-8 shadow-xl">
-      <div className="absolute inset-0 opacity-10">
-        {course.imageUrl && (
-          <img 
-            src={course.imageUrl} 
-            alt={course.title}
-            className="w-full h-full object-cover" 
-          />
-        )}
+    <div className="relative mb-12">
+      {/* Background gradient */}
+      <div className="absolute inset-0 bg-gradient-to-r from-indigo-50 via-purple-50 to-pink-50 rounded-2xl overflow-hidden">
+        <div className="absolute inset-0 bg-white/50 backdrop-blur-sm"></div>
+        <div className="absolute inset-0 bg-gradient-to-b from-transparent to-white/80"></div>
       </div>
       
-      <div className="relative z-10 p-8 md:p-12">
-        <div className="flex flex-col md:flex-row items-center md:items-start gap-8">
-          <div className="w-28 h-28 md:w-36 md:h-36 flex-shrink-0 bg-white rounded-2xl flex items-center justify-center shadow-lg border-4 border-white relative overflow-hidden">
+      <div className="container mx-auto px-4 py-12 relative z-10">
+        <Link to="/courses" className="inline-flex items-center text-sm text-muted-foreground hover:text-primary transition-colors mb-6">
+          <ArrowLeft size={16} className="mr-1" /> Վերադառնալ դասընթացների ցանկին
+        </Link>
+        
+        <div className="flex flex-col md:flex-row items-center gap-8">
+          <div className="shrink-0">
             {course.imageUrl ? (
-              <img src={course.imageUrl} alt={course.title} className="w-full h-full object-cover" />
+              <img 
+                src={course.imageUrl} 
+                alt={course.title}
+                className="w-32 h-32 sm:w-40 sm:h-40 rounded-2xl object-cover shadow-lg border-2 border-white"
+              />
+            ) : course.icon ? (
+              <div className={cn(
+                "w-32 h-32 sm:w-40 sm:h-40 rounded-2xl flex items-center justify-center bg-white border-2 border-white shadow-lg",
+                course.color || "bg-indigo-100"
+              )}>
+                {course.icon}
+              </div>
             ) : (
-              course.icon || <Book className="w-16 h-16 text-indigo-500" />
-            )}
-            {course.is_public && (
-              <div className="absolute top-2 right-2">
-                <div className="bg-green-100 p-1 rounded-full">
-                  <Globe className="w-3 h-3 text-green-600" />
-                </div>
+              <div className="w-32 h-32 sm:w-40 sm:h-40 rounded-2xl flex items-center justify-center bg-indigo-100 border-2 border-white shadow-lg">
+                <span className="text-4xl font-bold text-indigo-500">
+                  {course.title ? course.title.charAt(0) : "C"}
+                </span>
               </div>
             )}
           </div>
           
           <div className="flex-1 text-center md:text-left">
-            <div className="mb-4">
-              {course.is_public && (
-                <Badge className="mb-2 bg-green-100 text-green-800 border-green-200 hover:bg-green-200">
-                  <Globe className="w-3 h-3 mr-1" /> Հրապարակված
-                </Badge>
+            <div className="space-y-1 mb-4">
+              {course.institution && (
+                <div className="text-sm font-medium text-indigo-600">{course.institution}</div>
               )}
-              <h1 className="text-3xl md:text-4xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-indigo-600 to-purple-600">
-                {course.title}
-              </h1>
-              <p className="text-lg text-gray-600 mt-2">{course.subtitle}</p>
+              <h1 className="text-3xl md:text-4xl font-bold">{course.title}</h1>
+              {course.subtitle && (
+                <p className="text-lg text-gray-600">{course.subtitle}</p>
+              )}
             </div>
             
-            <div className="flex flex-wrap gap-4 items-center my-6">
-              <div className="flex items-center bg-white/80 px-4 py-2 rounded-full shadow-sm">
-                <User className="w-5 h-5 text-indigo-600 mr-2" />
-                <span>{course.createdBy || 'Անանուն'}</span>
-              </div>
-              <div className="flex items-center bg-white/80 px-4 py-2 rounded-full shadow-sm">
-                <Clock className="w-5 h-5 text-indigo-600 mr-2" />
-                <span>{course.duration}</span>
-              </div>
-              {course.institution && (
-                <div className="flex items-center bg-white/80 px-4 py-2 rounded-full shadow-sm">
-                  <Book className="w-5 h-5 text-indigo-600 mr-2" />
-                  <span>{course.institution}</span>
+            <div className="flex flex-wrap justify-center md:justify-start gap-3 mb-6">
+              {course.duration && (
+                <div className="bg-white px-4 py-2 rounded-full shadow-sm flex items-center">
+                  <span className="font-medium text-indigo-700">Տևողություն:</span>
+                  <span className="ml-2">{course.duration}</span>
+                </div>
+              )}
+              
+              {course.createdBy && (
+                <div className="bg-white px-4 py-2 rounded-full shadow-sm flex items-center">
+                  <span className="font-medium text-indigo-700">Հեղինակ:</span>
+                  <span className="ml-2">{course.createdBy}</span>
+                </div>
+              )}
+              
+              {course.price && (
+                <div className="bg-white px-4 py-2 rounded-full shadow-sm flex items-center">
+                  <span className="font-medium text-indigo-700">Գին:</span>
+                  <span className="ml-2">{course.price}</span>
                 </div>
               )}
             </div>
             
-            <div className="flex flex-wrap gap-3 mt-6">
-              <Button 
+            <div className="flex flex-wrap justify-center md:justify-start gap-4">
+              <Button
                 onClick={handleApply}
                 size="lg"
-                className="rounded-full bg-indigo-600 hover:bg-indigo-700 px-8 transition-all duration-300 transform hover:translate-y-[-2px]"
+                className="bg-indigo-600 hover:bg-indigo-700 text-white rounded-full px-8"
               >
-                Դիմել դասընթացին <ArrowRight className="w-4 h-4 ml-2" />
+                Գրանցվել դասընթացին
               </Button>
               
               {canEdit && (
-                <Button
-                  variant="outline"
-                  size="lg"
-                  className="rounded-full border-indigo-200 hover:bg-indigo-50 transition-all duration-300"
-                  onClick={handleEditCourse}
-                >
-                  <Edit className="w-4 h-4 mr-2" />
-                  Խմբագրել
-                </Button>
+                <Link to={`/admin/courses/${course.id}`}>
+                  <Button variant="outline" size="lg" className="rounded-full px-8 flex items-center gap-2">
+                    <Pencil size={16} />
+                    Խմբագրել
+                  </Button>
+                </Link>
               )}
-              
-              <Button 
-                variant="outline" 
-                size="icon" 
-                className="rounded-full hover:bg-indigo-50 transition-all duration-300"
-              >
-                <Share2 className="w-4 h-4" />
-              </Button>
             </div>
           </div>
+          
+          {course.organizationLogo && (
+            <div className="shrink-0 hidden lg:block">
+              <img 
+                src={course.organizationLogo} 
+                alt="Organization Logo" 
+                className="h-16 object-contain"
+              />
+            </div>
+          )}
         </div>
       </div>
     </div>
