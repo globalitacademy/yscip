@@ -4,7 +4,7 @@ import { ProfessionalCourse } from '@/components/courses/types/ProfessionalCours
 import { Button } from '@/components/ui/button';
 import { Link } from 'react-router-dom';
 import { cn } from '@/lib/utils';
-import { Calendar, Clock } from 'lucide-react';
+import { Calendar, BookOpen } from 'lucide-react';
 import { FadeIn, SlideUp } from '@/components/LocalTransitions';
 
 interface CourseDetailHeaderProps {
@@ -14,16 +14,10 @@ interface CourseDetailHeaderProps {
 const CourseDetailHeader: React.FC<CourseDetailHeaderProps> = ({ course }) => {
   return (
     <div className="relative overflow-hidden mb-12">
-      {/* Main asymmetric background */}
+      {/* Simple gradient background */}
       <div className="absolute inset-0 -z-10">
-        <div className="absolute inset-0 bg-white"></div>
-        <div className="absolute right-0 top-0 bottom-0 w-[55%] bg-gradient-to-l from-red-500 to-red-600 rounded-l-[80px]"></div>
-        <div className="absolute top-1/2 right-[40%] w-24 h-24 bg-red-400 rounded-full"></div>
-        <div className="absolute bottom-1/4 right-[10%] w-16 h-16 bg-red-700 rounded-full opacity-60"></div>
-        <div className="absolute top-[15%] right-[25%] w-40 h-40 rounded-full bg-yellow-400 opacity-20"></div>
-        
-        {/* Light effect */}
-        <div className="absolute right-[20%] top-[20%] w-60 h-60 bg-yellow-300 rounded-full opacity-60 blur-3xl"></div>
+        <div className="absolute inset-0 bg-gradient-to-r from-gray-50 to-gray-100"></div>
+        <div className="absolute top-0 right-0 w-1/2 h-full bg-gradient-to-l from-indigo-50 to-transparent"></div>
       </div>
       
       <div className="container mx-auto px-6 py-16 relative z-10">
@@ -35,17 +29,15 @@ const CourseDetailHeader: React.FC<CourseDetailHeaderProps> = ({ course }) => {
                 <div className="px-3 py-1 border border-gray-300 rounded-full text-sm font-semibold">
                   {course.institution || 'Ծրագրավորման ​​դասընթաց'}
                 </div>
-                {course.startDate && (
-                  <div className="flex items-center text-sm text-gray-600">
-                    <Calendar size={14} className="mr-1" />
-                    <span>Սկիզբ: {course.startDate}</span>
-                  </div>
-                )}
+                <div className="flex items-center text-sm text-gray-600">
+                  <Calendar size={14} className="mr-1" />
+                  <span>{course.duration}</span>
+                </div>
               </div>
             </FadeIn>
             
             <SlideUp delay="delay-200">
-              <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold tracking-tight">
+              <h1 className="text-4xl md:text-5xl font-bold tracking-tight">
                 {course.title}
               </h1>
               {course.subtitle && (
@@ -55,34 +47,14 @@ const CourseDetailHeader: React.FC<CourseDetailHeaderProps> = ({ course }) => {
             
             <SlideUp delay="delay-300">
               <div className="flex flex-wrap gap-3 my-6">
-                {course.tags?.map((tag, index) => (
-                  <span 
-                    key={index}
-                    className="inline-block px-3 py-1 bg-gray-100 rounded-full text-gray-700 text-sm font-medium"
-                  >
-                    {tag}
+                {course.category && (
+                  <span className="inline-block px-3 py-1 bg-gray-100 rounded-full text-gray-700 text-sm font-medium">
+                    {course.category}
                   </span>
-                )) || 
-                (course.skills?.length ? course.skills.map((skill, index) => (
-                  <span 
-                    key={index}
-                    className="inline-block px-3 py-1 bg-gray-100 rounded-full text-gray-700 text-sm font-medium"
-                  >
-                    {skill}
-                  </span>
-                )) : (
-                  <>
-                    <span className="inline-block px-3 py-1 bg-gray-100 rounded-full text-gray-700 text-sm font-medium">
-                      C#
-                    </span>
-                    <span className="inline-block px-3 py-1 bg-gray-100 rounded-full text-gray-700 text-sm font-medium">
-                      SQL
-                    </span>
-                    <span className="inline-block px-3 py-1 bg-gray-100 rounded-full text-gray-700 text-sm font-medium">
-                      ASP.NET
-                    </span>
-                  </>
-                ))}
+                )}
+                <span className="inline-block px-3 py-1 bg-gray-100 rounded-full text-gray-700 text-sm font-medium">
+                  {course.price}
+                </span>
               </div>
             </SlideUp>
             
