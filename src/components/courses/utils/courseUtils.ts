@@ -1,3 +1,4 @@
+
 import { ProfessionalCourse } from '../types/ProfessionalCourse';
 import { supabase } from '@/integrations/supabase/client';
 import { convertIconNameToComponent } from '@/utils/iconUtils';
