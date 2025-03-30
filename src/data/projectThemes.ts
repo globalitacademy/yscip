@@ -1,8 +1,9 @@
+
 export interface ProjectTheme {
   id: number;
   title: string;
   description: string;
-  image?: string;
+  image: string;  // Changed from optional to required
   category: string;
   techStack?: string[];
   complexity?: string;

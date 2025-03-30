@@ -119,14 +119,20 @@ export const projectService = {
         console.error('Error creating project in Supabase:', error);
         toast.warning('Տվյալների բազայի հետ կապի խնդիր է առաջացել, նախագիծը պահվել է լոկալ');
         
+        // Ensure we have an image even if it wasn't provided
+        const defaultImage = project.image || 
+          (project.category 
+            ? `https://source.unsplash.com/random/800x600/?${encodeURIComponent(project.category)}`
+            : 'https://source.unsplash.com/random/800x600/?project');
+        
         // Save to localStorage for offline support
-        const localProject = {
+        const localProject: ProjectTheme = {
           id: tempId,
           title: project.title || '',
           description: project.description || '',
           category: project.category || '',
           techStack: project.techStack || [],
-          image: project.image || '',
+          image: defaultImage,
           createdBy: userId || 'local-user',
           createdAt: new Date().toISOString(),
           updatedAt: new Date().toISOString(),
@@ -149,15 +155,21 @@ export const projectService = {
     } catch (err) {
       console.error('Unexpected error creating project:', err);
       
+      // Ensure we have an image even if it wasn't provided
+      const defaultImage = project.image || 
+        (project.category 
+          ? `https://source.unsplash.com/random/800x600/?${encodeURIComponent(project.category)}` 
+          : 'https://source.unsplash.com/random/800x600/?project');
+      
       // Save to localStorage as fallback
       const tempId = typeof project.id === 'number' ? project.id : Date.now();
-      const localProject = {
+      const localProject: ProjectTheme = {
         id: tempId,
         title: project.title || '',
         description: project.description || '',
         category: project.category || '',
         techStack: project.techStack || [],
-        image: project.image || '',
+        image: defaultImage,
         createdBy: userId || 'local-user',
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
@@ -180,7 +192,7 @@ export const projectService = {
   /**
    * Save a project locally in localStorage
    */
-  saveProjectLocally(project: Partial<ProjectTheme> & { id: number }): void {
+  saveProjectLocally(project: ProjectTheme): void {
     try {
       const storedProjects = localStorage.getItem('local_projects');
       let projects: ProjectTheme[] = storedProjects ? JSON.parse(storedProjects) : [];
@@ -195,7 +207,7 @@ export const projectService = {
         description: project.description || '',
         category: project.category || '',
         techStack: project.techStack || [],
-        image: project.image || '',
+        image: project.image || `https://source.unsplash.com/random/800x600/?${encodeURIComponent(project.category || 'project')}`,
         createdBy: project.createdBy || 'local-user',
         createdAt: project.createdAt || currentTimestamp,
         updatedAt: currentTimestamp, // Always set the current timestamp for updatedAt

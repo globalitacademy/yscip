@@ -49,14 +49,19 @@ const ProjectCreationForm: React.FC<ProjectCreationFormProps> = ({ onProjectCrea
       
       const projectId = Date.now();
       const userId = user?.id || 'local-user';
+      const currentTime = new Date().toISOString();
     
-      const project = {
+      // Ensure image has a default value if not provided
+      const imageUrl = newProject.image || previewImage || 
+        `https://source.unsplash.com/random/800x600/?${encodeURIComponent(newProject.category)}`;
+      
+      const project: ProjectTheme = {
         ...newProject,
         id: projectId,
         createdBy: userId,
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString(),
-        image: newProject.image || `https://source.unsplash.com/random/800x600/?${encodeURIComponent(newProject.category)}`
+        createdAt: currentTime,
+        updatedAt: currentTime,
+        image: imageUrl
       };
 
       // Save project to localStorage as backup
