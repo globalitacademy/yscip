@@ -30,7 +30,8 @@ export const fintechProjects: ProjectTheme[] = [
       "Ֆինանսական տվյալների անվտանգ մշակում"
     ],
     createdBy: "system",
-    createdAt: new Date().toISOString()
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString()
   },
   {
     id: 12,
@@ -60,6 +61,7 @@ export const fintechProjects: ProjectTheme[] = [
       "Կրիպտո API-ների հետ ինտեգրում"
     ],
     createdBy: "system",
-    createdAt: new Date().toISOString()
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString()
   }
 ];

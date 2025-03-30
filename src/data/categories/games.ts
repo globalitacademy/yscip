@@ -30,7 +30,8 @@ export const gameProjects: ProjectTheme[] = [
       "Firebase-ի հետ ինտեգրում"
     ],
     createdBy: "system",
-    createdAt: new Date().toISOString()
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString()
   },
   {
     id: 8,
@@ -60,6 +61,7 @@ export const gameProjects: ProjectTheme[] = [
       "Բազմաօգտագործողի համակարգերի ճարտարապետություն"
     ],
     createdBy: "system",
-    createdAt: new Date().toISOString()
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString()
   }
 ];

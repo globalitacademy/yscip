@@ -33,7 +33,8 @@ export const useProjectEvents = (
                 techStack: newProject.tech_stack || [],
                 createdBy: newProject.created_by,
                 createdAt: newProject.created_at,
-                duration: newProject.duration,
+                updatedAt: newProject.updated_at || newProject.created_at, // Ensure updatedAt is always set
+                duration: newProject.duration || '',
                 complexity: 'Միջին', // Default complexity
                 steps: [] // Initialize empty steps
               };
@@ -56,7 +57,8 @@ export const useProjectEvents = (
                     image: updatedProject.image || project.image,
                     category: updatedProject.category,
                     techStack: updatedProject.tech_stack || [],
-                    duration: updatedProject.duration
+                    duration: updatedProject.duration,
+                    updatedAt: updatedProject.updated_at || new Date().toISOString() // Ensure updatedAt is set
                   };
                 }
                 return project;

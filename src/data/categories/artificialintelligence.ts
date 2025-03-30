@@ -30,7 +30,8 @@ export const aiProjects: ProjectTheme[] = [
       "Մեքենայական ուսուցման ծառայությունների արդյունաբերական տեղակայում"
     ],
     createdBy: "system",
-    createdAt: new Date().toISOString()
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString()
   },
   {
     id: 6,
@@ -60,6 +61,7 @@ export const aiProjects: ProjectTheme[] = [
       "Ռեալ աշխարհի բժշկական տվյալների հետ աշխատանք"
     ],
     createdBy: "system",
-    createdAt: new Date().toISOString()
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString()
   }
 ];

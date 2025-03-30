@@ -30,6 +30,7 @@ export const educationProjects: ProjectTheme[] = [
       "Բարդ տվյալների բազայի սխեմաների նախագծում"
     ],
     createdBy: "system",
-    createdAt: new Date().toISOString()
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString()
   }
 ];

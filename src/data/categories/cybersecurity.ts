@@ -30,7 +30,8 @@ export const cybersecurityProjects: ProjectTheme[] = [
       "WebAssembly-ի օգտագործումը անվտանգ հաշվարկների համար"
     ],
     createdBy: "system",
-    createdAt: new Date().toISOString()
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString()
   },
   {
     id: 10,
@@ -60,6 +61,7 @@ export const cybersecurityProjects: ProjectTheme[] = [
       "Կատարողականության և մասշտաբավորման համար Go/Rust-ով ծրագրավորում"
     ],
     createdBy: "system",
-    createdAt: new Date().toISOString()
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString()
   }
 ];

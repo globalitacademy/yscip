@@ -62,6 +62,7 @@ const ProjectCreationForm: React.FC<ProjectCreationFormProps> = ({ onProjectCrea
         createdAt: currentTime,
         updatedAt: currentTime, // Ensure updatedAt is set
         image: imageUrl,
+        duration: newProject.duration || '', // Ensure duration is always set
         techStack: newProject.techStack || [] // Ensure techStack is provided and defaults to empty array
       };
 

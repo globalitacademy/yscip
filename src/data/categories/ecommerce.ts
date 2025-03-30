@@ -29,6 +29,7 @@ export const ecommerceProjects: ProjectTheme[] = [
       "Ծրագրի կառավարում պրոդուկտային միջավայրում"
     ],
     createdBy: "system",
-    createdAt: new Date().toISOString()
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString()
   }
 ];

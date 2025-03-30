@@ -30,6 +30,7 @@ export const realEstateProjects: ProjectTheme[] = [
       "Մասշտաբավորվող մոբայլ հավելվածների ճարտարապետություն"
     ],
     createdBy: "system",
-    createdAt: new Date().toISOString()
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString()
   }
 ];
