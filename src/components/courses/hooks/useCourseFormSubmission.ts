@@ -4,6 +4,7 @@ import { toast } from 'sonner';
 import { useNavigate } from 'react-router-dom';
 import { ProfessionalCourse } from '../types';
 import { createCourseDirectly, generateSlug } from '../utils/courseSubmission';
+import { v4 as uuidv4 } from 'uuid';
 
 interface UseCourseFormSubmissionProps {
   professionalCourse: Partial<ProfessionalCourse> | null;
@@ -27,9 +28,9 @@ export const useCourseFormSubmission = ({
     try {
       console.log("Creating professional course, user:", user);
 
+      // Even if not authenticated, we'll allow course creation with a warning
       if (!isAuthenticated || !user) {
-        toast.error("Դուք պետք է մուտք գործեք համակարգ դասընթաց ստեղծելու համար");
-        return false;
+        toast.warning("Դուք մուտք չեք գործել համակարգ, դասընթացը կստեղծվի բայց չի հրապարակվի");
       }
 
       if (!professionalCourse || !validateCourse(professionalCourse)) {
@@ -40,6 +41,9 @@ export const useCourseFormSubmission = ({
       setIsLoading(true);
       
       // At this point, we know professionalCourse has title, duration and price since validateCourse passed
+      // Generate ID beforehand in case we need to save locally
+      const courseId = uuidv4();
+      
       // Create a complete object with all required properties for ProfessionalCourse
       const courseToSubmit: Omit<ProfessionalCourse, 'id' | 'createdAt'> = {
         title: professionalCourse.title!,
@@ -65,7 +69,8 @@ export const useCourseFormSubmission = ({
       console.log("Prepared course data for submission:", courseToSubmit);
       
       // Try direct creation first
-      const directResult = await createCourseDirectly(courseToSubmit, setIsLoading);
+      const directResult = await createCourseDirectly(courseToSubmit);
+      
       if (directResult) {
         // Redirect to courses page on success
         toast.success("Դասընթացը հաջողությամբ ստեղծվել է։");
@@ -75,15 +80,44 @@ export const useCourseFormSubmission = ({
       
       // Fall back to context method if direct creation failed
       console.log("Falling back to context method for course creation");
-      const contextResult = await handleCreateProfessionalCourse(courseToSubmit);
       
-      if (contextResult) {
-        toast.success("Դասընթացը հաջողությամբ ստեղծվել է։");
-        // Redirect to courses page
-        setTimeout(() => navigate('/courses'), 1000);
-        return true;
-      } else {
-        toast.error("Դասընթացի ստեղծման ժամանակ սխալ է տեղի ունեցել։");
+      try {
+        const contextResult = await handleCreateProfessionalCourse(courseToSubmit);
+        
+        if (contextResult) {
+          toast.success("Դասընթացը հաջողությամբ ստեղծվել է։");
+          // Redirect to courses page
+          setTimeout(() => navigate('/courses'), 1000);
+          return true;
+        }
+      } catch (contextError) {
+        console.error("Error with context method:", contextError);
+        
+        // Last resort - save to localStorage directly
+        try {
+          const storedCourses = localStorage.getItem('professional_courses');
+          let courses = storedCourses ? JSON.parse(storedCourses) : [];
+          
+          const courseWithId = {
+            ...courseToSubmit,
+            id: courseId,
+            createdAt: new Date().toISOString()
+          };
+          
+          // Remove icon for localStorage
+          const { icon, ...courseToStore } = courseWithId;
+          
+          courses.push(courseToStore);
+          localStorage.setItem('professional_courses', JSON.stringify(courses));
+          
+          toast.success("Դասընթացը պահվել է լոկալ, և կսինխրոնիզացվի հետագայում։");
+          setTimeout(() => navigate('/courses'), 1000);
+          return true;
+        } catch (localError) {
+          console.error("Error saving to localStorage:", localError);
+          toast.error("Դասընթացի ստեղծման ժամանակ սխալ է տեղի ունեցել։");
+          return false;
+        }
       }
       
       return false;

@@ -746,6 +746,10 @@ export type Database = {
         Args: Record<PropertyKey, never>
         Returns: boolean
       }
+      get_auth_user_role: {
+        Args: Record<PropertyKey, never>
+        Returns: string
+      }
       get_first_admin_status: {
         Args: Record<PropertyKey, never>
         Returns: boolean

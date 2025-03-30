@@ -2,20 +2,22 @@
 import React, { useState } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { toast } from "@/components/ui/use-toast";
+import { toast } from "sonner";
 import { ProjectTheme } from '@/data/projectThemes';
 import ProjectBasicInfo from './ProjectBasicInfo';
 import ProjectTechStack from './ProjectTechStack';
 import ProjectImplementationSteps from './ProjectImplementationSteps';
 import ProjectLearningDetails from './ProjectLearningDetails';
 import ProjectFormFooter from './ProjectFormFooter';
+import { v4 as uuidv4 } from 'uuid';
 
 interface ProjectCreationFormProps {
   onProjectCreated?: (project: ProjectTheme) => void;
 }
 
 const ProjectCreationForm: React.FC<ProjectCreationFormProps> = ({ onProjectCreated }) => {
-  const { user } = useAuth();
+  const { user, isAuthenticated } = useAuth();
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [newProject, setNewProject] = useState({
     title: '',
     description: '',
@@ -41,39 +43,64 @@ const ProjectCreationForm: React.FC<ProjectCreationFormProps> = ({ onProjectCrea
       return false;
     }
 
-    const project = {
-      ...newProject,
-      id: Date.now(),
-      createdBy: user?.id,
-      createdAt: new Date().toISOString(),
-      image: newProject.image || `https://source.unsplash.com/random/800x600/?${encodeURIComponent(newProject.category)}`
-    };
+    setIsSubmitting(true);
 
-    if (onProjectCreated) {
-      onProjectCreated(project);
-    }
-
-    setNewProject({
-      title: '',
-      description: '',
-      detailedDescription: '',
-      category: '',
-      complexity: 'Սկսնակ',
-      duration: '',
-      techStack: [],
-      steps: [],
-      prerequisites: [],
-      learningOutcomes: [],
-      image: ''
-    });
-    setPreviewImage(null);
-
-    toast({
-      title: "Պրոեկտը ստեղծված է",
-      description: "Նոր պրոեկտը հաջողությամբ ստեղծվել է։",
-    });
+    try {
+      // Even if not authenticated, allow project creation with a warning
+      if (!isAuthenticated || !user) {
+        toast.warning("Դուք մուտք չեք գործել համակարգ, նախագիծը կստեղծվի բայց չի հրապարակվի");
+      }
+      
+      const projectId = Date.now();
+      const userId = user?.id || 'local-user';
     
-    return true;
+      const project = {
+        ...newProject,
+        id: projectId,
+        createdBy: userId,
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+        image: newProject.image || `https://source.unsplash.com/random/800x600/?${encodeURIComponent(newProject.category)}`
+      };
+
+      // Save project to localStorage as backup
+      const storedProjects = localStorage.getItem('local_projects');
+      let projects = storedProjects ? JSON.parse(storedProjects) : [];
+      projects.push(project);
+      localStorage.setItem('local_projects', JSON.stringify(projects));
+      
+      if (onProjectCreated) {
+        onProjectCreated(project);
+      }
+
+      setNewProject({
+        title: '',
+        description: '',
+        detailedDescription: '',
+        category: '',
+        complexity: 'Սկսնակ',
+        duration: '',
+        techStack: [],
+        steps: [],
+        prerequisites: [],
+        learningOutcomes: [],
+        image: ''
+      });
+      setPreviewImage(null);
+
+      toast({
+        title: "Պրոեկտը ստեղծված է",
+        description: "Նոր պրոեկտը հաջողությամբ ստեղծվել է։",
+      });
+      
+      return true;
+    } catch (error) {
+      console.error("Error creating project:", error);
+      toast.error("Սխալ է տեղի ունեցել նախագիծը ստեղծելիս։");
+      return false;
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -118,7 +145,10 @@ const ProjectCreationForm: React.FC<ProjectCreationFormProps> = ({ onProjectCrea
           onLearningOutcomesChange={(learningOutcomes) => setNewProject(prev => ({ ...prev, learningOutcomes }))}
         />
       </CardContent>
-      <ProjectFormFooter onSubmit={handleCreateProject} />
+      <ProjectFormFooter 
+        onSubmit={handleCreateProject} 
+        isDisabled={isSubmitting}
+      />
     </Card>
   );
 };

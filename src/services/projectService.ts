@@ -2,6 +2,7 @@
 import { supabase } from '@/integrations/supabase/client';
 import { ProjectTheme } from '@/data/projectThemes';
 import { toast } from 'sonner';
+import { v4 as uuidv4 } from 'uuid';
 
 /**
  * Service for handling project-related database operations
@@ -12,24 +13,37 @@ export const projectService = {
    */
   async fetchProjects(): Promise<ProjectTheme[]> {
     try {
+      // First try to get projects from localStorage as a quick load
+      const storedProjects = localStorage.getItem('local_projects');
+      let localProjects: ProjectTheme[] = [];
+      
+      if (storedProjects) {
+        try {
+          localProjects = JSON.parse(storedProjects);
+          console.log("Loaded projects from localStorage:", localProjects.length);
+        } catch (parseError) {
+          console.error("Error parsing localStorage projects:", parseError);
+        }
+      }
+      
+      // Fetch from database
       const { data, error } = await supabase
         .from('projects')
         .select('*')
-        .order('created_at', { ascending: false }); // Order by creation date for better UX
+        .order('created_at', { ascending: false });
       
       if (error) {
-        console.error('Error fetching projects:', error);
-        toast('Սխալ նախագծերի ստացման ժամանակ');
-        throw error;
+        console.error('Error fetching projects from Supabase:', error);
+        toast.warning('Տվյալների բազայի հետ կապի խնդիր է առաջացել, օգտագործվում են լոկալ տվյալները');
+        return localProjects;
       }
 
       if (!data || data.length === 0) {
-        console.log('No projects found in database');
-        return []; // Return an empty array if no projects are found
+        return localProjects;
       }
 
       // Map database results to ProjectTheme objects
-      return data.map(project => ({
+      const dbProjects = data.map(project => ({
         id: project.id,
         title: project.title,
         description: project.description,
@@ -40,15 +54,43 @@ export const projectService = {
         createdAt: project.created_at,
         updatedAt: project.updated_at || project.created_at,
         duration: project.duration,
-        // Explicitly define complexity as a property on the returned object
-        // even if it doesn't exist in the database response
-        complexity: 'Միջին', // Default complexity value
-        is_public: project.is_public
+        complexity: project.complexity || 'Միջին',
+        is_public: project.is_public,
+        detailedDescription: project.detailed_description || '',
+        steps: project.steps || [],
+        prerequisites: project.prerequisites || [],
+        learningOutcomes: project.learning_outcomes || []
       }));
+      
+      // Merge local and database projects, prioritizing database ones
+      const mergedProjects = [...dbProjects];
+      
+      // Add local projects that don't exist in the database
+      for (const localProject of localProjects) {
+        if (!dbProjects.some(dbProject => dbProject.id === localProject.id)) {
+          mergedProjects.push(localProject);
+        }
+      }
+      
+      // Update localStorage with the merged projects
+      localStorage.setItem('local_projects', JSON.stringify(mergedProjects));
+      
+      return mergedProjects;
     } catch (err) {
-      console.error('Unexpected error:', err);
-      toast('Տվյալների ստացման սխալ');
-      return []; // Return an empty array on error
+      console.error('Unexpected error in fetchProjects:', err);
+      
+      // Try to get projects from localStorage as fallback
+      const storedProjects = localStorage.getItem('local_projects');
+      if (storedProjects) {
+        try {
+          return JSON.parse(storedProjects);
+        } catch (parseError) {
+          console.error("Error parsing localStorage projects:", parseError);
+        }
+      }
+      
+      toast.error('Տվյալների ստացման սխալ');
+      return [];
     }
   },
 
@@ -57,6 +99,9 @@ export const projectService = {
    */
   async createProject(project: Partial<ProjectTheme>, userId: string | undefined): Promise<boolean> {
     try {
+      // Generate temp ID in case we need to save locally
+      const tempId = typeof project.id === 'number' ? project.id : Date.now();
+      
       const { error } = await supabase
         .from('projects')
         .insert({
@@ -67,21 +112,69 @@ export const projectService = {
           image: project.image,
           created_by: userId,
           duration: project.duration,
-          is_public: project.is_public || false
+          is_public: project.is_public || false,
+          complexity: project.complexity,
+          detailed_description: project.detailedDescription,
+          steps: project.steps,
+          prerequisites: project.prerequisites,
+          learning_outcomes: project.learningOutcomes
         });
         
       if (error) {
-        console.error('Error creating project:', error);
-        toast('Սխալ նախագծի ստեղծման ժամանակ');
-        return false;
+        console.error('Error creating project in Supabase:', error);
+        toast.warning('Տվյալների բազայի հետ կապի խնդիր է առաջացել, նախագիծը պահվել է լոկալ');
+        
+        // Save to localStorage for offline support
+        this.saveProjectLocally({
+          ...project,
+          id: tempId,
+          createdAt: new Date().toISOString(),
+          createdBy: userId,
+          updatedAt: new Date().toISOString()
+        } as ProjectTheme);
+        
+        return true; // Return true since we saved locally
       }
       
-      toast('Նախագիծը հաջողությամբ ստեղծվել է');
+      toast.success('Նախագիծը հաջողությամբ ստեղծվել է');
       return true;
     } catch (err) {
       console.error('Unexpected error creating project:', err);
-      toast('Տվյալների բազայի հետ կապի սխալ, նախագիծը ստեղծվել է լոկալ');
-      return false;
+      
+      // Save to localStorage as fallback
+      const tempId = typeof project.id === 'number' ? project.id : Date.now();
+      this.saveProjectLocally({
+        ...project,
+        id: tempId,
+        createdAt: new Date().toISOString(),
+        createdBy: userId,
+        updatedAt: new Date().toISOString()
+      } as ProjectTheme);
+      
+      toast.warning('Տվյալների բազայի հետ կապի սխալ, նախագիծը պահվել է լոկալ');
+      return true; // Return true since we saved locally
+    }
+  },
+
+  /**
+   * Save a project locally in localStorage
+   */
+  saveProjectLocally(project: ProjectTheme): void {
+    try {
+      const storedProjects = localStorage.getItem('local_projects');
+      let projects = storedProjects ? JSON.parse(storedProjects) : [];
+      
+      const index = projects.findIndex((p: ProjectTheme) => p.id === project.id);
+      if (index >= 0) {
+        projects[index] = project;
+      } else {
+        projects.push(project);
+      }
+      
+      localStorage.setItem('local_projects', JSON.stringify(projects));
+      console.log('Project saved locally:', project.title);
+    } catch (error) {
+      console.error('Error saving project to localStorage:', error);
     }
   },
 
@@ -99,7 +192,6 @@ export const projectService = {
           is_public: updates.is_public,
           duration: updates.duration,
           tech_stack: updates.techStack,
-          // New fields
           complexity: updates.complexity,
           detailed_description: updates.detailedDescription,
           steps: updates.steps,
@@ -110,17 +202,33 @@ export const projectService = {
         .eq('id', projectId);
         
       if (error) {
-        console.error('Error updating project:', error);
-        toast('Սխալ նախագծի թարմացման ժամանակ');
-        return false;
+        console.error('Error updating project in Supabase:', error);
+        
+        // Update locally
+        this.saveProjectLocally({
+          ...updates,
+          id: projectId,
+          updatedAt: new Date().toISOString()
+        } as ProjectTheme);
+        
+        toast.warning('Տվյալների բազայի հետ կապի խնդիր է առաջացել, նախագիծը պահվել է լոկալ');
+        return true; // Return true since we saved locally
       }
       
-      toast('Նախագիծը հաջողությամբ թարմացվել է');
+      toast.success('Նախագիծը հաջողությամբ թարմացվել է');
       return true;
     } catch (err) {
       console.error('Unexpected error updating project:', err);
-      toast('Տվյալների բազայի հետ կապի սխալ, նախագիծը թարմացվել է լոկալ');
-      return false;
+      
+      // Update locally
+      this.saveProjectLocally({
+        ...updates,
+        id: projectId,
+        updatedAt: new Date().toISOString()
+      } as ProjectTheme);
+      
+      toast.warning('Տվյալների բազայի հետ կապի սխալ, նախագիծը պահվել է լոկալ');
+      return true; // Return true since we saved locally
     }
   },
 
@@ -135,17 +243,41 @@ export const projectService = {
         .eq('id', projectId);
         
       if (error) {
-        console.error('Error updating project image:', error);
-        toast('Սխալ նախագծի նկարի թարմացման ժամանակ');
-        return false;
+        console.error('Error updating project image in Supabase:', error);
+        
+        // Update image locally
+        const storedProjects = localStorage.getItem('local_projects');
+        if (storedProjects) {
+          let projects = JSON.parse(storedProjects);
+          const index = projects.findIndex((p: ProjectTheme) => p.id === projectId);
+          if (index >= 0) {
+            projects[index].image = imageUrl;
+            localStorage.setItem('local_projects', JSON.stringify(projects));
+          }
+        }
+        
+        toast.warning('Տվյալների բազայի հետ կապի խնդիր է առաջացել, նկարը պահվել է լոկալ');
+        return true; // Return true since we saved locally
       }
       
-      toast('Նախագծի նկարը հաջողությամբ թարմացվել է');
+      toast.success('Նախագծի նկարը հաջողությամբ թարմացվել է');
       return true;
     } catch (err) {
       console.error('Unexpected error updating project image:', err);
-      toast('Տվյալների բազայի հետ կապի սխալ, նախագիծը նկարը թարմացվել է լոկալ');
-      return false;
+      
+      // Update image locally
+      const storedProjects = localStorage.getItem('local_projects');
+      if (storedProjects) {
+        let projects = JSON.parse(storedProjects);
+        const index = projects.findIndex((p: ProjectTheme) => p.id === projectId);
+        if (index >= 0) {
+          projects[index].image = imageUrl;
+          localStorage.setItem('local_projects', JSON.stringify(projects));
+        }
+      }
+      
+      toast.warning('Տվյալների բազայի հետ կապի սխալ, նկարը պահվել է լոկալ');
+      return true; // Return true since we saved locally
     }
   },
 
@@ -160,16 +292,24 @@ export const projectService = {
         .eq('id', projectId);
         
       if (error) {
-        console.error('Error deleting project:', error);
-        toast('Սխալ նախագծի ջնջման ժամանակ');
+        console.error('Error deleting project from Supabase:', error);
+        toast.error('Նախագծի ջնջման ժամանակ սխալ է տեղի ունեցել, փորձեք ավելի ուշ');
         return false;
       }
       
-      toast('Նախագիծը հաջողությամբ ջնջվել է');
+      // Remove from localStorage if it exists there
+      const storedProjects = localStorage.getItem('local_projects');
+      if (storedProjects) {
+        let projects = JSON.parse(storedProjects);
+        projects = projects.filter((p: ProjectTheme) => p.id !== projectId);
+        localStorage.setItem('local_projects', JSON.stringify(projects));
+      }
+      
+      toast.success('Նախագիծը հաջողությամբ ջնջվել է');
       return true;
     } catch (err) {
       console.error('Unexpected error deleting project:', err);
-      toast('Տվյալների բազայի հետ կապի սխալ, նախագիծը ջնջվել է լոկալ');
+      toast.error('Նախագծի ջնջման ժամանակ սխալ է տեղի ունեցել');
       return false;
     }
   }
