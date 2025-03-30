@@ -22,24 +22,28 @@ export const HomePageModules: React.FC = () => {
         
         <FadeIn delay="delay-200">
           <p className="text-muted-foreground text-center max-w-2xl mx-auto mb-8">
-            Մեր ծրագրի հիմնական ուսումնական մոդուլները, որոնք անհրաժեշտ է անցնել
+            Մեր ծրագրի հիմնական ուսումնական մոդուլները, որոնք անհրաժեշտ է անցնել ուսումնական ծրագիրն ավարտելու համար
           </p>
         </FadeIn>
 
-        <ModuleTable 
-          modules={visibleModules} 
-          onEditClick={() => {}} 
-          onDeleteClick={() => {}}
-          displayMode="public"
-        />
+        <FadeIn delay="delay-300">
+          <ModuleTable 
+            modules={visibleModules} 
+            onEditClick={() => {}} 
+            onDeleteClick={() => {}}
+            displayMode="public"
+          />
+        </FadeIn>
         
-        <div className="flex justify-center mt-8">
-          <Button asChild variant="outline">
-            <Link to="/modules">
-              Դիտել բոլոր մոդուլները <ArrowRight className="ml-2 h-4 w-4" />
-            </Link>
-          </Button>
-        </div>
+        <FadeIn delay="delay-400">
+          <div className="flex justify-center mt-8">
+            <Button asChild variant="outline">
+              <Link to="/modules">
+                Դիտել բոլոր մոդուլները <ArrowRight className="ml-2 h-4 w-4" />
+              </Link>
+            </Button>
+          </div>
+        </FadeIn>
       </div>
     </div>
   );

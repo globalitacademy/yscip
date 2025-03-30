@@ -11,12 +11,13 @@ import Hero from '@/components/hero';
 import Header from '@/components/Header';
 
 // Lazy load components that are not immediately visible
-// Using direct file paths instead of index files to avoid dynamic import issues
 const FeaturesSection = lazy(() => import('@/components/features/FeaturesSection'));
 const CoursesSection = lazy(() => import('@/components/courses/CoursesSection'));
 const ProfessionalCoursesSection = lazy(() => import('@/components/courses/ProfessionalCoursesSection'));
 const EducationalCycleInfographic = lazy(() => import('@/components/educationalCycle/EducationalCycleInfographic'));
+const HomePageModules = lazy(() => import('@/components/educationalCycle/HomePageModules'));
 const ProjectTabs = lazy(() => import('@/components/projects/ProjectTabs'));
+const ThemeGrid = lazy(() => import('@/components/ThemeGrid'));
 
 // Loading fallback component
 const SectionSkeleton = () => (
@@ -37,6 +38,8 @@ const Index = () => {
   const [heroRef, heroInView] = useInView<HTMLDivElement>();
   const [featuresRef, featuresInView] = useInView<HTMLDivElement>();
   const [coursesRef, coursesInView] = useInView<HTMLDivElement>();
+  const [modulesRef, modulesInView] = useInView<HTMLDivElement>();
+  const [projectsRef, projectsInView] = useInView<HTMLDivElement>();
   const { user } = useAuth();
 
   // Scroll to module on load if URL contains module hash
@@ -85,6 +88,19 @@ const Index = () => {
         <EducationalCycleInfographic />
       </Suspense>
 
+      {/* Educational Modules Section */}
+      <div
+        ref={modulesRef}
+        className={`transition-opacity duration-1000 ${
+          modulesInView ? 'opacity-100' : 'opacity-0'
+        }`}
+        id="modules"
+      >
+        <Suspense fallback={<SectionSkeleton />}>
+          <HomePageModules />
+        </Suspense>
+      </div>
+
       {/* Courses Section */}
       <div
         ref={coursesRef}
@@ -102,12 +118,29 @@ const Index = () => {
       </div>
 
       {/* Projects Section */}
-      <div className="container mx-auto px-4 pb-16">
-        <Suspense fallback={<SectionSkeleton />}>
-          <ProjectManagementProvider>
-            <ProjectTabs />
-          </ProjectManagementProvider>
-        </Suspense>
+      <div 
+        ref={projectsRef}
+        className={`transition-opacity duration-1000 py-12 ${
+          projectsInView ? 'opacity-100' : 'opacity-0'
+        }`}
+        id="projects"
+      >
+        <div className="container mx-auto px-4">
+          <h2 className="text-3xl font-bold mb-6 text-center">Նախագծային թեմաներ</h2>
+          <p className="text-muted-foreground text-center max-w-2xl mx-auto mb-8">
+            Ուսումնասիրեք մեր առաջարկվող նախագծային թեմաները, որոնք օգնում են կիրառել ձեր գիտելիքները գործնականում
+          </p>
+          <Suspense fallback={<SectionSkeleton />}>
+            <ProjectManagementProvider>
+              <ThemeGrid limit={6} />
+            </ProjectManagementProvider>
+          </Suspense>
+          <div className="flex justify-center mt-8">
+            <Button asChild variant="outline">
+              <Link to="/projects">Դիտել բոլոր նախագծերը <ArrowRight className="ml-2 h-4 w-4" /></Link>
+            </Button>
+          </div>
+        </div>
       </div>
 
       {/* Footer */}
