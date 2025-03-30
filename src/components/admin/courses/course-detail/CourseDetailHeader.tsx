@@ -12,16 +12,18 @@ interface CourseDetailHeaderProps {
 const CourseDetailHeader: React.FC<CourseDetailHeaderProps> = ({ course }) => {
   return (
     <div className="relative overflow-hidden mb-8">
-      {/* Background with course image and gradient overlay */}
+      {/* Light blue background */}
       <div className="absolute inset-0 bg-sky-50">
         {course.imageUrl && (
           <>
-            <img 
-              src={course.imageUrl} 
-              alt={course.title} 
-              className="absolute inset-0 w-full h-full object-cover opacity-20"
-            />
-            <div className="absolute inset-0 bg-gradient-to-b from-blue-500/30 to-sky-50/90"></div>
+            <div className="absolute top-0 right-0 w-1/2 h-full overflow-hidden">
+              <img 
+                src={course.imageUrl} 
+                alt={course.title} 
+                className="absolute inset-0 w-full h-full object-cover opacity-30"
+              />
+              <div className="absolute inset-0 bg-gradient-to-l from-blue-500/30 to-sky-50/95"></div>
+            </div>
           </>
         )}
       </div>
