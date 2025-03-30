@@ -8,6 +8,7 @@ interface CourseColorSelectorProps {
   isColorsOpen: boolean;
   setIsColorsOpen: (isOpen: boolean) => void;
   onColorSelect: (color: string) => void;
+  selectedColor?: string;
 }
 
 const colorOptions = [
@@ -19,7 +20,12 @@ const colorOptions = [
   { label: 'Կանաչ', value: 'text-green-500' },
 ];
 
-export const CourseColorSelector: React.FC<CourseColorSelectorProps> = ({ isColorsOpen, setIsColorsOpen, onColorSelect }) => {
+export const CourseColorSelector: React.FC<CourseColorSelectorProps> = ({ 
+  isColorsOpen, 
+  setIsColorsOpen, 
+  onColorSelect,
+  selectedColor 
+}) => {
   return (
     <Collapsible
       open={isColorsOpen}
@@ -38,7 +44,9 @@ export const CourseColorSelector: React.FC<CourseColorSelectorProps> = ({ isColo
             <Button
               key={option.value}
               variant="outline"
-              className={`p-2 ${option.value.replace('text-', 'bg-').replace('-500', '-100')}`}
+              className={`p-2 ${option.value.replace('text-', 'bg-').replace('-500', '-100')} ${
+                selectedColor === option.value ? 'ring-2 ring-blue-500' : ''
+              }`}
               onClick={() => onColorSelect(option.value)}
             >
               <span className={option.value}>{option.label}</span>
