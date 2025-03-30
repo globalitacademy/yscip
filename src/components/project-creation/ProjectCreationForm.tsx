@@ -35,11 +35,7 @@ const ProjectCreationForm: React.FC<ProjectCreationFormProps> = ({ onProjectCrea
 
   const handleCreateProject = (): boolean => {
     if (!newProject.title || !newProject.description || !newProject.category || newProject.techStack.length === 0) {
-      toast({
-        title: "Սխալ",
-        description: "Խնդրում ենք լրացնել բոլոր պարտադիր դաշտերը",
-        variant: "destructive",
-      });
+      toast.error("Խնդրում ենք լրացնել բոլոր պարտադիր դաշտերը");
       return false;
     }
 
@@ -88,10 +84,7 @@ const ProjectCreationForm: React.FC<ProjectCreationFormProps> = ({ onProjectCrea
       });
       setPreviewImage(null);
 
-      toast({
-        title: "Պրոեկտը ստեղծված է",
-        description: "Նոր պրոեկտը հաջողությամբ ստեղծվել է։",
-      });
+      toast.success("Նոր պրոեկտը հաջողությամբ ստեղծվել է։");
       
       return true;
     } catch (error) {

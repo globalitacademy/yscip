@@ -54,12 +54,12 @@ export const projectService = {
         createdAt: project.created_at,
         updatedAt: project.updated_at || project.created_at,
         duration: project.duration,
-        complexity: project.complexity || 'Միջին',
-        is_public: project.is_public,
-        detailedDescription: project.detailed_description || '',
-        steps: project.steps || [],
-        prerequisites: project.prerequisites || [],
-        learningOutcomes: project.learning_outcomes || []
+        complexity: 'Միջին',
+        is_public: project.is_public || false,
+        detailedDescription: '',
+        steps: [],
+        prerequisites: [],
+        learningOutcomes: []
       }));
       
       // Merge local and database projects, prioritizing database ones
@@ -112,12 +112,7 @@ export const projectService = {
           image: project.image,
           created_by: userId,
           duration: project.duration,
-          is_public: project.is_public || false,
-          complexity: project.complexity,
-          detailed_description: project.detailedDescription,
-          steps: project.steps,
-          prerequisites: project.prerequisites,
-          learning_outcomes: project.learningOutcomes
+          is_public: project.is_public || false
         });
         
       if (error) {
@@ -129,7 +124,7 @@ export const projectService = {
           ...project,
           id: tempId,
           createdAt: new Date().toISOString(),
-          createdBy: userId,
+          createdBy: userId || 'local-user',
           updatedAt: new Date().toISOString()
         } as ProjectTheme);
         
@@ -147,7 +142,7 @@ export const projectService = {
         ...project,
         id: tempId,
         createdAt: new Date().toISOString(),
-        createdBy: userId,
+        createdBy: userId || 'local-user',
         updatedAt: new Date().toISOString()
       } as ProjectTheme);
       
@@ -192,11 +187,6 @@ export const projectService = {
           is_public: updates.is_public,
           duration: updates.duration,
           tech_stack: updates.techStack,
-          complexity: updates.complexity,
-          detailed_description: updates.detailedDescription,
-          steps: updates.steps,
-          prerequisites: updates.prerequisites,
-          learning_outcomes: updates.learningOutcomes,
           updated_at: new Date().toISOString()
         })
         .eq('id', projectId);
