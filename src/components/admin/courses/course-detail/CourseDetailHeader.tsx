@@ -4,6 +4,7 @@ import { ProfessionalCourse } from '@/components/courses/types/ProfessionalCours
 import { Button } from '@/components/ui/button';
 import { Link } from 'react-router-dom';
 import { cn } from '@/lib/utils';
+import { Calendar, Clock } from 'lucide-react';
 import { FadeIn, SlideUp } from '@/components/LocalTransitions';
 
 interface CourseDetailHeaderProps {
@@ -12,114 +13,120 @@ interface CourseDetailHeaderProps {
 
 const CourseDetailHeader: React.FC<CourseDetailHeaderProps> = ({ course }) => {
   return (
-    <div className="relative rounded-2xl overflow-hidden mb-12">
-      {/* Creative background design */}
-      <div className="absolute inset-0">
-        <div className="absolute inset-0 bg-gradient-to-br from-indigo-100 via-purple-50 to-pink-50"></div>
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_20%,rgba(109,73,209,0.1)_0%,rgba(109,73,209,0)_50%)]"></div>
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_70%_60%,rgba(225,29,72,0.08)_0%,rgba(225,29,72,0)_50%)]"></div>
-        <div className="absolute bottom-0 left-0 right-0 h-24 bg-gradient-to-t from-white to-transparent"></div>
-        <div className="absolute -bottom-10 -right-10 w-40 h-40 bg-indigo-100 rounded-full opacity-50 blur-3xl"></div>
-        <div className="absolute -top-10 -left-10 w-40 h-40 bg-pink-100 rounded-full opacity-50 blur-3xl"></div>
+    <div className="relative overflow-hidden mb-12">
+      {/* Main asymmetric background */}
+      <div className="absolute inset-0 -z-10">
+        <div className="absolute inset-0 bg-white"></div>
+        <div className="absolute right-0 top-0 bottom-0 w-[55%] bg-gradient-to-l from-red-500 to-red-600 rounded-l-[80px]"></div>
+        <div className="absolute top-1/2 right-[40%] w-24 h-24 bg-red-400 rounded-full"></div>
+        <div className="absolute bottom-1/4 right-[10%] w-16 h-16 bg-red-700 rounded-full opacity-60"></div>
+        <div className="absolute top-[15%] right-[25%] w-40 h-40 rounded-full bg-yellow-400 opacity-20"></div>
+        
+        {/* Light effect */}
+        <div className="absolute right-[20%] top-[20%] w-60 h-60 bg-yellow-300 rounded-full opacity-60 blur-3xl"></div>
       </div>
       
       <div className="container mx-auto px-6 py-16 relative z-10">
-        <div className="flex flex-col md:flex-row items-center gap-10">
-          <FadeIn delay="delay-100">
-            <div className="shrink-0 relative">
-              {course.imageUrl ? (
-                <div className="relative group">
-                  <div className="absolute -inset-3 bg-gradient-to-r from-indigo-500 to-purple-500 rounded-xl opacity-75 blur group-hover:opacity-100 transition duration-1000"></div>
-                  <img 
-                    src={course.imageUrl} 
-                    alt={course.title}
-                    className="relative w-32 h-32 sm:w-48 sm:h-48 rounded-xl object-cover border-2 border-white shadow-lg transform transition duration-500 group-hover:scale-105"
-                  />
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-10 items-center">
+          {/* Left content */}
+          <div className="text-left space-y-6">
+            <FadeIn delay="delay-100">
+              <div className="flex items-center space-x-3 mb-3">
+                <div className="px-3 py-1 border border-gray-300 rounded-full text-sm font-semibold">
+                  {course.institution || 'Ծրագրավորման ​​դասընթաց'}
                 </div>
-              ) : course.icon ? (
-                <div className="relative group">
-                  <div className="absolute -inset-3 bg-gradient-to-r from-indigo-500 to-purple-500 rounded-xl opacity-75 blur group-hover:opacity-100 transition duration-1000"></div>
-                  <div className={cn(
-                    "relative w-32 h-32 sm:w-48 sm:h-48 rounded-xl flex items-center justify-center border-2 border-white shadow-lg transform transition duration-500 group-hover:scale-105",
-                    course.color || "bg-indigo-100"
-                  )}>
-                    {course.icon}
+                {course.startDate && (
+                  <div className="flex items-center text-sm text-gray-600">
+                    <Calendar size={14} className="mr-1" />
+                    <span>Սկիզբ: {course.startDate}</span>
                   </div>
-                </div>
-              ) : (
-                <div className="relative group">
-                  <div className="absolute -inset-3 bg-gradient-to-r from-indigo-500 to-purple-500 rounded-xl opacity-75 blur group-hover:opacity-100 transition duration-1000"></div>
-                  <div className="relative w-32 h-32 sm:w-48 sm:h-48 rounded-xl flex items-center justify-center bg-indigo-100 border-2 border-white shadow-lg transform transition duration-500 group-hover:scale-105">
-                    <span className="text-5xl font-bold text-indigo-500">
-                      {course.title ? course.title.charAt(0) : "C"}
-                    </span>
-                  </div>
-                </div>
-              )}
-            </div>
-          </FadeIn>
-          
-          <div className="flex-1 text-center md:text-left">
-            <SlideUp delay="delay-200">
-              <div className="space-y-3 mb-6">
-                {course.institution && (
-                  <div className="inline-flex items-center px-3 py-1 text-sm font-medium text-indigo-700 bg-indigo-50 rounded-full">
-                    {course.institution}
-                  </div>
-                )}
-                <h2 className="text-3xl md:text-4xl font-bold bg-gradient-to-r from-indigo-600 to-purple-600 text-transparent bg-clip-text">{course.title}</h2>
-                {course.subtitle && (
-                  <p className="text-lg text-gray-600 font-light">{course.subtitle}</p>
                 )}
               </div>
+            </FadeIn>
+            
+            <SlideUp delay="delay-200">
+              <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold tracking-tight">
+                {course.title}
+              </h1>
+              {course.subtitle && (
+                <p className="text-xl text-gray-600 mt-3">{course.subtitle}</p>
+              )}
             </SlideUp>
             
             <SlideUp delay="delay-300">
-              <div className="flex flex-wrap justify-center md:justify-start gap-3 mb-6">
-                {course.duration && (
-                  <div className="bg-white/80 backdrop-blur-sm px-4 py-2 rounded-xl shadow-sm flex items-center border border-indigo-100 hover:border-indigo-200 transition-colors">
-                    <span className="font-medium text-indigo-700">Տևողություն:</span>
-                    <span className="ml-2">{course.duration}</span>
-                  </div>
-                )}
-                
-                {course.createdBy && (
-                  <div className="bg-white/80 backdrop-blur-sm px-4 py-2 rounded-xl shadow-sm flex items-center border border-indigo-100 hover:border-indigo-200 transition-colors">
-                    <span className="font-medium text-indigo-700">Հեղինակ:</span>
-                    <span className="ml-2">{course.createdBy}</span>
-                  </div>
-                )}
-                
-                {course.price && (
-                  <div className="bg-white/80 backdrop-blur-sm px-4 py-2 rounded-xl shadow-sm flex items-center border border-indigo-100 hover:border-indigo-200 transition-colors">
-                    <span className="font-medium text-indigo-700">Գին:</span>
-                    <span className="ml-2">{course.price}</span>
-                  </div>
-                )}
+              <div className="flex flex-wrap gap-3 my-6">
+                {course.tags?.map((tag, index) => (
+                  <span 
+                    key={index}
+                    className="inline-block px-3 py-1 bg-gray-100 rounded-full text-gray-700 text-sm font-medium"
+                  >
+                    {tag}
+                  </span>
+                )) || 
+                (course.skills?.length ? course.skills.map((skill, index) => (
+                  <span 
+                    key={index}
+                    className="inline-block px-3 py-1 bg-gray-100 rounded-full text-gray-700 text-sm font-medium"
+                  >
+                    {skill}
+                  </span>
+                )) : (
+                  <>
+                    <span className="inline-block px-3 py-1 bg-gray-100 rounded-full text-gray-700 text-sm font-medium">
+                      C#
+                    </span>
+                    <span className="inline-block px-3 py-1 bg-gray-100 rounded-full text-gray-700 text-sm font-medium">
+                      SQL
+                    </span>
+                    <span className="inline-block px-3 py-1 bg-gray-100 rounded-full text-gray-700 text-sm font-medium">
+                      ASP.NET
+                    </span>
+                  </>
+                ))}
               </div>
             </SlideUp>
             
             <SlideUp delay="delay-400">
-              <Button 
-                size="lg"
-                className="bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white rounded-full px-8 py-6 shadow-lg transform transition hover:-translate-y-1 hover:shadow-xl"
-              >
-                Գրանցվել դասընթացին
-              </Button>
+              <div className="flex flex-wrap gap-3 pt-4">
+                <Button 
+                  size="lg"
+                  className="bg-indigo-700 hover:bg-indigo-800 text-white rounded-full px-8 shadow-lg"
+                >
+                  Գրանցվել դասընթացին
+                </Button>
+                
+                <Button 
+                  variant="outline" 
+                  size="lg" 
+                  className="rounded-full border-gray-300 hover:bg-gray-50"
+                >
+                  Ծրագրի մանրամասներ
+                </Button>
+              </div>
             </SlideUp>
           </div>
           
-          {course.organizationLogo && (
-            <FadeIn delay="delay-500" className="shrink-0 hidden lg:block">
-              <div className="relative p-4 bg-white/80 backdrop-blur-sm rounded-xl shadow-sm border border-indigo-100">
+          {/* Right content - illustration */}
+          <div className="hidden lg:flex justify-end items-center relative">
+            {course.imageUrl ? (
+              <img 
+                src={course.imageUrl} 
+                alt={course.title}
+                className="max-w-md rounded-2xl shadow-lg z-10 relative"
+              />
+            ) : (
+              <div className="relative">
+                <div className="absolute -top-12 -right-8 w-24 h-24 bg-indigo-100 rounded-xl flex items-center justify-center rotate-12">
+                  <span className="text-4xl font-bold text-indigo-500">{'</>'}</span>
+                </div>
                 <img 
-                  src={course.organizationLogo} 
-                  alt="Organization Logo" 
-                  className="h-20 object-contain"
+                  src="/public/lovable-uploads/a6d988b3-bf40-44b7-84c1-e3366361d005.png" 
+                  alt="Developer illustration"
+                  className="max-w-sm rounded-2xl"
                 />
               </div>
-            </FadeIn>
-          )}
+            )}
+          </div>
         </div>
       </div>
     </div>
@@ -127,4 +134,3 @@ const CourseDetailHeader: React.FC<CourseDetailHeaderProps> = ({ course }) => {
 };
 
 export default CourseDetailHeader;
-
