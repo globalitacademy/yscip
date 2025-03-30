@@ -28,6 +28,7 @@ export const healthcareProjects: ProjectTheme[] = [
       "Օրացույցի կառավարման ծրագրավորում",
       "Ռեալ ժամանակում ծանուցումների ներդրում"
     ],
-    createdBy: "system" // Added required createdBy property
+    createdBy: "system",
+    createdAt: new Date().toISOString()
   }
 ];

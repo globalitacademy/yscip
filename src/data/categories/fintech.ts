@@ -29,7 +29,8 @@ export const fintechProjects: ProjectTheme[] = [
       "Firebase-ով տվյալների ռեալ ժամանակում համաժամանակեցում",
       "Ֆինանսական տվյալների անվտանգ մշակում"
     ],
-    createdBy: "system" // Added required createdBy property
+    createdBy: "system",
+    createdAt: new Date().toISOString()
   },
   {
     id: 12,
@@ -58,6 +59,7 @@ export const fintechProjects: ProjectTheme[] = [
       "Ռիսկերի կառավարման ծրագրավորում",
       "Կրիպտո API-ների հետ ինտեգրում"
     ],
-    createdBy: "system" // Added required createdBy property
+    createdBy: "system",
+    createdAt: new Date().toISOString()
   }
 ];

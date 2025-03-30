@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -59,7 +60,7 @@ const ProjectCreationForm: React.FC<ProjectCreationFormProps> = ({ onProjectCrea
         id: projectId,
         createdBy: userId,
         createdAt: currentTime,
-        updatedAt: currentTime,
+        updatedAt: currentTime, // Ensure updatedAt is set
         image: imageUrl,
         techStack: newProject.techStack || [] // Ensure techStack is provided and defaults to empty array
       };

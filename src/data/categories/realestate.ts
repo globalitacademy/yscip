@@ -29,6 +29,7 @@ export const realEstateProjects: ProjectTheme[] = [
       "Տեղադրության և տարածական տվյալների հետ աշխատանք",
       "Մասշտաբավորվող մոբայլ հավելվածների ճարտարապետություն"
     ],
-    createdBy: "system" // Added required createdBy property
+    createdBy: "system",
+    createdAt: new Date().toISOString()
   }
 ];

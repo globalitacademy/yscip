@@ -29,6 +29,7 @@ export const educationProjects: ProjectTheme[] = [
       "Օգտագործողի իրավասությունների ճարտարապետություն",
       "Բարդ տվյալների բազայի սխեմաների նախագծում"
     ],
-    createdBy: "system" // Added required createdBy property
+    createdBy: "system",
+    createdAt: new Date().toISOString()
   }
 ];

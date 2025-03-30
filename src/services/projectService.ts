@@ -1,4 +1,3 @@
-
 import { supabase } from '@/integrations/supabase/client';
 import { ProjectTheme } from '@/data/projectThemes';
 import { toast } from 'sonner';
@@ -101,6 +100,7 @@ export const projectService = {
     try {
       // Generate temp ID in case we need to save locally
       const tempId = typeof project.id === 'number' ? project.id : Date.now();
+      const currentTime = new Date().toISOString();
       
       const { error } = await supabase
         .from('projects')
@@ -110,7 +110,9 @@ export const projectService = {
           category: project.category,
           tech_stack: project.techStack || [], // Ensure we have a default value
           image: project.image,
-          created_by: userId,
+          created_by: userId || 'system',
+          created_at: currentTime,
+          updated_at: currentTime, // Ensure updated_at is set
           duration: project.duration,
           is_public: project.is_public || false
         });
@@ -134,8 +136,8 @@ export const projectService = {
           techStack: project.techStack || [], // Ensure we have a default array
           image: defaultImage,
           createdBy: userId || 'local-user',
-          createdAt: new Date().toISOString(),
-          updatedAt: new Date().toISOString(),
+          createdAt: currentTime,
+          updatedAt: currentTime, // Ensure updatedAt is set
           duration: project.duration || '',
           complexity: project.complexity || 'Միջին',
           is_public: project.is_public || false,
@@ -163,6 +165,8 @@ export const projectService = {
       
       // Save to localStorage as fallback
       const tempId = typeof project.id === 'number' ? project.id : Date.now();
+      const currentTime = new Date().toISOString();
+      
       const localProject: ProjectTheme = {
         id: tempId,
         title: project.title || '',
@@ -171,8 +175,8 @@ export const projectService = {
         techStack: project.techStack || [], // Ensure we have a default array
         image: defaultImage,
         createdBy: userId || 'local-user',
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString(),
+        createdAt: currentTime,
+        updatedAt: currentTime, // Ensure updatedAt is set
         duration: project.duration || '',
         complexity: project.complexity || 'Միջին',
         is_public: project.is_public || false,

@@ -10,7 +10,7 @@ export interface ProjectTheme {
   duration?: string;
   createdBy: string;  // Changed from optional to required
   createdAt: string;  // Changed from optional to required
-  updatedAt?: string;  // Added this property
+  updatedAt: string;  // Changed from optional to required
   tasks?: Task[];
   timeline?: TimelineEvent[];
   is_public?: boolean;
@@ -51,8 +51,9 @@ export const projectThemes: ProjectTheme[] = [
     techStack: ["React", "Node.js", "MongoDB"],
     complexity: "Միջին",
     duration: "8 շաբաթ",
-    createdBy: "system", // Added a default createdBy for existing data
-    createdAt: new Date().toISOString(), // Added a default createdAt
+    createdBy: "system", 
+    createdAt: new Date().toISOString(), 
+    updatedAt: new Date().toISOString(), // Added updatedAt with a default value
     detailedDescription: "Հաճախորդների կառավարման համակարգը (CRM) թույլ է տալիս բիզնեսին կառավարել հաճախորդների տվյալները, հետևել վաճառքի գործընթացին և բարելավել հաճախորդների սպասարկումը: Այս նախագիծը ներառում է հաճախորդների տվյալների պահպանում, վաճառքի ձագարի կառավարում, հաշվետվությունների ստեղծում և այլն:",
     steps: [
       "Նախագծի պահանջների վերլուծություն և հավաքագրում",
@@ -85,8 +86,9 @@ export const projectThemes: ProjectTheme[] = [
     techStack: ["Vue.js", "Laravel", "MySQL"],
     complexity: "Բարդ",
     duration: "12 շաբաթ",
-    createdBy: "system", // Added a default createdBy for existing data
-    createdAt: new Date().toISOString(), // Added a default createdAt
+    createdBy: "system",
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString(), // Added updatedAt with a default value
     detailedDescription: "Էլեկտրոնային առևտրի հարթակը թույլ է տալիս վաճառողներին ցուցադրել և վաճառել իրենց ապրանքները, իսկ գնորդներին՝ դիտել, գնել և վճարել դրանց համար: Այս նախագիծը ներառում է ապրանքների կատալոգ, զամբյուղ, վճարման համակարգի ինտեգրում, օգտվողների կառավարում և այլն:",
     steps: [
       "Մրցակիցների վերլուծություն և շուկայի հետազոտություն",
@@ -121,8 +123,9 @@ export const projectThemes: ProjectTheme[] = [
     techStack: ["Python", "React Native", "MQTT"],
     complexity: "Բարդ",
     duration: "14 շաբաթ",
-    createdBy: "system", // Added a default createdBy for existing data
-    createdAt: new Date().toISOString(), // Added a default createdAt
+    createdBy: "system",
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString(), // Added updatedAt with a default value
     is_public: true,
     steps: [
       "IoT սարքերի հետազոտություն և ընտրություն",

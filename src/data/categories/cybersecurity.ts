@@ -29,7 +29,8 @@ export const cybersecurityProjects: ProjectTheme[] = [
       "Համայնքային և մրցակցային հարթակների նախագծում",
       "WebAssembly-ի օգտագործումը անվտանգ հաշվարկների համար"
     ],
-    createdBy: "system" // Added required createdBy property
+    createdBy: "system",
+    createdAt: new Date().toISOString()
   },
   {
     id: 10,
@@ -58,6 +59,7 @@ export const cybersecurityProjects: ProjectTheme[] = [
       "Անվտանգության ռիսկերի վերլուծություն և գնահատում",
       "Կատարողականության և մասշտաբավորման համար Go/Rust-ով ծրագրավորում"
     ],
-    createdBy: "system" // Added required createdBy property
+    createdBy: "system",
+    createdAt: new Date().toISOString()
   }
 ];

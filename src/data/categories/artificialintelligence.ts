@@ -29,7 +29,8 @@ export const aiProjects: ProjectTheme[] = [
       "WebRTC և առցանց ձայնային մշակում",
       "Մեքենայական ուսուցման ծառայությունների արդյունաբերական տեղակայում"
     ],
-    createdBy: "system" // Added required createdBy property
+    createdBy: "system",
+    createdAt: new Date().toISOString()
   },
   {
     id: 6,
@@ -58,6 +59,7 @@ export const aiProjects: ProjectTheme[] = [
       "Արհեստական բանականության մոդելի մեկնաբանելիություն",
       "Ռեալ աշխարհի բժշկական տվյալների հետ աշխատանք"
     ],
-    createdBy: "system" // Added required createdBy property
+    createdBy: "system",
+    createdAt: new Date().toISOString()
   }
 ];

@@ -29,7 +29,8 @@ export const gameProjects: ProjectTheme[] = [
       "AR տեխնոլոգիաների օգտագործում իրական աշխարհի ինտեգրման համար",
       "Firebase-ի հետ ինտեգրում"
     ],
-    createdBy: "system" // Added required createdBy property
+    createdBy: "system",
+    createdAt: new Date().toISOString()
   },
   {
     id: 8,
@@ -58,6 +59,7 @@ export const gameProjects: ProjectTheme[] = [
       "AI-ով մրցակիցների նախագծում",
       "Բազմաօգտագործողի համակարգերի ճարտարապետություն"
     ],
-    createdBy: "system" // Added required createdBy property
+    createdBy: "system",
+    createdAt: new Date().toISOString()
   }
 ];
