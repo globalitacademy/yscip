@@ -1,114 +1,104 @@
 
 import React from 'react';
-import { User, Clock } from 'lucide-react';
-import { Input } from '@/components/ui/input';
-import { Textarea } from '@/components/ui/textarea';
-import { Button } from '@/components/ui/button';
-import { FadeIn } from '@/components/LocalTransitions';
 import { ProfessionalCourse } from '../types/ProfessionalCourse';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { Edit, Globe, Share2, User, Clock, Book } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 
 interface CourseBannerProps {
-  displayCourse: ProfessionalCourse;
-  isEditing: boolean;
-  editedCourse: ProfessionalCourse | null;
-  setEditedCourse: React.Dispatch<React.SetStateAction<ProfessionalCourse | null>>;
+  course: ProfessionalCourse;
+  canEdit: boolean;
   handleApply: () => void;
 }
 
-const CourseBanner: React.FC<CourseBannerProps> = ({
-  displayCourse,
-  isEditing,
-  editedCourse,
-  setEditedCourse,
-  handleApply
-}) => {
+const CourseBanner: React.FC<CourseBannerProps> = ({ course, canEdit, handleApply }) => {
+  const navigate = useNavigate();
+  
+  const handleEditCourse = () => {
+    if (course?.id) {
+      navigate(`/course/${course.id}`);
+    }
+  };
+  
   return (
-    <FadeIn>
-      <div className="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-xl p-8 mb-10 relative">
-        {displayCourse.imageUrl && (
-          <div className="absolute right-0 top-0 h-full overflow-hidden rounded-r-xl w-2/5">
-            <img 
-              src={displayCourse.imageUrl} 
-              alt={displayCourse.title}
-              className="object-cover h-full w-full opacity-30"
-            />
-            <div className="absolute inset-0 bg-gradient-to-l from-transparent to-blue-50"></div>
-          </div>
+    <div className="relative rounded-xl overflow-hidden bg-gradient-to-r from-blue-100 to-violet-100 mb-8">
+      <div className="absolute inset-0 opacity-10">
+        {course.imageUrl && (
+          <img 
+            src={course.imageUrl} 
+            alt={course.title}
+            className="w-full h-full object-cover" 
+          />
         )}
-        
-        <div className="relative z-10">
-          {isEditing ? (
-            <>
-              <div className="mb-3">
-                <label className="block text-sm font-medium text-gray-700 mb-1">Նկար URL</label>
-                <Input 
-                  value={editedCourse?.imageUrl || ''}
-                  onChange={(e) => setEditedCourse(prev => prev ? {...prev, imageUrl: e.target.value} : prev)}
-                  placeholder="https://example.com/image.jpg"
-                  className="mb-3"
-                />
-              </div>
-              <Input 
-                value={editedCourse?.title || ''}
-                onChange={(e) => setEditedCourse(prev => prev ? {...prev, title: e.target.value} : prev)}
-                className="text-3xl md:text-4xl font-bold mb-3"
-              />
-              <Textarea 
-                value={editedCourse?.description || ''}
-                onChange={(e) => setEditedCourse(prev => prev ? {...prev, description: e.target.value} : prev)}
-                className="text-lg mb-6"
-                rows={4}
-              />
-            </>
-          ) : (
-            <>
-              <h1 className="text-3xl md:text-4xl font-bold mb-3">{displayCourse?.title}</h1>
-              <p className="text-lg text-muted-foreground mb-6">{displayCourse?.description}</p>
-            </>
-          )}
-          
-          <div className="flex flex-wrap gap-6 mb-8">
-            <div className="flex items-center gap-2">
-              <User size={18} className="text-blue-500" />
-              {isEditing ? (
-                <Input 
-                  value={editedCourse?.createdBy || ''}
-                  onChange={(e) => setEditedCourse(prev => prev ? {...prev, createdBy: e.target.value} : prev)}
-                  className="w-48"
-                />
-              ) : (
-                <span>Դասախոս՝ {displayCourse?.createdBy}</span>
-              )}
-            </div>
-            <div className="flex items-center gap-2">
-              <Clock size={18} className="text-blue-500" />
-              {isEditing ? (
-                <Input 
-                  value={editedCourse?.duration || ''}
-                  onChange={(e) => setEditedCourse(prev => prev ? {...prev, duration: e.target.value} : prev)}
-                  className="w-48"
-                />
-              ) : (
-                <span>Տևողություն՝ {displayCourse?.duration}</span>
-              )}
-            </div>
+      </div>
+      
+      <div className="relative z-10 p-8 md:p-12">
+        <div className="flex flex-col md:flex-row items-center md:items-start gap-6">
+          <div className="w-24 h-24 md:w-32 md:h-32 bg-white rounded-full flex items-center justify-center shadow-lg border-4 border-white">
+            {course.imageUrl ? (
+              <img src={course.imageUrl} alt={course.title} className="w-full h-full object-cover rounded-full" />
+            ) : (
+              course.icon || <Book className="w-12 h-12 text-primary" />
+            )}
           </div>
           
-          <div className="flex gap-4 mt-6">
-            {!isEditing && (
-              <>
-                <Button onClick={handleApply} size="lg">
-                  Դիմել դասընթացին
+          <div className="flex-1 text-center md:text-left">
+            <div className="mb-2">
+              {course.is_public && (
+                <Badge className="mb-2 bg-green-100 text-green-800 border-green-200 hover:bg-green-200">
+                  <Globe className="w-3 h-3 mr-1" /> Հրապարակված
+                </Badge>
+              )}
+              <h1 className="text-3xl md:text-4xl font-bold">{course.title}</h1>
+              <p className="text-lg text-gray-600 mt-2">{course.subtitle}</p>
+            </div>
+            
+            <div className="flex flex-wrap gap-4 items-center my-4">
+              <div className="flex items-center">
+                <User className="w-5 h-5 text-indigo-600 mr-2" />
+                <span>{course.createdBy || 'Անանուն'}</span>
+              </div>
+              <div className="flex items-center">
+                <Clock className="w-5 h-5 text-indigo-600 mr-2" />
+                <span>{course.duration}</span>
+              </div>
+              {course.institution && (
+                <div className="flex items-center">
+                  <Book className="w-5 h-5 text-indigo-600 mr-2" />
+                  <span>{course.institution}</span>
+                </div>
+              )}
+            </div>
+            
+            <div className="flex flex-wrap gap-3 mt-4">
+              <Button 
+                onClick={handleApply}
+                size="lg"
+                className="bg-indigo-600 hover:bg-indigo-700"
+              >
+                Դիմել դասընթացին
+              </Button>
+              
+              {canEdit && (
+                <Button
+                  variant="outline"
+                  size="lg"
+                  onClick={handleEditCourse}
+                >
+                  <Edit className="w-4 h-4 mr-2" />
+                  Խմբագրել
                 </Button>
-                <Button variant="outline" size="lg">
-                  Կապ հաստատել
-                </Button>
-              </>
-            )}
+              )}
+              
+              <Button variant="outline" size="icon">
+                <Share2 className="w-4 h-4" />
+              </Button>
+            </div>
           </div>
         </div>
       </div>
-    </FadeIn>
+    </div>
   );
 };
 
