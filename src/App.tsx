@@ -15,6 +15,7 @@ import Index from './pages/Index';
 import NotFound from './pages/NotFound';
 import CourseDetailPage from './pages/CourseDetailPage';
 import AllCoursesPage from './pages/AllCoursesPage';
+import CourseDetails from './pages/CourseDetails';
 
 function App() {
   return (
@@ -40,8 +41,9 @@ function App() {
             <Route path="/courses/admin" element={<CoursesPage />} />
             <Route path="/courses/create" element={<CourseCreationPage />} />
             
-            {/* Course Details Route */}
+            {/* Course Details Routes */}
             <Route path="/courses/:slug" element={<CourseDetailPage />} />
+            <Route path="/course/:id" element={<CourseDetails />} />
             
             {/* Redirect old /course/:id routes to the new format */}
             <Route 

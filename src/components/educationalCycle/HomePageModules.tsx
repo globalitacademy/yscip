@@ -6,11 +6,12 @@ import { ArrowRight, Loader2 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
-import CourseSectionCard from '@/components/courses/CourseSectionCard';
-import { Course } from '@/components/courses/types';
+import { ProfessionalCourse } from '@/components/courses/types';
+import ProfessionalCourseCard from '@/components/courses/ProfessionalCourseCard';
+import { convertIconNameToComponent } from '@/utils/iconUtils';
 
 export const HomePageModules: React.FC = () => {
-  const [courses, setCourses] = useState<Course[]>([]);
+  const [courses, setCourses] = useState<ProfessionalCourse[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -20,6 +21,7 @@ export const HomePageModules: React.FC = () => {
         const { data, error } = await supabase
           .from('courses')
           .select('*')
+          .eq('is_public', true)
           .limit(6);
 
         if (error) {
@@ -29,21 +31,30 @@ export const HomePageModules: React.FC = () => {
         }
 
         if (data && data.length > 0) {
-          // Transform data to match Course type
-          const transformedCourses = data.map(course => ({
-            id: course.id,
-            title: course.title,
-            name: course.title,
-            description: course.description || '',
-            instructor: course.created_by || 'Unknown',
-            specialization: course.specialization || '',
-            duration: course.duration,
-            modules: course.modules || [],
-            prerequisites: [],
-            is_public: course.is_public,
-            imageUrl: course.image_url,
-            createdBy: course.created_by
-          }));
+          // Transform data to match ProfessionalCourse type
+          const transformedCourses = data.map(course => {
+            // Create icon component
+            const iconElement = convertIconNameToComponent(course.icon_name);
+            
+            return {
+              id: course.id,
+              title: course.title,
+              subtitle: course.subtitle || 'ԴԱՍԸՆԹԱՑ',
+              icon: iconElement,
+              iconName: course.icon_name,
+              duration: course.duration,
+              price: course.price,
+              buttonText: course.button_text || "Մանրամասն",
+              color: course.color,
+              createdBy: course.created_by || "Unknown",
+              institution: course.institution || "",
+              imageUrl: course.image_url,
+              organizationLogo: course.organization_logo,
+              description: course.description,
+              is_public: course.is_public,
+              slug: course.slug || course.id
+            } as ProfessionalCourse;
+          });
           
           setCourses(transformedCourses);
         }
@@ -84,23 +95,25 @@ export const HomePageModules: React.FC = () => {
       <div className="container mx-auto px-4">
         <FadeIn delay="delay-100">
           <h2 className="text-3xl font-bold mb-4 text-center">
-            Դասընթացներ
+            Մասնագիտական դասընթացներ
           </h2>
         </FadeIn>
         
         <FadeIn delay="delay-200">
           <p className="text-muted-foreground text-center max-w-2xl mx-auto mb-8">
-            Մեր առաջարկվող դասընթացները, որոնք օգնում են ձեռք բերել անհրաժեշտ հմտություններ
+            Մեր առաջարկվող դասընթացները, որոնք օգնում են ձեռք բերել մասնագիտական հմտություններ
           </p>
         </FadeIn>
 
         <FadeIn delay="delay-300">
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {courses.map((course) => (
-              <CourseSectionCard 
+              <ProfessionalCourseCard 
                 key={course.id} 
                 course={course} 
-                onClick={() => window.location.href = `/courses/${course.id}`} 
+                isAdmin={false}
+                canEdit={false}
+                onClick={() => window.location.href = `/courses/${course.slug || course.id}`} 
               />
             ))}
           </div>
