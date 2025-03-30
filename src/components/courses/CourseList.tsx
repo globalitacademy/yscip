@@ -8,26 +8,64 @@ import { CheckCircle, Edit2, Trash2, AlertTriangle, Clock } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { Badge } from '@/components/ui/badge';
 import { useCourseContext } from '@/contexts/CourseContext';
-import { useCourses } from './CourseContext';
 
 interface CourseListProps {
   courses: Course[];
   professionalCourses: ProfessionalCourse[];
   userPermissions?: any;
   currentUserId?: string;
+  // Optional functions for when used outside of CourseProvider
+  onEditCourse?: (course: Course) => void;
+  onDeleteCourse?: (course: Course) => void;
+  onEditProfessionalCourse?: (course: ProfessionalCourse) => void;
+  onDeleteProfessionalCourse?: (id: string) => void;
 }
 
 const CourseList: React.FC<CourseListProps> = ({ 
   courses, 
   professionalCourses,
   userPermissions,
-  currentUserId 
+  currentUserId,
+  onEditCourse,
+  onDeleteCourse,
+  onEditProfessionalCourse,
+  onDeleteProfessionalCourse
 }) => {
-  const { handleEditInit, handleOpenDeleteDialog } = useCourseContext();
-  const {
-    handleEditProfessionalCourseInit,
-    handleDeleteProfessionalCourse
-  } = useCourses();
+  // Try to use the context, but don't throw an error if it's not available
+  const courseContext = React.useContext(React.createContext<any>(null));
+  
+  // Functions to handle course actions, using context if available, props otherwise
+  const handleEditCourse = (course: Course) => {
+    if (courseContext?.handleEditInit) {
+      courseContext.handleEditInit(course);
+    } else if (onEditCourse) {
+      onEditCourse(course);
+    }
+  };
+  
+  const handleDeleteCourse = (course: Course) => {
+    if (courseContext?.handleOpenDeleteDialog) {
+      courseContext.handleOpenDeleteDialog(course);
+    } else if (onDeleteCourse) {
+      onDeleteCourse(course);
+    }
+  };
+  
+  const handleEditProfessionalCourse = (course: ProfessionalCourse) => {
+    if (courseContext?.handleEditProfessionalCourseInit) {
+      courseContext.handleEditProfessionalCourseInit(course);
+    } else if (onEditProfessionalCourse) {
+      onEditProfessionalCourse(course);
+    }
+  };
+  
+  const handleDeleteProfessionalCourse = (id: string) => {
+    if (courseContext?.handleDeleteProfessionalCourse) {
+      courseContext.handleDeleteProfessionalCourse(id);
+    } else if (onDeleteProfessionalCourse) {
+      onDeleteProfessionalCourse(id);
+    }
+  };
 
   if (courses.length === 0 && professionalCourses.length === 0) {
     return (
@@ -93,7 +131,7 @@ const CourseList: React.FC<CourseListProps> = ({
                         <Button 
                           variant="outline" 
                           size="icon"
-                          onClick={() => handleEditProfessionalCourseInit(course)}
+                          onClick={() => handleEditProfessionalCourse(course)}
                         >
                           <Edit2 className="h-4 w-4" />
                         </Button>
@@ -160,7 +198,7 @@ const CourseList: React.FC<CourseListProps> = ({
                         <Button 
                           variant="outline" 
                           size="icon"
-                          onClick={() => handleEditInit(course)}
+                          onClick={() => handleEditCourse(course)}
                         >
                           <Edit2 className="h-4 w-4" />
                         </Button>
@@ -170,7 +208,7 @@ const CourseList: React.FC<CourseListProps> = ({
                           variant="outline" 
                           size="icon"
                           className="text-destructive"
-                          onClick={() => handleOpenDeleteDialog(course)}
+                          onClick={() => handleDeleteCourse(course)}
                         >
                           <Trash2 className="h-4 w-4" />
                         </Button>

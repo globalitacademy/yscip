@@ -14,6 +14,7 @@ import CourseManagementPage from './pages/CourseManagementPage';
 import Index from './pages/Index';
 import NotFound from './pages/NotFound';
 import CourseDetailPage from './pages/CourseDetailPage';
+import AllCoursesPage from './pages/AllCoursesPage';
 
 function App() {
   return (
@@ -35,7 +36,8 @@ function App() {
             
             {/* Project and Course Routes */}
             <Route path="/projects" element={<ProjectManagementPage />} />
-            <Route path="/courses" element={<CoursesPage />} />
+            <Route path="/courses" element={<AllCoursesPage />} />
+            <Route path="/courses/admin" element={<CoursesPage />} />
             <Route path="/courses/create" element={<CourseCreationPage />} />
             
             {/* Course Details Route */}

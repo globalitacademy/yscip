@@ -1,7 +1,7 @@
 
 import React from 'react';
 import { useAuth } from '@/contexts/AuthContext';
-import { useCourses } from './CourseContext';
+import { useCourseContext } from '@/contexts/CourseContext';
 import CourseList from './CourseList';
 import EditCourseDialog from './EditCourseDialog';
 
@@ -21,11 +21,12 @@ const CourseTabView: React.FC = () => {
     handleAddModuleToEdit,
     handleRemoveModuleFromEdit,
     handleDeleteCourse,
+    handleOpenDeleteDialog,
     professionalCourse = {},
     setProfessionalCourse = () => {},
     courseType = 'standard',
     setCourseType = () => {}
-  } = useCourses();
+  } = useCourseContext();
 
   const isAdmin = user?.role === 'admin';
 
@@ -43,6 +44,8 @@ const CourseTabView: React.FC = () => {
       <CourseList
         courses={filteredCourses}
         professionalCourses={filteredProfessionalCourses}
+        onEditCourse={handleEditInit}
+        onDeleteCourse={handleOpenDeleteDialog}
       />
 
       <EditCourseDialog
