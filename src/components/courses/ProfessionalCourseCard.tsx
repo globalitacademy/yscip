@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Card, CardContent, CardFooter, CardHeader } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -43,8 +42,8 @@ const ProfessionalCourseCard: React.FC<ProfessionalCourseCardProps> = ({
     if (onClick) {
       onClick();
     } else {
-      // Navigate to course details page
-      const path = course.id ? `/course/${course.id}` : `/courses/${course.slug}`;
+      // Navigate to CourseDetails page instead of CourseDetailPage
+      const path = course.id ? `/course/${course.id}` : `/course/${course.slug}`;
       navigate(path);
     }
   };
