@@ -9,11 +9,15 @@ import { supabase } from '@/integrations/supabase/client';
 import { convertIconNameToComponent } from '@/utils/iconUtils';
 import { toast } from 'sonner';
 import { FadeIn } from '@/components/LocalTransitions';
+import { useAuth } from '@/contexts/AuthContext';
+import { useCoursePermissions } from '@/hooks/useCoursePermissions';
 
 const ProfessionalCoursesSection: React.FC = () => {
   const [courses, setCourses] = useState<ProfessionalCourse[]>([]);
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
+  const { user } = useAuth();
+  const permissions = useCoursePermissions();
   
   useEffect(() => {
     const fetchHomepageCourses = async () => {
@@ -24,6 +28,7 @@ const ProfessionalCoursesSection: React.FC = () => {
           .from('courses')
           .select('*')
           .eq('show_on_homepage', true)
+          .eq('is_public', true) // Only show public courses
           .order('display_order', { ascending: true })
           .limit(3); // Limit to 3 courses for homepage
         
@@ -112,7 +117,7 @@ const ProfessionalCoursesSection: React.FC = () => {
                   course={course} 
                   isAdmin={false}
                   canEdit={false}
-                  onClick={() => navigate(`/courses/${course.slug || course.id}`)} 
+                  onClick={() => navigate(`/course/${course.slug || course.id}`)} 
                 />
               </div>
             ))}

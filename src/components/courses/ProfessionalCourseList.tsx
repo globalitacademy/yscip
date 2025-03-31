@@ -4,6 +4,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import ProfessionalCourseCard from './ProfessionalCourseCard';
 import { ProfessionalCourse } from './types/ProfessionalCourse';
 import { useAuth } from '@/contexts/AuthContext';
+import { useCoursePermissions } from '@/hooks/useCoursePermissions';
 
 interface ProfessionalCourseListProps {
   courses: ProfessionalCourse[];
@@ -21,17 +22,20 @@ const ProfessionalCourseList: React.FC<ProfessionalCourseListProps> = ({
   onDelete 
 }) => {
   const { user } = useAuth();
+  const permissions = useCoursePermissions();
 
-  // Filter courses to show only public ones or those created by the current user
+  // Filter courses to show only public ones created by admin/authorized users
+  // or those created by the current user
   const visibleCourses = courses.filter(course => 
-    course.is_public || course.createdBy === user?.name
+    (course.is_public) || 
+    (user && course.createdBy === user.name)
   );
 
   return (
     <Tabs defaultValue="all" className="w-full">
       <TabsList>
         <TabsTrigger value="all">Բոլոր դասընթացները</TabsTrigger>
-        {isAdmin && (
+        {user && (
           <TabsTrigger value="my">Իմ դասընթացները</TabsTrigger>
         )}
       </TabsList>
@@ -46,7 +50,7 @@ const ProfessionalCourseList: React.FC<ProfessionalCourseListProps> = ({
                 key={course.id} 
                 course={course} 
                 isAdmin={isAdmin}
-                canEdit={isAdmin || course.createdBy === user?.name}
+                canEdit={isAdmin || (user && course.createdBy === user.name)}
                 onEdit={onEdit} 
                 onDelete={onDelete} 
               />
@@ -55,7 +59,7 @@ const ProfessionalCourseList: React.FC<ProfessionalCourseListProps> = ({
         )}
       </TabsContent>
       
-      {isAdmin && (
+      {user && (
         <TabsContent value="my" className="space-y-4 mt-4">
           {userCourses.length === 0 ? (
             <p className="text-center text-gray-500">Դուք դեռ չունեք ավելացված դասընթացներ</p>

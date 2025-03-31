@@ -1,16 +1,17 @@
-
 import { useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { Course } from '@/components/courses/types';
 import { ProfessionalCourse } from '@/components/courses/types/ProfessionalCourse';
 import { toast } from 'sonner';
 import { convertIconNameToComponent } from '@/utils/iconUtils';
+import { useAuth } from '@/contexts/AuthContext';
 
 /**
  * Hook for handling all course-related database operations
  */
 export const useCourseService = () => {
   const [loading, setLoading] = useState(false);
+  const { user } = useAuth();
 
   /**
    * Fetch all courses from the database
@@ -18,9 +19,16 @@ export const useCourseService = () => {
   const fetchCourses = async (): Promise<ProfessionalCourse[]> => {
     setLoading(true);
     try {
-      const { data, error } = await supabase
+      const query = supabase
         .from('courses')
         .select('*');
+      
+      // If user is not admin, only show public courses and their own courses
+      if (user && user.role !== 'admin') {
+        query.or(`is_public.eq.true,created_by.eq.${user.name}`);
+      }
+      
+      const { data, error } = await query;
       
       if (error) {
         console.error('Error fetching courses:', error);
@@ -93,6 +101,13 @@ export const useCourseService = () => {
   const createCourse = async (course: Partial<ProfessionalCourse>): Promise<boolean> => {
     setLoading(true);
     try {
+      // Determine if the course should be public based on user role
+      const isPublic = user && (user.role === 'admin' || 
+                               user.role === 'lecturer' || 
+                               user.role === 'instructor') 
+                       ? course.is_public
+                       : false;
+
       // Insert the main course record
       const { data, error } = await supabase
         .from('courses')
@@ -104,12 +119,12 @@ export const useCourseService = () => {
           price: course.price,
           button_text: course.buttonText,
           color: course.color,
-          created_by: course.createdBy,
+          created_by: user?.name || course.createdBy,
           institution: course.institution,
           image_url: course.imageUrl,
           organization_logo: course.organizationLogo,
           description: course.description,
-          is_public: course.is_public
+          is_public: isPublic
         })
         .select()
         .single();
@@ -172,6 +187,12 @@ export const useCourseService = () => {
       }
       
       toast.success('Դասընթացը հաջողությամբ ստեղծվել է։');
+      
+      // If the course couldn't be published, show a notification
+      if (course.is_public && !isPublic) {
+        toast.info('Դասընթացը հաջողությամբ ստեղծվել է, սակայն հրապարակման համար անհրաժեշտ է ադմինիստրատորի հաստատումը։');
+      }
+      
       return true;
     } catch (error) {
       console.error('Error in createCourse:', error);
@@ -188,6 +209,30 @@ export const useCourseService = () => {
   const updateCourse = async (id: string, updates: Partial<ProfessionalCourse>): Promise<boolean> => {
     setLoading(true);
     try {
+      // Determine if the user can publish the course
+      let isPublic = updates.is_public;
+      
+      // If user is not admin or authorized role, they can't publish courses
+      if (user && user.role !== 'admin' && 
+          user.role !== 'lecturer' && 
+          user.role !== 'instructor') {
+        // Get current course state
+        const { data: currentCourse } = await supabase
+          .from('courses')
+          .select('is_public, created_by')
+          .eq('id', id)
+          .single();
+          
+        // If the course is already public, keep it public
+        // If not, it requires admin approval to be published
+        isPublic = currentCourse?.is_public || false;
+        
+        // If the user tries to publish their own course, show a notification
+        if (updates.is_public && !isPublic && currentCourse?.created_by === user.name) {
+          toast.info('Դասընթացի հրապարակման համար անհրաժեշտ է ադմինիստրատորի հաստատումը։');
+        }
+      }
+
       // Update the main course record
       const { error: courseError } = await supabase
         .from('courses')
@@ -203,7 +248,7 @@ export const useCourseService = () => {
           image_url: updates.imageUrl,
           organization_logo: updates.organizationLogo,
           description: updates.description,
-          is_public: updates.is_public,
+          is_public: isPublic,
           updated_at: new Date().toISOString()
         })
         .eq('id', id);
@@ -292,6 +337,20 @@ export const useCourseService = () => {
   const deleteCourse = async (id: string): Promise<boolean> => {
     setLoading(true);
     try {
+      // Check if user can delete this course
+      if (user && user.role !== 'admin') {
+        const { data: course } = await supabase
+          .from('courses')
+          .select('created_by')
+          .eq('id', id)
+          .single();
+          
+        if (course?.created_by !== user.name) {
+          toast.error('Դուք չունեք այս դասընթացը ջնջելու իրավունք։');
+          return false;
+        }
+      }
+      
       // Delete related records first (they will cascade, but let's be explicit)
       await Promise.allSettled([
         supabase.from('course_lessons').delete().eq('course_id', id),

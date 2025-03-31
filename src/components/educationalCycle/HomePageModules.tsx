@@ -21,7 +21,7 @@ export const HomePageModules: React.FC = () => {
         const { data, error } = await supabase
           .from('courses')
           .select('*')
-          .eq('is_public', true)
+          .eq('is_public', true) // Only show public courses
           .limit(6);
 
         if (error) {
@@ -113,7 +113,7 @@ export const HomePageModules: React.FC = () => {
                 course={course} 
                 isAdmin={false}
                 canEdit={false}
-                onClick={() => window.location.href = `/courses/${course.slug || course.id}`} 
+                onClick={() => window.location.href = `/course/${course.slug || course.id}`} 
               />
             ))}
           </div>
