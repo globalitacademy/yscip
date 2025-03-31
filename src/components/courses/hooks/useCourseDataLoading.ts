@@ -1,8 +1,11 @@
-import { Dispatch, SetStateAction } from 'react';
+
+import { Dispatch, SetStateAction, useState, useCallback } from 'react';
 import { ProfessionalCourse } from '../types';
 import { toast } from 'sonner';
 import { syncLocalCoursesToDatabase, loadCoursesFromLocalStorage } from '@/utils/syncUtils';
 import { useCourseService } from '@/hooks/courseService';
+import { supabase } from '@/integrations/supabase/client';
+import { convertIconNameToComponent } from '@/utils/iconUtils';
 
 export const useCourseDataLoading = (
   setProfessionalCourses: Dispatch<SetStateAction<ProfessionalCourse[]>>,
