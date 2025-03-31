@@ -1,15 +1,16 @@
-
-import { useState, useCallback } from 'react';
-import { supabase } from '@/integrations/supabase/client';
-import { syncLocalCoursesToDatabase } from '@/utils/syncUtils';
-import { ProfessionalCourse } from '../types/ProfessionalCourse';
-import { convertIconNameToComponent } from '@/utils/iconUtils';
+import { Dispatch, SetStateAction } from 'react';
+import { ProfessionalCourse } from '../types';
 import { toast } from 'sonner';
+import { syncLocalCoursesToDatabase, loadCoursesFromLocalStorage } from '@/utils/syncUtils';
+import { useCourseService } from '@/hooks/courseService';
 
 export const useCourseDataLoading = (
-  setProfessionalCourses: React.Dispatch<React.SetStateAction<ProfessionalCourse[]>>,
-  setLoading: React.Dispatch<React.SetStateAction<boolean>>
+  setProfessionalCourses: Dispatch<SetStateAction<ProfessionalCourse[]>>,
+  setLoading: Dispatch<SetStateAction<boolean>>
 ) => {
+  // Use the refactored course service
+  const courseService = useCourseService();
+
   const [lastLoadTime, setLastLoadTime] = useState<number>(0);
   
   /**
