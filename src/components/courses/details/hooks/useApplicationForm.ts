@@ -20,7 +20,7 @@ export const useApplicationForm = (
   const [loading, setLoading] = useState(false);
   const [format, setFormat] = useState('online');
   const [sessionType, setSessionType] = useState('group');
-  const [preferredLanguages, setPreferredLanguages] = useState<string[]>([]);
+  const [preferredLanguages, setPreferredLanguages] = useState<string[]>(['armenian']);
   const [acceptPractice, setAcceptPractice] = useState(true);
   
   useEffect(() => {
@@ -40,6 +40,16 @@ export const useApplicationForm = (
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    if (!name || !email || !phone) {
+      toast({
+        title: 'Թերի տվյալներ',
+        description: 'Խնդրում ենք լրացնել բոլոր պարտադիր դաշտերը',
+        variant: 'destructive',
+      });
+      return;
+    }
+    
     setLoading(true);
 
     try {

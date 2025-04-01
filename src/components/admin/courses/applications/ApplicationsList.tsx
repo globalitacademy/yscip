@@ -1,5 +1,5 @@
 
-import React, { useEffect, useState } from 'react';
+import React, { useEffect } from 'react';
 import { CourseApplication } from '@/components/courses/types/CourseApplication';
 import {
   Table,
@@ -12,69 +12,22 @@ import {
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
-import { Mail, Eye, Check, X } from 'lucide-react';
+import { Mail, Eye, Check, X, Phone, RefreshCw, Info } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
+import { useCourseApplications } from '@/hooks/useCourseApplications';
 
 const ApplicationsList: React.FC = () => {
-  const [applications, setApplications] = useState<CourseApplication[]>([]);
-  const [loading, setLoading] = useState(true);
   const { user } = useAuth();
-
-  const fetchApplications = async () => {
-    setLoading(true);
-    try {
-      // Temporary solution using localStorage until database is ready
-      const localApplications = JSON.parse(localStorage.getItem('course_applications') || '[]');
-      setApplications(localApplications);
-    } catch (error: any) {
-      console.error('Error fetching applications:', error.message);
-      toast.error('Դիմումների բեռնման սխալ', {
-        description: 'Չհաջողվեց բեռնել դասընթացների դիմումները'
-      });
-    } finally {
-      setLoading(false);
-    }
-  };
+  const { 
+    applications, 
+    loading, 
+    fetchApplications,
+    updateApplicationStatus 
+  } = useCourseApplications();
 
   useEffect(() => {
     fetchApplications();
-    
-    // Set up event listener for local storage changes
-    const handleStorageChange = (e: StorageEvent) => {
-      if (e.key === 'course_applications') {
-        fetchApplications();
-      }
-    };
-    
-    window.addEventListener('storage', handleStorageChange);
-    
-    return () => {
-      window.removeEventListener('storage', handleStorageChange);
-    };
-  }, []);
-
-  const updateApplicationStatus = async (id: string, status: 'contacted' | 'enrolled' | 'rejected') => {
-    try {
-      // Update in localStorage
-      const localApplications = JSON.parse(localStorage.getItem('course_applications') || '[]');
-      const updatedApplications = localApplications.map((app: CourseApplication) => 
-        app.id === id ? { ...app, status } : app
-      );
-      localStorage.setItem('course_applications', JSON.stringify(updatedApplications));
-      
-      // Update local state
-      setApplications(updatedApplications);
-
-      toast.success('Կարգավիճակը թարմացված է', {
-        description: 'Դիմումի կարգավիճակը հաջողությամբ թարմացվել է'
-      });
-    } catch (error: any) {
-      console.error('Error updating application status:', error.message);
-      toast.error('Կարգավիճակի թարմացման սխալ', {
-        description: 'Չհաջողվեց թարմացնել դիմումի կարգավիճակը'
-      });
-    }
-  };
+  }, [fetchApplications]);
 
   const getStatusBadge = (status: string) => {
     switch (status) {
@@ -89,6 +42,43 @@ const ApplicationsList: React.FC = () => {
       default:
         return <Badge variant="outline">Անհայտ</Badge>;
     }
+  };
+
+  const handleViewDetails = (application: CourseApplication) => {
+    toast.info(
+      <div>
+        <h3 className="font-bold mb-2">{application.full_name}</h3>
+        <p className="mb-1">Դասընթաց: {application.course_title}</p>
+        <p className="mb-1">Հեռ: {application.phone_number}</p>
+        <p className="mb-1">Էլ.փոստ: {application.email}</p>
+        {application.format && (
+          <p className="mb-1">Ձևաչափ: {application.format === 'online' ? 'Առցանց' : 'Առկա'}</p>
+        )}
+        {application.session_type && (
+          <p className="mb-1">Դասի տեսակ: {application.session_type === 'group' ? 'Խմբային' : 'Անհատական'}</p>
+        )}
+        {application.languages && application.languages.length > 0 && (
+          <p className="mb-1">Լեզուներ: {application.languages.map(lang => {
+            switch(lang) {
+              case 'armenian': return 'Հայերեն';
+              case 'russian': return 'Ռուսերեն';
+              case 'english': return 'Անգլերեն';
+              default: return lang;
+            }
+          }).join(', ')}</p>
+        )}
+        {application.message && (
+          <div className="mt-2 border-t pt-2">
+            <p className="font-medium mb-1">Հաղորդագրություն:</p>
+            <p>{application.message}</p>
+          </div>
+        )}
+      </div>,
+      {
+        duration: 10000,
+        icon: <Info className="h-5 w-5 text-blue-500" />
+      }
+    );
   };
 
   if (!user || user.role !== 'admin') {
@@ -115,7 +105,7 @@ const ApplicationsList: React.FC = () => {
       <div className="flex justify-between items-center mb-6">
         <h2 className="text-2xl font-bold">Դասընթացների դիմումներ</h2>
         <Button onClick={fetchApplications} variant="outline" size="sm">
-          Թարմացնել
+          <RefreshCw className="h-4 w-4 mr-2" /> Թարմացնել
         </Button>
       </div>
 
@@ -132,6 +122,7 @@ const ApplicationsList: React.FC = () => {
                 <TableHead>Անուն</TableHead>
                 <TableHead>Դասընթաց</TableHead>
                 <TableHead>Կոնտակտներ</TableHead>
+                <TableHead>Նախընտրություններ</TableHead>
                 <TableHead>Կարգավիճակ</TableHead>
                 <TableHead className="text-right">Գործողություններ</TableHead>
               </TableRow>
@@ -150,9 +141,19 @@ const ApplicationsList: React.FC = () => {
                         <Mail className="h-3 w-3" />
                         <span>{application.email}</span>
                       </div>
-                      <div className="text-sm text-muted-foreground mt-1">
-                        {application.phone_number}
+                      <div className="flex items-center space-x-1 mt-1">
+                        <Phone className="h-3 w-3" />
+                        <span>{application.phone_number}</span>
                       </div>
+                    </div>
+                  </TableCell>
+                  <TableCell>
+                    <div className="text-xs text-muted-foreground">
+                      <div>Ձևաչափ: {application.format === 'online' ? 'Առցանց' : 'Առկա'}</div>
+                      <div>Դասի տեսակ: {application.session_type === 'group' ? 'Խմբային' : 'Անհատական'}</div>
+                      {application.languages && application.languages.length > 0 && (
+                        <div>Լեզուներ: {application.languages.length}</div>
+                      )}
                     </div>
                   </TableCell>
                   <TableCell>{getStatusBadge(application.status)}</TableCell>
@@ -161,22 +162,7 @@ const ApplicationsList: React.FC = () => {
                       <Button
                         variant="outline"
                         size="sm"
-                        onClick={() => {
-                          toast.info(
-                            <div>
-                              <h3 className="font-bold mb-2">{application.full_name}</h3>
-                              <p className="mb-1">Դասընթաց: {application.course_title}</p>
-                              <p className="mb-1">Հեռ: {application.phone_number}</p>
-                              <p className="mb-1">Էլ.փոստ: {application.email}</p>
-                              {application.message && (
-                                <div className="mt-2 border-t pt-2">
-                                  <p className="font-medium mb-1">Հաղորդագրություն:</p>
-                                  <p>{application.message}</p>
-                                </div>
-                              )}
-                            </div>
-                          );
-                        }}
+                        onClick={() => handleViewDetails(application)}
                       >
                         <Eye className="h-4 w-4" />
                       </Button>

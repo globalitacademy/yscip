@@ -8,7 +8,8 @@ import {
   FileText, 
   School,
   BookOpen,
-  LayoutDashboard
+  LayoutDashboard,
+  ClipboardList
 } from 'lucide-react';
 import { SidebarMenuGroup } from '../types';
 
@@ -62,6 +63,12 @@ export const adminMenuItems: SidebarMenuGroup[] = [
         title: 'Կուրսեր',
         icon: <School className="h-4 w-4" />,
         href: '/admin/courses',
+        roles: ['admin']
+      },
+      {
+        title: 'Դասընթացի դիմումներ',
+        icon: <ClipboardList className="h-4 w-4" />,
+        href: '/admin/course-applications',
         roles: ['admin']
       },
       {
