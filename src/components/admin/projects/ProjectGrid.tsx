@@ -32,7 +32,7 @@ const ProjectGrid: React.FC<ProjectGridProps> = ({
     // First check if it's a real project from database
     const isRealProject = project.is_public !== undefined;
     
-    if (!isRealProject) return false;
+    if (!isRealProject) return true; // Allow template projects
     
     // Admin can see all projects
     if (user?.role === 'admin') return true;
@@ -57,7 +57,7 @@ const ProjectGrid: React.FC<ProjectGridProps> = ({
   return (
     <FadeIn className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-10">
       {filteredProjects.map((project) => (
-        <div key={project.id} className="relative">
+        <div key={`grid-project-${project.id}`} className="relative">
           <div className="absolute top-4 right-4 z-10 flex gap-2">
             <Button
               variant="outline" 

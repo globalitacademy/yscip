@@ -40,7 +40,7 @@ const ProjectTable: React.FC<ProjectTableProps> = ({
     // First check if it's a real project from database
     const isRealProject = project.is_public !== undefined;
     
-    if (!isRealProject) return false;
+    if (!isRealProject) return true; // Allow template projects
     
     // Admin can see all projects
     if (user?.role === 'admin') return true;
@@ -78,13 +78,13 @@ const ProjectTable: React.FC<ProjectTableProps> = ({
           </TableHeader>
           <TableBody>
             {filteredProjects.map((project) => (
-              <TableRow key={project.id}>
+              <TableRow key={`table-project-${project.id}`}>
                 <TableCell className="font-medium">{project.title}</TableCell>
                 <TableCell>{project.category}</TableCell>
                 <TableCell>
                   <div className="flex flex-wrap gap-1">
                     {project.techStack && project.techStack.slice(0, 3).map((tech, index) => (
-                      <Badge key={index} variant="outline" className="text-xs">
+                      <Badge key={`tech-${project.id}-${index}`} variant="outline" className="text-xs">
                         {tech}
                       </Badge>
                     ))}

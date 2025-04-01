@@ -10,10 +10,11 @@ import ProjectTable from './ProjectTable';
 import ProjectAssignDialog from './ProjectAssignDialog';
 import ProjectApproveDialog from './ProjectApproveDialog';
 import ProjectDialogManager from '@/components/projects/ProjectDialogManager';
-import { useProjectManagement } from '@/contexts/ProjectManagementContext';
+import { ProjectManagementProvider, useProjectManagement } from '@/contexts/ProjectManagementContext';
 import { LayoutGrid, Table } from 'lucide-react';
 
-const AdminProjectGrid: React.FC = () => {
+// Create an inner component that can use the context
+const AdminProjectContent = () => {
   const { user } = useAuth();
   const [viewMode, setViewMode] = useState<'grid' | 'table'>('grid');
   const {
@@ -36,17 +37,19 @@ const AdminProjectGrid: React.FC = () => {
     setIsApproveDialogOpen
   } = useAdminProjects();
   
+  const projectManagement = useProjectManagement();
+  
+  // Destructure what we need from projectManagement
   const {
     handleEditInit,
     handleImageChangeInit,
     handleDeleteInit
-  } = useProjectManagement();
+  } = projectManagement;
   
   useEffect(() => {
     // Load projects when the component mounts
-    const projectManagement = useProjectManagement();
     projectManagement.loadProjects();
-  }, []);
+  }, [projectManagement]);
   
   return (
     <div className="mt-8 text-left">
@@ -144,6 +147,15 @@ const AdminProjectGrid: React.FC = () => {
         onApprove={handleApproveProject}
       />
     </div>
+  );
+};
+
+// Main component that provides the context
+const AdminProjectGrid: React.FC = () => {
+  return (
+    <ProjectManagementProvider>
+      <AdminProjectContent />
+    </ProjectManagementProvider>
   );
 };
 

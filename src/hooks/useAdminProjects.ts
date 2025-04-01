@@ -1,8 +1,7 @@
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useCallback } from 'react';
 import { projectThemes, ProjectTheme } from '@/data/projectThemes';
 import { toast } from "@/components/ui/use-toast";
-import { useProjectManagement } from '@/contexts/ProjectManagementContext';
 
 export const useAdminProjects = () => {
   const [displayLimit, setDisplayLimit] = useState(12);
@@ -12,16 +11,13 @@ export const useAdminProjects = () => {
   const [isApproveDialogOpen, setIsApproveDialogOpen] = useState(false);
   const [filterStatus, setFilterStatus] = useState("all");
   
-  // Get the project management context
-  const projectManagement = useProjectManagement();
-  
-  // Get categories from project themes and stored projects
-  const allProjects = [...projectManagement.projects, ...projectThemes];
+  // Get categories from project themes
+  const allProjects = [...projectThemes];
   const categories = ["all", ...new Set(allProjects.map(project => project.category))];
   
   // Filter projects by category and status
   const getFilteredProjects = useCallback(() => {
-    let filtered = [...projectManagement.projects, ...projectThemes];
+    let filtered = [...projectThemes];
     
     // Filter by category
     if (activeCategory !== "all") {
@@ -38,7 +34,7 @@ export const useAdminProjects = () => {
     }
     
     return filtered;
-  }, [activeCategory, filterStatus, projectManagement.projects]);
+  }, [activeCategory, filterStatus]);
   
   const filteredProjects = getFilteredProjects();
   const visibleProjects = filteredProjects.slice(0, displayLimit);
