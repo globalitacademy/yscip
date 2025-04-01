@@ -1,3 +1,4 @@
+
 import React, { useCallback, memo } from 'react';
 import { Card, CardContent, CardFooter, CardHeader } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -101,7 +102,7 @@ const ProjectCard: React.FC<ProjectCardProps> = ({
         <span>{project.category}</span>
       </div>
 
-      {/* Moved complexity badge to top right */}
+      {/* Complexity badge in top right */}
       <div className="absolute top-4 right-4 z-10">
         <span className={cn("text-xs border px-2 py-1 rounded-full inline-block", getComplexityColor(project.complexity))}>
           {project.complexity}
@@ -115,7 +116,7 @@ const ProjectCard: React.FC<ProjectCardProps> = ({
       )}
 
       <CardHeader className="pb-2 text-center pt-12 relative">
-        <div className="w-full h-32 mb-4 overflow-hidden rounded-md">
+        <div className="w-full h-32 mb-4 overflow-hidden rounded-md relative">
           <img 
             src={imageUrl} 
             alt={project.title}
@@ -125,16 +126,17 @@ const ProjectCard: React.FC<ProjectCardProps> = ({
               (e.target as HTMLImageElement).src = '/placeholder.svg';
             }}
           />
+          
+          {/* Author info moved to the bottom right of the image */}
+          <div className="absolute bottom-2 right-2 flex items-center gap-1 text-xs bg-gray-900/70 text-white px-2 py-1 rounded-full">
+            <User size={10} />
+            <span>{creatorName}</span>
+          </div>
         </div>
         <h3 className="font-bold text-xl">{project.title}</h3>
       </CardHeader>
       
       <CardContent className="flex-grow pb-2">
-        <div className="flex items-center gap-2 text-sm text-muted-foreground mb-4">
-          <User size={16} />
-          <span>Հեղինակ՝ {creatorName}</span>
-        </div>
-        
         {/* Replaced description with Technologies subheading */}
         <div className="mb-4">
           <h4 className="text-sm font-bold mb-2 flex items-center">
