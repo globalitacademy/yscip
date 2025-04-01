@@ -4,7 +4,7 @@ import { Course } from './types';
 import { ProfessionalCourse } from './types/ProfessionalCourse';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { CheckCircle, Edit2, Trash2, AlertTriangle, Clock } from 'lucide-react';
+import { CheckCircle, Edit2, Trash2, AlertTriangle, Clock, Eye } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { Badge } from '@/components/ui/badge';
 import { useCourseContext } from '@/contexts/CourseContext';
@@ -124,7 +124,7 @@ const CourseList: React.FC<CourseListProps> = ({
                   </CardContent>
                   <CardFooter className="pt-4 flex justify-between">
                     <Button variant="default" size="sm" asChild>
-                      <Link to={`/courses/${course.id}`}>{course.buttonText || 'Դիտել'}</Link>
+                      <Link to={`/course/${course.id}`}>{course.buttonText || 'Դիտել'}</Link>
                     </Button>
                     <div className="flex gap-2">
                       {canEdit && (
@@ -191,7 +191,7 @@ const CourseList: React.FC<CourseListProps> = ({
                   </CardContent>
                   <CardFooter className="pt-4 flex justify-between">
                     <Button variant="default" size="sm" asChild>
-                      <Link to={`/courses/${course.id}`}>Դիտել</Link>
+                      <Link to={`/course/${course.id}`}>Դիտել</Link>
                     </Button>
                     <div className="flex gap-2">
                       {canEdit && (

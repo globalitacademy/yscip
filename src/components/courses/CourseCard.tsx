@@ -3,10 +3,11 @@ import React from 'react';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Course } from './types';
-import { Edit, Trash2, User } from 'lucide-react';
+import { Edit, Trash2, User, Eye } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { useAuth } from '@/contexts/AuthContext';
 import { useCourseContext } from '@/contexts/CourseContext';
+import { useNavigate } from 'react-router-dom';
 
 interface CourseCardProps {
   course: Course;
@@ -19,6 +20,7 @@ interface CourseCardProps {
 const CourseCard: React.FC<CourseCardProps> = ({ course, isAdmin, canEdit, onEdit, onDelete }) => {
   const { user } = useAuth();
   const { setIsDeleteDialogOpen, setSelectedCourse, setCourseType } = useCourseContext();
+  const navigate = useNavigate();
   
   // Check if the course was created by the current user
   const isCreatedByCurrentUser = course.createdBy === user?.id;
@@ -39,6 +41,11 @@ const CourseCard: React.FC<CourseCardProps> = ({ course, isAdmin, canEdit, onEdi
     e.stopPropagation();
     console.log("Edit button clicked for course:", course.id);
     onEdit(course);
+  };
+  
+  // Function to handle view click
+  const handleViewClick = () => {
+    navigate(`/course/${course.id}`);
   };
   
   return (
@@ -86,18 +93,25 @@ const CourseCard: React.FC<CourseCardProps> = ({ course, isAdmin, canEdit, onEdi
           )}
         </div>
       </CardContent>
-      {canEdit && (
-        <CardFooter className="flex justify-end gap-2 pt-2">
-          <Button variant="outline" size="sm" onClick={handleEditClick}>
-            <Edit className="h-4 w-4 mr-1" />
-            Խմբագրել
-          </Button>
-          <Button variant="destructive" size="sm" onClick={handleDeleteClick}>
-            <Trash2 className="h-4 w-4 mr-1" />
-            Ջնջել
-          </Button>
-        </CardFooter>
-      )}
+      <CardFooter className="flex justify-between gap-2 pt-2">
+        <Button variant="outline" className="flex-1" onClick={handleViewClick}>
+          <Eye className="h-4 w-4 mr-1" />
+          Դիտել
+        </Button>
+        
+        {canEdit && (
+          <>
+            <Button variant="outline" size="sm" onClick={handleEditClick}>
+              <Edit className="h-4 w-4 mr-1" />
+              Խմբագրել
+            </Button>
+            <Button variant="destructive" size="sm" onClick={handleDeleteClick}>
+              <Trash2 className="h-4 w-4 mr-1" />
+              Ջնջել
+            </Button>
+          </>
+        )}
+      </CardFooter>
     </Card>
   );
 };

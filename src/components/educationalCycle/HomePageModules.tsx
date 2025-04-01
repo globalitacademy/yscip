@@ -113,7 +113,6 @@ export const HomePageModules: React.FC = () => {
                 course={course} 
                 isAdmin={false}
                 canEdit={false}
-                onClick={() => window.location.href = `/course/${course.slug || course.id}`} 
               />
             ))}
           </div>
