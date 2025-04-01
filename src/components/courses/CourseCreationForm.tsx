@@ -57,7 +57,7 @@ const CourseCreationForm: React.FC = () => {
       />
       <ProjectFormFooter 
         onSubmit={handleSubmit} 
-        submitText="Ստեղծել դասընթաց" 
+        submitButtonText="Ստեղծել դասընթաց" 
         isDisabled={!isFormValid || isLoading}
       />
     </Card>
