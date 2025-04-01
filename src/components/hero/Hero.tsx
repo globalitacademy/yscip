@@ -12,6 +12,14 @@ const Hero: React.FC = () => {
   const [cursorVisible, setCursorVisible] = useState(false);
   const [containerBounds, setContainerBounds] = useState({ top: 0, left: 0, width: 0, height: 0 });
   
+  // Static cursor positions (relative to container)
+  const staticCursors = [
+    { x: 0.15, y: 0.2, style: 'diamond', color: 'purple', label: 'Դասընթացներ' },
+    { x: 0.85, y: 0.3, style: 'circle', color: 'blue', label: 'Ուսանողներ' },
+    { x: 0.25, y: 0.75, style: 'square', color: 'green', label: 'Դասախոսներ' },
+    { x: 0.75, y: 0.65, style: 'triangle', color: 'red', label: 'Նախագծեր' },
+  ];
+  
   // Fetch categories from project themes
   useEffect(() => {
     const fetchCategories = async () => {
@@ -132,12 +140,31 @@ const Hero: React.FC = () => {
 
   return (
     <section ref={heroRef} className="relative min-h-[90vh] flex items-center justify-center overflow-hidden pt-16 bg-gradient-to-b from-background/20 to-background">
-      {/* Simple triangular cursor that follows mouse */}
+      {/* Main cursor that follows mouse */}
       <CustomCursor 
         mousePosition={mousePosition}
         cursorVisible={cursorVisible}
         color="yellow"
+        style="triangle"
+        size="medium"
       />
+      
+      {/* Static cursors positioned around the hero section */}
+      {staticCursors.map((cursor, index) => (
+        <CustomCursor
+          key={index}
+          mousePosition={{
+            x: containerBounds.left + containerBounds.width * cursor.x,
+            y: containerBounds.top + containerBounds.height * cursor.y
+          }}
+          cursorVisible={true}
+          color={cursor.color}
+          isStatic={true}
+          style={cursor.style as any}
+          size={index % 2 === 0 ? 'small' : 'medium'}
+          label={cursor.label}
+        />
+      ))}
       
       <BackgroundEffects />
       <div 
