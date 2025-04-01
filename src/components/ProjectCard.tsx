@@ -31,7 +31,7 @@ const ProjectCard: React.FC<ProjectCardProps> = ({
   const creatorName = isCreatedByCurrentUser ? 'Ձեր կողմից' : 'Ուսումնական Կենտրոն';
   
   // Get the project image URL
-  const imageUrl = project.image || `https://source.unsplash.com/random/800x600/?${encodeURIComponent(project.category || 'project')}`;
+  const imageUrl = getProjectImage(project);
   
   // Define complexity color classes
   const getComplexityColor = (complexity?: string) => {
@@ -140,7 +140,7 @@ const ProjectCard: React.FC<ProjectCardProps> = ({
       </CardHeader>
       
       <CardContent className="flex-grow pb-2">
-        {/* Replaced description with Technologies subheading */}
+        {/* Technologies subheading */}
         <div className="mb-4">
           <h4 className="text-sm font-bold mb-2 flex items-center">
             <Code size={16} className="mr-2 text-primary" />
