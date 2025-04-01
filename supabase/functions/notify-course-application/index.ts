@@ -174,7 +174,7 @@ serve(async (req) => {
       .from('users')
       .select('id')
       .eq('email', application.email)
-      .single();
+      .maybeSingle();
       
     if (applicantError) {
       console.log("Applicant might not have a user account or multiple accounts found:", applicantError);

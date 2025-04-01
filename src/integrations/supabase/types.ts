@@ -42,10 +42,14 @@ export type Database = {
           course_title: string
           created_at: string | null
           email: string
+          format: string | null
+          free_practice: boolean | null
           full_name: string
           id: string
+          languages: string[] | null
           message: string | null
           phone_number: string
+          session_type: string | null
           status: string
         }
         Insert: {
@@ -53,10 +57,14 @@ export type Database = {
           course_title: string
           created_at?: string | null
           email: string
+          format?: string | null
+          free_practice?: boolean | null
           full_name: string
           id?: string
+          languages?: string[] | null
           message?: string | null
           phone_number: string
+          session_type?: string | null
           status?: string
         }
         Update: {
@@ -64,10 +72,14 @@ export type Database = {
           course_title?: string
           created_at?: string | null
           email?: string
+          format?: string | null
+          free_practice?: boolean | null
           full_name?: string
           id?: string
+          languages?: string[] | null
           message?: string | null
           phone_number?: string
+          session_type?: string | null
           status?: string
         }
         Relationships: []
