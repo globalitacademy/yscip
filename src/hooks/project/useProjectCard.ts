@@ -15,7 +15,18 @@ export const useProjectCard = (
   
   // Check if the project was created by the current user
   const isCreatedByCurrentUser = project.createdBy === user?.id;
-  const creatorName = isCreatedByCurrentUser ? 'Ձեր կողմից' : 'Ուսումնական Կենտրոն';
+  
+  // Get creator name with fallback values
+  let creatorName = 'Անհայտ հեղինակ';
+  if (isCreatedByCurrentUser) {
+    creatorName = 'Ձեր կողմից';
+  } else if (project.createdBy === 'admin') {
+    creatorName = 'Ադմինիստրատորի կողմից';
+  } else if (project.createdBy === 'system') {
+    creatorName = 'Համակարգի կողմից';
+  } else if (project.organizationName) {
+    creatorName = project.organizationName;
+  }
   
   // Get the project image URL
   const imageUrl = getProjectImage(project);

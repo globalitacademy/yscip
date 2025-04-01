@@ -45,7 +45,18 @@ export const useProjectDialogs = (
 
   const handleSaveEdit = useCallback(async () => {
     if (!selectedProject) return;
-    await updateProject(selectedProject, editedProject);
+    
+    // Make sure all required fields are included in the updates
+    const updatesToSave = {
+      ...editedProject,
+      // Include these fields only if they're not already in editedProject
+      title: editedProject.title || selectedProject.title,
+      description: editedProject.description || selectedProject.description,
+      category: editedProject.category || selectedProject.category,
+      is_public: editedProject.is_public !== undefined ? editedProject.is_public : selectedProject.is_public
+    };
+    
+    await updateProject(selectedProject, updatesToSave);
     setIsEditDialogOpen(false);
     setEditedProject({});
     setSelectedProject(null);

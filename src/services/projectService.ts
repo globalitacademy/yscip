@@ -32,7 +32,8 @@ export const fetchProjects = async (): Promise<ProjectTheme[]> => {
       is_public: project.is_public,
       steps: project.steps || [],
       prerequisites: project.prerequisites || [],
-      learningOutcomes: project.learning_outcomes || []
+      learningOutcomes: project.learning_outcomes || [],
+      organizationName: project.organization_name
     }));
   } catch (error) {
     console.error('Error in fetchProjects:', error);
@@ -58,7 +59,8 @@ export const createProject = async (project: ProjectTheme): Promise<boolean> => 
       steps: project.steps || [],
       prerequisites: project.prerequisites || [],
       learning_outcomes: project.learningOutcomes || [],
-      is_public: project.is_public || false
+      is_public: project.is_public || false,
+      organization_name: project.organizationName || null
     };
 
     const { error } = await supabase
@@ -86,17 +88,18 @@ export const updateProject = async (id: number, updatedData: Partial<ProjectThem
     // Map from ProjectTheme to Supabase column names
     const dataToUpdate: any = {};
     
-    if (updatedData.title) dataToUpdate.title = updatedData.title;
-    if (updatedData.description) dataToUpdate.description = updatedData.description;
-    if (updatedData.image) dataToUpdate.image = updatedData.image;
-    if (updatedData.category) dataToUpdate.category = updatedData.category;
-    if (updatedData.techStack) dataToUpdate.tech_stack = updatedData.techStack;
-    if (updatedData.duration) dataToUpdate.duration = updatedData.duration;
-    if (updatedData.complexity) dataToUpdate.complexity = updatedData.complexity;
-    if (updatedData.steps) dataToUpdate.steps = updatedData.steps;
-    if (updatedData.prerequisites) dataToUpdate.prerequisites = updatedData.prerequisites;
-    if (updatedData.learningOutcomes) dataToUpdate.learning_outcomes = updatedData.learningOutcomes;
+    if (updatedData.title !== undefined) dataToUpdate.title = updatedData.title;
+    if (updatedData.description !== undefined) dataToUpdate.description = updatedData.description;
+    if (updatedData.image !== undefined) dataToUpdate.image = updatedData.image;
+    if (updatedData.category !== undefined) dataToUpdate.category = updatedData.category;
+    if (updatedData.techStack !== undefined) dataToUpdate.tech_stack = updatedData.techStack;
+    if (updatedData.duration !== undefined) dataToUpdate.duration = updatedData.duration;
+    if (updatedData.complexity !== undefined) dataToUpdate.complexity = updatedData.complexity;
+    if (updatedData.steps !== undefined) dataToUpdate.steps = updatedData.steps;
+    if (updatedData.prerequisites !== undefined) dataToUpdate.prerequisites = updatedData.prerequisites;
+    if (updatedData.learningOutcomes !== undefined) dataToUpdate.learning_outcomes = updatedData.learningOutcomes;
     if (updatedData.is_public !== undefined) dataToUpdate.is_public = updatedData.is_public;
+    if (updatedData.organizationName !== undefined) dataToUpdate.organization_name = updatedData.organizationName;
     
     // Always update the 'updated_at' timestamp
     dataToUpdate.updated_at = new Date().toISOString();

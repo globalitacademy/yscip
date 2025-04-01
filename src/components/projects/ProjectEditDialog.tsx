@@ -3,6 +3,7 @@ import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
+import { Switch } from '@/components/ui/switch';
 import { 
   Dialog, 
   DialogContent, 
@@ -16,6 +17,7 @@ import ProjectTechStack from '@/components/project-creation/ProjectTechStack';
 import ProjectImplementationSteps from '@/components/project-creation/ProjectImplementationSteps';
 import ProjectLearningDetails from '@/components/project-creation/ProjectLearningDetails';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Label } from '@/components/ui/label';
 
 interface ProjectEditDialogProps {
   open: boolean;
@@ -54,7 +56,7 @@ const ProjectEditDialog: React.FC<ProjectEditDialogProps> = ({
         </DialogHeader>
         
         <div className="py-4">
-          <div className="flex gap-2 mb-6 border-b">
+          <div className="flex gap-2 mb-6 border-b overflow-x-auto">
             <Button 
               variant={currentSection === 'basic' ? 'default' : 'ghost'} 
               onClick={() => setCurrentSection('basic')}
@@ -144,6 +146,15 @@ const ProjectEditDialog: React.FC<ProjectEditDialogProps> = ({
                   onChange={(e) => updateField('detailedDescription', e.target.value)}
                   rows={6}
                 />
+              </div>
+
+              <div className="flex items-center space-x-2 mt-2">
+                <Switch 
+                  id="is_public" 
+                  checked={editedProject.is_public ?? false}
+                  onCheckedChange={(checked) => updateField('is_public', checked)}
+                />
+                <Label htmlFor="is_public">Հրապարակային նախագիծ</Label>
               </div>
             </div>
           )}
