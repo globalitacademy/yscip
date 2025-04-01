@@ -2,7 +2,7 @@
 import React, { useCallback, memo } from 'react';
 import { Card, CardContent, CardFooter, CardHeader } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Eye, Building, User, Pencil, Image, Trash } from 'lucide-react';
+import { Eye, Building, User, Pencil, Image, Trash, Code } from 'lucide-react';
 import { ProjectTheme } from '@/data/projectThemes';
 import { Link } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
@@ -141,16 +141,21 @@ const ProjectCard: React.FC<ProjectCardProps> = ({
         
         <div className="flex justify-between w-full text-sm mt-auto">
           <span>{project.duration || 'Անորոշ ժամկետ'}</span>
-          <span className="font-semibold">
-            {project.techStack && project.techStack.length > 0 ? (
-              <>
-                {project.techStack.slice(0, 2).join(', ')}
-                {project.techStack.length > 2 ? '...' : ''}
-              </>
-            ) : (
-              'Տեխնոլոգիաներ չկան'
-            )}
-          </span>
+          
+          {/* Tech stack section with icon */}
+          <div className="flex items-center">
+            <Code size={16} className="mr-2 text-primary" />
+            <span className="font-semibold text-primary">
+              {project.techStack && project.techStack.length > 0 ? (
+                <>
+                  {project.techStack.slice(0, 2).join(', ')}
+                  {project.techStack.length > 2 ? '...' : ''}
+                </>
+              ) : (
+                'Տեխնոլոգիաներ չկան'
+              )}
+            </span>
+          </div>
         </div>
       </CardContent>
       
