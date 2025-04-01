@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { 
   Users, 
@@ -24,6 +23,12 @@ export const adminMenuItems: SidebarMenuGroup[] = [
         title: 'Կառավարման վահանակ',
         icon: <LayoutDashboard className="h-4 w-4" />,
         href: '/admin/dashboard',
+        roles: ['admin']
+      },
+      {
+        title: 'Ծանուցումներ',
+        icon: <Bell className="h-4 w-4" />,
+        href: '/admin/notifications',
         roles: ['admin']
       },
       {
@@ -78,12 +83,6 @@ export const adminMenuItems: SidebarMenuGroup[] = [
         title: 'Ուսումնական մոդուլներ',
         icon: <BookOpen className="h-4 w-4" />,
         href: '/admin/modules',
-        roles: ['admin']
-      },
-      {
-        title: 'Ծանուցումներ',
-        icon: <Bell className="h-4 w-4" />,
-        href: '/admin/notifications',
         roles: ['admin']
       },
       {

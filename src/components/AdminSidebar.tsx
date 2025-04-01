@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
@@ -47,6 +46,9 @@ const AdminSidebar: React.FC<AdminSidebarProps> = ({
     return null;
   }
   
+  // Only show base menu if it has items
+  const hasBaseMenuItems = baseMenuItems.some(group => group.items.length > 0);
+  
   return (
     <aside className="w-64 bg-card border-r border-border h-screen sticky top-0 overflow-y-auto py-6 px-0">
       <div className="flex justify-between items-center mb-8 px-2">
@@ -57,8 +59,10 @@ const AdminSidebar: React.FC<AdminSidebarProps> = ({
       </div>
       
       <nav className="space-y-6">
-        {/* Base menu items (common for all roles) */}
-        <SidebarMenuGroup menuItems={baseMenuItems} onCloseMenu={onCloseMenu} />
+        {/* Base menu items (common for all roles) - only show if there are items */}
+        {hasBaseMenuItems && 
+          <SidebarMenuGroup menuItems={baseMenuItems} onCloseMenu={onCloseMenu} />
+        }
         
         {/* Pending approvals notification for supervisors */}
         {(user.role === 'supervisor' || user.role === 'project_manager') && pendingCount > 0 && (
