@@ -40,10 +40,16 @@ const ProjectHeaderBanner: React.FC<ProjectHeaderBannerProps> = ({
         <ArrowLeft size={16} className="mr-1" /> Վերադառնալ բոլոր պրոեկտների ցանկին
       </Link>
       
-      <Badge variant="outline" className={cn("font-medium mb-3", complexityColor)}>
-        {complexity}
-      </Badge>
-      <h1 className="text-3xl md:text-4xl font-bold mb-4">{title}</h1>
+      <h1 className="text-3xl md:text-4xl font-bold mb-2">{title}</h1>
+      
+      <div className="flex items-center gap-2 mb-4">
+        <Badge variant="outline" className={cn("font-medium", complexityColor)}>
+          {complexity}
+        </Badge>
+        
+        {/* Additional positioning for other badges or information could go here */}
+      </div>
+      
       <p className="text-lg text-muted-foreground mb-6">{description}</p>
       
       <div className="flex flex-wrap gap-3 mb-6">
