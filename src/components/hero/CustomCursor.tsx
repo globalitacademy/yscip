@@ -67,7 +67,7 @@ const CustomCursor: React.FC<CustomCursorProps> = ({
   const { rotateClass, position } = getPointerStyle();
 
   // Add animation for the main cursor, keep static for others
-  const animationClass = isStatic ? '' : 'transition-transform duration-200';
+  const animationClass = isStatic ? '' : 'transition-transform duration-100';
   
   // Add specific styling for the static cursors
   const staticStyles = isStatic 
@@ -76,16 +76,17 @@ const CustomCursor: React.FC<CustomCursorProps> = ({
 
   return (
     <div 
-      className={`fixed px-4 py-1.5 rounded-md ${getBgColor()} text-white font-medium text-sm min-w-[80px] text-center pointer-events-none z-50 ${animationClass} ${staticStyles} ${cursorVisible ? 'opacity-100' : 'opacity-0'}`}
+      className={`fixed px-3 py-1.5 rounded-md ${getBgColor()} text-white font-medium text-sm min-w-[80px] text-center pointer-events-none z-50 ${animationClass} ${staticStyles} ${cursorVisible ? 'opacity-100' : 'opacity-0'}`}
       style={{
         left: `${mousePosition.x}px`,
         top: `${mousePosition.y}px`,
-        transform: 'translate(-50%, -50%)'
+        transform: 'translate(-50%, -50%)',
+        filter: 'drop-shadow(0 1px 2px rgba(0,0,0,0.1))'
       }}
     >
       {name}
       <div 
-        className={`absolute w-2 h-2 ${getBgColor()} ${rotateClass}`}
+        className={`absolute w-2 h-2 ${getBgColor()} ${rotateClass} transform rotate-45`}
         style={position}
       />
     </div>

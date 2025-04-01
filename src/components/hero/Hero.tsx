@@ -19,7 +19,7 @@ const Hero: React.FC = () => {
     { x: 0, y: 0 }, // Will be updated after container is measured
   ];
   
-  // Cursor configurations
+  // Tempo-style cursor configurations
   const cursors = [
     // Main cursor that follows mouse
     { name: "Արման", color: "green", direction: "top-left" as const, isStatic: false },
