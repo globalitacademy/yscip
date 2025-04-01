@@ -8,6 +8,7 @@ import ProjectMetadata from './ProjectMetadata';
 import ProjectProgress from './ProjectProgress';
 import ReservationActions from './ReservationActions';
 import { formatDate } from '@/lib/utils';
+import { getProjectImage } from '@/lib/getProjectImage';
 
 interface ProjectHeaderProps {
   project: ProjectTheme;
@@ -55,6 +56,9 @@ const ProjectHeader: React.FC<ProjectHeaderProps> = ({
   // Find the supervisor from project members
   const supervisor = projectMembers.find(member => member.role === 'ղեկավար')?.name || '';
 
+  // Use the getProjectImage utility for reliable image URLs
+  const projectImageUrl = imageUrl || getProjectImage(project);
+
   return (
     <FadeIn>
       <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-12">
@@ -92,7 +96,7 @@ const ProjectHeader: React.FC<ProjectHeaderProps> = ({
         
         <div className="rounded-lg overflow-hidden border border-border h-64 md:h-auto">
           <img 
-            src={imageUrl || '/placeholder.svg'} 
+            src={projectImageUrl} 
             alt={project.title}
             className="w-full h-full object-cover"
             onError={(e) => {

@@ -2,7 +2,7 @@
 import React, { useRef, useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { toast } from "@/components/ui/use-toast";
-import { ImageIcon, X } from 'lucide-react';
+import { ImageIcon, X, Upload } from 'lucide-react';
 import { Label } from '@/components/ui/label';
 
 interface ProjectImageUploaderProps {
@@ -18,19 +18,53 @@ const ProjectImageUploader: React.FC<ProjectImageUploaderProps> = ({
 }) => {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [isImageUploading, setIsImageUploading] = useState(false);
+  const [dragActive, setDragActive] = useState(false);
 
   const handleImageClick = () => {
     fileInputRef.current?.click();
   };
 
+  const handleDrag = (e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (e.type === "dragenter" || e.type === "dragover") {
+      setDragActive(true);
+    } else if (e.type === "dragleave") {
+      setDragActive(false);
+    }
+  };
+
+  const handleDrop = (e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setDragActive(false);
+    
+    if (e.dataTransfer.files && e.dataTransfer.files[0]) {
+      processFile(e.dataTransfer.files[0]);
+    }
+  };
+
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
-    if (!file) return;
+    if (file) {
+      processFile(file);
+    }
+  };
 
+  const processFile = (file: File) => {
     if (file.size > 5 * 1024 * 1024) {
       toast({
         title: "Սխալ",
         description: "Նկարի չափը չպետք է գերազանցի 5 ՄԲ-ը",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    if (!file.type.startsWith('image/')) {
+      toast({
+        title: "Սխալ",
+        description: "Ֆայլը պետք է լինի նկար",
         variant: "destructive",
       });
       return;
@@ -66,8 +100,12 @@ const ProjectImageUploader: React.FC<ProjectImageUploaderProps> = ({
     <div>
       <Label htmlFor="image">Պրոեկտի նկար</Label>
       <div 
-        className={`mt-1 border-2 border-dashed rounded-md p-4 text-center cursor-pointer hover:bg-accent/30 transition-colors ${previewImage ? 'border-primary' : 'border-muted-foreground/30'}`}
+        className={`mt-1 border-2 border-dashed rounded-md p-4 text-center cursor-pointer hover:bg-accent/30 transition-colors ${dragActive ? 'border-primary bg-primary/5' : ''} ${previewImage ? 'border-primary' : 'border-muted-foreground/30'}`}
         onClick={handleImageClick}
+        onDragEnter={handleDrag}
+        onDragLeave={handleDrag}
+        onDragOver={handleDrag}
+        onDrop={handleDrop}
       >
         <input
           type="file"
@@ -83,6 +121,14 @@ const ProjectImageUploader: React.FC<ProjectImageUploaderProps> = ({
               src={previewImage} 
               alt="Project preview" 
               className="max-h-48 mx-auto rounded-md object-cover"
+              onError={(e) => {
+                (e.target as HTMLImageElement).src = '/placeholder.svg';
+                toast({
+                  title: "Նկարը չի կարող ցուցադրվել",
+                  description: "Նկարի URL-ը սխալ է կամ նկարը այլևս հասանելի չէ",
+                  variant: "destructive",
+                });
+              }}
             />
             <Button
               variant="destructive"
@@ -105,7 +151,11 @@ const ProjectImageUploader: React.FC<ProjectImageUploaderProps> = ({
               </div>
             ) : (
               <>
-                <ImageIcon size={40} className="text-muted-foreground mb-2" />
+                {dragActive ? (
+                  <Upload size={40} className="text-primary mb-2" />
+                ) : (
+                  <ImageIcon size={40} className="text-muted-foreground mb-2" />
+                )}
                 <p className="text-sm text-muted-foreground">Սեղմեք այստեղ նկար ավելացնելու համար</p>
                 <p className="text-xs text-muted-foreground mt-1">կամ քաշեք նկարը այստեղ</p>
               </>

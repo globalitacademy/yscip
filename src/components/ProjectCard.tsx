@@ -1,137 +1,149 @@
-import React from 'react';
-import { Badge } from '@/components/ui/badge';
-import { cn } from '@/lib/utils';
+import React, { useCallback, memo } from 'react';
+import { Card, CardContent, CardFooter, CardHeader } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Eye, Building, User, Pencil, Image, Trash } from 'lucide-react';
 import { ProjectTheme } from '@/data/projectThemes';
-import { ArrowRight, Code, Layers, FileCheck, Clock, Building, User } from 'lucide-react';
 import { Link } from 'react-router-dom';
-import { getProjectImage } from '@/lib/getProjectImage';
-import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 import { useAuth } from '@/contexts/AuthContext';
+import { useProjectManagement } from '@/contexts/ProjectManagementContext';
+import { getProjectImage } from '@/lib/getProjectImage';
 
 interface ProjectCardProps {
   project: ProjectTheme;
   className?: string;
 }
 
-const ProjectCard: React.FC<ProjectCardProps> = ({ project, className }) => {
+const ProjectCard: React.FC<ProjectCardProps> = ({ 
+  project,
+  className,
+}) => {
   const { user } = useAuth();
-  const complexityColor = {
-    Սկսնակ: 'bg-green-500/10 text-green-600 border-green-200',
-    Միջին: 'bg-amber-500/10 text-amber-600 border-amber-200',
-    Առաջադեմ: 'bg-red-500/10 text-red-600 border-red-200',
-  }[project.complexity];
-
-  // Use the image utility function
-  const imageUrl = getProjectImage(project);
-
-  // Determine creator information
+  const { 
+    handleEditInit, 
+    handleImageChangeInit, 
+    handleDeleteInit 
+  } = useProjectManagement();
+  
+  // Check if the project was created by the current user
   const isCreatedByCurrentUser = project.createdBy === user?.id;
   const creatorName = isCreatedByCurrentUser ? 'Ձեր կողմից' : 'Ուսումնական Կենտրոն';
-  const creatorAvatar = isCreatedByCurrentUser && user?.avatar 
-    ? user.avatar 
-    : 'https://api.dicebear.com/7.x/avataaars/svg?seed=project';
-  const creatorType = isCreatedByCurrentUser ? 'user' : 'organization';
+  
+  // Use the getProjectImage utility to get a reliable image URL
+  const imageUrl = getProjectImage(project);
+  
+  // Memoize event handlers to prevent unnecessary re-renders
+  const handleEdit = useCallback((e: React.MouseEvent) => {
+    e.preventDefault(); // Prevent navigation to project detail
+    e.stopPropagation(); // Prevent event bubbling
+    handleEditInit(project);
+  }, [handleEditInit, project]);
 
+  const handleImageChange = useCallback((e: React.MouseEvent) => {
+    e.preventDefault(); // Prevent navigation to project detail
+    e.stopPropagation(); // Prevent event bubbling
+    handleImageChangeInit(project);
+  }, [handleImageChangeInit, project]);
+
+  const handleDelete = useCallback((e: React.MouseEvent) => {
+    e.preventDefault(); // Prevent navigation to project detail
+    e.stopPropagation(); // Prevent event bubbling
+    handleDeleteInit(project);
+  }, [handleDeleteInit, project]);
+  
   return (
-    <Link 
-      to={`/project/${project.id}`}
-      className={cn(
-        "group relative bg-card rounded-xl border border-border shadow-sm hover:shadow-md transition-all duration-500 card-hover overflow-hidden flex flex-col",
-        className
+    <Card className={`flex flex-col w-full hover:shadow-md transition-shadow relative ${className || ''}`}>
+      {isCreatedByCurrentUser && (
+        <div className="absolute top-4 right-4 z-10 flex gap-2">
+          <Button
+            variant="outline" 
+            size="icon" 
+            className="h-6 w-6 rounded-full bg-white/80 backdrop-blur-sm" 
+            onClick={handleEdit}
+          >
+            <Pencil size={12} />
+          </Button>
+          <Button
+            variant="outline" 
+            size="icon" 
+            className="h-6 w-6 rounded-full bg-white/80 backdrop-blur-sm" 
+            onClick={handleImageChange}
+          >
+            <Image size={12} />
+          </Button>
+          <Button
+            variant="outline" 
+            size="icon" 
+            className="h-6 w-6 rounded-full bg-white/80 backdrop-blur-sm" 
+            onClick={handleDelete}
+          >
+            <Trash size={12} />
+          </Button>
+        </div>
       )}
-    >
-      <div className="absolute top-0 inset-x-0 h-1 bg-primary rounded-t-xl" />
+
+      <div className="absolute top-4 left-4 flex items-center text-xs bg-gray-100 px-2 py-1 rounded-full z-10">
+        <Building size={12} className="mr-1" />
+        <span>{project.category}</span>
+      </div>
+
+      {!project.is_public && (
+        <div className="absolute top-4 left-1/2 transform -translate-x-1/2 flex items-center text-xs bg-amber-100 text-amber-800 px-2 py-1 rounded-full z-10">
+          <span>Չհրապարակված</span>
+        </div>
+      )}
+
+      <CardHeader className="pb-2 text-center pt-12 relative">
+        <div className="w-full h-32 mb-4 overflow-hidden rounded-md">
+          <img 
+            src={imageUrl} 
+            alt={project.title}
+            className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
+            loading="lazy"
+            onError={(e) => {
+              (e.target as HTMLImageElement).src = '/placeholder.svg';
+            }}
+          />
+        </div>
+        <h3 className="font-bold text-xl">{project.title}</h3>
+        <p className="text-sm text-muted-foreground">{project.complexity}</p>
+      </CardHeader>
       
-      <div className="w-full h-48 overflow-hidden relative">
-        <img 
-          src={imageUrl} 
-          alt={project.title}
-          className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
-        />
-        
-        {/* Creator information positioned on the image */}
-        <div className="absolute bottom-3 right-3 flex items-center gap-2 bg-background/80 backdrop-blur-sm px-3 py-2 rounded-full border border-border shadow-sm">
-          <span className="text-xs font-medium">{creatorName}</span>
-          <Avatar className="h-7 w-7 border border-border">
-            <AvatarImage src={creatorAvatar} alt={creatorName} />
-            <AvatarFallback>
-              {creatorType === 'user' ? <User size={12} /> : <Building size={12} />}
-            </AvatarFallback>
-          </Avatar>
-        </div>
-      </div>
-
-      <div className="p-6 flex-grow flex flex-col">
-        <div className="mb-4 flex justify-between items-start">
-          <div className="space-y-1">
-            <Badge variant="outline" className={cn("font-medium", complexityColor)}>
-              {project.complexity}
-            </Badge>
-            <h3 className="text-xl font-medium mt-2 group-hover:text-primary transition-colors duration-300">
-              {project.title}
-            </h3>
-          </div>
-        </div>
-
-        <p className="text-muted-foreground mb-6 line-clamp-2">
-          {project.description}
-        </p>
-
-        <div className="space-y-4 flex-grow">
-          <div className="flex items-start gap-2">
-            <Code size={18} className="text-primary mt-0.5 flex-shrink-0" />
-            <div>
-              <p className="text-sm font-medium">Տեխնոլոգիաներ</p>
-              <div className="flex flex-wrap gap-1 mt-1">
-                {project.techStack.map((tech, i) => (
-                  <Badge key={i} variant="secondary" className="text-xs">
-                    {tech}
-                  </Badge>
-                ))}
-              </div>
-            </div>
-          </div>
-          
-          <div className="flex items-start gap-2">
-            <Layers size={18} className="text-primary mt-0.5 flex-shrink-0" />
-            <div>
-              <p className="text-sm font-medium">Հիմնական քայլեր</p>
-              <ul className="text-xs text-muted-foreground mt-1 space-y-1">
-                {project.steps.slice(0, 3).map((step, i) => (
-                  <li key={i} className="flex items-start gap-1">
-                    <FileCheck size={12} className="mt-0.5 flex-shrink-0" />
-                    <span>{step}</span>
-                  </li>
-                ))}
-                {project.steps.length > 3 && (
-                  <li className="text-xs text-primary">+ {project.steps.length - 3} ավելի քայլեր</li>
-                )}
-              </ul>
-            </div>
-          </div>
-          
-          {project.duration && (
-            <div className="flex items-start gap-2">
-              <Clock size={18} className="text-primary mt-0.5 flex-shrink-0" />
-              <div>
-                <p className="text-sm font-medium">Տևողություն</p>
-                <p className="text-xs text-muted-foreground">{project.duration}</p>
-              </div>
-            </div>
-          )}
-        </div>
-
-        <div className="mt-6 pt-4 border-t border-border flex justify-between items-center">
-          <Badge variant="outline">{project.category}</Badge>
-          <button className="text-sm text-primary font-medium inline-flex items-center gap-1 group-hover:gap-2 transition-all">
-            Տեսնել մանրամասները <ArrowRight size={14} />
-          </button>
+      <CardContent className="flex-grow pb-2">
+        <div className="flex items-center gap-2 text-sm text-muted-foreground mb-4">
+          <User size={16} />
+          <span>Հեղինակ՝ {creatorName}</span>
         </div>
         
-        <div className="absolute inset-0 bg-gradient-to-r from-white/0 via-white/20 to-white/0 opacity-0 group-hover:opacity-100 translate-x-[-100%] group-hover:translate-x-[100%] transition-all duration-1000 pointer-events-none" />
-      </div>
-    </Link>
+        <p className="text-sm text-gray-500 line-clamp-2 mb-4">{project.description}</p>
+        
+        <div className="flex justify-between w-full text-sm mt-auto">
+          <span>{project.duration || 'Անորոշ ժամկետ'}</span>
+          <span className="font-semibold">
+            {project.techStack && project.techStack.length > 0 ? (
+              <>
+                {project.techStack.slice(0, 2).join(', ')}
+                {project.techStack.length > 2 ? '...' : ''}
+              </>
+            ) : (
+              'Տեխնոլոգիաներ չկան'
+            )}
+          </span>
+        </div>
+      </CardContent>
+      
+      <CardFooter className="pt-4">
+        <Link to={`/project/${project.id}`} className="w-full">
+          <Button 
+            variant="outline"
+            className="w-full"
+          >
+            <Eye className="h-4 w-4 mr-2" /> Մանրամասն
+          </Button>
+        </Link>
+      </CardFooter>
+    </Card>
   );
 };
 
-export default ProjectCard;
+// Memoize the component to prevent unnecessary re-renders
+export default memo(ProjectCard);
