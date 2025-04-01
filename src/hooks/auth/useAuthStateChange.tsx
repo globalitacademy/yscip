@@ -1,6 +1,6 @@
 
 import { useEffect } from 'react';
-import { User, UserRole } from '@/types/user';
+import { User } from '@/types/user';
 import { supabase } from '@/integrations/supabase/client';
 import { PendingUser } from '@/types/auth';
 import { toast } from 'sonner';
@@ -18,12 +18,17 @@ export const useAuthStateChange = (
       console.log('Auth state changed:', event, session);
       
       // Handle direct admin login specially - don't disrupt it
-      const storedUser = localStorage.getItem('currentUser');
-      if (storedUser) {
-        const parsedUser = JSON.parse(storedUser);
-        if (parsedUser.email === 'gitedu@bk.ru' && isAuthenticated) {
-          console.log('Admin already logged in, ignoring auth state change');
-          return;
+      const storedUserJson = localStorage.getItem('currentUser');
+      if (storedUserJson) {
+        try {
+          const parsedUser = JSON.parse(storedUserJson);
+          if (parsedUser.email === 'gitedu@bk.ru' && isAuthenticated) {
+            console.log('Admin already logged in, ignoring auth state change');
+            return;
+          }
+        } catch (error) {
+          console.error('Error parsing stored user data:', error);
+          // Continue with auth state change handling
         }
       }
       
@@ -58,12 +63,17 @@ export const useAuthStateChange = (
         }
       } else if (event === 'SIGNED_OUT') {
         // Don't sign out admin user if this is just a Supabase session timeout
-        const storedUser = localStorage.getItem('currentUser');
-        if (storedUser) {
-          const parsedUser = JSON.parse(storedUser);
-          if (parsedUser.email === 'gitedu@bk.ru') {
-            console.log('Admin user sign out prevented - keeping admin session active');
-            return;
+        const storedUserJson = localStorage.getItem('currentUser');
+        if (storedUserJson) {
+          try {
+            const parsedUser = JSON.parse(storedUserJson);
+            if (parsedUser.email === 'gitedu@bk.ru') {
+              console.log('Admin user sign out prevented - keeping admin session active');
+              return;
+            }
+          } catch (error) {
+            console.error('Error parsing stored user data:', error);
+            // Continue with sign out
           }
         }
         

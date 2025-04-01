@@ -1,47 +1,51 @@
 
 import { useState, useEffect } from 'react';
-import { User, UserRole } from '@/types/user';
+import { User } from '@/types/user';
 import { PendingUser } from '@/types/auth';
-import { usePendingUsers } from './usePendingUsers';
 import { useSessionCheck } from './useSessionCheck';
 import { useAuthStateChange } from './useAuthStateChange';
+import { usePendingUsers } from './usePendingUsers';
 
-interface UseAuthSessionResult {
-  user: User | null;
-  isAuthenticated: boolean;
-  pendingUsers: PendingUser[];
-  setUser: (user: User | null) => void;
-  setIsAuthenticated: (value: boolean) => void;
-  setPendingUsers: React.Dispatch<React.SetStateAction<PendingUser[]>>;
-  isLoading: boolean;
-}
-
-export const useAuthSession = (): UseAuthSessionResult => {
+export const useAuthSession = () => {
   const [user, setUser] = useState<User | null>(null);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   
-  // Extract pending users logic to a separate hook
+  // Load pending users from persisted state or API
   const { pendingUsers, setPendingUsers } = usePendingUsers();
-  
-  // Extract session checking logic to a separate hook
+
+  // Try to restore user from local storage on initial load
+  useEffect(() => {
+    const storedUserJson = localStorage.getItem('currentUser');
+    
+    if (storedUserJson) {
+      try {
+        const storedUser = JSON.parse(storedUserJson);
+        setUser(storedUser);
+        setIsAuthenticated(true);
+      } catch (error) {
+        console.error('Error parsing stored user data:', error);
+        // Clear invalid stored data
+        localStorage.removeItem('currentUser');
+      }
+    }
+    
+    setIsLoading(false);
+  }, []);
+
+  // Initialize Supabase session
   useSessionCheck(setUser, setIsAuthenticated, setIsLoading, pendingUsers);
   
-  // Extract auth state change logic to a separate hook
-  useAuthStateChange(
-    isAuthenticated, 
-    setUser, 
-    setIsAuthenticated, 
-    pendingUsers
-  );
+  // Listen for auth state changes
+  useAuthStateChange(isAuthenticated, setUser, setIsAuthenticated, pendingUsers);
 
   return {
     user,
     isAuthenticated,
     pendingUsers,
+    isLoading,
     setUser,
     setIsAuthenticated,
-    setPendingUsers,
-    isLoading
+    setPendingUsers
   };
 };
