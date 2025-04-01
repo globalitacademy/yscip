@@ -16,7 +16,7 @@ const CustomCursor: React.FC<CustomCursorProps> = ({
   cursorVisible,
   color = "primary",
   isStatic = false,
-  style = 'triangle',
+  style = 'circle',
   size = 'medium',
   label
 }) => {
@@ -33,9 +33,13 @@ const CustomCursor: React.FC<CustomCursorProps> = ({
         return 'bg-purple-500';
       case 'yellow':
         return 'bg-yellow-400';
+      case 'orange':
+        return 'bg-orange-500';
+      case 'pink':
+        return 'bg-pink-500';
       case 'primary':
       default:
-        return 'bg-yellow-400'; // Default to yellow as shown in the image
+        return 'bg-primary'; // Now using primary color from theme
     }
   };
   
@@ -45,10 +49,10 @@ const CustomCursor: React.FC<CustomCursorProps> = ({
       case 'small':
         return { width: '15px', height: '15px' };
       case 'large':
-        return { width: '28px', height: '28px' };
+        return { width: '30px', height: '30px' };
       case 'medium':
       default:
-        return { width: '20px', height: '20px' };
+        return { width: '22px', height: '22px' };
     }
   };
   
@@ -63,14 +67,14 @@ const CustomCursor: React.FC<CustomCursorProps> = ({
         return 'none';
       case 'triangle':
       default:
-        return 'polygon(0 0, 100% 0, 0 100%)';
+        return 'polygon(0 0, 100% 50%, 0 100%)';
     }
   };
   
   // Add animation classes for the cursor
   const animationClass = isStatic 
     ? '' 
-    : 'transition-all ease-out duration-100';
+    : 'transition-all ease-out duration-150';
   
   const { width, height } = getCursorSize();
   
@@ -81,22 +85,23 @@ const CustomCursor: React.FC<CustomCursorProps> = ({
         style={{
           left: `${mousePosition.x}px`,
           top: `${mousePosition.y}px`,
-          transform: 'translate(-50%, -50%) rotate(45deg)',
+          transform: 'translate(-50%, -50%)',
           width,
           height,
           clipPath: getClipPath(),
-          filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.1))'
+          filter: 'drop-shadow(0 4px 6px rgba(0,0,0,0.2))',
+          mixBlendMode: 'multiply'
         }}
       />
       
       {label && cursorVisible && (
         <div 
-          className="fixed pointer-events-none z-50 text-xs font-medium bg-background/80 text-foreground px-2 py-1 rounded-full shadow-sm border border-border/20 backdrop-blur-sm"
+          className="fixed pointer-events-none z-50 text-xs font-medium bg-background/90 text-foreground px-3 py-1.5 rounded-full shadow-md border border-border/40 backdrop-blur"
           style={{
-            left: `${mousePosition.x + 12}px`,
-            top: `${mousePosition.y + 12}px`,
+            left: `${mousePosition.x + 16}px`,
+            top: `${mousePosition.y + 16}px`,
             transform: 'translateY(-50%)',
-            transition: isStatic ? 'none' : 'all 0.1s ease-out',
+            transition: isStatic ? 'none' : 'all 0.15s ease-out',
             opacity: cursorVisible ? 1 : 0
           }}
         >

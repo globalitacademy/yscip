@@ -14,10 +14,10 @@ const Hero: React.FC = () => {
   
   // Static cursor positions (relative to container)
   const staticCursors = [
-    { x: 0.15, y: 0.2, style: 'diamond', color: 'purple', label: 'Դասընթացներ' },
-    { x: 0.85, y: 0.3, style: 'circle', color: 'blue', label: 'Ուսանողներ' },
-    { x: 0.25, y: 0.75, style: 'square', color: 'green', label: 'Դասախոսներ' },
-    { x: 0.75, y: 0.65, style: 'triangle', color: 'red', label: 'Նախագծեր' },
+    { x: 0.18, y: 0.25, style: 'diamond', color: 'pink', label: 'Դասընթացներ' },
+    { x: 0.82, y: 0.32, style: 'circle', color: 'blue', label: 'Ուսանողներ' },
+    { x: 0.30, y: 0.78, style: 'square', color: 'green', label: 'Դասախոսներ' },
+    { x: 0.70, y: 0.68, style: 'triangle', color: 'orange', label: 'Նախագծեր' },
   ];
   
   // Fetch categories from project themes
@@ -98,8 +98,8 @@ const Hero: React.FC = () => {
     };
     
     const animateCursor = () => {
-      // Simple damping animation
-      const ease = 0.2;
+      // Improved smooth damping animation
+      const ease = 0.15;
       
       currentX = currentX + (targetX - currentX) * ease;
       currentY = currentY + (targetY - currentY) * ease;
@@ -144,8 +144,8 @@ const Hero: React.FC = () => {
       <CustomCursor 
         mousePosition={mousePosition}
         cursorVisible={cursorVisible}
-        color="yellow"
-        style="triangle"
+        color="primary"
+        style="circle"
         size="medium"
       />
       
