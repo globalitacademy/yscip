@@ -23,7 +23,7 @@ const SidebarMenuItem: React.FC<SidebarMenuItemProps> = ({
     <Link to={path}>
       <Button 
         variant={isActive ? "default" : "ghost"} 
-        className={`w-full justify-start ${isActive ? "" : "text-muted-foreground"}`} 
+        className={`w-full justify-start ${isActive ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:bg-accent hover:text-accent-foreground"}`} 
         onClick={onCloseMenu}
       >
         {icon}
