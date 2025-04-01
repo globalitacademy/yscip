@@ -23,6 +23,11 @@ const ProjectDialogManager: React.FC = () => {
     handleSaveEdit
   } = useProjectManagement();
 
+  // Only render the dialogs if there's a selected project and open state
+  if (!selectedProject && (isDeleteDialogOpen || isImageDialogOpen || isEditDialogOpen)) {
+    return null;
+  }
+
   return (
     <>
       <ProjectDeleteDialog 
