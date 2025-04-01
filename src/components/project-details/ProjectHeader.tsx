@@ -68,6 +68,7 @@ const ProjectHeader: React.FC<ProjectHeaderProps> = ({
             description={project.description}
             complexity={project.complexity || ''}
             techStack={project.techStack || []}
+            projectId={project.id}
           />
           
           <ProjectMetadata 

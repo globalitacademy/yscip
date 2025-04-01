@@ -1,7 +1,7 @@
 
-import React from 'react';
+import React, { useState } from 'react';
 import { Badge } from '@/components/ui/badge';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { ArrowLeft, BarChart, Edit, Copy, Trash2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
@@ -13,21 +13,36 @@ import {
   DropdownMenuTrigger
 } from '@/components/ui/dropdown-menu';
 import { useToast } from '@/components/ui/use-toast';
+import { 
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle
+} from '@/components/ui/alert-dialog';
+import { deleteProject, updateProject } from '@/services/projectService';
 
 interface ProjectHeaderBannerProps {
   title: string;
   description: string;
   complexity: string;
   techStack: string[];
+  projectId?: number;
 }
 
 const ProjectHeaderBanner: React.FC<ProjectHeaderBannerProps> = ({
   title,
   description,
   complexity,
-  techStack
+  techStack,
+  projectId
 }) => {
   const { toast } = useToast();
+  const navigate = useNavigate();
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   
   // Define complexity color classes
   const getComplexityColor = (complexity: string) => {
@@ -51,28 +66,94 @@ const ProjectHeaderBanner: React.FC<ProjectHeaderBannerProps> = ({
       title: "Խմբագրում",
       description: "Նախագիծը խմբագրման ռեժիմում է։",
     });
-    // Here we would typically navigate to an edit page or open an edit modal
-    // For demonstration, we'll just show a toast notification
-  };
-  
-  const handleCopy = () => {
-    toast({
-      title: "Պատճենում",
-      description: "Նախագիծը պատճենվել է։",
-    });
-    // Here we would typically duplicate the project in the database
-    // For demonstration, we'll just show a toast notification
-  };
-  
-  const handleDelete = () => {
-    if (confirm("Իսկապե՞ս ցանկանում եք ջնջել այս նախագիծը։")) {
+    
+    // Navigate to project edit form with the project ID
+    if (projectId) {
+      navigate(`/projects/edit/${projectId}`);
+    } else {
       toast({
-        title: "Ջնջում",
-        description: "Նախագիծը ջնջվել է։",
+        title: "Սխալ",
+        description: "Նախագծի ID-ն բացակայում է։",
         variant: "destructive",
       });
-      // Here we would typically delete the project from the database
-      // For demonstration, we'll just show a toast notification
+    }
+  };
+  
+  const handleCopy = async () => {
+    if (!projectId) {
+      toast({
+        title: "Սխալ",
+        description: "Նախագծի ID-ն բացակայում է։",
+        variant: "destructive",
+      });
+      return;
+    }
+    
+    try {
+      // Create a copy of the project in the database with a new title
+      const newTitle = `${title} (Պատճեն)`;
+      const copyData = {
+        title: newTitle,
+        description,
+        complexity,
+        techStack,
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+      };
+      
+      // You would need to implement a copyProject function in your service
+      // Here we'll use updateProject as a placeholder for the creation of a new project
+      const success = await updateProject(projectId, copyData);
+      
+      if (success) {
+        toast({
+          title: "Պատճենում",
+          description: "Նախագիծը հաջողությամբ պատճենվել է։",
+        });
+      } else {
+        throw new Error("Failed to copy project");
+      }
+    } catch (error) {
+      console.error("Error copying project:", error);
+      toast({
+        title: "Սխալ",
+        description: "Նախագծի պատճենման ժամանակ սխալ է տեղի ունեցել։",
+        variant: "destructive",
+      });
+    }
+  };
+  
+  const handleDelete = async () => {
+    if (!projectId) {
+      toast({
+        title: "Սխալ",
+        description: "Նախագծի ID-ն բացակայում է։",
+        variant: "destructive",
+      });
+      return;
+    }
+    
+    try {
+      const success = await deleteProject(projectId);
+      
+      if (success) {
+        toast({
+          title: "Ջնջում",
+          description: "Նախագիծը հաջողությամբ ջնջվել է։",
+        });
+        
+        // Navigate back to projects list
+        navigate('/projects');
+      } else {
+        throw new Error("Failed to delete project");
+      }
+    } catch (error) {
+      console.error("Error deleting project:", error);
+      toast({
+        title: "Սխալ",
+        description: "Նախագծի ջնջման ժամանակ սխալ է տեղի ունեցել։",
+        variant: "destructive",
+      });
     }
   };
   
@@ -105,7 +186,7 @@ const ProjectHeaderBanner: React.FC<ProjectHeaderBannerProps> = ({
           <Button 
             variant="destructive" 
             size="sm" 
-            onClick={handleDelete}
+            onClick={() => setIsDeleteDialogOpen(true)}
             className="hidden sm:flex"
           >
             <Trash2 size={16} className="mr-2" /> Ջնջել
@@ -127,7 +208,7 @@ const ProjectHeaderBanner: React.FC<ProjectHeaderBannerProps> = ({
               </DropdownMenuItem>
               <DropdownMenuSeparator />
               <DropdownMenuItem 
-                onClick={handleDelete}
+                onClick={() => setIsDeleteDialogOpen(true)}
                 className="text-destructive focus:text-destructive"
               >
                 <Trash2 size={16} className="mr-2" /> Ջնջել
@@ -160,6 +241,24 @@ const ProjectHeaderBanner: React.FC<ProjectHeaderBannerProps> = ({
           </Badge>
         ))}
       </div>
+
+      {/* Confirmation Dialog for Delete */}
+      <AlertDialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Հաստատեք ջնջումը</AlertDialogTitle>
+            <AlertDialogDescription>
+              Իսկապե՞ս ցանկանում եք ջնջել այս նախագիծը։ Այս գործողությունը հնարավոր չէ հետադարձել։
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Չեղարկել</AlertDialogCancel>
+            <AlertDialogAction onClick={handleDelete} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
+              Ջնջել
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </>
   );
 };
