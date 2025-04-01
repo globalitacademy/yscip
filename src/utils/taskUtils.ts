@@ -42,7 +42,7 @@ export const groupTasksByStatus = (tasks: Task[]) => {
 // Map status between different formats
 export const normalizeStatus = (status: Task['status']): 'todo' | 'in-progress' | 'review' | 'done' => {
   if (status === 'open') return 'todo';
-  if (status === 'inProgress' || status === 'in progress') return 'in-progress';
+  if (status === 'inProgress') return 'in-progress';
   if (status === 'completed') return 'done';
   if (['todo', 'in-progress', 'review', 'done'].includes(status as string)) {
     return status as 'todo' | 'in-progress' | 'review' | 'done';

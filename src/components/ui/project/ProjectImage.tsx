@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { User, Building } from 'lucide-react';
+import { User } from 'lucide-react';
 import { ProjectTheme } from '@/data/projectThemes';
 
 interface ProjectImageProps {
@@ -30,12 +30,6 @@ const ProjectImage: React.FC<ProjectImageProps> = ({
       <div className="absolute bottom-2 right-2 flex items-center gap-1 text-xs bg-gray-900/70 text-white px-2 py-1 rounded-full">
         <User size={10} />
         <span>{creatorName || 'Անհայտ հեղինակ'}</span>
-      </div>
-
-      {/* Category badge */}
-      <div className="absolute top-2 left-2 flex items-center gap-1 text-xs bg-gray-900/70 text-white px-2 py-1 rounded-full">
-        <Building size={10} />
-        <span>{project.category || 'Անկատեգորիա'}</span>
       </div>
     </div>
   );
