@@ -1,7 +1,8 @@
 
-import { useState } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { projectThemes, ProjectTheme } from '@/data/projectThemes';
 import { toast } from "@/components/ui/use-toast";
+import { useProjectManagement } from '@/contexts/ProjectManagementContext';
 
 export const useAdminProjects = () => {
   const [displayLimit, setDisplayLimit] = useState(12);
@@ -11,12 +12,16 @@ export const useAdminProjects = () => {
   const [isApproveDialogOpen, setIsApproveDialogOpen] = useState(false);
   const [filterStatus, setFilterStatus] = useState("all");
   
-  // Get categories from project themes
-  const categories = ["all", ...new Set(projectThemes.map(project => project.category))];
+  // Get the project management context
+  const projectManagement = useProjectManagement();
+  
+  // Get categories from project themes and stored projects
+  const allProjects = [...projectManagement.projects, ...projectThemes];
+  const categories = ["all", ...new Set(allProjects.map(project => project.category))];
   
   // Filter projects by category and status
-  const getFilteredProjects = () => {
-    let filtered = [...projectThemes];
+  const getFilteredProjects = useCallback(() => {
+    let filtered = [...projectManagement.projects, ...projectThemes];
     
     // Filter by category
     if (activeCategory !== "all") {
@@ -33,7 +38,7 @@ export const useAdminProjects = () => {
     }
     
     return filtered;
-  };
+  }, [activeCategory, filterStatus, projectManagement.projects]);
   
   const filteredProjects = getFilteredProjects();
   const visibleProjects = filteredProjects.slice(0, displayLimit);
@@ -77,21 +82,6 @@ export const useAdminProjects = () => {
     }
   };
 
-  const handleEditProject = (project: ProjectTheme) => {
-    // Placeholder for edit action
-    console.log("Edit project:", project);
-  };
-
-  const handleImageChange = (project: ProjectTheme) => {
-    // Placeholder for image change action
-    console.log("Change image for project:", project);
-  };
-
-  const handleDeleteProject = (project: ProjectTheme) => {
-    // Placeholder for delete action
-    console.log("Delete project:", project);
-  };
-
   return {
     visibleProjects,
     filteredProjects,
@@ -110,9 +100,6 @@ export const useAdminProjects = () => {
     handleSelectProject,
     handleAssignProject,
     handleApproveProject,
-    handleEditProject,
-    handleImageChange,
-    handleDeleteProject,
     setIsAssignDialogOpen,
     setIsApproveDialogOpen
   };

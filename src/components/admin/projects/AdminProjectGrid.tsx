@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
 import { useAdminProjects } from '@/hooks/useAdminProjects';
@@ -9,6 +9,8 @@ import ProjectGrid from './ProjectGrid';
 import ProjectTable from './ProjectTable';
 import ProjectAssignDialog from './ProjectAssignDialog';
 import ProjectApproveDialog from './ProjectApproveDialog';
+import ProjectDialogManager from '@/components/projects/ProjectDialogManager';
+import { useProjectManagement } from '@/contexts/ProjectManagementContext';
 import { LayoutGrid, Table } from 'lucide-react';
 
 const AdminProjectGrid: React.FC = () => {
@@ -30,12 +32,21 @@ const AdminProjectGrid: React.FC = () => {
     handleSelectProject,
     handleAssignProject,
     handleApproveProject,
-    handleEditProject,
-    handleImageChange,
-    handleDeleteProject,
     setIsAssignDialogOpen,
     setIsApproveDialogOpen
   } = useAdminProjects();
+  
+  const {
+    handleEditInit,
+    handleImageChangeInit,
+    handleDeleteInit
+  } = useProjectManagement();
+  
+  useEffect(() => {
+    // Load projects when the component mounts
+    const projectManagement = useProjectManagement();
+    projectManagement.loadProjects();
+  }, []);
   
   return (
     <div className="mt-8 text-left">
@@ -89,18 +100,18 @@ const AdminProjectGrid: React.FC = () => {
           <ProjectGrid
             projects={visibleProjects}
             onSelectProject={handleSelectProject}
-            onEditProject={handleEditProject}
-            onImageChange={handleImageChange}
-            onDeleteProject={handleDeleteProject}
+            onEditProject={handleEditInit}
+            onImageChange={handleImageChangeInit}
+            onDeleteProject={handleDeleteInit}
             userRole={user?.role}
           />
         ) : (
           <ProjectTable
             projects={visibleProjects}
             onSelectProject={handleSelectProject}
-            onEditProject={handleEditProject}
-            onImageChange={handleImageChange}
-            onDeleteProject={handleDeleteProject}
+            onEditProject={handleEditInit}
+            onImageChange={handleImageChangeInit}
+            onDeleteProject={handleDeleteInit}
             userRole={user?.role}
           />
         )}
@@ -113,6 +124,9 @@ const AdminProjectGrid: React.FC = () => {
           )}
         </div>
       </div>
+      
+      {/* Project management dialogs */}
+      <ProjectDialogManager />
       
       {/* Assign Dialog */}
       <ProjectAssignDialog
