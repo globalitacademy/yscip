@@ -13,18 +13,36 @@ import { cn } from '@/lib/utils';
 interface ProjectCardProps {
   project: ProjectTheme;
   className?: string;
+  adminView?: boolean;
 }
 
 const ProjectCard: React.FC<ProjectCardProps> = ({ 
   project,
   className,
+  adminView = false
 }) => {
   const { user } = useAuth();
+  
+  // Only try to use the context if we're not in admin view
+  let projectManagement: any = {};
+  try {
+    if (!adminView) {
+      projectManagement = useProjectManagement();
+    }
+  } catch (error) {
+    // Silently fail if the context is not available
+    projectManagement = {
+      handleEditInit: () => {},
+      handleImageChangeInit: () => {},
+      handleDeleteInit: () => {}
+    };
+  }
+  
   const { 
     handleEditInit, 
     handleImageChangeInit, 
     handleDeleteInit 
-  } = useProjectManagement();
+  } = projectManagement;
   
   // Check if the project was created by the current user
   const isCreatedByCurrentUser = project.createdBy === user?.id;
@@ -51,19 +69,19 @@ const ProjectCard: React.FC<ProjectCardProps> = ({
   const handleEdit = useCallback((e: React.MouseEvent) => {
     e.preventDefault(); // Prevent navigation to project detail
     e.stopPropagation(); // Prevent event bubbling
-    handleEditInit(project);
+    if (handleEditInit) handleEditInit(project);
   }, [handleEditInit, project]);
 
   const handleImageChange = useCallback((e: React.MouseEvent) => {
     e.preventDefault(); // Prevent navigation to project detail
     e.stopPropagation(); // Prevent event bubbling
-    handleImageChangeInit(project);
+    if (handleImageChangeInit) handleImageChangeInit(project);
   }, [handleImageChangeInit, project]);
 
   const handleDelete = useCallback((e: React.MouseEvent) => {
     e.preventDefault(); // Prevent navigation to project detail
     e.stopPropagation(); // Prevent event bubbling
-    handleDeleteInit(project);
+    if (handleDeleteInit) handleDeleteInit(project);
   }, [handleDeleteInit, project]);
   
   // Function to handle image error and provide fallback
@@ -73,7 +91,7 @@ const ProjectCard: React.FC<ProjectCardProps> = ({
   
   return (
     <Card className={`flex flex-col w-full hover:shadow-md transition-shadow relative ${className || ''}`}>
-      {isCreatedByCurrentUser && (
+      {!adminView && isCreatedByCurrentUser && (
         <div className="absolute top-4 right-4 z-20 flex gap-2">
           <Button
             variant="outline" 
@@ -109,7 +127,7 @@ const ProjectCard: React.FC<ProjectCardProps> = ({
 
       {/* Complexity badge in top right */}
       {project.complexity && (
-        <div className={`absolute top-4 right-4 z-10 ${!isCreatedByCurrentUser ? 'block' : 'hidden'}`}>
+        <div className={`absolute top-4 right-4 z-10 ${(!adminView && isCreatedByCurrentUser) ? 'hidden' : 'block'}`}>
           <span className={cn("text-xs border px-2 py-1 rounded-full inline-block", getComplexityColor(project.complexity))}>
             {project.complexity}
           </span>

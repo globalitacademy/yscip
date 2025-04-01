@@ -1,6 +1,6 @@
 import React from 'react';
 import { ProjectTheme } from '@/data/projectThemes';
-import ProjectCard from '@/components/projects/ProjectCard';
+import ProjectCard from '@/components/ProjectCard';
 import { FadeIn } from '@/components/LocalTransitions';
 import { useProjectPermissions } from '@/hooks/useProjectPermissions';
 import { Button } from '@/components/ui/button';
@@ -87,6 +87,7 @@ const ProjectGrid: React.FC<ProjectGridProps> = ({
           <ProjectCard
             project={project}
             className="h-full"
+            adminView={true}
           />
         </div>
       ))}
