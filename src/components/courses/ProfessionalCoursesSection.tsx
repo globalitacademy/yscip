@@ -2,6 +2,7 @@
 import React from 'react';
 import { ProfessionalCourse } from './types/ProfessionalCourse';
 import ProfessionalCourseListItem from './ProfessionalCourseListItem';
+import CourseEmptyState from './CourseEmptyState';
 
 interface ProfessionalCoursesSectionProps {
   courses: ProfessionalCourse[];
@@ -18,7 +19,7 @@ const ProfessionalCoursesSection: React.FC<ProfessionalCoursesSectionProps> = ({
   onEditCourse,
   onDeleteCourse
 }) => {
-  if (courses.length === 0) return null;
+  if (courses.length === 0) return <CourseEmptyState />;
 
   return (
     <div className="space-y-4">

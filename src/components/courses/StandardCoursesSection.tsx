@@ -2,6 +2,7 @@
 import React from 'react';
 import { Course } from './types';
 import StandardCourseListItem from './StandardCourseListItem';
+import CourseEmptyState from './CourseEmptyState';
 
 interface StandardCoursesSectionProps {
   courses: Course[];
@@ -18,7 +19,7 @@ const StandardCoursesSection: React.FC<StandardCoursesSectionProps> = ({
   onEditCourse,
   onDeleteCourse
 }) => {
-  if (courses.length === 0) return null;
+  if (courses.length === 0) return <CourseEmptyState />;
 
   return (
     <div className="space-y-4">

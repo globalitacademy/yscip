@@ -24,7 +24,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { ProfessionalCourse } from "../types/ProfessionalCourse";
 import { toast } from "sonner";
-import { supabase } from "@/integrations/supabase/client";
+import { v4 as uuidv4 } from 'uuid';
 
 // Define the form schema
 const formSchema = z.object({
@@ -59,23 +59,33 @@ const CourseApplicationForm: React.FC<CourseApplicationFormProps> = ({
 
   const onSubmit = async (data: FormValues) => {
     try {
-      // Insert application into the database
-      const { error } = await supabase.from('course_applications').insert({
-        course_id: course.id,
+      // Create application object
+      const application = {
+        id: uuidv4(),
+        created_at: new Date().toISOString(),
         full_name: data.fullName,
         phone_number: data.phoneNumber,
         email: data.email,
         message: data.message || "",
-        course_title: course.title
-      });
+        course_id: course.id,
+        course_title: course.title,
+        status: 'new'
+      };
 
-      if (error) {
-        console.error('Application submission error:', error);
-        toast.error('Դիմման ուղարկման սխալ', {
-          description: 'Խնդրում ենք փորձել կրկին'
-        });
-        return;
-      }
+      // Store in localStorage for now (will be replaced with database storage later)
+      const existingApplications = JSON.parse(localStorage.getItem('course_applications') || '[]');
+      existingApplications.push(application);
+      localStorage.setItem('course_applications', JSON.stringify(existingApplications));
+      
+      // Also send application to admin email (using localStorage for now)
+      const adminNotifications = JSON.parse(localStorage.getItem('admin_notifications') || '[]');
+      adminNotifications.push({
+        id: uuidv4(),
+        title: 'New Course Application',
+        message: `${data.fullName} applied for ${course.title}`,
+        date: new Date().toISOString()
+      });
+      localStorage.setItem('admin_notifications', JSON.stringify(adminNotifications));
 
       // Success message
       toast.success('Դիմումն ուղարկված է', {

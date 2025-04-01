@@ -1,6 +1,6 @@
 
 import React, { useEffect, useState } from 'react';
-import { supabase } from '@/integrations/supabase/client';
+import { CourseApplication } from '@/components/courses/types/CourseApplication';
 import {
   Table,
   TableBody,
@@ -15,18 +15,6 @@ import { toast } from 'sonner';
 import { Mail, Eye, Check, X } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 
-interface CourseApplication {
-  id: string;
-  created_at: string;
-  full_name: string;
-  email: string;
-  phone_number: string;
-  course_id: string;
-  course_title: string;
-  message?: string;
-  status: 'new' | 'contacted' | 'enrolled' | 'rejected';
-}
-
 const ApplicationsList: React.FC = () => {
   const [applications, setApplications] = useState<CourseApplication[]>([]);
   const [loading, setLoading] = useState(true);
@@ -35,16 +23,9 @@ const ApplicationsList: React.FC = () => {
   const fetchApplications = async () => {
     setLoading(true);
     try {
-      const { data, error } = await supabase
-        .from('course_applications')
-        .select('*')
-        .order('created_at', { ascending: false });
-
-      if (error) {
-        throw error;
-      }
-
-      setApplications(data || []);
+      // Temporary solution using localStorage until database is ready
+      const localApplications = JSON.parse(localStorage.getItem('course_applications') || '[]');
+      setApplications(localApplications);
     } catch (error: any) {
       console.error('Error fetching applications:', error.message);
       toast.error('Դիմումների բեռնման սխալ', {
@@ -57,38 +38,32 @@ const ApplicationsList: React.FC = () => {
 
   useEffect(() => {
     fetchApplications();
-
-    // Subscribe to changes
-    const subscription = supabase
-      .channel('course_applications_changes')
-      .on('postgres_changes', { 
-        event: '*', 
-        schema: 'public', 
-        table: 'course_applications' 
-      }, () => {
+    
+    // Set up event listener for local storage changes
+    const handleStorageChange = (e: StorageEvent) => {
+      if (e.key === 'course_applications') {
         fetchApplications();
-      })
-      .subscribe();
-
+      }
+    };
+    
+    window.addEventListener('storage', handleStorageChange);
+    
     return () => {
-      subscription.unsubscribe();
+      window.removeEventListener('storage', handleStorageChange);
     };
   }, []);
 
   const updateApplicationStatus = async (id: string, status: 'contacted' | 'enrolled' | 'rejected') => {
     try {
-      const { error } = await supabase
-        .from('course_applications')
-        .update({ status })
-        .eq('id', id);
-
-      if (error) {
-        throw error;
-      }
-
-      setApplications(applications.map(app => 
+      // Update in localStorage
+      const localApplications = JSON.parse(localStorage.getItem('course_applications') || '[]');
+      const updatedApplications = localApplications.map((app: CourseApplication) => 
         app.id === id ? { ...app, status } : app
-      ));
+      );
+      localStorage.setItem('course_applications', JSON.stringify(updatedApplications));
+      
+      // Update local state
+      setApplications(updatedApplications);
 
       toast.success('Կարգավիճակը թարմացված է', {
         description: 'Դիմումի կարգավիճակը հաջողությամբ թարմացվել է'
