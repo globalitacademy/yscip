@@ -9,10 +9,14 @@ const Hero: React.FC = () => {
   const [categories, setCategories] = useState<string[]>([]);
   const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
   const [cursorVisible, setCursorVisible] = useState(false);
-  const [secondaryCursors, setSecondaryCursors] = useState([
-    { x: 100, y: 100, color: 'red', visible: true },
-    { x: 200, y: 200, color: 'blue', visible: true },
-  ]);
+  
+  // Cursor configurations
+  const cursors = [
+    { name: "Արման", color: "green", direction: "top-left" as const, offset: { x: -70, y: -70 } },
+    { name: "Կարեն", color: "purple", direction: "top-right" as const, offset: { x: 70, y: -70 } },
+    { name: "Մարիամ", color: "red", direction: "bottom-left" as const, offset: { x: -70, y: 70 } },
+    { name: "Անահիտ", color: "blue", direction: "bottom-right" as const, offset: { x: 70, y: 70 } },
+  ];
 
   // Fetch categories from project themes
   useEffect(() => {
@@ -34,21 +38,13 @@ const Hero: React.FC = () => {
   // Custom cursor tracking
   useEffect(() => {
     const handleMouseMove = (e: MouseEvent) => {
-      // Update primary mouse position for custom cursor
       setMousePosition({ x: e.clientX, y: e.clientY });
       setCursorVisible(true);
-      
-      // Update secondary cursors with slight delay for an interactive effect
-      setSecondaryCursors(prev => [
-        { ...prev[0], x: e.clientX - 50, y: e.clientY + 50, visible: true },
-        { ...prev[1], x: e.clientX + 50, y: e.clientY - 30, visible: true },
-      ]);
     };
     
     // Hide cursor when mouse leaves
     const handleMouseLeave = () => {
       setCursorVisible(false);
-      setSecondaryCursors(prev => prev.map(cursor => ({ ...cursor, visible: false })));
     };
     
     window.addEventListener('mousemove', handleMouseMove);
@@ -80,22 +76,18 @@ const Hero: React.FC = () => {
 
   return (
     <section ref={heroRef} className="relative min-h-[90vh] flex items-center justify-center overflow-hidden pt-16 bg-gradient-to-b from-background/20 to-background">
-      {/* Primary cursor (yellow) */}
-      <CustomCursor 
-        mousePosition={mousePosition} 
-        cursorVisible={cursorVisible} 
-        color="primary"
-        tooltipText="Դուրդ եկա՞վ"
-        showTooltip={true}
-      />
-      
-      {/* Secondary cursors (red and blue) */}
-      {secondaryCursors.map((cursor, index) => (
+      {/* Render all cursors with their respective offsets */}
+      {cursors.map((cursor, index) => (
         <CustomCursor 
           key={index}
-          mousePosition={{ x: cursor.x, y: cursor.y }} 
-          cursorVisible={cursor.visible}
+          mousePosition={{ 
+            x: mousePosition.x + cursor.offset.x, 
+            y: mousePosition.y + cursor.offset.y 
+          }} 
+          cursorVisible={cursorVisible}
           color={cursor.color}
+          name={cursor.name}
+          direction={cursor.direction}
         />
       ))}
       
