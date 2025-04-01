@@ -1,7 +1,8 @@
+
 import React, { useState, useEffect } from 'react';
 import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
 import { Toaster } from 'sonner';
-import { AuthContext } from './contexts/AuthContext';
+import AuthProvider from './contexts/AuthContext';
 import { supabase } from './integrations/supabase/client';
 
 // Import Pages
@@ -95,61 +96,63 @@ function App() {
   };
 
   return (
-    <Router>
-      <Routes>
-        <Route path="/" element={<Index />} />
-        <Route path="/login" element={<LoginPage />} />
-        <Route path="/register" element={<RegisterPage />} />
-        <Route path="/verify-email" element={<VerifyEmail />} />
-        
-        {/* Admin Routes */}
-        <Route path="/admin" element={<AdminRedirectPage />} />
-        <Route path="/admin/dashboard" element={<AdminDashboard />} />
-        <Route path="/admin/users" element={<UserManagementPage />} />
-        <Route path="/admin/admin-projects" element={<AdminProjectsPage />} />
-        <Route path="/admin/specializations" element={<SpecializationsPage />} />
-        <Route path="/admin/groups" element={<GroupsPage />} />
-        <Route path="/admin/organizations" element={<OrganizationsPage />} />
-        <Route path="/admin/reports" element={<ReportsPage />} />
-        <Route path="/admin/settings" element={<SettingsPage />} />
-        <Route path="/admin/notifications" element={<NotificationsPage />} />
-        <Route path="/admin/database" element={<SystemSettingsPage />} />
-        
-        {/* Course Routes */}
-        <Route path="/admin/courses" element={<AdminCoursesPage />} />
-        <Route path="/admin/courses/create" element={<CourseCreationPage />} />
-        <Route path="/admin/course/:id" element={<CourseDetailPage />} />
-        <Route path="/admin/all-courses" element={<AllCoursesPage />} />
-        <Route path="/admin/course-applications" element={<CourseApplicationsPage />} />
-        <Route path="/admin/modules" element={<ModulesPage />} />
-        
-        {/* Project Routes */}
-        <Route path="/admin/projects" element={<ProjectManagementPage />} />
-        <Route path="/admin/projects/edit/:id" element={<ProjectEditPage />} />
-        <Route path="/admin/student-projects" element={<StudentProjectsPage />} />
-        <Route path="/admin/supervised-students" element={<SupervisedStudentsPage />} />
-        <Route path="/admin/project-proposals" element={<ProjectProposalsPage />} />
-        <Route path="/admin/pending-approvals" element={<PendingApprovals />} />
-        <Route path="/admin/my-projects" element={<MyProjectsPage />} />
-        
-        {/* Task Management */}
-        <Route path="/admin/tasks" element={<TasksPage />} />
-        
-        {/* Portfolio */}
-        <Route path="/admin/portfolio" element={<PortfolioPage />} />
-        
-        {/* Project Details */}
-        <Route path="/project/:id" element={<ProjectDetails />} />
-        <Route path="/project/:id/submit" element={<ProjectSubmissionPage />} />
-        
-        {/* Course Details */}
-        <Route path="/course/:slug" element={<CourseDetails />} />
-        
-        {/* 404 Page */}
-        <Route path="*" element={<NotFound />} />
-      </Routes>
-      <Toaster />
-    </Router>
+    <AuthProvider>
+      <Router>
+        <Routes>
+          <Route path="/" element={<Index />} />
+          <Route path="/login" element={<LoginPage />} />
+          <Route path="/register" element={<RegisterPage />} />
+          <Route path="/verify-email" element={<VerifyEmail />} />
+          
+          {/* Admin Routes */}
+          <Route path="/admin" element={<AdminRedirectPage />} />
+          <Route path="/admin/dashboard" element={<AdminDashboard />} />
+          <Route path="/admin/users" element={<UserManagementPage />} />
+          <Route path="/admin/admin-projects" element={<AdminProjectsPage />} />
+          <Route path="/admin/specializations" element={<SpecializationsPage />} />
+          <Route path="/admin/groups" element={<GroupsPage />} />
+          <Route path="/admin/organizations" element={<OrganizationsPage />} />
+          <Route path="/admin/reports" element={<ReportsPage />} />
+          <Route path="/admin/settings" element={<SettingsPage />} />
+          <Route path="/admin/notifications" element={<NotificationsPage />} />
+          <Route path="/admin/database" element={<SystemSettingsPage />} />
+          
+          {/* Course Routes */}
+          <Route path="/admin/courses" element={<AdminCoursesPage />} />
+          <Route path="/admin/courses/create" element={<CourseCreationPage />} />
+          <Route path="/admin/course/:id" element={<CourseDetailPage />} />
+          <Route path="/admin/all-courses" element={<AllCoursesPage />} />
+          <Route path="/admin/course-applications" element={<CourseApplicationsPage />} />
+          <Route path="/admin/modules" element={<ModulesPage />} />
+          
+          {/* Project Routes */}
+          <Route path="/admin/projects" element={<ProjectManagementPage />} />
+          <Route path="/admin/projects/edit/:id" element={<ProjectEditPage />} />
+          <Route path="/admin/student-projects" element={<StudentProjectsPage />} />
+          <Route path="/admin/supervised-students" element={<SupervisedStudentsPage />} />
+          <Route path="/admin/project-proposals" element={<ProjectProposalsPage />} />
+          <Route path="/admin/pending-approvals" element={<PendingApprovals />} />
+          <Route path="/admin/my-projects" element={<MyProjectsPage />} />
+          
+          {/* Task Management */}
+          <Route path="/admin/tasks" element={<TasksPage />} />
+          
+          {/* Portfolio */}
+          <Route path="/admin/portfolio" element={<PortfolioPage />} />
+          
+          {/* Project Details */}
+          <Route path="/project/:id" element={<ProjectDetails />} />
+          <Route path="/project/:id/submit" element={<ProjectSubmissionPage />} />
+          
+          {/* Course Details */}
+          <Route path="/course/:slug" element={<CourseDetails />} />
+          
+          {/* 404 Page */}
+          <Route path="*" element={<NotFound />} />
+        </Routes>
+        <Toaster />
+      </Router>
+    </AuthProvider>
   );
 }
 
