@@ -1,3 +1,4 @@
+
 import { LucideIcon } from 'lucide-react';
 import { BrainCircuit, Code, LayoutDashboard, Rocket, Sparkles, Terminal, Wrench } from 'lucide-react';
 
@@ -17,13 +18,22 @@ export interface ProjectTheme {
   steps?: string[];
   prerequisites?: string[];
   learningOutcomes?: string[];
-  organizationName?: string; // Add organization name field
+  organizationName?: string;
+  detailedDescription?: string;
+  status?: string;
+  timeline?: TimelineEvent[];
+  tasks?: Task[];
 }
 
 export interface Task {
   id: string;
   title: string;
-  status: 'todo' | 'inProgress' | 'completed';
+  description?: string;
+  status: 'todo' | 'inProgress' | 'in-progress' | 'review' | 'done' | 'completed' | 'open';
+  assignee?: string;
+  assignedTo?: string;
+  dueDate?: string;
+  createdBy?: string;
 }
 
 export interface TimelineEvent {
@@ -31,6 +41,7 @@ export interface TimelineEvent {
   title: string;
   date: string;
   isCompleted: boolean;
+  description?: string;
 }
 
 export interface Category {

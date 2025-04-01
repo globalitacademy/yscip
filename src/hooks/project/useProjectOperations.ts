@@ -22,7 +22,6 @@ export const useProjectOperations = (
     setEditedProject({
       title: project.title,
       description: project.description,
-      detailedDescription: project.detailedDescription || '',
       category: project.category,
       complexity: project.complexity || 'Միջին',
       duration: project.duration || '',
@@ -30,6 +29,7 @@ export const useProjectOperations = (
       steps: project.steps || [],
       prerequisites: project.prerequisites || [],
       learningOutcomes: project.learningOutcomes || [],
+      detailedDescription: project.detailedDescription || ''
     });
     setIsEditDialogOpen(true);
   }, [setSelectedProject, setEditedProject, setIsEditDialogOpen]);

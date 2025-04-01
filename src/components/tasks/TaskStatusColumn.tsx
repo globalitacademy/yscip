@@ -90,9 +90,11 @@ const TaskStatusColumn: React.FC<TaskStatusColumnProps> = ({
           tasks.map(task => (
             <div key={task.id} className="p-3 bg-card rounded-md border border-border shadow-sm">
               <div className="mb-2 font-medium">{task.title}</div>
-              <p className="text-sm text-muted-foreground line-clamp-2 mb-2">
-                {task.description}
-              </p>
+              {task.description && (
+                <p className="text-sm text-muted-foreground line-clamp-2 mb-2">
+                  {task.description}
+                </p>
+              )}
               
               <div className="flex justify-between items-center mt-2">
                 <TooltipProvider>

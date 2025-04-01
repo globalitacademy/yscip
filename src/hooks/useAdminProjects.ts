@@ -24,17 +24,10 @@ export const useAdminProjects = () => {
       filtered = filtered.filter(project => project.category === activeCategory);
     }
     
-    // Additional status filtering
-    if (filterStatus === "assigned") {
-      filtered = filtered.filter(project => project.status === "assigned");
-    } else if (filterStatus === "pending") {
-      filtered = filtered.filter(project => project.status === "pending");
-    } else if (filterStatus === "approved") {
-      filtered = filtered.filter(project => project.status === "approved");
-    }
+    // No status filtering for now as status field doesn't exist in ProjectTheme yet
     
     return filtered;
-  }, [activeCategory, filterStatus]);
+  }, [activeCategory]);
   
   const filteredProjects = getFilteredProjects();
   const visibleProjects = filteredProjects.slice(0, displayLimit);

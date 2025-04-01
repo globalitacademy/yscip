@@ -30,7 +30,7 @@ const ProjectTimeline: React.FC<ProjectTimelineProps> = ({ timeline, tasks }) =>
       title: event.title,
       startDate: parseISO(event.date),
       endDate: addDays(parseISO(event.date), 1), // End date is 1 day after for events
-      status: event.completed ? 'completed' as const : 'todo' as const,
+      status: event.isCompleted ? 'completed' as const : 'todo' as const,
       type: 'event' as const
     })),
     ...tasks.map(task => {

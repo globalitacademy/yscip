@@ -60,8 +60,8 @@ const TaskForm: React.FC<TaskFormProps> = ({ onSubmit, onClose, currentUserId, s
       description: values.description,
       status: 'todo',
       assignee: values.assignedTo,
-      dueDate: values.dueDate,
       assignedTo: values.assignedTo,
+      dueDate: values.dueDate,
       createdBy: currentUserId
     };
     onSubmit(newTask);

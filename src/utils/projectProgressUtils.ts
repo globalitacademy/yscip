@@ -12,13 +12,15 @@ export const calculateProjectProgress = (tasks: Task[], timeline: TimelineEvent[
   // Count completed tasks
   if (tasks.length > 0) {
     totalItems += tasks.length;
-    completedItems += tasks.filter(task => task.status === 'done').length;
+    completedItems += tasks.filter(task => 
+      task.status === 'done' || task.status === 'completed'
+    ).length;
   }
   
   // Count completed timeline events
   if (timeline.length > 0) {
     totalItems += timeline.length;
-    completedItems += timeline.filter(event => event.completed).length;
+    completedItems += timeline.filter(event => event.isCompleted).length;
   }
   
   return Math.round((completedItems / totalItems) * 100);
@@ -39,21 +41,21 @@ export const generateSampleTimeline = (): TimelineEvent[] => {
       title: 'Նախագծի մեկնարկ',
       date: now.toISOString().split('T')[0],
       description: 'Նախագծի պահանջների քննարկում և պլանավորում',
-      completed: true
+      isCompleted: true
     },
     {
       id: uuidv4(),
       title: 'Ծրագրային պահանջների կազմում',
       date: oneWeekLater.toISOString().split('T')[0],
       description: 'Ծրագրային պահանջների վերլուծություն և փաստաթղթավորում',
-      completed: false
+      isCompleted: false
     },
     {
       id: uuidv4(),
       title: 'Նախնական նախատիպի ստեղծում',
       date: twoWeeksLater.toISOString().split('T')[0],
       description: 'Նախագծի նախնական տարբերակի մշակում',
-      completed: false
+      isCompleted: false
     }
   ];
 };
@@ -67,22 +69,25 @@ export const generateSampleTasks = (userId: string): Task[] => {
       description: 'Նախագծի տեխնիկական առաջադրանքի մշակում և կազմում',
       status: 'done',
       assignee: userId,
+      assignedTo: userId,
       dueDate: new Date().toISOString().split('T')[0]
     },
     {
       id: uuidv4(),
       title: 'Ճարտարապետության մշակում',
       description: 'Նախագծի ճարտարապետության նախագծում և սխեմատիկ պատկերում',
-      status: 'in progress',
+      status: 'inProgress',
       assignee: userId,
+      assignedTo: userId,
       dueDate: new Date().toISOString().split('T')[0]
     },
     {
       id: uuidv4(),
       title: 'UI/UX դիզայն',
       description: 'Օգտագործողի միջերեսի նախատիպի մշակում',
-      status: 'open',
+      status: 'todo',
       assignee: userId,
+      assignedTo: userId,
       dueDate: new Date().toISOString().split('T')[0]
     }
   ];

@@ -45,7 +45,7 @@ const Timeline: React.FC<TimelineProps> = ({
     if (onAddEvent) {
       onAddEvent({
         ...newEvent,
-        completed: false
+        isCompleted: false
       });
       setNewEvent({ title: '', date: '', description: '' });
       setOpen(false);
@@ -138,16 +138,16 @@ const Timeline: React.FC<TimelineProps> = ({
             <div key={event.id} className="relative">
               {/* Circular indicator */}
               <div className="absolute -left-[39px] p-2 bg-background">
-                {event.completed ? (
+                {event.isCompleted ? (
                   <CheckCircle2 size={20} className="text-primary" />
                 ) : (
                   <CircleDashed size={20} className="text-muted-foreground" />
                 )}
               </div>
 
-              <Card className={`p-4 transition-all ${event.completed ? 'bg-muted/40' : 'bg-card hover:shadow-md'}`}>
+              <Card className={`p-4 transition-all ${event.isCompleted ? 'bg-muted/40' : 'bg-card hover:shadow-md'}`}>
                 <div className="flex justify-between">
-                  <h4 className={`font-medium ${event.completed ? 'text-muted-foreground' : ''}`}>
+                  <h4 className={`font-medium ${event.isCompleted ? 'text-muted-foreground' : ''}`}>
                     {event.title}
                   </h4>
                   <Badge variant="outline" className="flex gap-1 items-center">
@@ -159,7 +159,7 @@ const Timeline: React.FC<TimelineProps> = ({
                   {event.description}
                 </p>
                 
-                {!event.completed && permissions.canApproveTimelineEvents && (
+                {!event.isCompleted && permissions.canApproveTimelineEvents && (
                   <div className="mt-4 flex justify-end">
                     <Button 
                       variant="ghost" 
