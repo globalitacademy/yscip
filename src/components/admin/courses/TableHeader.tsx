@@ -2,13 +2,13 @@
 import React from 'react';
 import {
   TableHead,
-  TableHeader,
+  TableHeader as UITableHeader,
   TableRow,
 } from "@/components/ui/table";
 
-export const TableHeader: React.FC = () => {
+export const CourseTableHeader: React.FC = () => {
   return (
-    <TableHeader>
+    <UITableHeader>
       <TableRow>
         <TableHead>Վերնագիր</TableHead>
         <TableHead>Ստեղծողը</TableHead>
@@ -17,6 +17,6 @@ export const TableHeader: React.FC = () => {
         <TableHead>Կարգավիճակ</TableHead>
         <TableHead className="text-right">Գործողություններ</TableHead>
       </TableRow>
-    </TableHeader>
+    </UITableHeader>
   );
 };

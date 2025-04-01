@@ -5,7 +5,7 @@ import {
   Table,
   TableBody,
 } from "@/components/ui/table";
-import { TableHeader } from './TableHeader';
+import { CourseTableHeader } from './TableHeader';
 import { CourseRow } from './CourseRow';
 import { EmptyState } from './EmptyState';
 
@@ -27,7 +27,7 @@ export const CoursesTable: React.FC<CoursesTableProps> = ({
   return (
     <div className="border rounded-md">
       <Table>
-        <TableHeader />
+        <CourseTableHeader />
         <TableBody>
           {courses.map((course) => (
             <CourseRow 
