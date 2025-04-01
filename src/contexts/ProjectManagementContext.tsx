@@ -1,8 +1,11 @@
-import React, { createContext, useState, useContext, ReactNode, useCallback, useMemo } from 'react';
+
+import React, { createContext, useState, useContext, ReactNode, useMemo } from 'react';
 import { ProjectTheme } from '@/data/projectThemes';
 import { useProjectOperations } from '@/hooks/useProjectOperations';
 import { useProjectEvents } from '@/components/projects/hooks/useProjectEvents';
-import { useQueryClient } from '@tanstack/react-query';
+import { useProjectFilters } from '@/hooks/project/useProjectFilters';
+import { useProjectOperations as useProjectInitOperations } from '@/hooks/project/useProjectOperations';
+import { useProjectDialogs } from '@/hooks/project/useProjectDialogs';
 
 interface ProjectManagementContextType {
   searchQuery: string;
@@ -50,8 +53,7 @@ interface ProjectManagementProviderProps {
 }
 
 export const ProjectManagementProvider: React.FC<ProjectManagementProviderProps> = ({ children }) => {
-  const [searchQuery, setSearchQuery] = useState('');
-  const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
+  // State management
   const [selectedProject, setSelectedProject] = useState<ProjectTheme | null>(null);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [isImageDialogOpen, setIsImageDialogOpen] = useState(false);
@@ -59,6 +61,14 @@ export const ProjectManagementProvider: React.FC<ProjectManagementProviderProps>
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
   const [newImageUrl, setNewImageUrl] = useState('');
   const [editedProject, setEditedProject] = useState<Partial<ProjectTheme>>({});
+  
+  // Hooks
+  const {
+    searchQuery,
+    setSearchQuery,
+    selectedCategory,
+    setSelectedCategory
+  } = useProjectFilters();
   
   const {
     projects,
@@ -71,77 +81,47 @@ export const ProjectManagementProvider: React.FC<ProjectManagementProviderProps>
     createProject
   } = useProjectOperations();
   
+  // Listen for project events
   useProjectEvents(setProjects);
   
-  const queryClient = useQueryClient();
+  // Project operations
+  const {
+    handleEditInit,
+    handleImageChangeInit,
+    handleDeleteInit,
+    handleOpenCreateDialog
+  } = useProjectInitOperations(
+    setSelectedProject,
+    setEditedProject,
+    setIsEditDialogOpen,
+    setNewImageUrl,
+    setIsImageDialogOpen,
+    setIsDeleteDialogOpen,
+    setIsCreateDialogOpen
+  );
   
-  const handleDelete = useCallback(async () => {
-    if (!selectedProject) return;
-    await deleteProject(selectedProject);
-    setIsDeleteDialogOpen(false);
-    setSelectedProject(null);
-    
-    queryClient.invalidateQueries({ queryKey: ['projects'] });
-  }, [selectedProject, deleteProject, queryClient]);
-
-  const handleChangeImage = useCallback(async () => {
-    if (!selectedProject) return;
-    await updateProjectImage(selectedProject, newImageUrl);
-    setIsImageDialogOpen(false);
-    setNewImageUrl('');
-    setSelectedProject(null);
-    
-    queryClient.invalidateQueries({ queryKey: ['projects'] });
-  }, [selectedProject, newImageUrl, updateProjectImage, queryClient]);
-
-  const handleEditInit = useCallback((project: ProjectTheme) => {
-    setSelectedProject(project);
-    setEditedProject({
-      title: project.title,
-      description: project.description,
-      detailedDescription: project.detailedDescription || '',
-      category: project.category,
-      complexity: project.complexity || 'Միջին',
-      duration: project.duration || '',
-      techStack: project.techStack || [],
-      steps: project.steps || [],
-      prerequisites: project.prerequisites || [],
-      learningOutcomes: project.learningOutcomes || [],
-    });
-    setIsEditDialogOpen(true);
-  }, []);
-
-  const handleSaveEdit = useCallback(async () => {
-    if (!selectedProject) return;
-    await updateProject(selectedProject, editedProject);
-    setIsEditDialogOpen(false);
-    setEditedProject({});
-    setSelectedProject(null);
-    
-    queryClient.invalidateQueries({ queryKey: ['projects'] });
-  }, [selectedProject, editedProject, updateProject, queryClient]);
-
-  const handleImageChangeInit = useCallback((project: ProjectTheme) => {
-    setSelectedProject(project);
-    setNewImageUrl(project.image || '');
-    setIsImageDialogOpen(true);
-  }, []);
-
-  const handleDeleteInit = useCallback((project: ProjectTheme) => {
-    setSelectedProject(project);
-    setIsDeleteDialogOpen(true);
-  }, []);
-
-  const handleProjectCreated = useCallback(async (project: ProjectTheme) => {
-    await createProject(project);
-    setIsCreateDialogOpen(false);
-    
-    queryClient.invalidateQueries({ queryKey: ['projects'] });
-  }, [createProject, queryClient]);
-
-  const handleOpenCreateDialog = useCallback(() => {
-    setIsCreateDialogOpen(true);
-  }, []);
+  // Dialog handlers
+  const {
+    handleDelete,
+    handleChangeImage,
+    handleSaveEdit,
+    handleProjectCreated
+  } = useProjectDialogs(
+    selectedProject,
+    newImageUrl,
+    editedProject,
+    deleteProject,
+    updateProject,
+    updateProjectImage,
+    createProject,
+    setIsDeleteDialogOpen,
+    setIsImageDialogOpen,
+    setIsEditDialogOpen,
+    setIsCreateDialogOpen,
+    setSelectedProject,
+    setNewImageUrl,
+    setEditedProject
+  );
 
   const contextValue = useMemo(() => ({
     searchQuery,
@@ -186,7 +166,10 @@ export const ProjectManagementProvider: React.FC<ProjectManagementProviderProps>
     editedProject, projects, isLoading, loadProjects, handleDelete, 
     handleChangeImage, handleSaveEdit, handleEditInit, handleImageChangeInit, 
     handleDeleteInit, handleProjectCreated, handleOpenCreateDialog, 
-    updateProject, updateProjectImage, deleteProject, createProject
+    updateProject, updateProjectImage, deleteProject, createProject,
+    setSearchQuery, setSelectedCategory, setSelectedProject, setIsDeleteDialogOpen,
+    setIsImageDialogOpen, setIsEditDialogOpen, setIsCreateDialogOpen, 
+    setNewImageUrl, setEditedProject, setProjects
   ]);
 
   return (

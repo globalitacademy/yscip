@@ -1,14 +1,17 @@
 
-import React, { useCallback, memo } from 'react';
+import React, { memo } from 'react';
 import { Card, CardContent, CardFooter, CardHeader } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Eye, Building, User, Pencil, Image, Trash, Code } from 'lucide-react';
+import { Eye } from 'lucide-react';
 import { ProjectTheme } from '@/data/projectThemes';
 import { Link } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { useProjectManagement } from '@/contexts/ProjectManagementContext';
-import { getProjectImage } from '@/lib/getProjectImage';
-import { cn } from '@/lib/utils';
+import { useProjectCard } from '@/hooks/project/useProjectCard';
+import ProjectImage from '@/components/ui/project/ProjectImage';
+import ProjectBadges from '@/components/ui/project/ProjectBadges';
+import ProjectActions from '@/components/ui/project/ProjectActions';
+import ProjectTechnologies from '@/components/ui/project/ProjectTechnologies';
 
 interface ProjectCardProps {
   project: ProjectTheme;
@@ -44,140 +47,53 @@ const ProjectCard: React.FC<ProjectCardProps> = ({
     handleDeleteInit 
   } = projectManagement;
   
-  // Check if the project was created by the current user
-  const isCreatedByCurrentUser = project.createdBy === user?.id;
-  const creatorName = isCreatedByCurrentUser ? 'Ձեր կողմից' : 'Ուսումնական Կենտրոն';
-  
-  // Get the project image URL
-  const imageUrl = getProjectImage(project);
-  
-  // Define complexity color classes
-  const getComplexityColor = (complexity?: string) => {
-    switch (complexity) {
-      case 'Սկսնակ':
-        return 'bg-green-500/10 text-green-600 border-green-200';
-      case 'Միջին':
-        return 'bg-amber-500/10 text-amber-600 border-amber-200';
-      case 'Առաջադեմ':
-        return 'bg-red-500/10 text-red-600 border-red-200';
-      default:
-        return 'bg-blue-500/10 text-blue-600 border-blue-200';
-    }
-  };
-  
-  // Memoize event handlers to prevent unnecessary re-renders
-  const handleEdit = useCallback((e: React.MouseEvent) => {
-    e.preventDefault(); // Prevent navigation to project detail
-    e.stopPropagation(); // Prevent event bubbling
-    if (handleEditInit) handleEditInit(project);
-  }, [handleEditInit, project]);
-
-  const handleImageChange = useCallback((e: React.MouseEvent) => {
-    e.preventDefault(); // Prevent navigation to project detail
-    e.stopPropagation(); // Prevent event bubbling
-    if (handleImageChangeInit) handleImageChangeInit(project);
-  }, [handleImageChangeInit, project]);
-
-  const handleDelete = useCallback((e: React.MouseEvent) => {
-    e.preventDefault(); // Prevent navigation to project detail
-    e.stopPropagation(); // Prevent event bubbling
-    if (handleDeleteInit) handleDeleteInit(project);
-  }, [handleDeleteInit, project]);
-  
-  // Function to handle image error and provide fallback
-  const handleImageError = (e: React.SyntheticEvent<HTMLImageElement>) => {
-    e.currentTarget.src = `https://source.unsplash.com/random/800x600/?${encodeURIComponent(project.category || 'project')}`;
-  };
+  const {
+    isCreatedByCurrentUser,
+    creatorName,
+    imageUrl,
+    handleEdit,
+    handleImageChange,
+    handleDelete,
+    handleImageError
+  } = useProjectCard(
+    project, 
+    handleEditInit, 
+    handleImageChangeInit, 
+    handleDeleteInit,
+    adminView
+  );
   
   return (
     <Card className={`flex flex-col w-full hover:shadow-md transition-shadow relative ${className || ''}`}>
       {!adminView && isCreatedByCurrentUser && (
-        <div className="absolute top-4 right-4 z-20 flex gap-2">
-          <Button
-            variant="outline" 
-            size="icon" 
-            className="h-6 w-6 rounded-full bg-white/80 backdrop-blur-sm" 
-            onClick={handleEdit}
-          >
-            <Pencil size={12} />
-          </Button>
-          <Button
-            variant="outline" 
-            size="icon" 
-            className="h-6 w-6 rounded-full bg-white/80 backdrop-blur-sm" 
-            onClick={handleImageChange}
-          >
-            <Image size={12} />
-          </Button>
-          <Button
-            variant="outline" 
-            size="icon" 
-            className="h-6 w-6 rounded-full bg-white/80 backdrop-blur-sm" 
-            onClick={handleDelete}
-          >
-            <Trash size={12} />
-          </Button>
-        </div>
+        <ProjectActions 
+          project={project}
+          onEdit={handleEdit}
+          onImageChange={handleImageChange}
+          onDelete={handleDelete}
+        />
       )}
 
-      <div className="absolute top-4 left-4 flex items-center text-xs bg-gray-100 px-2 py-1 rounded-full z-10">
-        <Building size={12} className="mr-1" />
-        <span>{project.category}</span>
-      </div>
-
-      {/* Complexity badge in top right */}
-      {project.complexity && (
-        <div className={`absolute top-4 right-4 z-10 ${(!adminView && isCreatedByCurrentUser) ? 'hidden' : 'block'}`}>
-          <span className={cn("text-xs border px-2 py-1 rounded-full inline-block", getComplexityColor(project.complexity))}>
-            {project.complexity}
-          </span>
-        </div>
-      )}
-
-      {!project.is_public && (
-        <div className="absolute top-4 left-1/2 transform -translate-x-1/2 flex items-center text-xs bg-amber-100 text-amber-800 px-2 py-1 rounded-full z-10">
-          <span>Չհրապարակված</span>
-        </div>
-      )}
+      <ProjectBadges 
+        category={project.category}
+        complexity={project.complexity}
+        isPublic={project.is_public}
+        adminView={adminView}
+        showComplexity={(!adminView && isCreatedByCurrentUser) ? false : true}
+      />
 
       <CardHeader className="pb-2 text-center pt-12 relative">
-        <div className="w-full h-32 mb-4 overflow-hidden rounded-md relative">
-          <img 
-            src={imageUrl} 
-            alt={project.title}
-            className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
-            loading="lazy"
-            onError={handleImageError}
-          />
-          
-          {/* Author info moved to the bottom right of the image */}
-          <div className="absolute bottom-2 right-2 flex items-center gap-1 text-xs bg-gray-900/70 text-white px-2 py-1 rounded-full">
-            <User size={10} />
-            <span>{creatorName}</span>
-          </div>
-        </div>
+        <ProjectImage 
+          project={project}
+          creatorName={creatorName}
+          imageUrl={imageUrl}
+          handleImageError={handleImageError}
+        />
         <h3 className="font-bold text-xl">{project.title}</h3>
       </CardHeader>
       
       <CardContent className="flex-grow pb-2">
-        {/* Technologies subheading */}
-        <div className="mb-4">
-          <h4 className="text-sm font-bold mb-2 flex items-center">
-            <Code size={16} className="mr-2 text-primary" />
-            Տեխնոլոգիաներ
-          </h4>
-          <div className="flex flex-wrap gap-1">
-            {project.techStack && project.techStack.length > 0 ? (
-              project.techStack.map((tech, index) => (
-                <span key={index} className="text-xs bg-primary/10 text-primary px-2 py-1 rounded-full">
-                  {tech}
-                </span>
-              ))
-            ) : (
-              <span className="text-xs text-muted-foreground">Տեխնոլոգիաներ չկան</span>
-            )}
-          </div>
-        </div>
+        <ProjectTechnologies techStack={project.techStack} />
         
         <div className="flex justify-between w-full text-sm mt-auto">
           <span>{project.duration || 'Անորոշ ժամկետ'}</span>
