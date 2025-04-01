@@ -17,6 +17,10 @@ interface CourseApplication {
   course_id: string;
   course_title: string;
   message?: string;
+  format?: string;
+  session_type?: string;
+  languages?: string[];
+  free_practice?: boolean;
   status: 'new' | 'contacted' | 'enrolled' | 'rejected';
 }
 
@@ -63,13 +67,37 @@ serve(async (req) => {
     
     // For now, let's log the notification since we don't have actual email implementation
     console.log("Would send email notification to:", adminEmails);
+    console.log("Also send notification to admin email:", "gitedu@bk.ru");
     console.log("Email subject: New course application for", application.course_title);
-    console.log("Application details:", {
-      name: application.full_name,
-      email: application.email,
-      phone: application.phone_number,
-      message: application.message || 'No message provided'
-    });
+    
+    // Format application details for email
+    const formatLanguages = application.languages?.join(', ') || 'None specified';
+    const formatDetails = `
+      Name: ${application.full_name}
+      Email: ${application.email}
+      Phone: ${application.phone_number}
+      Course format: ${application.format || 'Not specified'}
+      Session type: ${application.session_type || 'Not specified'}
+      Languages: ${formatLanguages}
+      Free practice: ${application.free_practice ? 'Yes' : 'No'}
+      Message: ${application.message || 'No message provided'}
+    `;
+    console.log("Application details:", formatDetails);
+    
+    // TODO: In a production environment, replace this with actual email sending code
+    // For example, using an email service like SendGrid, Mailgun, or AWS SES
+    
+    // Simulate sending email to gitedu@bk.ru
+    console.log("Simulating email send to gitedu@bk.ru");
+    console.log("Email would contain:");
+    console.log(`Subject: New application for ${application.course_title}`);
+    console.log(`Body: 
+      A new application has been submitted for "${application.course_title}"
+      
+      ${formatDetails}
+      
+      You can log in to the admin dashboard to manage this application.
+    `);
     
     // Create notification in database for admins
     for (const admin of adminUsers || []) {
@@ -107,9 +135,6 @@ serve(async (req) => {
       console.log("Applicant does not have a user account, would send email to:", application.email);
     }
     
-    // In a real implementation, you would send actual emails here
-    // For now, we're just creating in-app notifications
-
     return new Response(
       JSON.stringify({ success: true, message: "Notifications sent successfully" }),
       { 
