@@ -1,9 +1,11 @@
 
 import { ProfessionalCourse } from '@/components/courses/types/ProfessionalCourse';
 import { supabase } from '@/integrations/supabase/client';
+import { toast } from 'sonner';
+import { convertIconNameToComponent } from '@/utils/iconUtils';
 
 /**
- * Updates a course directly in the database
+ * Update course directly in the database
  */
 export const updateCourseDirectly = async (
   courseId: string, 
@@ -25,8 +27,6 @@ export const updateCourseDirectly = async (
         image_url: courseData.imageUrl,
         organization_logo: courseData.organizationLogo,
         description: courseData.description,
-        created_by: courseData.createdBy,
-        instructor: courseData.instructor,
         is_public: courseData.is_public,
         updated_at: new Date().toISOString()
       })
@@ -100,7 +100,76 @@ export const updateCourseDirectly = async (
     
     return true;
   } catch (error) {
-    console.error('Error in updateCourseDirectly:', error);
+    console.error('Error updating course:', error);
     return false;
+  }
+};
+
+/**
+ * Get all courses from the database including non-public ones (for admin view)
+ */
+export const getAllCoursesForAdmin = async () => {
+  try {
+    const { data, error } = await supabase
+      .from('courses')
+      .select('*')
+      .order('created_at', { ascending: false });
+      
+    if (error) {
+      console.error('Error fetching all courses:', error);
+      toast.error('Սխալ է տեղի ունեցել դասընթացների բեռնման ժամանակ');
+      return [];
+    }
+    
+    if (!data || data.length === 0) {
+      console.log('No courses found in database');
+      return [];
+    }
+    
+    // Process each course to include related data
+    const completeCourses = await Promise.all(data.map(async (course) => {
+      // Fetch lessons, requirements, and outcomes in parallel
+      const [lessonsResponse, requirementsResponse, outcomesResponse] = await Promise.all([
+        supabase.from('course_lessons').select('*').eq('course_id', course.id),
+        supabase.from('course_requirements').select('*').eq('course_id', course.id),
+        supabase.from('course_outcomes').select('*').eq('course_id', course.id)
+      ]);
+      
+      // Create icon component
+      const iconElement = convertIconNameToComponent(course.icon_name);
+      
+      return {
+        id: course.id,
+        title: course.title,
+        subtitle: course.subtitle || 'ԴԱՍԸՆԹԱՑ',
+        icon: iconElement,
+        iconName: course.icon_name,
+        duration: course.duration,
+        price: course.price,
+        buttonText: course.button_text || 'Դիտել',
+        color: course.color || 'text-amber-500',
+        createdBy: course.created_by || '',
+        institution: course.institution || 'ՀՊՏՀ',
+        imageUrl: course.image_url,
+        organizationLogo: course.organization_logo,
+        description: course.description || '',
+        is_public: course.is_public || false,
+        lessons: lessonsResponse.data?.map(lesson => ({
+          title: lesson.title, 
+          duration: lesson.duration
+        })) || [],
+        requirements: requirementsResponse.data?.map(req => req.requirement) || [],
+        outcomes: outcomesResponse.data?.map(outcome => outcome.outcome) || [],
+        slug: course.slug || '',
+        createdAt: course.created_at
+      };
+    }));
+    
+    console.log(`Found ${completeCourses.length} courses in database`);
+    return completeCourses;
+  } catch (error) {
+    console.error('Error fetching all courses for admin:', error);
+    toast.error('Սխալ է տեղի ունեցել դասընթացների բեռնման ժամանակ');
+    return [];
   }
 };

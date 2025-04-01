@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { BrowserRouter as Router, Route, Routes, Navigate } from 'react-router-dom';
 import { AuthProvider } from './contexts/AuthContext';
@@ -10,6 +11,7 @@ import CoursesPage from './pages/CoursesPage';
 import CourseCreationPage from './pages/CourseCreationPage';
 import UserManagementPage from './pages/UserManagementPage';
 import CourseManagementPage from './pages/CourseManagementPage';
+import AdminCoursesPage from './pages/AdminCoursesPage';
 import Index from './pages/Index';
 import NotFound from './pages/NotFound';
 import CourseDetailPage from './pages/CourseDetailPage';
@@ -35,6 +37,7 @@ function App() {
             <Route path="/admin/users" element={<UserManagementPage />} />
             <Route path="/admin/admin-projects" element={<ProjectManagementPage />} />
             <Route path="/admin/courses" element={<CourseManagementPage />} />
+            <Route path="/admin/all-courses" element={<AdminCoursesPage />} />
             <Route path="/admin/course-applications" element={<CourseApplicationsPage />} />
             
             {/* Project and Course Routes */}
