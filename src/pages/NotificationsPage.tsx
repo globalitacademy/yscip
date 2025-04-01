@@ -1,38 +1,112 @@
 
-import React from 'react';
-import { Bell, User, Calendar } from 'lucide-react';
+import React, { useEffect, useState } from 'react';
+import { Bell, User, Calendar, MessageSquare, AlertTriangle, Info, CheckCircle2 } from 'lucide-react';
 import AdminLayout from '@/components/AdminLayout';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { useAuth } from '@/contexts/AuthContext';
+import { toast } from 'sonner';
+import { supabase } from '@/integrations/supabase/client';
 
-// Example notification data
-const notifications = [
-  {
-    id: 1,
-    title: 'Նոր օգտատեր',
-    message: 'Արմեն Գրիգորյանը գրանցվել է համակարգում',
-    type: 'user',
-    date: '2023-04-01T10:30:00',
-    read: false
-  },
-  {
-    id: 2,
-    title: 'Դասընթացի դիմում',
-    message: 'Կարինե Պողոսյանը դիմել է "React հիմունքներ" դասընթացին',
-    type: 'course',
-    date: '2023-04-01T09:15:00',
-    read: true
-  },
-  {
-    id: 3,
-    title: 'Նախագծի հաստատում',
-    message: 'Նախագիծ "Էլեկտրոնային խանութ" հաստատվել է',
-    type: 'project',
-    date: '2023-03-31T16:45:00',
-    read: false
-  }
-];
+interface Notification {
+  id: number;
+  title: string;
+  message: string;
+  type: string;
+  created_at: string;
+  read: boolean;
+}
 
 const NotificationsPage: React.FC = () => {
+  const { user } = useAuth();
+  const [notifications, setNotifications] = useState<Notification[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    fetchNotifications();
+  }, [user]);
+
+  const fetchNotifications = async () => {
+    if (!user) return;
+    
+    try {
+      setLoading(true);
+      const { data, error } = await supabase
+        .from('notifications')
+        .select('*')
+        .order('created_at', { ascending: false });
+      
+      if (error) {
+        throw error;
+      }
+      
+      setNotifications(data || []);
+    } catch (error) {
+      console.error('Error fetching notifications:', error);
+      toast.error('Սխալ ծանուցումները բեռնելիս');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const markAllAsRead = async () => {
+    if (!user) return;
+    
+    try {
+      const unreadIds = notifications
+        .filter(notification => !notification.read)
+        .map(notification => notification.id);
+      
+      if (unreadIds.length === 0) {
+        toast.info('Չկան չկարդացված ծանուցումներ');
+        return;
+      }
+      
+      const { error } = await supabase
+        .from('notifications')
+        .update({ read: true })
+        .in('id', unreadIds);
+      
+      if (error) {
+        throw error;
+      }
+      
+      setNotifications(notifications.map(notification => ({
+        ...notification,
+        read: true
+      })));
+      
+      toast.success('Բոլոր ծանուցումները նշված են որպես կարդացված');
+    } catch (error) {
+      console.error('Error marking notifications as read:', error);
+      toast.error('Սխալ ծանուցումները թարմացնելիս');
+    }
+  };
+
+  const markAsRead = async (id: number) => {
+    try {
+      const { error } = await supabase
+        .from('notifications')
+        .update({ read: true })
+        .eq('id', id);
+      
+      if (error) {
+        throw error;
+      }
+      
+      setNotifications(notifications.map(notification => 
+        notification.id === id 
+          ? { ...notification, read: true } 
+          : notification
+      ));
+      
+      toast.success('Ծանուցումը նշված է որպես կարդացված');
+    } catch (error) {
+      console.error('Error marking notification as read:', error);
+      toast.error('Սխալ ծանուցումը թարմացնելիս');
+    }
+  };
+
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);
     return new Intl.DateTimeFormat('hy-AM', {
@@ -50,6 +124,14 @@ const NotificationsPage: React.FC = () => {
         return <User className="h-5 w-5 text-blue-500" />;
       case 'course':
         return <Calendar className="h-5 w-5 text-green-500" />;
+      case 'warning':
+        return <AlertTriangle className="h-5 w-5 text-amber-500" />;
+      case 'info':
+        return <Info className="h-5 w-5 text-blue-500" />;
+      case 'success':
+        return <CheckCircle2 className="h-5 w-5 text-green-500" />;
+      case 'message':
+        return <MessageSquare className="h-5 w-5 text-purple-500" />;
       default:
         return <Bell className="h-5 w-5 text-amber-500" />;
     }
@@ -58,14 +140,26 @@ const NotificationsPage: React.FC = () => {
   return (
     <AdminLayout pageTitle="Ծանուցումներ">
       <Card>
-        <CardHeader>
+        <CardHeader className="flex flex-row items-center justify-between pb-2">
           <CardTitle className="flex items-center gap-2">
             <Bell className="h-5 w-5" />
-            Վերջին ծանուցումներ
+            Ծանուցումներ
           </CardTitle>
+          <Button 
+            variant="outline" 
+            size="sm" 
+            onClick={markAllAsRead}
+            disabled={loading || notifications.every(n => n.read)}
+          >
+            Նշել բոլորը որպես կարդացված
+          </Button>
         </CardHeader>
         <CardContent>
-          {notifications.length > 0 ? (
+          {loading ? (
+            <div className="py-8 text-center">
+              <p className="text-muted-foreground">Ծանուցումների բեռնում...</p>
+            </div>
+          ) : notifications.length > 0 ? (
             <div className="space-y-4">
               {notifications.map(notification => (
                 <div
@@ -81,11 +175,21 @@ const NotificationsPage: React.FC = () => {
                     <div className="flex justify-between">
                       <h4 className="font-medium">{notification.title}</h4>
                       <span className="text-xs text-muted-foreground">
-                        {formatDate(notification.date)}
+                        {formatDate(notification.created_at)}
                       </span>
                     </div>
                     <p className="text-sm mt-1">{notification.message}</p>
                   </div>
+                  {!notification.read && (
+                    <Button 
+                      variant="ghost" 
+                      size="sm" 
+                      className="ml-2" 
+                      onClick={() => markAsRead(notification.id)}
+                    >
+                      Նշել որպես կարդացված
+                    </Button>
+                  )}
                 </div>
               ))}
             </div>

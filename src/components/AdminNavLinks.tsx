@@ -6,14 +6,14 @@ import {
   Users, 
   BookOpenCheck, 
   Home, 
-  FolderKanban, 
-  Bell,
+  FolderKanban,
   BookOpen,
   ClipboardList,
   Settings
 } from 'lucide-react';
 import { NavLink } from '@/components/NavLink';
 import { useAuth } from '@/contexts/AuthContext';
+import NotificationBadge from '@/components/NotificationBadge';
 
 const AdminNavLinks = () => {
   const { user } = useAuth();
@@ -41,7 +41,11 @@ const AdminNavLinks = () => {
         />
       )}
       
-      <NavLink to="/admin/notifications" icon={<Bell className="h-4 w-4" />} label="Ծանուցումներ" />
+      <NavLink 
+        to="/admin/notifications" 
+        icon={<NotificationBadge />} 
+        label="Ծանուցումներ" 
+      />
       
       {isAdmin && (
         <NavLink to="/admin/settings" icon={<Settings className="h-4 w-4" />} label="Կարգավորումներ" />
