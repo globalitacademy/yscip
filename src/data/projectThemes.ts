@@ -1,139 +1,317 @@
+import { LucideIcon } from 'lucide-react';
+import { BrainCircuit, Code, LayoutDashboard, Rocket, Sparkles, Terminal, Wrench } from 'lucide-react';
 
 export interface ProjectTheme {
   id: number;
   title: string;
   description: string;
-  image: string;  // Changed from optional to required
+  image?: string;
   category: string;
-  techStack: string[];  // Changed from optional to required
+  techStack?: string[];
   complexity?: string;
   duration?: string;
-  createdBy: string;  // Changed from optional to required
-  createdAt: string;  // Changed from optional to required
-  updatedAt: string;  // Changed from optional to required
-  tasks?: Task[];
-  timeline?: TimelineEvent[];
+  createdBy?: string;
+  createdAt?: string;
+  updatedAt?: string;
   is_public?: boolean;
-  detailedDescription?: string;
   steps?: string[];
-  learningOutcomes?: string[];
   prerequisites?: string[];
-  status?: 'not_submitted' | 'pending' | 'approved' | 'rejected' | 'assigned';
+  learningOutcomes?: string[];
+  organizationName?: string; // Add organization name field
 }
 
 export interface Task {
   id: string;
   title: string;
-  description: string;
-  status: 'todo' | 'in-progress' | 'review' | 'done' | 'open' | 'in progress' | 'completed';
-  assignee: string;
-  dueDate: string;
-  assignedTo?: string;
-  createdBy?: string;
+  status: 'todo' | 'inProgress' | 'completed';
 }
 
 export interface TimelineEvent {
   id: string;
-  date: string;
   title: string;
-  description: string;
-  completed?: boolean;
+  date: string;
+  isCompleted: boolean;
 }
 
-// Sample project themes
+export interface Category {
+  name: string;
+  icon: LucideIcon;
+}
+
+export const categories: Category[] = [
+  {
+    name: 'Web Development',
+    icon: Code,
+  },
+  {
+    name: 'Mobile App Development',
+    icon: BrainCircuit,
+  },
+  {
+    name: 'AI & Machine Learning',
+    icon: BrainCircuit,
+  },
+  {
+    name: 'Data Science',
+    icon: BrainCircuit,
+  },
+  {
+    name: 'Cybersecurity',
+    icon: BrainCircuit,
+  },
+  {
+    name: 'Cloud Computing',
+    icon: BrainCircuit,
+  },
+  {
+    name: 'DevOps',
+    icon: BrainCircuit,
+  },
+  {
+    name: 'Game Development',
+    icon: BrainCircuit,
+  },
+  {
+    name: 'UI/UX Design',
+    icon: BrainCircuit,
+  },
+  {
+    name: 'Project Management',
+    icon: BrainCircuit,
+  },
+];
+
 export const projectThemes: ProjectTheme[] = [
   {
     id: 1,
-    title: "Հաճախորդների կառավարման համակարգ",
-    description: "Մշակել հաճախորդների կառավարման համակարգ՝ հաճախորդների տվյալների պահպանման և վերլուծության համար:",
-    image: "/projects/crm.jpg",
-    category: "Բիզնես",
-    techStack: ["React", "Node.js", "MongoDB"],
-    complexity: "Միջին",
-    duration: "8 շաբաթ",
-    createdBy: "system", 
-    createdAt: new Date().toISOString(), 
-    updatedAt: new Date().toISOString(), // Added updatedAt with a default value
-    detailedDescription: "Հաճախորդների կառավարման համակարգը (CRM) թույլ է տալիս բիզնեսին կառավարել հաճախորդների տվյալները, հետևել վաճառքի գործընթացին և բարելավել հաճախորդների սպասարկումը: Այս նախագիծը ներառում է հաճախորդների տվյալների պահպանում, վաճառքի ձագարի կառավարում, հաշվետվությունների ստեղծում և այլն:",
-    steps: [
-      "Նախագծի պահանջների վերլուծություն և հավաքագրում",
-      "Տվյալների բազայի կառուցվածքի մշակում",
-      "API-ների ստեղծում",
-      "Օգտագործողի ինտերֆեյսի նախագծում և մշակում",
-      "Թեստավորում և կատարելագործում"
-    ],
-    learningOutcomes: [
-      "Ճարտարապետական նախագծում",
-      "REST API մշակում",
-      "MongoDB տվյալների բազայի կառավարում",
-      "React-ով օգտագործողի ինտերֆեյսի մշակում",
-      "Օգտագործողի իրավասությունների կառավարում"
-    ],
-    prerequisites: [
-      "HTML, CSS, JavaScript հիմնական գիտելիքներ",
-      "React-ի նախնական փորձ",
-      "Node.js-ի հիմնական հասկացություններ",
-      "MongoDB-ի հիմնական հասկացություններ"
-    ],
-    is_public: true
+    title: 'React E-Commerce App',
+    description: 'A fully functional e-commerce application built with React.',
+    image: 'https://source.unsplash.com/random/800x600/?ecommerce',
+    category: 'Web Development',
+    techStack: ['React', 'Node.js', 'Express', 'MongoDB'],
+    complexity: 'Միջին',
+    duration: '3 ամիս',
+    createdBy: 'admin',
+    createdAt: '2023-01-01',
+    updatedAt: '2023-04-01',
+    is_public: true,
+    steps: ['Set up project', 'Develop components', 'Implement backend', 'Deploy'],
+    prerequisites: ['JavaScript', 'React', 'Node.js'],
+    learningOutcomes: ['Full-stack development', 'E-commerce concepts'],
+    organizationName: 'ՀՊՏՀ'
   },
   {
     id: 2,
-    title: "Էլեկտրոնային առևտրի հարթակ",
-    description: "Մշակել էլեկտրոնային առևտրի հարթակ՝ ապրանքների ցուցադրման և վաճառքի համար:",
-    image: "/projects/ecommerce.jpg",
-    category: "Էլեկտրոնային առևտուր",
-    techStack: ["Vue.js", "Laravel", "MySQL"],
-    complexity: "Բարդ",
-    duration: "12 շաբաթ",
-    createdBy: "system",
-    createdAt: new Date().toISOString(),
-    updatedAt: new Date().toISOString(), // Added updatedAt with a default value
-    detailedDescription: "Էլեկտրոնային առևտրի հարթակը թույլ է տալիս վաճառողներին ցուցադրել և վաճառել իրենց ապրանքները, իսկ գնորդներին՝ դիտել, գնել և վճարել դրանց համար: Այս նախագիծը ներառում է ապրանքների կատալոգ, զամբյուղ, վճարման համակարգի ինտեգրում, օգտվողների կառավարում և այլն:",
-    steps: [
-      "Մրցակիցների վերլուծություն և շուկայի հետազոտություն",
-      "Պահանջների վերլուծություն և հավաքագրում",
-      "Տվյալների բազայի նախագծում",
-      "Backend API-ների մշակում",
-      "Frontend ինտերֆեյսի մշակում",
-      "Վճարային համակարգերի ինտեգրում",
-      "Թեստավորում և գործարկում"
-    ],
-    learningOutcomes: [
-      "Բարդ ծրագրային համակարգերի ճարտարապետություն",
-      "Վճարման համակարգերի ինտեգրում",
-      "Լարավել ֆրեյմվորքի խորը ուսումնասիրություն",
-      "Vue.js-ով բարդ օգտագործողի ինտերֆեյսների մշակում",
-      "Տվյալների բազայի օպտիմիզացիա"
-    ],
-    prerequisites: [
-      "PHP և Laravel-ի նախնական գիտելիքներ",
-      "JavaScript և Vue.js-ի նախնական փորձ",
-      "MySQL-ի հիմնական հասկացություններ",
-      "REST API-ների մշակման փորձ"
-    ],
-    is_public: true
+    title: 'Mobile Task Manager',
+    description: 'A mobile application to manage tasks on the go.',
+    image: 'https://source.unsplash.com/random/800x600/?mobileapp',
+    category: 'Mobile App Development',
+    techStack: ['React Native', 'Firebase'],
+    complexity: 'Միջին',
+    duration: '2 ամիս',
+    createdBy: 'admin',
+    createdAt: '2023-02-15',
+    updatedAt: '2023-05-15',
+    is_public: true,
+    steps: ['Design UI', 'Implement features', 'Test on devices', 'Publish'],
+    prerequisites: ['JavaScript', 'React Native'],
+    learningOutcomes: ['Mobile development', 'Firebase integration'],
+    organizationName: 'ՀՊՏՀ'
   },
   {
     id: 3,
-    title: "Խելացի տան կառավարման համակարգ",
-    description: "Մշակել IoT հիմնված խելացի տան կառավարման համակարգ:",
-    image: "/projects/smarthome.jpg",
-    category: "Ինտերնետ իրերի",
-    techStack: ["Python", "React Native", "MQTT"],
-    complexity: "Բարդ",
-    duration: "14 շաբաթ",
-    createdBy: "system",
-    createdAt: new Date().toISOString(),
-    updatedAt: new Date().toISOString(), // Added updatedAt with a default value
+    title: 'AI Chatbot',
+    description: 'An AI-powered chatbot for customer support.',
+    image: 'https://source.unsplash.com/random/800x600/?ai',
+    category: 'AI & Machine Learning',
+    techStack: ['Python', 'TensorFlow', 'Flask'],
+    complexity: 'Բարձր',
+    duration: '4 ամիս',
+    createdBy: 'admin',
+    createdAt: '2023-03-01',
+    updatedAt: '2023-06-01',
     is_public: true,
-    steps: [
-      "IoT սարքերի հետազոտություն և ընտրություն",
-      "Համակարգի ճարտարապետության նախագծում",
-      "MQTT սերվերի կարգավորում",
-      "Backend ծրագրի մշակում",
-      "Մոբայլ հավելվածի մշակում",
-      "Թեստավորում և կատարելագործում"
-    ]
-  }
+    steps: ['Collect data', 'Train model', 'Deploy API', 'Integrate'],
+    prerequisites: ['Python', 'Machine Learning'],
+    learningOutcomes: ['AI development', 'API deployment'],
+    organizationName: 'ՀՊՏՀ'
+  },
+  {
+    id: 4,
+    title: 'Data Analysis Dashboard',
+    description: 'A dashboard to visualize and analyze data.',
+    image: 'https://source.unsplash.com/random/800x600/?dashboard',
+    category: 'Data Science',
+    techStack: ['Python', 'Pandas', 'Tableau'],
+    complexity: 'Միջին',
+    duration: '3 ամիս',
+    createdBy: 'admin',
+    createdAt: '2023-04-01',
+    updatedAt: '2023-07-01',
+    is_public: true,
+    steps: ['Gather data', 'Clean data', 'Create charts', 'Deploy'],
+    prerequisites: ['Python', 'Data Analysis'],
+    learningOutcomes: ['Data visualization', 'Dashboard creation'],
+    organizationName: 'ՀՊՏՀ'
+  },
+  {
+    id: 5,
+    title: 'Cybersecurity Audit Tool',
+    description: 'A tool to audit and improve cybersecurity.',
+    image: 'https://source.unsplash.com/random/800x600/?cybersecurity',
+    category: 'Cybersecurity',
+    techStack: ['Python', 'Nmap', 'Wireshark'],
+    complexity: 'Բարձր',
+    duration: '4 ամիս',
+    createdBy: 'admin',
+    createdAt: '2023-05-01',
+    updatedAt: '2023-08-01',
+    is_public: true,
+    steps: ['Scan network', 'Analyze results', 'Generate report', 'Implement fixes'],
+    prerequisites: ['Networking', 'Security'],
+    learningOutcomes: ['Security auditing', 'Network analysis'],
+    organizationName: 'ՀՊՏՀ'
+  },
+  {
+    id: 6,
+    title: 'Cloud Management Platform',
+    description: 'A platform to manage cloud resources.',
+    image: 'https://source.unsplash.com/random/800x600/?cloudcomputing',
+    category: 'Cloud Computing',
+    techStack: ['AWS', 'Azure', 'GCP'],
+    complexity: 'Բարձր',
+    duration: '4 ամիս',
+    createdBy: 'admin',
+    createdAt: '2023-06-01',
+    updatedAt: '2023-09-01',
+    is_public: true,
+    steps: ['Set up accounts', 'Configure resources', 'Monitor usage', 'Optimize'],
+    prerequisites: ['Cloud Computing', 'Networking'],
+    learningOutcomes: ['Cloud management', 'Resource optimization'],
+    organizationName: 'ՀՊՏՀ'
+  },
+  {
+    id: 7,
+    title: 'DevOps Automation Tool',
+    description: 'A tool to automate DevOps processes.',
+    image: 'https://source.unsplash.com/random/800x600/?devops',
+    category: 'DevOps',
+    techStack: ['Jenkins', 'Docker', 'Kubernetes'],
+    complexity: 'Բարձր',
+    duration: '4 ամիս',
+    createdBy: 'admin',
+    createdAt: '2023-07-01',
+    updatedAt: '2023-10-01',
+    is_public: true,
+    steps: ['Set up CI/CD', 'Containerize app', 'Orchestrate deployment', 'Monitor'],
+    prerequisites: ['DevOps', 'Containerization'],
+    learningOutcomes: ['CI/CD', 'Container orchestration'],
+    organizationName: 'ՀՊՏՀ'
+  },
+  {
+    id: 8,
+    title: '3D Game Engine',
+    description: 'A 3D game engine built from scratch.',
+    image: 'https://source.unsplash.com/random/800x600/?gamedev',
+    category: 'Game Development',
+    techStack: ['C++', 'OpenGL', 'DirectX'],
+    complexity: 'Բարձր',
+    duration: '6 ամիս',
+    createdBy: 'admin',
+    createdAt: '2023-08-01',
+    updatedAt: '2024-02-01',
+    is_public: true,
+    steps: ['Set up graphics', 'Implement physics', 'Create AI', 'Test'],
+    prerequisites: ['C++', 'Graphics'],
+    learningOutcomes: ['Game engine architecture', '3D graphics'],
+    organizationName: 'ՀՊՏՀ'
+  },
+  {
+    id: 9,
+    title: 'UI/UX Design System',
+    description: 'A design system for UI/UX consistency.',
+    image: 'https://source.unsplash.com/random/800x600/?uiux',
+    category: 'UI/UX Design',
+    techStack: ['Figma', 'Sketch', 'Adobe XD'],
+    complexity: 'Միջին',
+    duration: '3 ամիս',
+    createdBy: 'admin',
+    createdAt: '2023-09-01',
+    updatedAt: '2023-12-01',
+    is_public: true,
+    steps: ['Research trends', 'Create components', 'Document system', 'Implement'],
+    prerequisites: ['UI/UX', 'Design'],
+    learningOutcomes: ['Design systems', 'UI/UX principles'],
+    organizationName: 'ՀՊՏՀ'
+  },
+  {
+    id: 10,
+    title: 'Agile Project Management Tool',
+    description: 'A tool to manage projects using Agile methodologies.',
+    image: 'https://source.unsplash.com/random/800x600/?projectmanagement',
+    category: 'Project Management',
+    techStack: ['Jira', 'Confluence', 'Trello'],
+    complexity: 'Միջին',
+    duration: '3 ամիս',
+    createdBy: 'admin',
+    createdAt: '2023-10-01',
+    updatedAt: '2024-01-01',
+    is_public: true,
+    steps: ['Set up boards', 'Define sprints', 'Track progress', 'Retrospect'],
+    prerequisites: ['Project Management', 'Agile'],
+    learningOutcomes: ['Agile methodologies', 'Project tracking'],
+    organizationName: 'ՀՊՏՀ'
+  },
 ];
+
+// Mock function to simulate fetching projects
+export const fetchProjects = (): Promise<ProjectTheme[]> => {
+  return new Promise((resolve) => {
+    setTimeout(() => {
+      resolve(projectThemes);
+    }, 500);
+  });
+};
+
+// Mock function to simulate creating a project
+export const createProject = (project: ProjectTheme): Promise<ProjectTheme> => {
+  return new Promise((resolve) => {
+    setTimeout(() => {
+      const newProject = { ...project, id: projectThemes.length + 1 };
+      projectThemes.push(newProject);
+      resolve(newProject);
+    }, 500);
+  });
+};
+
+// Mock function to simulate updating a project
+export const updateProject = (id: number, updates: Partial<ProjectTheme>): Promise<ProjectTheme> => {
+  return new Promise((resolve, reject) => {
+    setTimeout(() => {
+      const projectIndex = projectThemes.findIndex((project) => project.id === id);
+      if (projectIndex === -1) {
+        reject(new Error('Project not found'));
+        return;
+      }
+
+      projectThemes[projectIndex] = { ...projectThemes[projectIndex], ...updates };
+      resolve(projectThemes[projectIndex]);
+    }, 500);
+  });
+};
+
+// Mock function to simulate deleting a project
+export const deleteProject = (id: number): Promise<boolean> => {
+  return new Promise((resolve, reject) => {
+    setTimeout(() => {
+      const projectIndex = projectThemes.findIndex((project) => project.id === id);
+      if (projectIndex === -1) {
+        reject(new Error('Project not found'));
+        return;
+      }
+
+      projectThemes.splice(projectIndex, 1);
+      resolve(true);
+    }, 500);
+  });
+};

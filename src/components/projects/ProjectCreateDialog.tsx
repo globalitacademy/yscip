@@ -6,48 +6,69 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Switch } from '@/components/ui/switch';
-import { ProjectTheme } from '@/data/projectThemes';
 import { useAuth } from '@/contexts/AuthContext';
+import { ProjectTheme } from '@/data/projectThemes';
 
-interface ProjectEditDialogProps {
+interface ProjectCreateDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  selectedProject: ProjectTheme | null;
-  editedProject: Partial<ProjectTheme>;
-  setEditedProject: (project: Partial<ProjectTheme>) => void;
-  onSave: () => Promise<void>;
+  onProjectCreated: (project: ProjectTheme) => Promise<void>;
 }
 
-const ProjectEditDialog: React.FC<ProjectEditDialogProps> = ({
+const ProjectCreateDialog: React.FC<ProjectCreateDialogProps> = ({
   open,
   onOpenChange,
-  selectedProject,
-  editedProject,
-  setEditedProject,
-  onSave
+  onProjectCreated
 }) => {
   const { user } = useAuth();
   const [isSaving, setIsSaving] = useState(false);
+  const [newProject, setNewProject] = useState<Partial<ProjectTheme>>({
+    title: '',
+    description: '',
+    category: '',
+    is_public: false,
+    techStack: [],
+    organizationName: ''
+  });
   
-  // Reset form when dialog opens or selected project changes
+  // Reset form when dialog opens
   useEffect(() => {
-    if (selectedProject) {
-      setEditedProject({
-        title: selectedProject.title,
-        description: selectedProject.description,
-        category: selectedProject.category,
-        is_public: selectedProject.is_public,
-        organizationName: selectedProject.organizationName
+    if (open) {
+      setNewProject({
+        title: '',
+        description: '',
+        category: 'Web Development',
+        is_public: false,
+        createdBy: user?.id,
+        techStack: [],
+        organizationName: user?.organization || ''
       });
     }
-  }, [selectedProject, setEditedProject]);
+  }, [open, user]);
   
   const handleSave = async () => {
-    if (!selectedProject) return;
+    if (!newProject.title || !newProject.description || !newProject.category) {
+      // Show error or validation message
+      return;
+    }
     
     setIsSaving(true);
     try {
-      await onSave();
+      // Create a complete project object
+      const projectToCreate: ProjectTheme = {
+        id: 0, // This will be ignored/replaced by the backend
+        title: newProject.title || '',
+        description: newProject.description || '',
+        category: newProject.category || '',
+        is_public: newProject.is_public || false,
+        createdBy: user?.id,
+        createdAt: new Date().toISOString(),
+        techStack: newProject.techStack || [],
+        organizationName: newProject.organizationName
+      };
+      
+      await onProjectCreated(projectToCreate);
+      onOpenChange(false);
     } finally {
       setIsSaving(false);
     }
@@ -55,20 +76,18 @@ const ProjectEditDialog: React.FC<ProjectEditDialogProps> = ({
   
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
-    setEditedProject({ ...editedProject, [name]: value });
+    setNewProject({ ...newProject, [name]: value });
   };
   
   const handleSwitchChange = (checked: boolean) => {
-    setEditedProject({ ...editedProject, is_public: checked });
+    setNewProject({ ...newProject, is_public: checked });
   };
-  
-  if (!selectedProject) return null;
   
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-[425px]">
         <DialogHeader>
-          <DialogTitle>Խմբագրել նախագիծը</DialogTitle>
+          <DialogTitle>Նոր նախագիծ</DialogTitle>
         </DialogHeader>
         <div className="grid gap-4 py-4">
           <div className="grid grid-cols-4 items-center gap-4">
@@ -78,9 +97,10 @@ const ProjectEditDialog: React.FC<ProjectEditDialogProps> = ({
             <Input
               id="title"
               name="title"
-              value={editedProject.title || ''}
+              value={newProject.title || ''}
               onChange={handleInputChange}
               className="col-span-3"
+              placeholder="Նախագծի վերնագիրը"
             />
           </div>
           <div className="grid grid-cols-4 items-center gap-4">
@@ -90,9 +110,10 @@ const ProjectEditDialog: React.FC<ProjectEditDialogProps> = ({
             <Input
               id="category"
               name="category"
-              value={editedProject.category || ''}
+              value={newProject.category || ''}
               onChange={handleInputChange}
               className="col-span-3"
+              placeholder="Օրինակ՝ Web Development"
             />
           </div>
           <div className="grid grid-cols-4 items-center gap-4">
@@ -102,7 +123,7 @@ const ProjectEditDialog: React.FC<ProjectEditDialogProps> = ({
             <Input
               id="organizationName"
               name="organizationName"
-              value={editedProject.organizationName || ''}
+              value={newProject.organizationName || ''}
               onChange={handleInputChange}
               className="col-span-3"
               placeholder="Կազմակերպության անվանումը"
@@ -115,10 +136,11 @@ const ProjectEditDialog: React.FC<ProjectEditDialogProps> = ({
             <Textarea
               id="description"
               name="description"
-              value={editedProject.description || ''}
+              value={newProject.description || ''}
               onChange={handleInputChange}
               className="col-span-3"
               rows={4}
+              placeholder="Նախագծի մանրամասն նկարագրություն"
             />
           </div>
           <div className="grid grid-cols-4 items-center gap-4">
@@ -128,18 +150,18 @@ const ProjectEditDialog: React.FC<ProjectEditDialogProps> = ({
             <div className="col-span-3 flex items-center">
               <Switch
                 id="is_public"
-                checked={editedProject.is_public || false}
+                checked={newProject.is_public || false}
                 onCheckedChange={handleSwitchChange}
               />
               <span className="ml-2 text-sm text-gray-500">
-                {editedProject.is_public ? 'Այո' : 'Ոչ'}
+                {newProject.is_public ? 'Այո' : 'Ոչ'}
               </span>
             </div>
           </div>
         </div>
         <DialogFooter>
           <Button type="submit" onClick={handleSave} disabled={isSaving}>
-            {isSaving ? 'Պահպանվում է...' : 'Պահպանել'}
+            {isSaving ? 'Պահպանվում է...' : 'Ստեղծել նախագիծ'}
           </Button>
         </DialogFooter>
       </DialogContent>
@@ -147,4 +169,4 @@ const ProjectEditDialog: React.FC<ProjectEditDialogProps> = ({
   );
 };
 
-export default ProjectEditDialog;
+export default ProjectCreateDialog;

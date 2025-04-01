@@ -549,6 +549,7 @@ export type Database = {
           image: string | null
           is_public: boolean | null
           learning_outcomes: string[] | null
+          organization_name: string | null
           prerequisites: string[] | null
           steps: string[] | null
           tech_stack: string[] | null
@@ -566,6 +567,7 @@ export type Database = {
           image?: string | null
           is_public?: boolean | null
           learning_outcomes?: string[] | null
+          organization_name?: string | null
           prerequisites?: string[] | null
           steps?: string[] | null
           tech_stack?: string[] | null
@@ -583,6 +585,7 @@ export type Database = {
           image?: string | null
           is_public?: boolean | null
           learning_outcomes?: string[] | null
+          organization_name?: string | null
           prerequisites?: string[] | null
           steps?: string[] | null
           tech_stack?: string[] | null
