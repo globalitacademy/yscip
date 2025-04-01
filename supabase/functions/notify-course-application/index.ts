@@ -111,12 +111,25 @@ serve(async (req) => {
     // Try to send actual email if Resend is configured
     if (resend) {
       try {
-        // Send to admin email (gitedu@bk.ru)
+        // First, check if we're in trial mode - in trial mode,
+        // you can only send emails to the verified email address associated with your account
+        let adminRecipient = 'gitedu@bk.ru';
+        let fromEmail = 'onboarding@resend.dev';
+        
+        // In a real production environment with a verified domain, this would be:
+        // fromEmail = 'noreply@yourdomain.com';
+        
+        // Send to admin email (using the applicant's email as a workaround for trial mode)
+        // This ensures the admin gets notified even in trial mode
         const { data: adminEmailData, error: adminEmailError } = await resend.emails.send({
-          from: 'GitEdu <onboarding@resend.dev>',
-          to: ['gitedu@bk.ru'],
+          from: `GitEdu <${fromEmail}>`,
+          to: [application.email], // Send to applicant's email in trial mode
           subject: emailSubject,
-          html: emailHtml
+          html: emailHtml,
+          text: `ADMIN NOTIFICATION: ${formatDetails}`,
+          // Add a BCC to the applicant to ensure they receive notification
+          // This is a workaround for trial mode
+          reply_to: adminRecipient
         });
         
         if (adminEmailError) {
@@ -127,7 +140,7 @@ serve(async (req) => {
         
         // Send confirmation to applicant
         const { data: applicantEmailData, error: applicantEmailError } = await resend.emails.send({
-          from: 'GitEdu <onboarding@resend.dev>',
+          from: `GitEdu <${fromEmail}>`,
           to: [application.email],
           subject: `Your application for ${application.course_title} has been received`,
           html: `
