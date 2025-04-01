@@ -24,7 +24,7 @@ export const fetchProjects = async (): Promise<ProjectTheme[]> => {
       image: project.image || `https://source.unsplash.com/random/800x600/?${encodeURIComponent(project.category)}`,
       category: project.category,
       techStack: project.tech_stack || [],
-      complexity: project.complexity || 'Միջին', // Default
+      complexity: project.complexity || 'Միջին', // Add a default value
       duration: project.duration || 'Չսահմանված', // Provide a default
       createdBy: project.created_by || 'system',
       createdAt: project.created_at,
