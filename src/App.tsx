@@ -1,5 +1,5 @@
 
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
 import { Toaster } from 'sonner';
 import AuthProvider from './contexts/AuthContext';
@@ -44,57 +44,6 @@ import AdminDashboard from './pages/AdminDashboard';
 import AdminRedirectPage from './pages/AdminRedirectPage';
 
 function App() {
-  const [user, setUser] = useState(null);
-  const [session, setSession] = useState(null);
-  const [loading, setLoading] = useState(true);
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
-
-  useEffect(() => {
-    // Set the user and session from local storage
-    const storedUser = localStorage.getItem('user');
-    const storedSession = localStorage.getItem('session');
-
-    if (storedUser) {
-      setUser(JSON.parse(storedUser));
-      setIsAuthenticated(true);
-    }
-    if (storedSession) {
-      setSession(JSON.parse(storedSession));
-    }
-
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      setSession(session)
-    })
-
-    supabase.auth.getUser().then(({ data: { user } }) => {
-      setUser(user)
-    })
-
-    const {
-      data: { subscription },
-    } = supabase.auth.onAuthStateChange((_event, session) => {
-      setSession(session)
-      setUser(session?.user ?? null)
-      setIsAuthenticated(!!session?.user);
-      setLoading(false);
-
-      // Save user and session to local storage
-      localStorage.setItem('user', JSON.stringify(session?.user));
-      localStorage.setItem('session', JSON.stringify(session));
-    })
-
-    return () => subscription.unsubscribe()
-  }, []);
-
-  const authContextValue = {
-    user,
-    session,
-    isAuthenticated,
-    loading,
-    setUser,
-    setSession,
-  };
-
   return (
     <AuthProvider>
       <Router>
