@@ -21,7 +21,7 @@ const SidebarMenuGroup: React.FC<SidebarMenuGroupProps> = ({
       if (filteredItems.length === 0) return null;
       return <div key={groupIndex} className="mb-6">
             
-            <div className="space-y-1 px-3">
+            <div className="space-y-1 px-[4px]">
               {filteredItems.map((item, index) => <SidebarMenuItem key={index} label={item.title} path={item.href} icon={item.icon} onCloseMenu={onCloseMenu} />)}
             </div>
           </div>;
