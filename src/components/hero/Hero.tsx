@@ -7,14 +7,16 @@ import { getRandomOffset } from '@/lib/utils';
 
 const Hero: React.FC = () => {
   const heroRef = useRef<HTMLDivElement>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
   const [categories, setCategories] = useState<string[]>([]);
   const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
   const [cursorVisible, setCursorVisible] = useState(false);
+  const [containerBounds, setContainerBounds] = useState({ top: 0, left: 0, width: 0, height: 0 });
   
-  // Fixed positions for static cursors
+  // Fixed positions for static cursors (will be adjusted to be within container)
   const staticPositions = [
-    { x: 300, y: 200 },  // Fixed position for first static cursor
-    { x: 600, y: 400 },  // Fixed position for second static cursor
+    { x: 0, y: 0 }, // Will be updated after container is measured
+    { x: 0, y: 0 }, // Will be updated after container is measured
   ];
   
   // Cursor configurations
@@ -43,24 +45,60 @@ const Hero: React.FC = () => {
     fetchCategories();
   }, []);
 
+  // Measure container to position static cursors and constrain cursor movement
+  useEffect(() => {
+    const updateContainerBounds = () => {
+      if (containerRef.current) {
+        const rect = containerRef.current.getBoundingClientRect();
+        setContainerBounds({
+          top: rect.top,
+          left: rect.left,
+          width: rect.width,
+          height: rect.height
+        });
+        
+        // Update static cursor positions to be within the container
+        staticPositions[0].x = rect.left + rect.width * 0.3;
+        staticPositions[0].y = rect.top + rect.height * 0.3;
+        
+        staticPositions[1].x = rect.left + rect.width * 0.7;
+        staticPositions[1].y = rect.top + rect.height * 0.7;
+      }
+    };
+    
+    updateContainerBounds();
+    window.addEventListener('resize', updateContainerBounds);
+    
+    return () => {
+      window.removeEventListener('resize', updateContainerBounds);
+    };
+  }, []);
+
   // Custom cursor tracking - only for the main cursor
   useEffect(() => {
     const handleMouseMove = (e: MouseEvent) => {
-      setMousePosition({ x: e.clientX, y: e.clientY });
-      setCursorVisible(true);
-    };
-    
-    // Hide cursor when mouse leaves
-    const handleMouseLeave = () => {
-      setCursorVisible(false);
+      // Only update cursor if mouse is within container bounds
+      if (containerRef.current) {
+        const rect = containerRef.current.getBoundingClientRect();
+        const isInContainer = 
+          e.clientX >= rect.left && 
+          e.clientX <= rect.left + rect.width && 
+          e.clientY >= rect.top && 
+          e.clientY <= rect.top + rect.height;
+        
+        if (isInContainer) {
+          setMousePosition({ x: e.clientX, y: e.clientY });
+          setCursorVisible(true);
+        } else {
+          setCursorVisible(false);
+        }
+      }
     };
     
     window.addEventListener('mousemove', handleMouseMove);
-    heroRef.current?.addEventListener('mouseleave', handleMouseLeave);
     
     return () => {
       window.removeEventListener('mousemove', handleMouseMove);
-      heroRef.current?.removeEventListener('mouseleave', handleMouseLeave);
     };
   }, []);
 
@@ -102,7 +140,9 @@ const Hero: React.FC = () => {
       ))}
       
       <BackgroundEffects />
-      <HeroContent scrollToThemes={scrollToThemes} />
+      <div ref={containerRef} className="relative w-full">
+        <HeroContent scrollToThemes={scrollToThemes} />
+      </div>
     </section>
   );
 };
