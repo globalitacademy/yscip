@@ -1,6 +1,7 @@
 
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.7.1";
+import { Resend } from "https://esm.sh/resend@2.0.0";
 
 // Define CORS headers
 const corsHeaders = {
@@ -31,6 +32,16 @@ serve(async (req) => {
   }
   
   try {
+    // Initialize Resend with API key
+    const resendApiKey = Deno.env.get("RESEND_API_KEY");
+    let resend: Resend | null = null;
+    
+    if (resendApiKey) {
+      resend = new Resend(resendApiKey);
+    } else {
+      console.warn("RESEND_API_KEY not found in environment variables. Email sending will be simulated.");
+    }
+    
     // Create Supabase client
     const supabaseUrl = Deno.env.get("SUPABASE_URL") as string;
     const supabaseKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") as string;
@@ -65,11 +76,6 @@ serve(async (req) => {
     
     const adminEmails = adminUsers?.map(user => user.email) || [];
     
-    // For now, let's log the notification since we don't have actual email implementation
-    console.log("Would send email notification to:", adminEmails);
-    console.log("Also send notification to admin email:", "gitedu@bk.ru");
-    console.log("Email subject: New course application for", application.course_title);
-    
     // Format application details for email
     const formatLanguages = application.languages?.join(', ') || 'None specified';
     const formatDetails = `
@@ -82,22 +88,73 @@ serve(async (req) => {
       Free practice: ${application.free_practice ? 'Yes' : 'No'}
       Message: ${application.message || 'No message provided'}
     `;
-    console.log("Application details:", formatDetails);
     
-    // TODO: In a production environment, replace this with actual email sending code
-    // For example, using an email service like SendGrid, Mailgun, or AWS SES
+    // Email content
+    const emailSubject = `New application for ${application.course_title}`;
+    const emailHtml = `
+      <h2>A new application has been submitted for "${application.course_title}"</h2>
+      
+      <div style="margin: 20px 0; padding: 15px; background-color: #f5f5f5; border-radius: 5px;">
+        <p><strong>Name:</strong> ${application.full_name}</p>
+        <p><strong>Email:</strong> ${application.email}</p>
+        <p><strong>Phone:</strong> ${application.phone_number}</p>
+        <p><strong>Course format:</strong> ${application.format || 'Not specified'}</p>
+        <p><strong>Session type:</strong> ${application.session_type || 'Not specified'}</p>
+        <p><strong>Languages:</strong> ${formatLanguages}</p>
+        <p><strong>Free practice:</strong> ${application.free_practice ? 'Yes' : 'No'}</p>
+        <p><strong>Message:</strong> ${application.message || 'No message provided'}</p>
+      </div>
+      
+      <p>You can log in to the admin dashboard to manage this application.</p>
+    `;
     
-    // Simulate sending email to gitedu@bk.ru
-    console.log("Simulating email send to gitedu@bk.ru");
-    console.log("Email would contain:");
-    console.log(`Subject: New application for ${application.course_title}`);
-    console.log(`Body: 
-      A new application has been submitted for "${application.course_title}"
+    // Try to send actual email if Resend is configured
+    if (resend) {
+      try {
+        // Send to admin email (gitedu@bk.ru)
+        const { data: adminEmailData, error: adminEmailError } = await resend.emails.send({
+          from: 'GitEdu <onboarding@resend.dev>',
+          to: ['gitedu@bk.ru'],
+          subject: emailSubject,
+          html: emailHtml
+        });
+        
+        if (adminEmailError) {
+          console.error("Error sending admin email:", adminEmailError);
+        } else {
+          console.log("Admin email sent successfully:", adminEmailData);
+        }
+        
+        // Send confirmation to applicant
+        const { data: applicantEmailData, error: applicantEmailError } = await resend.emails.send({
+          from: 'GitEdu <onboarding@resend.dev>',
+          to: [application.email],
+          subject: `Your application for ${application.course_title} has been received`,
+          html: `
+            <h2>Thank you for your application!</h2>
+            <p>We have received your application for the "${application.course_title}" course.</p>
+            <p>Our team will review your application and contact you soon.</p>
+            <p>Best regards,<br>GitEdu Team</p>
+          `
+        });
+        
+        if (applicantEmailError) {
+          console.error("Error sending applicant email:", applicantEmailError);
+        } else {
+          console.log("Applicant email sent successfully:", applicantEmailData);
+        }
+      } catch (emailError) {
+        console.error("Error sending emails via Resend:", emailError);
+      }
+    } else {
+      // Simulate email sending for development/testing
+      console.log("Simulating email send to gitedu@bk.ru");
+      console.log("Email would contain:");
+      console.log(`Subject: ${emailSubject}`);
+      console.log(`Body: ${emailHtml}`);
       
-      ${formatDetails}
-      
-      You can log in to the admin dashboard to manage this application.
-    `);
+      console.log("Simulating confirmation email to applicant:", application.email);
+    }
     
     // Create notification in database for admins
     for (const admin of adminUsers || []) {
@@ -132,7 +189,7 @@ serve(async (req) => {
         p_type: 'course_application_confirmation'
       });
     } else {
-      console.log("Applicant does not have a user account, would send email to:", application.email);
+      console.log("Applicant does not have a user account, email notification will be sent if Resend is configured");
     }
     
     return new Response(
