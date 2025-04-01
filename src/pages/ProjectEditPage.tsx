@@ -9,6 +9,7 @@ import { useToast } from '@/components/ui/use-toast';
 import { updateProject } from '@/services/projectService';
 import ProjectCreationForm from '@/components/project-creation/ProjectCreationForm';
 import { ProjectManagementProvider } from '@/contexts/ProjectManagementContext';
+import { useAuth } from '@/contexts/AuthContext';
 
 const ProjectEditPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
@@ -16,8 +17,27 @@ const ProjectEditPage: React.FC = () => {
   const { toast } = useToast();
   const [project, setProject] = useState<ProjectTheme | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const { user } = useAuth();
+
+  // Check if user has edit permissions
+  const canEditProject = user && (
+    user.role === 'admin' || 
+    user.role === 'lecturer' || 
+    user.role === 'employer'
+  );
 
   useEffect(() => {
+    // Redirect if user doesn't have permission
+    if (user && !canEditProject) {
+      toast({
+        title: "Մուտքն արգելված է",
+        description: "Դուք չունեք նախագծերը խմբագրելու իրավունք։",
+        variant: "destructive",
+      });
+      navigate(`/project/${id}`);
+      return;
+    }
+
     const fetchProject = async () => {
       setIsLoading(true);
       
@@ -50,7 +70,7 @@ const ProjectEditPage: React.FC = () => {
     };
 
     fetchProject();
-  }, [id, navigate, toast]);
+  }, [id, navigate, toast, user, canEditProject]);
 
   const handleProjectUpdated = async (updatedProject: ProjectTheme) => {
     try {

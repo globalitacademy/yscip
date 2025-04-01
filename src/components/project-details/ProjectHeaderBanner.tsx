@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { Badge } from '@/components/ui/badge';
 import { Link, useNavigate } from 'react-router-dom';
@@ -24,6 +25,7 @@ import {
 } from '@/components/ui/alert-dialog';
 import { deleteProject, updateProject } from '@/services/projectService';
 import { useProjectManagement } from '@/contexts/ProjectManagementContext';
+import { useProject } from '@/contexts/ProjectContext';
 
 interface ProjectHeaderBannerProps {
   title: string;
@@ -43,8 +45,8 @@ const ProjectHeaderBanner: React.FC<ProjectHeaderBannerProps> = ({
   const { toast } = useToast();
   const navigate = useNavigate();
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
-  
   const { handleEditInit } = useProjectManagement();
+  const { canEdit } = useProject();
   
   const getComplexityColor = (complexity: string) => {
     switch (complexity) {
@@ -155,57 +157,59 @@ const ProjectHeaderBanner: React.FC<ProjectHeaderBannerProps> = ({
           <ArrowLeft size={16} className="mr-1" /> Վերադառնալ բոլոր պրոեկտների ցանկին
         </Link>
         
-        <div className="flex gap-2">
-          <Button 
-            variant="outline" 
-            size="sm" 
-            onClick={handleEdit}
-            className="hidden sm:flex"
-          >
-            <Edit size={16} className="mr-2" /> Խմբագրել
-          </Button>
-          
-          <Button 
-            variant="outline" 
-            size="sm" 
-            onClick={handleCopy}
-            className="hidden sm:flex"
-          >
-            <Copy size={16} className="mr-2" /> Պատճենել
-          </Button>
-          
-          <Button 
-            variant="destructive" 
-            size="sm" 
-            onClick={() => setIsDeleteDialogOpen(true)}
-            className="hidden sm:flex"
-          >
-            <Trash2 size={16} className="mr-2" /> Ջնջել
-          </Button>
-          
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild className="sm:hidden">
-              <Button variant="outline" size="icon">
-                <Edit size={16} />
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end">
-              <DropdownMenuItem onClick={handleEdit}>
-                <Edit size={16} className="mr-2" /> Խմբագրել
-              </DropdownMenuItem>
-              <DropdownMenuItem onClick={handleCopy}>
-                <Copy size={16} className="mr-2" /> Պատճենել
-              </DropdownMenuItem>
-              <DropdownMenuSeparator />
-              <DropdownMenuItem 
-                onClick={() => setIsDeleteDialogOpen(true)}
-                className="text-destructive focus:text-destructive"
-              >
-                <Trash2 size={16} className="mr-2" /> Ջնջել
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
-        </div>
+        {canEdit && (
+          <div className="flex gap-2">
+            <Button 
+              variant="outline" 
+              size="sm" 
+              onClick={handleEdit}
+              className="hidden sm:flex"
+            >
+              <Edit size={16} className="mr-2" /> Խմբագրել
+            </Button>
+            
+            <Button 
+              variant="outline" 
+              size="sm" 
+              onClick={handleCopy}
+              className="hidden sm:flex"
+            >
+              <Copy size={16} className="mr-2" /> Պատճենել
+            </Button>
+            
+            <Button 
+              variant="destructive" 
+              size="sm" 
+              onClick={() => setIsDeleteDialogOpen(true)}
+              className="hidden sm:flex"
+            >
+              <Trash2 size={16} className="mr-2" /> Ջնջել
+            </Button>
+            
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild className="sm:hidden">
+                <Button variant="outline" size="icon">
+                  <Edit size={16} />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end">
+                <DropdownMenuItem onClick={handleEdit}>
+                  <Edit size={16} className="mr-2" /> Խմբագրել
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={handleCopy}>
+                  <Copy size={16} className="mr-2" /> Պատճենել
+                </DropdownMenuItem>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem 
+                  onClick={() => setIsDeleteDialogOpen(true)}
+                  className="text-destructive focus:text-destructive"
+                >
+                  <Trash2 size={16} className="mr-2" /> Ջնջել
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          </div>
+        )}
       </div>
       
       <h1 className="text-3xl md:text-4xl font-bold mb-2">{title}</h1>

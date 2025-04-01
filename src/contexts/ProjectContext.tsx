@@ -1,121 +1,50 @@
 
-import React, { createContext, useContext } from 'react';
-import { calculateProjectProgress } from '@/utils/projectUtils';
-import { useAuth } from '@/contexts/AuthContext';
-import { ProjectContextType, ProjectProviderProps } from '@/types/project';
-import { useProjectPermissions } from '@/hooks/useProjectPermissions';
-import { useProjectState } from '@/hooks/useProjectState';
-import { useProjectActions } from '@/hooks/useProjectActions';
+import React, { createContext, useContext, useState } from 'react';
 
+// Define the type for project context
+interface ProjectContextType {
+  projectId: number;
+  project: any;
+  isEditing: boolean;
+  setIsEditing: (isEditing: boolean) => void;
+  canEdit: boolean;
+}
+
+// Create the context
 const ProjectContext = createContext<ProjectContextType | undefined>(undefined);
 
+// Provider props interface
+interface ProjectProviderProps {
+  children: React.ReactNode;
+  projectId: number;
+  initialProject: any;
+  canEdit?: boolean;
+}
+
+// Create a provider component
 export const ProjectProvider: React.FC<ProjectProviderProps> = ({ 
+  children, 
   projectId, 
   initialProject,
-  children 
+  canEdit = false 
 }) => {
-  const { user } = useAuth();
-  
-  // Use custom hooks to manage state and actions
-  const {
-    project,
-    timeline,
-    tasks,
-    projectStatus,
-    isReserved,
-    projectReservationsState,
-    selectedSupervisor,
-    setSelectedSupervisor,
-    showSupervisorDialog,
-    setShowSupervisorDialog,
-    setTimeline,
-    setTasks,
-    setProjectStatus,
-    setIsReserved,
-    setProjectReservationsState
-  } = useProjectState(projectId, initialProject, user);
-
-  const {
-    addTimelineEvent,
-    completeTimelineEvent,
-    addTask,
-    updateTaskStatus,
-    submitProject,
-    approveProject,
-    rejectProject,
-    openSupervisorDialog,
-    closeSupervisorDialog,
-    reserveProject,
-    approveReservation,
-    rejectReservation,
-    getReservationStatus
-  } = useProjectActions(
-    project,
-    user,
-    timeline,
-    setTimeline,
-    tasks,
-    setTasks,
-    setProjectStatus,
-    setIsReserved,
-    setProjectReservationsState,
-    setShowSupervisorDialog,
-    selectedSupervisor
-  );
-  
-  // Get permissions based on user role
-  const permissions = useProjectPermissions(user?.role);
-  
-  // Calculate project progress
-  const projectProgress = calculateProjectProgress(tasks, timeline);
-  
-  // Role-based permissions
-  const canStudentSubmit = permissions.canSubmitProject && isReserved;
-  const canInstructorCreate = permissions.canCreateProjects;
-  const canInstructorAssign = permissions.canAssignProjects;
-  const canSupervisorApprove = permissions.canApproveProject;
-
-  const selectSupervisor = (supervisorId: string) => {
-    setSelectedSupervisor(supervisorId);
-  };
+  const [project, setProject] = useState(initialProject);
+  const [isEditing, setIsEditing] = useState(false);
 
   return (
-    <ProjectContext.Provider
-      value={{
-        project,
-        timeline,
-        tasks,
-        projectStatus,
-        addTimelineEvent,
-        completeTimelineEvent,
-        addTask,
-        updateTaskStatus,
-        submitProject,
-        approveProject,
-        rejectProject,
-        reserveProject,
-        isReserved,
-        canStudentSubmit,
-        canInstructorCreate,
-        canInstructorAssign,
-        canSupervisorApprove,
-        projectReservations: projectReservationsState,
-        approveReservation,
-        rejectReservation,
-        projectProgress,
-        openSupervisorDialog,
-        closeSupervisorDialog,
-        showSupervisorDialog,
-        selectedSupervisor,
-        selectSupervisor,
-        getReservationStatus
-      }}
-    >
+    <ProjectContext.Provider value={{ 
+      projectId, 
+      project, 
+      isEditing, 
+      setIsEditing,
+      canEdit 
+    }}>
       {children}
     </ProjectContext.Provider>
   );
 };
 
+// Hook for using the project context
 export const useProject = () => {
   const context = useContext(ProjectContext);
   if (context === undefined) {

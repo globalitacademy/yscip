@@ -11,6 +11,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { useAuth } from '@/contexts/AuthContext';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { loadProjectReservations } from '@/utils/projectUtils';
+import { useProjectPermissions } from '@/hooks/useProjectPermissions';
 
 const ProjectDetails: React.FC = () => {
   const { id } = useParams<{ id: string }>();
@@ -18,6 +19,14 @@ const ProjectDetails: React.FC = () => {
   const { user } = useAuth();
   const projectId = id ? parseInt(id) : null;
   const project = projectThemes.find(p => p.id === projectId) || null;
+  const { canCreateProjects } = useProjectPermissions(user?.role);
+  
+  // Check if user has edit permissions
+  const canEditProject = user && (
+    user.role === 'admin' || 
+    user.role === 'lecturer' || 
+    user.role === 'employer'
+  );
   
   // Check if this supervisor has pending approvals for this project
   const hasPendingApprovals = () => {
@@ -115,7 +124,7 @@ const ProjectDetails: React.FC = () => {
   
   return (
     <ProjectManagementProvider>
-      <ProjectProvider projectId={projectId} initialProject={project}>
+      <ProjectProvider projectId={projectId} initialProject={project} canEdit={canEditProject}>
         {pendingApprovalAlert}
         <ProjectDetailsContent />
       </ProjectProvider>
