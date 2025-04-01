@@ -1,37 +1,32 @@
 
-import { useLocation } from "react-router-dom";
-import { useEffect } from "react";
-import { Link } from "react-router-dom";
-import Header from '@/components/Header';
+import React from 'react';
+import { Link } from 'react-router-dom';
+import { Button } from '@/components/ui/button';
+import { useAuth } from '@/contexts/AuthContext';
 
-const NotFound = () => {
-  const location = useLocation();
-
-  useEffect(() => {
-    console.error(
-      "404 Error: User attempted to access non-existent route:",
-      location.pathname
-    );
-  }, [location.pathname]);
+const NotFound: React.FC = () => {
+  const { user } = useAuth();
+  const isAdmin = user?.role === 'admin';
 
   return (
-    <div className="min-h-screen flex flex-col">
-      <Header />
-      <div className="flex-grow flex items-center justify-center py-20">
-        <div className="text-center max-w-md px-4">
-          <div className="inline-block p-6 mb-6 rounded-full bg-primary/10">
-            <p className="text-8xl font-bold text-primary">404</p>
-          </div>
-          <h1 className="text-3xl font-bold mb-4">Էջը չի գտնվել</h1>
-          <p className="text-muted-foreground mb-8">
-            Էջը, որը փնտրում եք, գոյություն չունի կամ տեղափոխվել է այլ վայր։
-          </p>
-          <Link 
-            to="/" 
-            className="inline-flex px-8 py-3 bg-primary text-primary-foreground font-medium rounded-lg transition-all hover:shadow-lg hover:shadow-primary/20"
-          >
-            Վերադառնալ Գլխավոր էջ
-          </Link>
+    <div className="flex flex-col items-center justify-center min-h-screen bg-background p-4">
+      <div className="text-center space-y-6 max-w-md">
+        <h1 className="text-9xl font-bold text-primary">404</h1>
+        <h2 className="text-3xl font-semibold">Էջը չի գտնվել</h2>
+        <p className="text-muted-foreground">
+          Ցավոք, ձեր փնտրած էջը գոյություն չունի։ Հնարավոր է, որ այն տեղափոխվել է կամ ժամանակավորապես անհասանելի է։
+        </p>
+        
+        <div className="flex flex-col sm:flex-row gap-4 justify-center pt-4">
+          <Button asChild>
+            <Link to="/">Վերադառնալ գլխավոր էջ</Link>
+          </Button>
+          
+          {isAdmin && (
+            <Button variant="outline" asChild>
+              <Link to="/admin">Վերադառնալ ադմինիստրատորի վահանակ</Link>
+            </Button>
+          )}
         </div>
       </div>
     </div>
