@@ -30,8 +30,8 @@ const ProjectCard: React.FC<ProjectCardProps> = ({
   const isCreatedByCurrentUser = project.createdBy === user?.id;
   const creatorName = isCreatedByCurrentUser ? 'Ձեր կողմից' : 'Ուսումնական Կենտրոն';
   
-  // Use the getProjectImage utility to get a reliable image URL
-  const imageUrl = getProjectImage(project);
+  // Get the project image URL
+  const imageUrl = project.image || `https://source.unsplash.com/random/800x600/?${encodeURIComponent(project.category || 'project')}`;
   
   // Define complexity color classes
   const getComplexityColor = (complexity?: string) => {
@@ -65,6 +65,11 @@ const ProjectCard: React.FC<ProjectCardProps> = ({
     e.stopPropagation(); // Prevent event bubbling
     handleDeleteInit(project);
   }, [handleDeleteInit, project]);
+  
+  // Function to handle image error and provide fallback
+  const handleImageError = (e: React.SyntheticEvent<HTMLImageElement>) => {
+    e.currentTarget.src = `https://source.unsplash.com/random/800x600/?${encodeURIComponent(project.category || 'project')}`;
+  };
   
   return (
     <Card className={`flex flex-col w-full hover:shadow-md transition-shadow relative ${className || ''}`}>
@@ -122,9 +127,7 @@ const ProjectCard: React.FC<ProjectCardProps> = ({
             alt={project.title}
             className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
             loading="lazy"
-            onError={(e) => {
-              (e.target as HTMLImageElement).src = '/placeholder.svg';
-            }}
+            onError={handleImageError}
           />
           
           {/* Author info moved to the bottom right of the image */}

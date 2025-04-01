@@ -24,15 +24,15 @@ export const fetchProjects = async (): Promise<ProjectTheme[]> => {
       image: project.image || `https://source.unsplash.com/random/800x600/?${encodeURIComponent(project.category)}`,
       category: project.category,
       techStack: project.tech_stack || [],
-      complexity: 'Միջին', // Default
+      complexity: project.complexity || 'Միջին', // Default
       duration: project.duration || 'Չսահմանված', // Provide a default
       createdBy: project.created_by || 'system',
       createdAt: project.created_at,
       updatedAt: project.updated_at || project.created_at,
       is_public: project.is_public,
-      steps: [],
-      prerequisites: [],
-      learningOutcomes: []
+      steps: project.steps || [],
+      prerequisites: project.prerequisites || [],
+      learningOutcomes: project.learning_outcomes || []
     }));
   } catch (error) {
     console.error('Error in fetchProjects:', error);
