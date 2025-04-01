@@ -74,7 +74,7 @@ const ProjectCard: React.FC<ProjectCardProps> = ({
   return (
     <Card className={`flex flex-col w-full hover:shadow-md transition-shadow relative ${className || ''}`}>
       {isCreatedByCurrentUser && (
-        <div className="absolute top-4 right-4 z-10 flex gap-2">
+        <div className="absolute top-4 right-4 z-20 flex gap-2">
           <Button
             variant="outline" 
             size="icon" 
@@ -108,11 +108,13 @@ const ProjectCard: React.FC<ProjectCardProps> = ({
       </div>
 
       {/* Complexity badge in top right */}
-      <div className="absolute top-4 right-4 z-10">
-        <span className={cn("text-xs border px-2 py-1 rounded-full inline-block", getComplexityColor(project.complexity))}>
-          {project.complexity}
-        </span>
-      </div>
+      {project.complexity && (
+        <div className={`absolute top-4 right-4 z-10 ${!isCreatedByCurrentUser ? 'block' : 'hidden'}`}>
+          <span className={cn("text-xs border px-2 py-1 rounded-full inline-block", getComplexityColor(project.complexity))}>
+            {project.complexity}
+          </span>
+        </div>
+      )}
 
       {!project.is_public && (
         <div className="absolute top-4 left-1/2 transform -translate-x-1/2 flex items-center text-xs bg-amber-100 text-amber-800 px-2 py-1 rounded-full z-10">
