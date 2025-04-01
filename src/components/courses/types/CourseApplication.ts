@@ -8,5 +8,9 @@ export interface CourseApplication {
   course_id: string;
   course_title: string;
   message?: string;
+  format?: string;
+  session_type?: string;
+  languages?: string[];
+  free_practice?: boolean;
   status: 'new' | 'contacted' | 'enrolled' | 'rejected';
 }

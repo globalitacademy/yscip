@@ -20,7 +20,7 @@ export const useCourseApplications = () => {
           .order('created_at', { ascending: false });
           
         if (!error && data) {
-          setApplications(data as CourseApplication[]);
+          setApplications(data as unknown as CourseApplication[]);
           return;
         }
       } catch (dbError) {
@@ -54,7 +54,7 @@ export const useCourseApplications = () => {
       try {
         const { error } = await supabase
           .from('course_applications')
-          .insert(newApplication);
+          .insert(newApplication as any);
           
         if (error) throw error;
         

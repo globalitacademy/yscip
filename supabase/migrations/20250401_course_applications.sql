@@ -9,6 +9,10 @@ CREATE TABLE IF NOT EXISTS public.course_applications (
   course_id UUID NOT NULL,
   course_title TEXT NOT NULL,
   message TEXT,
+  format TEXT,
+  session_type TEXT,
+  languages TEXT[],
+  free_practice BOOLEAN DEFAULT TRUE,
   status TEXT NOT NULL DEFAULT 'new'
 );
 
