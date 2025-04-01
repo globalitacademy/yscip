@@ -1,37 +1,22 @@
 
-import { Dispatch, SetStateAction } from 'react';
+import { Dispatch, SetStateAction, useCallback } from 'react';
+import { ProfessionalCourse } from '@/components/courses/types/ProfessionalCourse';
 import { supabase } from '@/integrations/supabase/client';
-import { ProfessionalCourse } from '@/components/courses/types';
 import { toast } from 'sonner';
 import { convertIconNameToComponent } from '@/utils/iconUtils';
-import { useAuth } from '@/contexts/AuthContext';
 
-/**
- * Hook for fetching course data from the database
- */
 export const useCourseFetching = (setLoading: Dispatch<SetStateAction<boolean>>) => {
-  const { user } = useAuth();
-
-  /**
-   * Fetch all courses from the database
-   */
-  const fetchCourses = async (): Promise<ProfessionalCourse[]> => {
+  const fetchCourses = useCallback(async (): Promise<ProfessionalCourse[]> => {
     setLoading(true);
     try {
-      const query = supabase
+      const { data, error } = await supabase
         .from('courses')
-        .select('*');
-      
-      // If user is not admin, only show public courses and their own courses
-      if (user && user.role !== 'admin') {
-        query.or(`is_public.eq.true,created_by.eq.${user.name}`);
-      }
-      
-      const { data, error } = await query;
+        .select('*')
+        .order('created_at', { ascending: false });
       
       if (error) {
         console.error('Error fetching courses:', error);
-        toast.error('Սխալ դասընթացների ստացման ժամանակ, օգտագործվում են լոկալ տվյալները');
+        toast.error('Սխալ դասընթացների ստացման ժամանակ');
         return [];
       }
       
@@ -39,22 +24,14 @@ export const useCourseFetching = (setLoading: Dispatch<SetStateAction<boolean>>)
         return [];
       }
       
-      // Process each course to include lessons, requirements, and outcomes
+      // Process each course to include related data
       const completeCourses = await Promise.all(data.map(async (course) => {
-        const { data: lessonsData } = await supabase
-          .from('course_lessons')
-          .select('*')
-          .eq('course_id', course.id);
-        
-        const { data: requirementsData } = await supabase
-          .from('course_requirements')
-          .select('*')
-          .eq('course_id', course.id);
-        
-        const { data: outcomesData } = await supabase
-          .from('course_outcomes')
-          .select('*')
-          .eq('course_id', course.id);
+        // Fetch lessons, requirements, and outcomes
+        const [lessonsResult, requirementsResult, outcomesResult] = await Promise.all([
+          supabase.from('course_lessons').select('*').eq('course_id', course.id),
+          supabase.from('course_requirements').select('*').eq('course_id', course.id),
+          supabase.from('course_outcomes').select('*').eq('course_id', course.id)
+        ]);
         
         // Create icon component
         const iconElement = convertIconNameToComponent(course.icon_name);
@@ -62,26 +39,27 @@ export const useCourseFetching = (setLoading: Dispatch<SetStateAction<boolean>>)
         return {
           id: course.id,
           title: course.title,
-          subtitle: course.subtitle,
+          subtitle: course.subtitle || 'ԴԱՍԸՆԹԱՑ',
           icon: iconElement,
           iconName: course.icon_name,
           duration: course.duration,
           price: course.price,
-          buttonText: course.button_text,
-          color: course.color,
-          createdBy: course.created_by,
-          institution: course.institution,
+          buttonText: course.button_text || 'Դիտել',
+          color: course.color || 'text-amber-500',
+          createdBy: course.created_by || '',
+          institution: course.institution || 'ՀՊՏՀ',
           imageUrl: course.image_url,
           organizationLogo: course.organization_logo,
-          description: course.description,
-          is_public: course.is_public,
-          lessons: lessonsData?.map(lesson => ({
+          description: course.description || '',
+          is_public: course.is_public || false,
+          lessons: lessonsResult.data?.map(lesson => ({
             title: lesson.title, 
             duration: lesson.duration
           })) || [],
-          requirements: requirementsData?.map(req => req.requirement) || [],
-          outcomes: outcomesData?.map(outcome => outcome.outcome) || [],
-          slug: course.slug
+          requirements: requirementsResult.data?.map(req => req.requirement) || [],
+          outcomes: outcomesResult.data?.map(outcome => outcome.outcome) || [],
+          slug: course.slug || '',
+          createdAt: course.created_at
         } as ProfessionalCourse;
       }));
       
@@ -93,7 +71,7 @@ export const useCourseFetching = (setLoading: Dispatch<SetStateAction<boolean>>)
     } finally {
       setLoading(false);
     }
-  };
+  }, [setLoading]);
 
   return { fetchCourses };
 };

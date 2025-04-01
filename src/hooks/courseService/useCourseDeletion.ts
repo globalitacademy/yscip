@@ -1,36 +1,13 @@
 
-import { Dispatch, SetStateAction } from 'react';
+import { Dispatch, SetStateAction, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
-import { useAuth } from '@/contexts/AuthContext';
 
-/**
- * Hook for course deletion functionality
- */
 export const useCourseDeletion = (setLoading: Dispatch<SetStateAction<boolean>>) => {
-  const { user } = useAuth();
-
-  /**
-   * Delete a course from the database
-   */
-  const deleteCourse = async (id: string): Promise<boolean> => {
+  const deleteCourse = useCallback(async (id: string): Promise<boolean> => {
     setLoading(true);
     try {
-      // Check if user can delete this course
-      if (user && user.role !== 'admin') {
-        const { data: course } = await supabase
-          .from('courses')
-          .select('created_by')
-          .eq('id', id)
-          .single();
-          
-        if (course?.created_by !== user.name) {
-          toast.error('Դուք չունեք այս դասընթացը ջնջելու իրավունք։');
-          return false;
-        }
-      }
-      
-      // Delete related records first (they will cascade, but let's be explicit)
+      // Delete related records first to avoid foreign key constraints
       await Promise.allSettled([
         supabase.from('course_lessons').delete().eq('course_id', id),
         supabase.from('course_requirements').delete().eq('course_id', id),
@@ -58,7 +35,7 @@ export const useCourseDeletion = (setLoading: Dispatch<SetStateAction<boolean>>)
     } finally {
       setLoading(false);
     }
-  };
+  }, [setLoading]);
 
   return { deleteCourse };
 };

@@ -1,28 +1,16 @@
 
-import { Dispatch, SetStateAction } from 'react';
+import { Dispatch, SetStateAction, useCallback } from 'react';
+import { ProfessionalCourse } from '@/components/courses/types/ProfessionalCourse';
 import { supabase } from '@/integrations/supabase/client';
-import { ProfessionalCourse } from '@/components/courses/types';
 import { toast } from 'sonner';
 import { useAuth } from '@/contexts/AuthContext';
 
-/**
- * Hook for course creation functionality
- */
 export const useCourseCreation = (setLoading: Dispatch<SetStateAction<boolean>>) => {
   const { user } = useAuth();
-
-  /**
-   * Create a new course in the database
-   */
-  const createCourse = async (course: Partial<ProfessionalCourse>): Promise<boolean> => {
+  
+  const createCourse = useCallback(async (course: Partial<ProfessionalCourse>): Promise<boolean> => {
     setLoading(true);
     try {
-      // Determine if the course should be public based on user role
-      // Only admin can directly publish courses
-      const isPublic = user && (user.role === 'admin') 
-                       ? course.is_public
-                       : false;
-
       // Insert the main course record
       const { data, error } = await supabase
         .from('courses')
@@ -39,7 +27,7 @@ export const useCourseCreation = (setLoading: Dispatch<SetStateAction<boolean>>)
           image_url: course.imageUrl,
           organization_logo: course.organizationLogo,
           description: course.description,
-          is_public: isPublic
+          is_public: course.is_public
         })
         .select()
         .single();
@@ -52,9 +40,10 @@ export const useCourseCreation = (setLoading: Dispatch<SetStateAction<boolean>>)
       
       const courseId = data.id;
       
+      // Insert related data (lessons, requirements, outcomes)
       // Insert lessons if provided
       if (course.lessons && course.lessons.length > 0) {
-        const { error: lessonsError } = await supabase
+        await supabase
           .from('course_lessons')
           .insert(
             course.lessons.map(lesson => ({
@@ -63,15 +52,11 @@ export const useCourseCreation = (setLoading: Dispatch<SetStateAction<boolean>>)
               duration: lesson.duration
             }))
           );
-          
-        if (lessonsError) {
-          console.error('Error inserting lessons:', lessonsError);
-        }
       }
       
       // Insert requirements if provided
       if (course.requirements && course.requirements.length > 0) {
-        const { error: requirementsError } = await supabase
+        await supabase
           .from('course_requirements')
           .insert(
             course.requirements.map(requirement => ({
@@ -79,15 +64,11 @@ export const useCourseCreation = (setLoading: Dispatch<SetStateAction<boolean>>)
               requirement: requirement
             }))
           );
-          
-        if (requirementsError) {
-          console.error('Error inserting requirements:', requirementsError);
-        }
       }
       
       // Insert outcomes if provided
       if (course.outcomes && course.outcomes.length > 0) {
-        const { error: outcomesError } = await supabase
+        await supabase
           .from('course_outcomes')
           .insert(
             course.outcomes.map(outcome => ({
@@ -95,19 +76,9 @@ export const useCourseCreation = (setLoading: Dispatch<SetStateAction<boolean>>)
               outcome: outcome
             }))
           );
-          
-        if (outcomesError) {
-          console.error('Error inserting outcomes:', outcomesError);
-        }
       }
       
       toast.success('Դասընթացը հաջողությամբ ստեղծվել է։');
-      
-      // If the course couldn't be published, show a notification
-      if (course.is_public && !isPublic) {
-        toast.info('Դասընթացը հաջողությամբ ստեղծվել է, սակայն հրապարակման համար անհրաժեշտ է ադմինիստրատորի հաստատումը։');
-      }
-      
       return true;
     } catch (error) {
       console.error('Error in createCourse:', error);
@@ -116,7 +87,7 @@ export const useCourseCreation = (setLoading: Dispatch<SetStateAction<boolean>>)
     } finally {
       setLoading(false);
     }
-  };
+  }, [setLoading, user]);
 
   return { createCourse };
 };
