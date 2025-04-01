@@ -107,8 +107,8 @@ export const ProjectProvider: React.FC<ProjectProviderProps> = ({
     selectedSupervisor
   );
 
-  // Calculate project progress
-  const projectProgress = calculateProjectProgress(tasks);
+  // Calculate project progress - fix the argument issue by passing both tasks and timeline
+  const projectProgress = calculateProjectProgress(tasks, timeline);
 
   // Handler for supervisor selection
   const selectSupervisor = (supervisorId: string) => {
