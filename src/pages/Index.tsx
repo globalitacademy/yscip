@@ -113,7 +113,7 @@ const Index = () => {
           <CoursesSection />
         </Suspense>
         <Suspense fallback={<SectionSkeleton />}>
-          <ProfessionalCoursesSection />
+          <ProfessionalCoursesSection courses={[]} />
         </Suspense>
       </div>
 

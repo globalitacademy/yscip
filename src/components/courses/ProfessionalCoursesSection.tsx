@@ -13,13 +13,13 @@ interface ProfessionalCoursesSectionProps {
 }
 
 const ProfessionalCoursesSection: React.FC<ProfessionalCoursesSectionProps> = ({
-  courses,
+  courses = [], // Provide default empty array to prevent undefined errors
   userPermissions,
   currentUserId,
   onEditCourse,
   onDeleteCourse
 }) => {
-  if (courses.length === 0) return <CourseEmptyState />;
+  if (!courses || courses.length === 0) return <CourseEmptyState />;
 
   return (
     <div className="space-y-4">
