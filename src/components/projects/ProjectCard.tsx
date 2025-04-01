@@ -1,3 +1,4 @@
+
 import React, { useCallback, memo } from 'react';
 import { Card, CardContent, CardFooter, CardHeader } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -46,6 +47,11 @@ const ProjectCard: React.FC<ProjectCardProps> = ({
     handleDeleteInit(project);
   }, [handleDeleteInit, project]);
   
+  // Function to handle image error and provide fallback
+  const handleImageError = (e: React.SyntheticEvent<HTMLImageElement>) => {
+    e.currentTarget.src = `https://source.unsplash.com/random/800x600/?${encodeURIComponent(project.category || 'project')}`;
+  };
+  
   return (
     <Card className={`flex flex-col w-full hover:shadow-md transition-shadow relative ${className || ''}`}>
       {isCreatedByCurrentUser && (
@@ -82,13 +88,20 @@ const ProjectCard: React.FC<ProjectCardProps> = ({
         <span>{project.category}</span>
       </div>
 
+      {!project.is_public && (
+        <div className="absolute top-4 left-1/2 transform -translate-x-1/2 flex items-center text-xs bg-amber-100 text-amber-800 px-2 py-1 rounded-full z-10">
+          <span>Չհրապարակված</span>
+        </div>
+      )}
+
       <CardHeader className="pb-2 text-center pt-12 relative">
         <div className="w-full h-32 mb-4 overflow-hidden rounded-md">
           <img 
-            src={project.image || 'https://via.placeholder.com/640x360?text=Նախագծի+նկար'} 
+            src={project.image || `https://source.unsplash.com/random/800x600/?${encodeURIComponent(project.category || 'project')}`} 
             alt={project.title}
-            className="w-full h-full object-cover"
-            loading="lazy" // Add lazy loading for better performance
+            className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
+            loading="lazy"
+            onError={handleImageError}
           />
         </div>
         <h3 className="font-bold text-xl">{project.title}</h3>

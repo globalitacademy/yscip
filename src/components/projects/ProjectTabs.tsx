@@ -20,20 +20,36 @@ const ProjectTabs: React.FC = () => {
     loadProjects();
   }, [loadProjects]);
 
-  // Filter projects based on search and category
+  // Filter projects based on search, category, and visibility permissions
   const filteredProjects = projects.filter(project => {
-    // Only show projects that are public or created by the current user
-    const visibilityMatch = project.is_public || project.createdBy === user?.id;
+    // Only show projects that are from the database (real projects)
+    const isRealProject = project.is_public !== undefined;
     
-    // Filter by search query
+    if (!isRealProject) return false;
+    
+    // Apply search filter
     const searchMatch = !searchQuery || 
       project.title?.toLowerCase().includes(searchQuery.toLowerCase()) ||
       project.description?.toLowerCase().includes(searchQuery.toLowerCase());
     
-    // Filter by selected category
+    // Apply category filter
     const categoryMatch = !selectedCategory || project.category === selectedCategory;
     
-    return visibilityMatch && searchMatch && categoryMatch;
+    // Apply visibility filter based on user role
+    let visibilityMatch = false;
+    
+    if (user?.role === 'admin') {
+      // Admin sees all real projects
+      visibilityMatch = true;
+    } else if (user) {
+      // User sees public projects or their own projects
+      visibilityMatch = project.is_public === true || project.createdBy === user.id;
+    } else {
+      // Non-authenticated users only see public projects
+      visibilityMatch = project.is_public === true;
+    }
+    
+    return searchMatch && categoryMatch && visibilityMatch;
   });
 
   return (

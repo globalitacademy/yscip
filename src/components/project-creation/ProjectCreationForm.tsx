@@ -33,9 +33,23 @@ const ProjectCreationForm: React.FC<ProjectCreationFormProps> = ({ onProjectCrea
   });
   const [previewImage, setPreviewImage] = useState<string | null>(null);
 
+  // Check if user has permission to create projects
+  const canCreateProjects = user && (
+    user.role === 'admin' || 
+    user.role === 'instructor' || 
+    user.role === 'lecturer' || 
+    user.role === 'employer'
+  );
+
   const handleCreateProject = (): boolean => {
     if (!newProject.title || !newProject.description || !newProject.category || newProject.techStack.length === 0) {
       toast.error("Խնդրում ենք լրացնել բոլոր պարտադիր դաշտերը");
+      return false;
+    }
+
+    // Check if user has permission to create projects
+    if (!canCreateProjects) {
+      toast.error("Դուք չունեք նախագծեր ստեղծելու իրավունք");
       return false;
     }
 
@@ -55,6 +69,9 @@ const ProjectCreationForm: React.FC<ProjectCreationFormProps> = ({ onProjectCrea
       const imageUrl = newProject.image || previewImage || 
         `https://source.unsplash.com/random/800x600/?${encodeURIComponent(newProject.category)}`;
       
+      // Set is_public based on user role
+      const isPublic = user?.role === 'admin' ? true : false;
+      
       const project: ProjectTheme = {
         ...newProject,
         id: projectId,
@@ -63,7 +80,8 @@ const ProjectCreationForm: React.FC<ProjectCreationFormProps> = ({ onProjectCrea
         updatedAt: currentTime, // Ensure updatedAt is set
         image: imageUrl,
         duration: newProject.duration || '', // Ensure duration is always set
-        techStack: newProject.techStack || [] // Ensure techStack is provided and defaults to empty array
+        techStack: newProject.techStack || [], // Ensure techStack is provided and defaults to empty array
+        is_public: isPublic // Only admin-created projects are public by default
       };
 
       // Save project to localStorage as backup
@@ -91,7 +109,12 @@ const ProjectCreationForm: React.FC<ProjectCreationFormProps> = ({ onProjectCrea
       });
       setPreviewImage(null);
 
-      toast.success("Նոր պրոեկտը հաջողությամբ ստեղծվել է։");
+      // Show different messages based on user role
+      if (user?.role === 'admin') {
+        toast.success("Նոր պրոեկտը հաջողությամբ ստեղծվել և հրապարակվել է։");
+      } else {
+        toast.success("Նոր պրոեկտը հաջողությամբ ստեղծվել է։ Այն կհրապարակվի ադմինի կողմից հաստատվելուց հետո։");
+      }
       
       return true;
     } catch (error) {
@@ -147,7 +170,7 @@ const ProjectCreationForm: React.FC<ProjectCreationFormProps> = ({ onProjectCrea
       </CardContent>
       <ProjectFormFooter 
         onSubmit={handleCreateProject} 
-        isDisabled={isSubmitting}
+        isDisabled={isSubmitting || !canCreateProjects}
       />
     </Card>
   );

@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { ProjectTheme } from '@/data/projectThemes';
 import ProjectCard from '@/components/projects/ProjectCard';
@@ -6,6 +5,7 @@ import { FadeIn } from '@/components/LocalTransitions';
 import { useProjectPermissions } from '@/hooks/useProjectPermissions';
 import { Button } from '@/components/ui/button';
 import { Eye, Pencil, Trash, Image } from 'lucide-react';
+import { useAuth } from '@/contexts/AuthContext';
 
 interface ProjectGridProps {
   projects: ProjectTheme[];
@@ -25,25 +25,31 @@ const ProjectGrid: React.FC<ProjectGridProps> = ({
   userRole
 }) => {
   const permissions = useProjectPermissions(userRole);
+  const { user } = useAuth();
 
-  if (projects.length === 0) {
-    return (
-      <div className="text-center p-10 bg-muted rounded-lg">
-        <p className="text-muted-foreground">Այս կատեգորիայում ծրագրեր չկան</p>
-      </div>
-    );
-  }
-
-  // Filter out template projects - only show database projects
-  // Real projects have the is_public field from the database
-  const filteredProjects = projects.filter(project => 
-    project.is_public !== undefined
-  );
+  // Filter projects based on permissions
+  const filteredProjects = projects.filter(project => {
+    // First check if it's a real project from database
+    const isRealProject = project.is_public !== undefined;
+    
+    if (!isRealProject) return false;
+    
+    // Admin can see all projects
+    if (user?.role === 'admin') return true;
+    
+    // Instructors, lecturers, and employers can see their own projects
+    if (user && (user.role === 'instructor' || user.role === 'lecturer' || user.role === 'employer')) {
+      return project.createdBy === user.id;
+    }
+    
+    // Other roles only see public projects
+    return project.is_public === true;
+  });
 
   if (filteredProjects.length === 0) {
     return (
       <div className="text-center p-10 bg-muted rounded-lg">
-        <p className="text-muted-foreground">Դատաբազայից նախագծեր չեն գտնվել</p>
+        <p className="text-muted-foreground">Այս կատեգորիայում ծրագրեր չկան</p>
       </div>
     );
   }
