@@ -52,7 +52,7 @@ serve(async (req) => {
     // Get admin users to notify
     const { data: adminUsers, error: adminError } = await supabase
       .from('users')
-      .select('email')
+      .select('email, id')
       .eq('role', 'admin');
       
     if (adminError) {
@@ -72,17 +72,11 @@ serve(async (req) => {
     });
     
     // Create notification in database for admins
-    for (const email of adminEmails) {
-      const { data: userData } = await supabase
-        .from('users')
-        .select('id')
-        .eq('email', email)
-        .single();
-        
-      if (userData?.id) {
+    for (const admin of adminUsers || []) {
+      if (admin?.id) {
         // Create notification for admin
         await supabase.rpc('create_notification', {
-          p_user_id: userData.id,
+          p_user_id: admin.id,
           p_title: `Նոր դիմում - ${application.course_title}`,
           p_message: `${application.full_name} դիմել է "${application.course_title}" դասընթացին։`,
           p_type: 'course_application'
@@ -90,11 +84,34 @@ serve(async (req) => {
       }
     }
     
-    // Also try to notify the applicant that we received their application
-    // In a real implementation, you would send an actual email here
+    // Check if the applicant has a user account, and notify them if they do
+    const { data: applicantUser, error: applicantError } = await supabase
+      .from('users')
+      .select('id')
+      .eq('email', application.email)
+      .single();
+      
+    if (applicantError) {
+      console.log("Applicant might not have a user account or multiple accounts found:", applicantError);
+    }
+    
+    // If applicant has a user account, create a notification for them
+    if (applicantUser?.id) {
+      await supabase.rpc('create_notification', {
+        p_user_id: applicantUser.id,
+        p_title: `Դիմումն ընդունվել է - ${application.course_title}`,
+        p_message: `Ձեր դիմումը "${application.course_title}" դասընթացին հաջողությամբ ուղարկվել է: Մենք շուտով կկապվենք Ձեզ հետ:`,
+        p_type: 'course_application_confirmation'
+      });
+    } else {
+      console.log("Applicant does not have a user account, would send email to:", application.email);
+    }
+    
+    // In a real implementation, you would send actual emails here
+    // For now, we're just creating in-app notifications
 
     return new Response(
-      JSON.stringify({ success: true, message: "Notification sent successfully" }),
+      JSON.stringify({ success: true, message: "Notifications sent successfully" }),
       { 
         status: 200, 
         headers: { 
