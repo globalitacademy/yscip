@@ -63,7 +63,7 @@ const ProjectGrid: React.FC<ProjectGridProps> = ({
             className="h-full"
             adminView={true}
           />
-          <div className="absolute bottom-16 right-4 z-10 flex gap-2">
+          <div className="absolute bottom-28 right-4 z-10 flex gap-2">
             <Button
               variant="outline" 
               size="icon" 
