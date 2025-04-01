@@ -1,3 +1,4 @@
+
 import React from 'react';
 
 interface CustomCursorProps {
@@ -42,23 +43,23 @@ const CustomCursor: React.FC<CustomCursorProps> = ({
     switch (direction) {
       case 'top-left':
         rotateClass = "rotate-45";
-        position = { top: '-3px', left: '-3px' };
+        position = { top: '-4px', left: '-4px' };
         break;
       case 'top-right':
         rotateClass = "rotate-[135deg]";
-        position = { top: '-3px', right: '-3px' };
+        position = { top: '-4px', right: '-4px' };
         break;
       case 'bottom-left':
         rotateClass = "rotate-[-45deg]";
-        position = { bottom: '-3px', left: '-3px' };
+        position = { bottom: '-4px', left: '-4px' };
         break;
       case 'bottom-right':
         rotateClass = "rotate-[-135deg]";
-        position = { bottom: '-3px', right: '-3px' };
+        position = { bottom: '-4px', right: '-4px' };
         break;
       default:
         rotateClass = "rotate-45";
-        position = { top: '-3px', left: '-3px' };
+        position = { top: '-4px', left: '-4px' };
     }
     
     return { rotateClass, position };
@@ -66,27 +67,32 @@ const CustomCursor: React.FC<CustomCursorProps> = ({
 
   const { rotateClass, position } = getPointerStyle();
 
-  // Add animation for the main cursor, keep static for others
-  const animationClass = isStatic ? '' : 'transition-transform duration-100';
+  // Add animation classes for the cursor
+  const animationClass = isStatic 
+    ? '' 
+    : 'transition-all ease-out duration-150';
   
   // Add specific styling for the static cursors
   const staticStyles = isStatic 
-    ? 'ring-2 ring-white ring-opacity-20' 
+    ? 'ring-2 ring-white/20' 
     : '';
 
+  // Add shadow and opacity transitions
+  const shadowStyle = 'shadow-lg shadow-black/10';
+  
   return (
     <div 
-      className={`fixed px-3 py-1.5 rounded-md ${getBgColor()} text-white font-medium text-sm min-w-[80px] text-center pointer-events-none z-50 ${animationClass} ${staticStyles} ${cursorVisible ? 'opacity-100' : 'opacity-0'}`}
+      className={`fixed px-3 py-1.5 rounded-md ${getBgColor()} text-white font-medium text-sm min-w-[80px] text-center pointer-events-none z-50 ${animationClass} ${staticStyles} ${shadowStyle} ${cursorVisible ? 'opacity-100' : 'opacity-0'}`}
       style={{
         left: `${mousePosition.x}px`,
         top: `${mousePosition.y}px`,
         transform: 'translate(-50%, -50%)',
-        filter: 'drop-shadow(0 1px 2px rgba(0,0,0,0.1))'
+        filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.15))'
       }}
     >
       {name}
       <div 
-        className={`absolute w-2 h-2 ${getBgColor()} ${rotateClass} transform rotate-45`}
+        className={`absolute w-3 h-3 ${getBgColor()} ${rotateClass}`}
         style={position}
       />
     </div>

@@ -22,9 +22,9 @@ const Hero: React.FC = () => {
   // Tempo-style cursor configurations
   const cursors = [
     // Main cursor that follows mouse
-    { name: "Արման", color: "green", direction: "top-left" as const, isStatic: false },
+    { name: "Արման", color: "purple", direction: "top-left" as const, isStatic: false },
     // Static cursors
-    { name: "Կարեն", color: "purple", direction: "top-right" as const, isStatic: true, position: staticPositions[0] },
+    { name: "Կարեն", color: "green", direction: "top-right" as const, isStatic: true, position: staticPositions[0] },
     { name: "Մարիամ", color: "red", direction: "bottom-left" as const, isStatic: true, position: staticPositions[1] },
   ];
 
@@ -57,25 +57,38 @@ const Hero: React.FC = () => {
           height: rect.height
         });
         
-        // Update static cursor positions to be within the container
-        staticPositions[0].x = rect.left + rect.width * 0.3;
-        staticPositions[0].y = rect.top + rect.height * 0.3;
+        // Update static cursor positions to be within the container with better spacing
+        staticPositions[0].x = rect.left + rect.width * 0.25;
+        staticPositions[0].y = rect.top + rect.height * 0.25;
         
-        staticPositions[1].x = rect.left + rect.width * 0.7;
+        staticPositions[1].x = rect.left + rect.width * 0.75;
         staticPositions[1].y = rect.top + rect.height * 0.7;
       }
     };
     
     updateContainerBounds();
+    
+    // Add a small delay to ensure proper measurement after layout
+    const timeoutId = setTimeout(updateContainerBounds, 300);
+    
     window.addEventListener('resize', updateContainerBounds);
+    window.addEventListener('scroll', updateContainerBounds);
     
     return () => {
       window.removeEventListener('resize', updateContainerBounds);
+      window.removeEventListener('scroll', updateContainerBounds);
+      clearTimeout(timeoutId);
     };
   }, []);
 
-  // Custom cursor tracking - only for the main cursor
+  // Custom cursor tracking with smooth damping effect
   useEffect(() => {
+    let animationFrameId: number;
+    let targetX = 0;
+    let targetY = 0;
+    let currentX = 0;
+    let currentY = 0;
+    
     const handleMouseMove = (e: MouseEvent) => {
       // Only update cursor if mouse is within container bounds
       if (containerRef.current) {
@@ -87,20 +100,40 @@ const Hero: React.FC = () => {
           e.clientY <= rect.top + rect.height;
         
         if (isInContainer) {
-          setMousePosition({ x: e.clientX, y: e.clientY });
-          setCursorVisible(true);
+          targetX = e.clientX;
+          targetY = e.clientY;
+          
+          if (!cursorVisible) {
+            setCursorVisible(true);
+          }
         } else {
           setCursorVisible(false);
         }
       }
     };
     
+    const animateCursor = () => {
+      // Simple damping animation
+      const ease = 0.2;
+      
+      currentX = currentX + (targetX - currentX) * ease;
+      currentY = currentY + (targetY - currentY) * ease;
+      
+      setMousePosition({ x: currentX, y: currentY });
+      
+      animationFrameId = requestAnimationFrame(animateCursor);
+    };
+    
+    // Start the animation
+    animationFrameId = requestAnimationFrame(animateCursor);
+    
     window.addEventListener('mousemove', handleMouseMove);
     
     return () => {
       window.removeEventListener('mousemove', handleMouseMove);
+      cancelAnimationFrame(animationFrameId);
     };
-  }, []);
+  }, [cursorVisible]);
 
   // Function to scroll to themes section
   const scrollToThemes = () => {
@@ -140,7 +173,10 @@ const Hero: React.FC = () => {
       ))}
       
       <BackgroundEffects />
-      <div ref={containerRef} className="relative w-full">
+      <div 
+        ref={containerRef} 
+        className="relative w-full cursor-none"
+      >
         <HeroContent scrollToThemes={scrollToThemes} />
       </div>
     </section>
