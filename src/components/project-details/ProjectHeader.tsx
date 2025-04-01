@@ -7,6 +7,7 @@ import ProjectHeaderBanner from './ProjectHeaderBanner';
 import ProjectMetadata from './ProjectMetadata';
 import ProjectProgress from './ProjectProgress';
 import ReservationActions from './ReservationActions';
+import { formatDate } from '@/lib/utils';
 
 interface ProjectHeaderProps {
   project: ProjectTheme;
@@ -91,9 +92,12 @@ const ProjectHeader: React.FC<ProjectHeaderProps> = ({
         
         <div className="rounded-lg overflow-hidden border border-border h-64 md:h-auto">
           <img 
-            src={imageUrl} 
+            src={imageUrl || '/placeholder.svg'} 
             alt={project.title}
             className="w-full h-full object-cover"
+            onError={(e) => {
+              (e.target as HTMLImageElement).src = '/placeholder.svg';
+            }}
           />
         </div>
       </div>
