@@ -102,6 +102,13 @@ const ProjectCard: React.FC<ProjectCardProps> = ({
         <span>{project.category}</span>
       </div>
 
+      {/* Moved complexity badge to top right */}
+      <div className="absolute top-4 right-4 z-10">
+        <span className={cn("text-xs border px-2 py-1 rounded-full inline-block", getComplexityColor(project.complexity))}>
+          {project.complexity}
+        </span>
+      </div>
+
       {!project.is_public && (
         <div className="absolute top-4 left-1/2 transform -translate-x-1/2 flex items-center text-xs bg-amber-100 text-amber-800 px-2 py-1 rounded-full z-10">
           <span>Չհրապարակված</span>
@@ -121,9 +128,7 @@ const ProjectCard: React.FC<ProjectCardProps> = ({
           />
         </div>
         <h3 className="font-bold text-xl">{project.title}</h3>
-        <p className={cn("text-sm border px-2 py-0.5 rounded-full inline-block", getComplexityColor(project.complexity))}>
-          {project.complexity}
-        </p>
+        {/* Removed complexity badge from here since it's now at the top */}
       </CardHeader>
       
       <CardContent className="flex-grow pb-2">
