@@ -13,6 +13,7 @@ import {
 import { LogOut, User, UserCog, GraduationCap, ChevronDown, Building, School } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { mockUsers } from '@/data/mockUsers';
+import { toast } from 'sonner';
 
 const UserMenu: React.FC = () => {
   const { user, isAuthenticated, logout, switchRole } = useAuth();
@@ -66,6 +67,11 @@ const UserMenu: React.FC = () => {
     }
   };
 
+  const handleLogout = () => {
+    toast.info("Դուրս գալու ֆունկցիոնալությունը ժամանակավորապես անջատված է։");
+    logout();
+  };
+
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
@@ -106,7 +112,7 @@ const UserMenu: React.FC = () => {
         }
         
         <DropdownMenuSeparator />
-        <DropdownMenuItem onClick={() => logout()} className="text-red-500 focus:text-red-500">
+        <DropdownMenuItem onClick={handleLogout} className="text-red-500 focus:text-red-500">
           <LogOut className="h-4 w-4 mr-2" />
           <span>Դուրս գալ</span>
         </DropdownMenuItem>

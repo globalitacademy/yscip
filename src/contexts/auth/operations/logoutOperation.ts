@@ -8,7 +8,7 @@ export const executeLogout = async (
 ): Promise<void> => {
   try {
     console.log('Logging out user');
-    await supabase.auth.signOut();
+    // Removed actual logout functionality
     toast.info('Դուք դուրս եք եկել համակարգից։');
   } catch (error) {
     console.error('Error during logout:', error);
