@@ -4,12 +4,16 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { projectThemes } from '@/data/projectThemes';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
+import AdminLayout from '@/components/AdminLayout';
 import { ProjectTheme } from '@/data/projectThemes';
 import { useToast } from '@/components/ui/use-toast';
 import { updateProject } from '@/services/projectService';
 import ProjectCreationForm from '@/components/project-creation/ProjectCreationForm';
 import { ProjectManagementProvider } from '@/contexts/ProjectManagementContext';
 import { useAuth } from '@/contexts/AuthContext';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { ArrowLeft } from 'lucide-react';
+import { Button } from '@/components/ui/button';
 
 const ProjectEditPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
@@ -18,6 +22,10 @@ const ProjectEditPage: React.FC = () => {
   const [project, setProject] = useState<ProjectTheme | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const { user } = useAuth();
+  const [activeTab, setActiveTab] = useState("general");
+
+  // Check if we're in admin mode based on the URL path
+  const isAdminMode = location.pathname.includes('/admin/') || location.pathname.includes('/projects/edit/');
 
   // Check if user has edit permissions
   const canEditProject = user && (
@@ -52,7 +60,7 @@ const ProjectEditPage: React.FC = () => {
             description: "Նշված նախագիծը չի գտնվել։",
             variant: "destructive",
           });
-          navigate('/projects');
+          navigate(isAdminMode ? '/admin/projects' : '/projects');
           return;
         }
         
@@ -70,7 +78,7 @@ const ProjectEditPage: React.FC = () => {
     };
 
     fetchProject();
-  }, [id, navigate, toast, user, canEditProject]);
+  }, [id, navigate, toast, user, canEditProject, isAdminMode]);
 
   const handleProjectUpdated = async (updatedProject: ProjectTheme) => {
     try {
@@ -92,7 +100,7 @@ const ProjectEditPage: React.FC = () => {
           title: "Նախագիծը թարմացվել է",
           description: "Նախագծի փոփոխությունները հաջողությամբ պահպանվել են։",
         });
-        navigate(`/project/${projectId}`);
+        navigate(isAdminMode ? '/admin/projects' : `/project/${projectId}`);
       } else {
         throw new Error("Failed to update project");
       }
@@ -106,37 +114,101 @@ const ProjectEditPage: React.FC = () => {
     }
   };
 
-  if (isLoading) {
-    return (
-      <div className="min-h-screen flex flex-col">
-        <Header />
-        <main className="flex-grow container mx-auto px-4 py-8">
-          <div className="animate-pulse">
-            <div className="h-8 bg-gray-200 rounded w-1/3 mb-4"></div>
-            <div className="h-64 bg-gray-200 rounded mb-4"></div>
-            <div className="h-8 bg-gray-200 rounded w-1/4 mb-4"></div>
-          </div>
-        </main>
-        <Footer />
-      </div>
-    );
-  }
+  const renderContent = () => {
+    if (isLoading) {
+      return (
+        <div className="animate-pulse">
+          <div className="h-8 bg-gray-200 rounded w-1/3 mb-4"></div>
+          <div className="h-64 bg-gray-200 rounded mb-4"></div>
+          <div className="h-8 bg-gray-200 rounded w-1/4 mb-4"></div>
+        </div>
+      );
+    }
 
-  if (!project) {
-    return (
-      <div className="min-h-screen flex flex-col">
-        <Header />
-        <main className="flex-grow container mx-auto px-4 py-8 flex flex-col items-center justify-center">
+    if (!project) {
+      return (
+        <div className="flex flex-col items-center justify-center py-12">
           <h1 className="text-2xl font-bold mb-4">Նախագիծը չի գտնվել</h1>
-          <button 
-            onClick={() => navigate('/projects')}
+          <Button 
+            onClick={() => navigate(isAdminMode ? '/admin/projects' : '/projects')}
             className="px-4 py-2 bg-primary text-white rounded hover:bg-primary/90 transition-colors"
           >
             Վերադառնալ նախագծերի էջ
-          </button>
-        </main>
-        <Footer />
+          </Button>
+        </div>
+      );
+    }
+
+    return (
+      <div className="space-y-6">
+        <div className="flex justify-between items-center">
+          <Button
+            variant="ghost"
+            onClick={() => navigate(isAdminMode ? '/admin/projects' : '/projects')}
+            className="text-sm flex items-center gap-1"
+          >
+            <ArrowLeft size={16} /> Վերադառնալ նախագծերի ցանկ
+          </Button>
+        </div>
+        
+        <h1 className="text-3xl font-bold mb-6">{project.title} - Խմբագրում</h1>
+        
+        <Tabs defaultValue="general" value={activeTab} onValueChange={setActiveTab} className="w-full">
+          <TabsList className="mb-6">
+            <TabsTrigger value="general">Հիմնական տվյալներ</TabsTrigger>
+            <TabsTrigger value="details">Մանրամասներ</TabsTrigger>
+            <TabsTrigger value="tech">Տեխնոլոգիաներ</TabsTrigger>
+            <TabsTrigger value="implementation">Իրականացում</TabsTrigger>
+          </TabsList>
+          
+          <TabsContent value="general" className="pt-4">
+            <ProjectCreationForm 
+              initialData={project} 
+              onProjectCreated={handleProjectUpdated}
+              isEditing={true}
+              startStep={1}
+            />
+          </TabsContent>
+          
+          <TabsContent value="details" className="pt-4">
+            <ProjectCreationForm 
+              initialData={project} 
+              onProjectCreated={handleProjectUpdated}
+              isEditing={true}
+              startStep={2}
+            />
+          </TabsContent>
+          
+          <TabsContent value="tech" className="pt-4">
+            <ProjectCreationForm 
+              initialData={project} 
+              onProjectCreated={handleProjectUpdated}
+              isEditing={true}
+              startStep={3}
+            />
+          </TabsContent>
+          
+          <TabsContent value="implementation" className="pt-4">
+            <ProjectCreationForm 
+              initialData={project} 
+              onProjectCreated={handleProjectUpdated}
+              isEditing={true}
+              startStep={4}
+            />
+          </TabsContent>
+        </Tabs>
       </div>
+    );
+  };
+
+  // Render with different layouts depending on if we're in admin mode
+  if (isAdminMode) {
+    return (
+      <AdminLayout pageTitle="Նախագծի խմբագրում">
+        <ProjectManagementProvider>
+          {renderContent()}
+        </ProjectManagementProvider>
+      </AdminLayout>
     );
   }
 
@@ -145,12 +217,7 @@ const ProjectEditPage: React.FC = () => {
       <div className="min-h-screen flex flex-col">
         <Header />
         <main className="flex-grow container mx-auto px-4 py-8">
-          <h1 className="text-3xl font-bold mb-6">{project.title} - Խմբագրում</h1>
-          <ProjectCreationForm 
-            initialData={project} 
-            onProjectCreated={handleProjectUpdated}
-            isEditing={true} 
-          />
+          {renderContent()}
         </main>
         <Footer />
       </div>

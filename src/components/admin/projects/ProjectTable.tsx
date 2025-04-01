@@ -14,6 +14,7 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Eye, Pencil, Trash, Image } from 'lucide-react';
 import { FadeIn } from '@/components/LocalTransitions';
+import { useNavigate } from 'react-router-dom';
 
 interface ProjectTableProps {
   projects: ProjectTheme[];
@@ -34,6 +35,7 @@ const ProjectTable: React.FC<ProjectTableProps> = ({
 }) => {
   const permissions = useProjectPermissions(userRole);
   const { user } = useAuth();
+  const navigate = useNavigate();
 
   // Filter projects based on permissions
   const filteredProjects = projects.filter(project => {
@@ -53,6 +55,10 @@ const ProjectTable: React.FC<ProjectTableProps> = ({
     // Other roles only see public projects
     return project.is_public === true;
   });
+
+  const handleAdvancedEdit = (project: ProjectTheme) => {
+    navigate(`/projects/edit/${project.id}`);
+  };
 
   if (filteredProjects.length === 0) {
     return (
@@ -106,24 +112,36 @@ const ProjectTable: React.FC<ProjectTableProps> = ({
                     <Button
                       variant="ghost" 
                       size="sm" 
-                      className="h-8 w-8 p-0" 
-                      onClick={() => onEditProject(project)}
+                      className="h-8 w-8 p-0 hover:bg-primary/10 hover:text-primary" 
+                      onClick={() => handleAdvancedEdit(project)}
+                      title="Ընդլայնված խմբագրում"
                     >
                       <Pencil size={16} />
                     </Button>
                     <Button
                       variant="ghost" 
                       size="sm" 
-                      className="h-8 w-8 p-0" 
+                      className="h-8 w-8 p-0 hover:bg-blue-50 hover:text-blue-600" 
+                      onClick={() => onEditProject(project)}
+                      title="Արագ խմբագրում"
+                    >
+                      <Eye size={16} />
+                    </Button>
+                    <Button
+                      variant="ghost" 
+                      size="sm" 
+                      className="h-8 w-8 p-0 hover:bg-violet-50 hover:text-violet-600" 
                       onClick={() => onImageChange(project)}
+                      title="Փոխել նկարը"
                     >
                       <Image size={16} />
                     </Button>
                     <Button
                       variant="ghost" 
                       size="sm" 
-                      className="h-8 w-8 p-0" 
+                      className="h-8 w-8 p-0 hover:bg-red-50 hover:text-red-600" 
                       onClick={() => onDeleteProject(project)}
+                      title="Ջնջել"
                     >
                       <Trash size={16} />
                     </Button>
