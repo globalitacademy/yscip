@@ -2,7 +2,7 @@
 import React from 'react';
 import { Badge } from '@/components/ui/badge';
 import { Link } from 'react-router-dom';
-import { ArrowLeft } from 'lucide-react';
+import { ArrowLeft, BarChart } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 interface ProjectHeaderBannerProps {
@@ -43,7 +43,10 @@ const ProjectHeaderBanner: React.FC<ProjectHeaderBannerProps> = ({
       <h1 className="text-3xl md:text-4xl font-bold mb-2">{title}</h1>
       
       <div className="flex items-center gap-2 mb-4">
-        <span className="text-muted-foreground">Բարդություն:</span>
+        <span className="text-muted-foreground flex items-center">
+          <BarChart size={16} className="mr-1" />
+          Բարդություն:
+        </span>
         <Badge variant="outline" className={cn("font-medium", complexityColor)}>
           {complexity}
         </Badge>
