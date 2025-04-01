@@ -5,7 +5,6 @@ import { AuthProvider } from './contexts/AuthContext';
 import { CourseProvider } from './contexts/CourseContext';
 import LoginPage from './pages/LoginPage';
 import RegisterPage from './pages/RegisterPage';
-import AdminPanel from './pages/AdminPanel';
 import AdminIndex from './pages/AdminIndex';
 import ProjectManagementPage from './pages/ProjectManagementPage';
 import CoursesPage from './pages/CoursesPage';
@@ -24,6 +23,7 @@ import CourseApplicationsPage from './pages/CourseApplicationsPage';
 import ProjectEditPage from './pages/ProjectEditPage';
 import AdminProjectsPage from './pages/AdminProjectsPage';
 import SpecializationsPage from './pages/SpecializationsPage';
+import NotificationsPage from './pages/NotificationsPage';
 
 function App() {
   return (
@@ -39,7 +39,7 @@ function App() {
             
             {/* Admin Routes */}
             <Route path="/admin" element={<AdminIndex />} />
-            <Route path="/admin/dashboard" element={<AdminPanel />} />
+            <Route path="/admin/dashboard" element={<Navigate to="/admin" replace />} />
             <Route path="/admin/users" element={<UserManagementPage />} />
             <Route path="/admin/admin-projects" element={<AdminProjectsPage />} />
             <Route path="/admin/projects" element={<ProjectManagementPage />} />
@@ -48,6 +48,7 @@ function App() {
             <Route path="/admin/course-applications" element={<CourseApplicationsPage />} />
             <Route path="/admin/specializations" element={<SpecializationsPage />} />
             <Route path="/admin/settings" element={<SystemSettingsPage />} />
+            <Route path="/admin/notifications" element={<NotificationsPage />} />
             
             {/* Project and Course Routes */}
             <Route path="/projects" element={<ProjectManagementPage />} />

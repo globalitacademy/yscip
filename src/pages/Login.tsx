@@ -1,5 +1,6 @@
 
-import React from 'react';
+import React, { useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import LoginForm from '@/components/auth/LoginForm';
@@ -9,9 +10,23 @@ import DeveloperInfo from '@/components/auth/login/DeveloperInfo';
 import VerificationAlert from '@/components/auth/verification/VerificationAlert';
 import { useDemoLogin } from '@/hooks/useDemoLogin';
 import { useVerification } from '@/hooks/useVerification';
+import { useAuth } from '@/contexts/AuthContext';
 
 const Login: React.FC = () => {
   const { isLoggingIn, handleQuickLogin } = useDemoLogin();
+  const { user, isAuthenticated } = useAuth();
+  const navigate = useNavigate();
+  
+  // Redirect authenticated users
+  useEffect(() => {
+    if (isAuthenticated && user) {
+      if (user.role === 'admin') {
+        navigate('/admin');
+      } else {
+        navigate('/');
+      }
+    }
+  }, [isAuthenticated, user, navigate]);
   
   const {
     verificationSent,
