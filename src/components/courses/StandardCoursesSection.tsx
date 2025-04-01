@@ -1,17 +1,17 @@
 
 import React from 'react';
-import { ProfessionalCourse } from './types/ProfessionalCourse';
-import ProfessionalCourseListItem from './ProfessionalCourseListItem';
+import { Course } from './types';
+import StandardCourseListItem from './StandardCourseListItem';
 
-interface ProfessionalCoursesSectionProps {
-  courses: ProfessionalCourse[];
+interface StandardCoursesSectionProps {
+  courses: Course[];
   userPermissions?: any;
   currentUserId?: string;
-  onEditCourse?: (course: ProfessionalCourse) => void;
-  onDeleteCourse?: (id: string) => void;
+  onEditCourse?: (course: Course) => void;
+  onDeleteCourse?: (course: Course) => void;
 }
 
-const ProfessionalCoursesSection: React.FC<ProfessionalCoursesSectionProps> = ({
+const StandardCoursesSection: React.FC<StandardCoursesSectionProps> = ({
   courses,
   userPermissions,
   currentUserId,
@@ -22,7 +22,7 @@ const ProfessionalCoursesSection: React.FC<ProfessionalCoursesSectionProps> = ({
 
   return (
     <div className="space-y-4">
-      <h3 className="text-xl font-semibold">Մասնագիտական դասընթացներ</h3>
+      <h3 className="text-xl font-semibold">Ստանդարտ դասընթացներ</h3>
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
         {courses.map((course) => {
           const canEdit = userPermissions?.canEditCourse(course.createdBy);
@@ -31,7 +31,7 @@ const ProfessionalCoursesSection: React.FC<ProfessionalCoursesSectionProps> = ({
           const pendingApproval = isOwnCourse && !course.is_public && userPermissions?.requiresApproval;
           
           return (
-            <ProfessionalCourseListItem 
+            <StandardCourseListItem 
               key={course.id}
               course={course}
               canEdit={canEdit}
@@ -48,4 +48,4 @@ const ProfessionalCoursesSection: React.FC<ProfessionalCoursesSectionProps> = ({
   );
 };
 
-export default ProfessionalCoursesSection;
+export default StandardCoursesSection;
