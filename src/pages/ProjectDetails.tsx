@@ -3,6 +3,7 @@ import React, { useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { projectThemes } from '@/data/projectThemes';
 import { ProjectProvider } from '@/contexts/ProjectContext';
+import { ProjectManagementProvider } from '@/contexts/ProjectManagementContext';
 import ProjectDetailsContent from '@/components/project-details/ProjectDetailsContent';
 import { toast } from '@/components/ui/use-toast';
 import { AlertCircle } from 'lucide-react';
@@ -113,10 +114,12 @@ const ProjectDetails: React.FC = () => {
   );
   
   return (
-    <ProjectProvider projectId={projectId} initialProject={project}>
-      {pendingApprovalAlert}
-      <ProjectDetailsContent />
-    </ProjectProvider>
+    <ProjectManagementProvider>
+      <ProjectProvider projectId={projectId} initialProject={project}>
+        {pendingApprovalAlert}
+        <ProjectDetailsContent />
+      </ProjectProvider>
+    </ProjectManagementProvider>
   );
 };
 
