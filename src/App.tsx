@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { BrowserRouter as Router, Route, Routes, Navigate } from 'react-router-dom';
 import { AuthProvider } from './contexts/AuthContext';
@@ -17,6 +16,7 @@ import CourseDetailPage from './pages/CourseDetailPage';
 import AllCoursesPage from './pages/AllCoursesPage';
 import CourseDetails from './pages/CourseDetails';
 import ProjectDetails from './pages/ProjectDetails';
+import CourseApplicationsPage from './pages/CourseApplicationsPage';
 
 function App() {
   return (
@@ -35,6 +35,7 @@ function App() {
             <Route path="/admin/users" element={<UserManagementPage />} />
             <Route path="/admin/admin-projects" element={<ProjectManagementPage />} />
             <Route path="/admin/courses" element={<CourseManagementPage />} />
+            <Route path="/admin/course-applications" element={<CourseApplicationsPage />} />
             
             {/* Project and Course Routes */}
             <Route path="/projects" element={<ProjectManagementPage />} />

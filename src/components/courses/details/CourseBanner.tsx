@@ -1,9 +1,10 @@
 
-import React from 'react';
+import React, { useState } from 'react';
 import { ProfessionalCourse } from '../types/ProfessionalCourse';
 import { Button } from '@/components/ui/button';
 import { Link } from 'react-router-dom';
 import { ArrowLeft, User, Clock, Pencil } from 'lucide-react';
+import CourseApplicationForm from './CourseApplicationForm';
 
 interface CourseBannerProps {
   course: ProfessionalCourse;
@@ -16,6 +17,12 @@ const CourseBanner: React.FC<CourseBannerProps> = ({
   canEdit = false,
   handleApply
 }) => {
+  const [isApplicationFormOpen, setIsApplicationFormOpen] = useState(false);
+
+  const openApplicationForm = () => {
+    setIsApplicationFormOpen(true);
+  };
+
   return (
     <div className="relative mb-8 overflow-hidden">
       {/* Light blue background */}
@@ -60,7 +67,7 @@ const CourseBanner: React.FC<CourseBannerProps> = ({
           {/* Buttons */}
           <div className="pt-4 flex flex-wrap gap-3">
             <Button
-              onClick={handleApply}
+              onClick={openApplicationForm}
               size="lg"
               className="bg-blue-600 hover:bg-blue-700 text-white"
             >
@@ -82,6 +89,13 @@ const CourseBanner: React.FC<CourseBannerProps> = ({
           </div>
         </div>
       </div>
+
+      {/* Course Application Form Dialog */}
+      <CourseApplicationForm 
+        course={course}
+        isOpen={isApplicationFormOpen}
+        onClose={() => setIsApplicationFormOpen(false)}
+      />
     </div>
   );
 };

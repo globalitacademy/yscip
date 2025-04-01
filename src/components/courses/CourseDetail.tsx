@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { ProfessionalCourse } from './types/ProfessionalCourse';
@@ -66,13 +65,7 @@ const CourseDetail: React.FC = () => {
   }, [id, slug, navigate]);
 
   const handleApply = () => {
-    toast.success('Դիմումն ուղարկված է', {
-      description: 'Շուտով կզանգահարենք ձեզ',
-      action: {
-        label: 'Փակել',
-        onClick: () => console.log('Toast closed')
-      },
-    });
+    console.log('Apply button clicked, form will open');
   };
 
   if (loading) {

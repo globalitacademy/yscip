@@ -1,8 +1,9 @@
 
-import React from 'react';
+import React, { useState } from 'react';
 import { ProfessionalCourse } from '../types/ProfessionalCourse';
 import { Button } from '@/components/ui/button';
 import { CheckCircle, ExternalLink, Calendar, Book, Users, Award, Download } from 'lucide-react';
+import CourseApplicationForm from './CourseApplicationForm';
 
 interface CourseSidebarProps {
   course: ProfessionalCourse;
@@ -10,6 +11,12 @@ interface CourseSidebarProps {
 }
 
 const CourseSidebar: React.FC<CourseSidebarProps> = ({ course, handleApply }) => {
+  const [isApplicationFormOpen, setIsApplicationFormOpen] = useState(false);
+
+  const openApplicationForm = () => {
+    setIsApplicationFormOpen(true);
+  };
+
   return (
     <div className="bg-white border rounded-xl shadow-lg overflow-hidden sticky top-8">
       {course.imageUrl && (
@@ -60,7 +67,7 @@ const CourseSidebar: React.FC<CourseSidebarProps> = ({ course, handleApply }) =>
         </div>
         
         <Button 
-          onClick={handleApply} 
+          onClick={openApplicationForm} 
           className="w-full mb-3 bg-indigo-600 hover:bg-indigo-700 rounded-full py-6 shadow-md transition-all transform hover:translate-y-[-2px]"
         >
           Դիմել դասընթացին
@@ -102,6 +109,13 @@ const CourseSidebar: React.FC<CourseSidebarProps> = ({ course, handleApply }) =>
           </div>
         </div>
       </div>
+
+      {/* Course Application Form Dialog */}
+      <CourseApplicationForm 
+        course={course}
+        isOpen={isApplicationFormOpen}
+        onClose={() => setIsApplicationFormOpen(false)}
+      />
     </div>
   );
 };
