@@ -1,178 +1,248 @@
-
-import React, { useState } from 'react';
-import { useAuth } from '@/contexts/AuthContext';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { toast } from "sonner";
+import React, { useState, useEffect } from 'react';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Textarea } from '@/components/ui/textarea';
+import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { Slider } from "@/components/ui/slider"
+import { Switch } from "@/components/ui/switch"
+import { Checkbox } from "@/components/ui/checkbox"
 import { ProjectTheme } from '@/data/projectThemes';
-import ProjectBasicInfo from './ProjectBasicInfo';
 import ProjectTechStack from './ProjectTechStack';
 import ProjectImplementationSteps from './ProjectImplementationSteps';
 import ProjectLearningDetails from './ProjectLearningDetails';
 import ProjectFormFooter from './ProjectFormFooter';
-import { v4 as uuidv4 } from 'uuid';
 
 interface ProjectCreationFormProps {
-  onProjectCreated?: (project: ProjectTheme) => void;
+  onProjectCreated?: (project: any) => void;
+  initialData?: ProjectTheme;
+  isEditing?: boolean;
 }
 
-const ProjectCreationForm: React.FC<ProjectCreationFormProps> = ({ onProjectCreated }) => {
-  const { user, isAuthenticated } = useAuth();
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [newProject, setNewProject] = useState({
-    title: '',
-    description: '',
-    detailedDescription: '',
-    category: '',
-    complexity: 'Սկսնակ' as 'Սկսնակ' | 'Միջին' | 'Առաջադեմ',
-    duration: '',
-    techStack: [] as string[],
-    steps: [] as string[],
-    prerequisites: [] as string[],
-    learningOutcomes: [] as string[],
-    image: ''
-  });
-  const [previewImage, setPreviewImage] = useState<string | null>(null);
-
-  // Check if user has permission to create projects
-  const canCreateProjects = user && (
-    user.role === 'admin' || 
-    user.role === 'instructor' || 
-    user.role === 'lecturer' || 
-    user.role === 'employer'
-  );
-
-  const handleCreateProject = (): boolean => {
-    if (!newProject.title || !newProject.description || !newProject.category || newProject.techStack.length === 0) {
-      toast.error("Խնդրում ենք լրացնել բոլոր պարտադիր դաշտերը");
-      return false;
-    }
-
-    // Check if user has permission to create projects
-    if (!canCreateProjects) {
-      toast.error("Դուք չունեք նախագծեր ստեղծելու իրավունք");
-      return false;
-    }
-
-    setIsSubmitting(true);
-
-    try {
-      // Even if not authenticated, allow project creation with a warning
-      if (!isAuthenticated || !user) {
-        toast.warning("Դուք մուտք չեք գործել համակարգ, նախագիծը կստեղծվի բայց չի հրապարակվի");
-      }
-      
-      const projectId = Date.now();
-      const userId = user?.id || 'local-user';
-      const currentTime = new Date().toISOString();
+const ProjectCreationForm: React.FC<ProjectCreationFormProps> = ({ 
+  onProjectCreated,
+  initialData,
+  isEditing = false
+}) => {
+  const [currentStep, setCurrentStep] = useState(1);
+  const [title, setTitle] = useState('');
+  const [description, setDescription] = useState('');
+  const [detailedDescription, setDetailedDescription] = useState('');
+  const [category, setCategory] = useState('');
+  const [complexity, setComplexity] = useState('Միջին');
+  const [duration, setDuration] = useState('');
+  const [techStack, setTechStack] = useState<string[]>([]);
+  const [steps, setSteps] = useState<string[]>([]);
+  const [prerequisites, setPrerequisites] = useState<string[]>([]);
+  const [learningOutcomes, setLearningOutcomes] = useState<string[]>([]);
+  const [imageUrl, setImageUrl] = useState('');
+  const [formErrors, setFormErrors] = useState<{ [key: string]: string }>({});
+  
+  const handleNextStep = () => {
+    setCurrentStep(prevStep => Math.min(prevStep + 1, 4));
+  };
+  
+  const handlePreviousStep = () => {
+    setCurrentStep(prevStep => Math.max(prevStep - 1, 1));
+  };
+  
+  const resetForm = () => {
+    setTitle('');
+    setDescription('');
+    setDetailedDescription('');
+    setCategory('');
+    setComplexity('Միջին');
+    setDuration('');
+    setTechStack([]);
+    setSteps([]);
+    setPrerequisites([]);
+    setLearningOutcomes([]);
+    setImageUrl('');
+    setFormErrors({});
+    setCurrentStep(1);
+  };
+  
+  const validateForm = () => {
+    let errors: { [key: string]: string } = {};
     
-      // Ensure image has a default value if not provided
-      const imageUrl = newProject.image || previewImage || 
-        `https://source.unsplash.com/random/800x600/?${encodeURIComponent(newProject.category)}`;
-      
-      // Set is_public based on user role
-      const isPublic = user?.role === 'admin' ? true : false;
-      
-      const project: ProjectTheme = {
-        ...newProject,
-        id: projectId,
-        createdBy: userId,
-        createdAt: currentTime,
-        updatedAt: currentTime, // Ensure updatedAt is set
-        image: imageUrl,
-        duration: newProject.duration || '', // Ensure duration is always set
-        techStack: newProject.techStack || [], // Ensure techStack is provided and defaults to empty array
-        is_public: isPublic // Only admin-created projects are public by default
-      };
+    if (!title) {
+      errors.title = 'Վերնագիրը պարտադիր է։';
+    }
+    if (!description) {
+      errors.description = 'Նկարագրությունը պարտադիր է։';
+    }
+    if (!category) {
+      errors.category = 'Կատեգորիան պարտադիր է։';
+    }
+    
+    setFormErrors(errors);
+    return Object.keys(errors).length === 0;
+  };
+  
+  // Initialize form with initial data if provided (for editing)
+  useEffect(() => {
+    if (initialData && isEditing) {
+      setTitle(initialData.title || '');
+      setDescription(initialData.description || '');
+      setDetailedDescription(initialData.detailedDescription || '');
+      setCategory(initialData.category || '');
+      setComplexity(initialData.complexity || 'Միջին');
+      setDuration(initialData.duration || '');
+      setTechStack(initialData.techStack || []);
+      setSteps(initialData.steps || []);
+      setPrerequisites(initialData.prerequisites || []);
+      setLearningOutcomes(initialData.learningOutcomes || []);
+    }
+  }, [initialData, isEditing]);
 
-      // Save project to localStorage as backup
-      const storedProjects = localStorage.getItem('local_projects');
-      let projects = storedProjects ? JSON.parse(storedProjects) : [];
-      projects.push(project);
-      localStorage.setItem('local_projects', JSON.stringify(projects));
-      
-      if (onProjectCreated) {
-        onProjectCreated(project);
-      }
-
-      setNewProject({
-        title: '',
-        description: '',
-        detailedDescription: '',
-        category: '',
-        complexity: 'Սկսնակ',
-        duration: '',
-        techStack: [],
-        steps: [],
-        prerequisites: [],
-        learningOutcomes: [],
-        image: ''
-      });
-      setPreviewImage(null);
-
-      // Show different messages based on user role
-      if (user?.role === 'admin') {
-        toast.success("Նոր պրոեկտը հաջողությամբ ստեղծվել և հրապարակվել է։");
-      } else {
-        toast.success("Նոր պրոեկտը հաջողությամբ ստեղծվել է։ Այն կհրապարակվի ադմինի կողմից հաստատվելուց հետո։");
-      }
-      
-      return true;
-    } catch (error) {
-      console.error("Error creating project:", error);
-      toast.error("Սխալ է տեղի ունեցել նախագիծը ստեղծելիս։");
-      return false;
-    } finally {
-      setIsSubmitting(false);
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    if (!validateForm()) {
+      return;
+    }
+    
+    const project = {
+      id: initialData?.id || Date.now(),
+      title,
+      description,
+      detailedDescription,
+      category,
+      complexity,
+      duration,
+      techStack,
+      image: imageUrl,
+      steps,
+      prerequisites,
+      learningOutcomes,
+      createdAt: initialData?.createdAt || new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+      createdBy: 'user_id', // Should be replaced with actual user ID
+    };
+    
+    if (onProjectCreated) {
+      onProjectCreated(project);
+    }
+    
+    if (!isEditing) {
+      // Reset form if not in edit mode
+      resetForm();
     }
   };
 
   return (
-    <Card className="shadow-sm">
-      <CardHeader>
-        <CardTitle>Նոր պրոեկտի ստեղծում</CardTitle>
-        <CardDescription>Ստեղծեք նոր պրոեկտ ձեր ուսանողների համար</CardDescription>
-      </CardHeader>
-      <CardContent className="space-y-6">
-        <ProjectBasicInfo
-          title={newProject.title}
-          setTitle={(title) => setNewProject(prev => ({ ...prev, title }))}
-          description={newProject.description}
-          setDescription={(description) => setNewProject(prev => ({ ...prev, description }))}
-          detailedDescription={newProject.detailedDescription}
-          setDetailedDescription={(detailedDescription) => setNewProject(prev => ({ ...prev, detailedDescription }))}
-          category={newProject.category}
-          setCategory={(category) => setNewProject(prev => ({ ...prev, category }))}
-          complexity={newProject.complexity}
-          setComplexity={(complexity) => setNewProject(prev => ({ ...prev, complexity }))}
-          duration={newProject.duration}
-          setDuration={(duration) => setNewProject(prev => ({ ...prev, duration }))}
-          previewImage={previewImage}
-          setPreviewImage={setPreviewImage}
-          setProjectImage={(image) => setNewProject(prev => ({ ...prev, image }))}
-        />
-
-        <ProjectTechStack
-          techStack={newProject.techStack}
-          onTechStackChange={(techStack) => setNewProject(prev => ({ ...prev, techStack }))}
-        />
-
-        <ProjectImplementationSteps
-          steps={newProject.steps}
-          onStepsChange={(steps) => setNewProject(prev => ({ ...prev, steps }))}
-        />
-
-        <ProjectLearningDetails
-          prerequisites={newProject.prerequisites}
-          onPrerequisitesChange={(prerequisites) => setNewProject(prev => ({ ...prev, prerequisites }))}
-          learningOutcomes={newProject.learningOutcomes}
-          onLearningOutcomesChange={(learningOutcomes) => setNewProject(prev => ({ ...prev, learningOutcomes }))}
-        />
-      </CardContent>
-      <ProjectFormFooter 
-        onSubmit={handleCreateProject} 
-        isDisabled={isSubmitting || !canCreateProjects}
+    <form onSubmit={handleSubmit} className="space-y-8">
+      {currentStep === 1 && (
+        <div className="space-y-4">
+          <div>
+            <Label htmlFor="title">Վերնագիր</Label>
+            <Input
+              type="text"
+              id="title"
+              value={title}
+              onChange={(e) => setTitle(e.target.value)}
+              placeholder="Մուտքագրեք նախագծի վերնագիրը"
+            />
+            {formErrors.title && <p className="text-red-500 text-sm">{formErrors.title}</p>}
+          </div>
+          <div>
+            <Label htmlFor="description">Համառոտ նկարագրություն</Label>
+            <Textarea
+              id="description"
+              value={description}
+              onChange={(e) => setDescription(e.target.value)}
+              placeholder="Մուտքագրեք նախագծի համառոտ նկարագրությունը"
+              rows={3}
+            />
+            {formErrors.description && <p className="text-red-500 text-sm">{formErrors.description}</p>}
+          </div>
+          <div>
+            <Label htmlFor="detailedDescription">Մանրամասն նկարագրություն</Label>
+            <Textarea
+              id="detailedDescription"
+              value={detailedDescription}
+              onChange={(e) => setDetailedDescription(e.target.value)}
+              placeholder="Մուտքագրեք նախագծի մանրամասն նկարագրությունը"
+              rows={6}
+            />
+          </div>
+        </div>
+      )}
+      
+      {currentStep === 2 && (
+        <div className="space-y-4">
+          <div>
+            <Label htmlFor="category">Կատեգորիա</Label>
+            <Input
+              type="text"
+              id="category"
+              value={category}
+              onChange={(e) => setCategory(e.target.value)}
+              placeholder="Մուտքագրեք նախագծի կատեգորիան"
+            />
+            {formErrors.category && <p className="text-red-500 text-sm">{formErrors.category}</p>}
+          </div>
+          <div>
+            <Label htmlFor="complexity">Բարդություն</Label>
+            <Select value={complexity} onValueChange={setComplexity}>
+              <SelectTrigger id="complexity">
+                <SelectValue placeholder="Ընտրեք բարդությունը" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="Սկսնակ">Սկսնակ</SelectItem>
+                <SelectItem value="Միջին">Միջին</SelectItem>
+                <SelectItem value="Առաջադեմ">Առաջադեմ</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+          <div>
+            <Label htmlFor="duration">Տևողություն</Label>
+            <Input
+              type="text"
+              id="duration"
+              value={duration}
+              onChange={(e) => setDuration(e.target.value)}
+              placeholder="Մուտքագրեք նախագծի տևողությունը"
+            />
+          </div>
+        </div>
+      )}
+      
+      {currentStep === 3 && (
+        <div className="space-y-4">
+          <ProjectTechStack
+            techStack={techStack}
+            onTechStackChange={setTechStack}
+          />
+        </div>
+      )}
+      
+      {currentStep === 4 && (
+        <div className="space-y-4">
+          <ProjectImplementationSteps
+            steps={steps}
+            onStepsChange={setSteps}
+          />
+          
+          <ProjectLearningDetails
+            prerequisites={prerequisites}
+            onPrerequisitesChange={setPrerequisites}
+            learningOutcomes={learningOutcomes}
+            onLearningOutcomesChange={setLearningOutcomes}
+          />
+        </div>
+      )}
+      
+      <ProjectFormFooter
+        currentStep={currentStep}
+        totalSteps={4}
+        onPreviousStep={handlePreviousStep}
+        onNextStep={handleNextStep}
+        isLastStep={currentStep === 4}
+        submitButtonText={isEditing ? "Պահպանել փոփոխությունները" : "Ստեղծել նախագիծ"}
       />
-    </Card>
+    </form>
   );
 };
 

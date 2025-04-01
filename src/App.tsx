@@ -19,6 +19,7 @@ import AllCoursesPage from './pages/AllCoursesPage';
 import CourseDetails from './pages/CourseDetails';
 import ProjectDetails from './pages/ProjectDetails';
 import CourseApplicationsPage from './pages/CourseApplicationsPage';
+import ProjectEditPage from './pages/ProjectEditPage'; // Import the new edit page
 
 function App() {
   return (
@@ -43,6 +44,7 @@ function App() {
             {/* Project and Course Routes */}
             <Route path="/projects" element={<ProjectManagementPage />} />
             <Route path="/project/:id" element={<ProjectDetails />} />
+            <Route path="/projects/edit/:id" element={<ProjectEditPage />} /> {/* New route for editing projects */}
             <Route path="/courses" element={<AllCoursesPage />} />
             <Route path="/courses/admin" element={<CoursesPage />} />
             <Route path="/courses/create" element={<CourseCreationPage />} />

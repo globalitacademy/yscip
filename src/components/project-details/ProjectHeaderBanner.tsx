@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Badge } from '@/components/ui/badge';
 import { Link, useNavigate } from 'react-router-dom';
@@ -24,6 +23,7 @@ import {
   AlertDialogTitle
 } from '@/components/ui/alert-dialog';
 import { deleteProject, updateProject } from '@/services/projectService';
+import { useProjectManagement } from '@/contexts/ProjectManagementContext';
 
 interface ProjectHeaderBannerProps {
   title: string;
@@ -44,7 +44,8 @@ const ProjectHeaderBanner: React.FC<ProjectHeaderBannerProps> = ({
   const navigate = useNavigate();
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   
-  // Define complexity color classes
+  const { handleEditInit } = useProjectManagement();
+  
   const getComplexityColor = (complexity: string) => {
     switch (complexity) {
       case 'Սկսնակ':
@@ -60,23 +61,17 @@ const ProjectHeaderBanner: React.FC<ProjectHeaderBannerProps> = ({
   
   const complexityColor = getComplexityColor(complexity);
   
-  // Action handlers
   const handleEdit = () => {
-    toast({
-      title: "Խմբագրում",
-      description: "Նախագիծը խմբագրման ռեժիմում է։",
-    });
-    
-    // Navigate to project edit form with the project ID
-    if (projectId) {
-      navigate(`/projects/edit/${projectId}`);
-    } else {
+    if (!projectId) {
       toast({
         title: "Սխալ",
         description: "Նախագծի ID-ն բացակայում է։",
         variant: "destructive",
       });
+      return;
     }
+    
+    navigate(`/projects/edit/${projectId}`);
   };
   
   const handleCopy = async () => {
@@ -90,7 +85,6 @@ const ProjectHeaderBanner: React.FC<ProjectHeaderBannerProps> = ({
     }
     
     try {
-      // Create a copy of the project in the database with a new title
       const newTitle = `${title} (Պատճեն)`;
       const copyData = {
         title: newTitle,
@@ -101,8 +95,6 @@ const ProjectHeaderBanner: React.FC<ProjectHeaderBannerProps> = ({
         updatedAt: new Date().toISOString(),
       };
       
-      // You would need to implement a copyProject function in your service
-      // Here we'll use updateProject as a placeholder for the creation of a new project
       const success = await updateProject(projectId, copyData);
       
       if (success) {
@@ -142,7 +134,6 @@ const ProjectHeaderBanner: React.FC<ProjectHeaderBannerProps> = ({
           description: "Նախագիծը հաջողությամբ ջնջվել է։",
         });
         
-        // Navigate back to projects list
         navigate('/projects');
       } else {
         throw new Error("Failed to delete project");
@@ -192,7 +183,6 @@ const ProjectHeaderBanner: React.FC<ProjectHeaderBannerProps> = ({
             <Trash2 size={16} className="mr-2" /> Ջնջել
           </Button>
           
-          {/* Dropdown for mobile */}
           <DropdownMenu>
             <DropdownMenuTrigger asChild className="sm:hidden">
               <Button variant="outline" size="icon">
@@ -228,8 +218,6 @@ const ProjectHeaderBanner: React.FC<ProjectHeaderBannerProps> = ({
         <Badge variant="outline" className={cn("font-medium", complexityColor)}>
           {complexity}
         </Badge>
-        
-        {/* Additional positioning for other badges or information could go here */}
       </div>
       
       <p className="text-lg text-muted-foreground mb-6">{description}</p>
@@ -242,7 +230,6 @@ const ProjectHeaderBanner: React.FC<ProjectHeaderBannerProps> = ({
         ))}
       </div>
 
-      {/* Confirmation Dialog for Delete */}
       <AlertDialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
         <AlertDialogContent>
           <AlertDialogHeader>
