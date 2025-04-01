@@ -1,4 +1,3 @@
-
 import React from 'react';
 
 interface CustomCursorProps {
@@ -7,6 +6,7 @@ interface CustomCursorProps {
   color?: string;
   name?: string;
   direction?: 'top-left' | 'top-right' | 'bottom-left' | 'bottom-right';
+  isStatic?: boolean;
 }
 
 const CustomCursor: React.FC<CustomCursorProps> = ({ 
@@ -14,7 +14,8 @@ const CustomCursor: React.FC<CustomCursorProps> = ({
   cursorVisible,
   color = "primary",
   name = "",
-  direction = "top-left"
+  direction = "top-left",
+  isStatic = false
 }) => {
   // Determine background color based on the color prop
   const getBgColor = () => {
@@ -65,9 +66,17 @@ const CustomCursor: React.FC<CustomCursorProps> = ({
 
   const { rotateClass, position } = getPointerStyle();
 
+  // Add animation for the main cursor, keep static for others
+  const animationClass = isStatic ? '' : 'transition-transform duration-200';
+  
+  // Add specific styling for the static cursors
+  const staticStyles = isStatic 
+    ? 'ring-2 ring-white ring-opacity-20' 
+    : '';
+
   return (
     <div 
-      className={`fixed px-4 py-1.5 rounded-md ${getBgColor()} text-white font-medium text-sm min-w-[80px] text-center pointer-events-none z-50 transition-opacity duration-200 ${cursorVisible ? 'opacity-100' : 'opacity-0'}`}
+      className={`fixed px-4 py-1.5 rounded-md ${getBgColor()} text-white font-medium text-sm min-w-[80px] text-center pointer-events-none z-50 ${animationClass} ${staticStyles} ${cursorVisible ? 'opacity-100' : 'opacity-0'}`}
       style={{
         left: `${mousePosition.x}px`,
         top: `${mousePosition.y}px`,

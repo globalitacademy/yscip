@@ -3,6 +3,7 @@ import React, { useRef, useState, useEffect } from 'react';
 import CustomCursor from './CustomCursor';
 import BackgroundEffects from './BackgroundEffects';
 import HeroContent from './HeroContent';
+import { getRandomOffset } from '@/lib/utils';
 
 const Hero: React.FC = () => {
   const heroRef = useRef<HTMLDivElement>(null);
@@ -10,12 +11,19 @@ const Hero: React.FC = () => {
   const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
   const [cursorVisible, setCursorVisible] = useState(false);
   
+  // Fixed positions for static cursors
+  const staticPositions = [
+    { x: 300, y: 200 },  // Fixed position for first static cursor
+    { x: 600, y: 400 },  // Fixed position for second static cursor
+  ];
+  
   // Cursor configurations
   const cursors = [
-    { name: "Արման", color: "green", direction: "top-left" as const, offset: { x: -70, y: -70 } },
-    { name: "Կարեն", color: "purple", direction: "top-right" as const, offset: { x: 70, y: -70 } },
-    { name: "Մարիամ", color: "red", direction: "bottom-left" as const, offset: { x: -70, y: 70 } },
-    { name: "Անահիտ", color: "blue", direction: "bottom-right" as const, offset: { x: 70, y: 70 } },
+    // Main cursor that follows mouse
+    { name: "Արման", color: "green", direction: "top-left" as const, isStatic: false },
+    // Static cursors
+    { name: "Կարեն", color: "purple", direction: "top-right" as const, isStatic: true, position: staticPositions[0] },
+    { name: "Մարիամ", color: "red", direction: "bottom-left" as const, isStatic: true, position: staticPositions[1] },
   ];
 
   // Fetch categories from project themes
@@ -35,7 +43,7 @@ const Hero: React.FC = () => {
     fetchCategories();
   }, []);
 
-  // Custom cursor tracking
+  // Custom cursor tracking - only for the main cursor
   useEffect(() => {
     const handleMouseMove = (e: MouseEvent) => {
       setMousePosition({ x: e.clientX, y: e.clientY });
@@ -76,18 +84,20 @@ const Hero: React.FC = () => {
 
   return (
     <section ref={heroRef} className="relative min-h-[90vh] flex items-center justify-center overflow-hidden pt-16 bg-gradient-to-b from-background/20 to-background">
-      {/* Render all cursors with their respective offsets */}
+      {/* Render all cursors - main one follows mouse, static ones stay in place */}
       {cursors.map((cursor, index) => (
         <CustomCursor 
           key={index}
-          mousePosition={{ 
-            x: mousePosition.x + cursor.offset.x, 
-            y: mousePosition.y + cursor.offset.y 
-          }} 
+          mousePosition={
+            cursor.isStatic 
+              ? cursor.position! // Use the static position for static cursors
+              : mousePosition    // Use the mouse position for the main cursor
+          } 
           cursorVisible={cursorVisible}
           color={cursor.color}
           name={cursor.name}
           direction={cursor.direction}
+          isStatic={cursor.isStatic}
         />
       ))}
       
