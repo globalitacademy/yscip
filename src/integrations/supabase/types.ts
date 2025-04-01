@@ -540,6 +540,7 @@ export type Database = {
       projects: {
         Row: {
           category: string
+          complexity: string | null
           created_at: string
           created_by: string | null
           description: string
@@ -547,12 +548,16 @@ export type Database = {
           id: number
           image: string | null
           is_public: boolean | null
+          learning_outcomes: string[] | null
+          prerequisites: string[] | null
+          steps: string[] | null
           tech_stack: string[] | null
           title: string
           updated_at: string
         }
         Insert: {
           category: string
+          complexity?: string | null
           created_at?: string
           created_by?: string | null
           description: string
@@ -560,12 +565,16 @@ export type Database = {
           id?: number
           image?: string | null
           is_public?: boolean | null
+          learning_outcomes?: string[] | null
+          prerequisites?: string[] | null
+          steps?: string[] | null
           tech_stack?: string[] | null
           title: string
           updated_at?: string
         }
         Update: {
           category?: string
+          complexity?: string | null
           created_at?: string
           created_by?: string | null
           description?: string
@@ -573,6 +582,9 @@ export type Database = {
           id?: number
           image?: string | null
           is_public?: boolean | null
+          learning_outcomes?: string[] | null
+          prerequisites?: string[] | null
+          steps?: string[] | null
           tech_stack?: string[] | null
           title?: string
           updated_at?: string
