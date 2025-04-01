@@ -18,9 +18,7 @@ export const useCourseCreation = (setLoading: Dispatch<SetStateAction<boolean>>)
     setLoading(true);
     try {
       // Determine if the course should be public based on user role
-      const isPublic = user && (user.role === 'admin' || 
-                               user.role === 'lecturer' || 
-                               user.role === 'instructor') 
+      const isPublic = user && (user.role === 'admin') 
                        ? course.is_public
                        : false;
 

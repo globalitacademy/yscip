@@ -19,10 +19,8 @@ export const useCourseUpdating = (setLoading: Dispatch<SetStateAction<boolean>>)
       // Determine if the user can publish the course
       let isPublic = updates.is_public;
       
-      // If user is not admin or authorized role, they can't publish courses
-      if (user && user.role !== 'admin' && 
-          user.role !== 'lecturer' && 
-          user.role !== 'instructor') {
+      // If user is not admin, they can't publish courses
+      if (user && user.role !== 'admin') {
         // Get current course state
         const { data: currentCourse } = await supabase
           .from('courses')
