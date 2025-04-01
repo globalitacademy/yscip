@@ -56,6 +56,8 @@ export const useApplicationForm = (
         free_practice: acceptPractice
       });
 
+      // Always show success message if we managed to save the application
+      // even if email delivery might have issues
       if (success) {
         toast({
           title: 'Հայտն ուղարկված է',

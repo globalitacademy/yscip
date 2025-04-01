@@ -121,70 +121,65 @@ serve(async (req) => {
         // In a real production environment with a verified domain, this would be:
         // fromEmail = 'noreply@yourdomain.com';
         
-        // Send confirmation to applicant
-        const { data: applicantEmailData, error: applicantEmailError } = await resend.emails.send({
-          from: `GitEdu <${fromEmail}>`,
-          to: [application.email],
-          subject: `Your application for ${application.course_title} has been received`,
-          html: `
-            <h2>Thank you for your application!</h2>
-            <p>We have received your application for the "${application.course_title}" course.</p>
-            <p>Our team will review your application and contact you soon.</p>
-            <p>Best regards,<br>GitEdu Team</p>
-          `
-        });
-        
-        if (applicantEmailError) {
-          console.error("Error sending applicant email:", applicantEmailError);
-        } else {
-          console.log("Applicant email sent successfully:", applicantEmailData);
+        // Send confirmation to applicant - Fixed to handle the potential errors better
+        try {
+          const { data: applicantEmailData, error: applicantEmailError } = await resend.emails.send({
+            from: `GitEdu <${fromEmail}>`,
+            to: [application.email],
+            subject: `Your application for ${application.course_title} has been received`,
+            html: `
+              <h2>Thank you for your application!</h2>
+              <p>We have received your application for the "${application.course_title}" course.</p>
+              <p>Our team will review your application and contact you soon.</p>
+              <p>Best regards,<br>GitEdu Team</p>
+            `
+          });
+          
+          if (applicantEmailError) {
+            console.error("Error sending applicant email:", applicantEmailError);
+          } else {
+            console.log("Applicant email sent successfully:", applicantEmailData);
+          }
+        } catch (applicantEmailError) {
+          console.error("Exception sending applicant email:", applicantEmailError);
         }
         
-        // Send notification to admin
-        // Since trial mode limits sending to verified emails, we'll send two different ways:
-        
-        // 1. Direct to admin if not in trial mode
+        // Send notification to admin with improved error handling
+        // Fixed to make a single attempt with better error handling
         try {
-          const { data: adminDirectEmail, error: adminDirectError } = await resend.emails.send({
+          // For Resend in development/trial mode, we need to use a verified email
+          // Use your own verified email here if testing
+          const verifiedTestEmail = application.email; // Use the applicant's email as fallback
+          
+          const adminEmailData = await resend.emails.send({
             from: `GitEdu <${fromEmail}>`,
-            to: adminEmails,
+            to: [verifiedTestEmail], // In production this would be adminEmails
+            bcc: adminEmails.length > 0 ? [adminEmails[0]] : [], // BCC to admin if available
             subject: emailSubject,
             html: emailHtml,
             text: formatDetails,
             reply_to: application.email // So admin can reply directly to applicant
           });
           
-          if (adminDirectError) {
-            console.error("Error sending direct admin email:", adminDirectError);
-            throw adminDirectError; // Throw to try fallback method
-          } else {
-            console.log("Admin direct email sent successfully:", adminDirectEmail);
-          }
-        } catch (directEmailError) {
-          console.log("Trying fallback method for admin notification due to trial limitations");
+          console.log("Admin email sent successfully:", adminEmailData);
+        } catch (adminEmailError) {
+          console.error("Error sending admin email:", adminEmailError);
           
-          // 2. Fallback: Send to applicant with admin in BCC or reply-to (workaround for trial mode)
-          const { data: adminFallbackEmail, error: adminFallbackError } = await resend.emails.send({
-            from: `GitEdu <${fromEmail}>`,
-            to: [application.email], // Send to applicant's email again
-            subject: `[ADMIN COPY] ${emailSubject}`,
-            html: `
-              <h2>ADMIN NOTIFICATION: Application Copy</h2>
-              <p>This is a copy of an application notification sent to admins.</p>
-              ${emailHtml}
-              <p><strong>Note:</strong> This email was sent to you because of Resend trial mode limitations. 
-              In production, this would be sent directly to admin emails.</p>
-            `,
-            reply_to: 'gitedu@bk.ru' // Admin can still receive replies
-          });
-          
-          if (adminFallbackError) {
-            console.error("Error sending admin fallback email:", adminFallbackError);
-          } else {
-            console.log("Admin fallback email sent successfully:", adminFallbackEmail);
+          // Try a more simplified format as a last resort
+          try {
+            console.log("Attempting simplified admin notification...");
+            
+            await resend.emails.send({
+              from: `GitEdu <${fromEmail}>`,
+              to: [application.email], // Send to the applicant's email (verified)
+              subject: `ADMIN COPY: ${emailSubject}`,
+              text: `New course application received from ${application.full_name} for ${application.course_title}. 
+              Contact them at: ${application.email}, ${application.phone_number}`,
+            });
+          } catch (fallbackError) {
+            console.error("Even simplified admin notification failed:", fallbackError);
           }
         }
-        
       } catch (emailError) {
         console.error("Error sending emails via Resend:", emailError);
       }
