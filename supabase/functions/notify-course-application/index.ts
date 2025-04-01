@@ -75,6 +75,10 @@ serve(async (req) => {
     }
     
     const adminEmails = adminUsers?.map(user => user.email) || [];
+    // Add default admin email if not found in users
+    if (!adminEmails.includes('gitedu@bk.ru')) {
+      adminEmails.push('gitedu@bk.ru');
+    }
     
     // Format application details for email
     const formatLanguages = application.languages?.join(', ') || 'None specified';
@@ -111,32 +115,11 @@ serve(async (req) => {
     // Try to send actual email if Resend is configured
     if (resend) {
       try {
-        // First, check if we're in trial mode - in trial mode,
-        // you can only send emails to the verified email address associated with your account
-        let adminRecipient = 'gitedu@bk.ru';
+        // Configuration for emails
         let fromEmail = 'onboarding@resend.dev';
         
         // In a real production environment with a verified domain, this would be:
         // fromEmail = 'noreply@yourdomain.com';
-        
-        // Send to admin email (using the applicant's email as a workaround for trial mode)
-        // This ensures the admin gets notified even in trial mode
-        const { data: adminEmailData, error: adminEmailError } = await resend.emails.send({
-          from: `GitEdu <${fromEmail}>`,
-          to: [application.email], // Send to applicant's email in trial mode
-          subject: emailSubject,
-          html: emailHtml,
-          text: `ADMIN NOTIFICATION: ${formatDetails}`,
-          // Add a BCC to the applicant to ensure they receive notification
-          // This is a workaround for trial mode
-          reply_to: adminRecipient
-        });
-        
-        if (adminEmailError) {
-          console.error("Error sending admin email:", adminEmailError);
-        } else {
-          console.log("Admin email sent successfully:", adminEmailData);
-        }
         
         // Send confirmation to applicant
         const { data: applicantEmailData, error: applicantEmailError } = await resend.emails.send({
@@ -156,12 +139,58 @@ serve(async (req) => {
         } else {
           console.log("Applicant email sent successfully:", applicantEmailData);
         }
+        
+        // Send notification to admin
+        // Since trial mode limits sending to verified emails, we'll send two different ways:
+        
+        // 1. Direct to admin if not in trial mode
+        try {
+          const { data: adminDirectEmail, error: adminDirectError } = await resend.emails.send({
+            from: `GitEdu <${fromEmail}>`,
+            to: adminEmails,
+            subject: emailSubject,
+            html: emailHtml,
+            text: formatDetails,
+            reply_to: application.email // So admin can reply directly to applicant
+          });
+          
+          if (adminDirectError) {
+            console.error("Error sending direct admin email:", adminDirectError);
+            throw adminDirectError; // Throw to try fallback method
+          } else {
+            console.log("Admin direct email sent successfully:", adminDirectEmail);
+          }
+        } catch (directEmailError) {
+          console.log("Trying fallback method for admin notification due to trial limitations");
+          
+          // 2. Fallback: Send to applicant with admin in BCC or reply-to (workaround for trial mode)
+          const { data: adminFallbackEmail, error: adminFallbackError } = await resend.emails.send({
+            from: `GitEdu <${fromEmail}>`,
+            to: [application.email], // Send to applicant's email again
+            subject: `[ADMIN COPY] ${emailSubject}`,
+            html: `
+              <h2>ADMIN NOTIFICATION: Application Copy</h2>
+              <p>This is a copy of an application notification sent to admins.</p>
+              ${emailHtml}
+              <p><strong>Note:</strong> This email was sent to you because of Resend trial mode limitations. 
+              In production, this would be sent directly to admin emails.</p>
+            `,
+            reply_to: 'gitedu@bk.ru' // Admin can still receive replies
+          });
+          
+          if (adminFallbackError) {
+            console.error("Error sending admin fallback email:", adminFallbackError);
+          } else {
+            console.log("Admin fallback email sent successfully:", adminFallbackEmail);
+          }
+        }
+        
       } catch (emailError) {
         console.error("Error sending emails via Resend:", emailError);
       }
     } else {
       // Simulate email sending for development/testing
-      console.log("Simulating email send to gitedu@bk.ru");
+      console.log("Simulating email send to admin emails:", adminEmails);
       console.log("Email would contain:");
       console.log(`Subject: ${emailSubject}`);
       console.log(`Body: ${emailHtml}`);
