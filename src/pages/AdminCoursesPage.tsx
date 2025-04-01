@@ -1,9 +1,8 @@
-
 import React, { useEffect, useState } from 'react';
 import AdminLayout from '@/components/AdminLayout';
 import { getAllCoursesForAdmin } from '@/components/admin/courses/utils/courseUpdateUtils';
 import { ProfessionalCourse } from '@/components/courses/types/ProfessionalCourse';
-import { Loader2, Eye, EyeOff, Edit, Trash2, Check, X } from 'lucide-react';
+import { Loader2, Eye, EyeOff, Edit, Trash2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Link } from 'react-router-dom';
 import { Badge } from '@/components/ui/badge';
@@ -77,14 +76,12 @@ const AdminCoursesPage: React.FC = () => {
     }
 
     try {
-      // Delete related records first
       await Promise.allSettled([
         supabase.from('course_lessons').delete().eq('course_id', course.id),
         supabase.from('course_requirements').delete().eq('course_id', course.id),
         supabase.from('course_outcomes').delete().eq('course_id', course.id)
       ]);
       
-      // Delete the main course record
       const { error } = await supabase
         .from('courses')
         .delete()
