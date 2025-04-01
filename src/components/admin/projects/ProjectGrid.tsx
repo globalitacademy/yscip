@@ -58,7 +58,12 @@ const ProjectGrid: React.FC<ProjectGridProps> = ({
     <FadeIn className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-10">
       {filteredProjects.map((project) => (
         <div key={`grid-project-${project.id}`} className="relative">
-          <div className="absolute top-4 right-4 z-10 flex gap-2">
+          <ProjectCard
+            project={project}
+            className="h-full"
+            adminView={true}
+          />
+          <div className="absolute bottom-16 right-4 z-10 flex gap-2">
             <Button
               variant="outline" 
               size="icon" 
@@ -84,11 +89,6 @@ const ProjectGrid: React.FC<ProjectGridProps> = ({
               <Trash size={12} />
             </Button>
           </div>
-          <ProjectCard
-            project={project}
-            className="h-full"
-            adminView={true}
-          />
         </div>
       ))}
     </FadeIn>
