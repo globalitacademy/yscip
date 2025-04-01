@@ -10,6 +10,7 @@ export const CustomCursor = ({ className }: CustomCursorProps) => {
   const [position, setPosition] = useState({ x: 0, y: 0 });
   const [isVisible, setIsVisible] = useState(false);
   const [isClicking, setIsClicking] = useState(false);
+  const [isHovering, setIsHovering] = useState(false);
 
   useEffect(() => {
     const updatePosition = (e: MouseEvent) => {
@@ -21,6 +22,17 @@ export const CustomCursor = ({ className }: CustomCursorProps) => {
     const handleMouseUp = () => setIsClicking(false);
     const handleMouseLeave = () => setIsVisible(false);
     const handleMouseEnter = () => setIsVisible(true);
+    
+    // Track when cursor is over interactive elements
+    const handleHoverStart = () => setIsHovering(true);
+    const handleHoverEnd = () => setIsHovering(false);
+
+    // Add hover detection for interactive elements
+    const interactiveElements = document.querySelectorAll('a, button, input, [role="button"]');
+    interactiveElements.forEach(el => {
+      el.addEventListener('mouseenter', handleHoverStart);
+      el.addEventListener('mouseleave', handleHoverEnd);
+    });
 
     window.addEventListener('mousemove', updatePosition);
     window.addEventListener('mousedown', handleMouseDown);
@@ -34,8 +46,13 @@ export const CustomCursor = ({ className }: CustomCursorProps) => {
       window.removeEventListener('mouseup', handleMouseUp);
       document.documentElement.removeEventListener('mouseleave', handleMouseLeave);
       document.documentElement.removeEventListener('mouseenter', handleMouseEnter);
+      
+      interactiveElements.forEach(el => {
+        el.removeEventListener('mouseenter', handleHoverStart);
+        el.removeEventListener('mouseleave', handleHoverEnd);
+      });
     };
-  }, [isVisible]);
+  }, [isVisible, isHovering]);
 
   return (
     <div
@@ -49,13 +66,26 @@ export const CustomCursor = ({ className }: CustomCursorProps) => {
       <div 
         className={cn(
           'relative flex items-center justify-center',
-          'h-6 w-6 -ml-3 -mt-3',
           'transition-all duration-200 ease-out',
           isClicking ? 'scale-90' : 'scale-100'
         )}
       >
-        <div className="absolute rounded-full bg-primary/20 h-full w-full backdrop-blur-sm" />
-        <div className="absolute rounded-full bg-primary/30 h-2 w-2" />
+        {/* Main cursor circle */}
+        <div 
+          className={cn(
+            'absolute rounded-full backdrop-blur-sm',
+            'transition-all duration-150',
+            isHovering ? 'h-8 w-8 -ml-4 -mt-4 bg-primary/40' : 'h-6 w-6 -ml-3 -mt-3 bg-primary/20'
+          )} 
+        />
+        
+        {/* Center dot */}
+        <div 
+          className={cn(
+            'absolute rounded-full bg-primary/30',
+            isHovering ? 'h-1.5 w-1.5' : 'h-2 w-2'
+          )} 
+        />
       </div>
     </div>
   );
