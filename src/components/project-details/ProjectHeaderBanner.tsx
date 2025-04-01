@@ -43,6 +43,7 @@ const ProjectHeaderBanner: React.FC<ProjectHeaderBannerProps> = ({
       <h1 className="text-3xl md:text-4xl font-bold mb-2">{title}</h1>
       
       <div className="flex items-center gap-2 mb-4">
+        <span className="text-muted-foreground">Բարդություն:</span>
         <Badge variant="outline" className={cn("font-medium", complexityColor)}>
           {complexity}
         </Badge>
