@@ -36,6 +36,42 @@ export type Database = {
         }
         Relationships: []
       }
+      course_applications: {
+        Row: {
+          course_id: string
+          course_title: string
+          created_at: string | null
+          email: string
+          full_name: string
+          id: string
+          message: string | null
+          phone_number: string
+          status: string
+        }
+        Insert: {
+          course_id: string
+          course_title: string
+          created_at?: string | null
+          email: string
+          full_name: string
+          id?: string
+          message?: string | null
+          phone_number: string
+          status?: string
+        }
+        Update: {
+          course_id?: string
+          course_title?: string
+          created_at?: string | null
+          email?: string
+          full_name?: string
+          id?: string
+          message?: string | null
+          phone_number?: string
+          status?: string
+        }
+        Relationships: []
+      }
       course_enrollments: {
         Row: {
           course_id: string
