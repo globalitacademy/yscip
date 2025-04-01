@@ -1,20 +1,17 @@
-
 import React, { createContext, useContext, useState } from 'react';
 import { useProjectState } from '@/hooks/useProjectState';
 import { useProjectActions } from '@/hooks/useProjectActions';
 import { useAuth } from '@/contexts/AuthContext';
 import { Task, TimelineEvent } from '@/data/projectThemes';
 import { ProjectReservation } from '@/types/project';
-import { calculateProjectProgress } from '@/utils/projectUtils';
+import { calculateProjectProgress } from '@/utils/projectProgressUtils';
 
-// Define the type for project context
 interface ProjectContextType {
   projectId: number;
   project: any;
   isEditing: boolean;
   setIsEditing: (isEditing: boolean) => void;
   canEdit: boolean;
-  // Add the missing properties
   timeline: TimelineEvent[];
   tasks: Task[];
   projectStatus: 'not_submitted' | 'pending' | 'approved' | 'rejected';
@@ -39,10 +36,8 @@ interface ProjectContextType {
   getReservationStatus: () => 'pending' | 'approved' | 'rejected' | null;
 }
 
-// Create the context
 const ProjectContext = createContext<ProjectContextType | undefined>(undefined);
 
-// Provider props interface
 interface ProjectProviderProps {
   children: React.ReactNode;
   projectId: number;
@@ -50,7 +45,6 @@ interface ProjectProviderProps {
   canEdit?: boolean;
 }
 
-// Create a provider component
 export const ProjectProvider: React.FC<ProjectProviderProps> = ({ 
   children, 
   projectId, 
@@ -61,7 +55,6 @@ export const ProjectProvider: React.FC<ProjectProviderProps> = ({
   const [isEditing, setIsEditing] = useState(false);
   const [selectedSupervisor, setSelectedSupervisor] = useState<string | null>(null);
 
-  // Initialize project state
   const {
     project,
     timeline,
@@ -78,7 +71,6 @@ export const ProjectProvider: React.FC<ProjectProviderProps> = ({
     setShowSupervisorDialog
   } = useProjectState(projectId, initialProject, user);
 
-  // Project actions
   const {
     addTimelineEvent,
     completeTimelineEvent,
@@ -107,10 +99,8 @@ export const ProjectProvider: React.FC<ProjectProviderProps> = ({
     selectedSupervisor
   );
 
-  // Calculate project progress - fix the argument issue by passing both tasks and timeline
   const projectProgress = calculateProjectProgress(tasks, timeline);
 
-  // Handler for supervisor selection
   const selectSupervisor = (supervisorId: string) => {
     setSelectedSupervisor(supervisorId);
   };
@@ -150,7 +140,6 @@ export const ProjectProvider: React.FC<ProjectProviderProps> = ({
   );
 };
 
-// Hook for using the project context
 export const useProject = () => {
   const context = useContext(ProjectContext);
   if (context === undefined) {
