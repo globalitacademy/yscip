@@ -5,7 +5,7 @@ import {
   GraduationCap, 
   Users, 
   BookOpenCheck, 
-  Home, 
+  LayoutDashboard, 
   FolderKanban,
   BookOpen,
   ClipboardList,
@@ -21,7 +21,7 @@ const AdminNavLinks = () => {
 
   return (
     <nav className="grid items-start px-4 text-sm font-medium">
-      <NavLink to="/admin" icon={<Home className="h-4 w-4" />} label="Գլխավոր" />
+      <NavLink to="/admin/dashboard" icon={<LayoutDashboard className="h-4 w-4" />} label="Կառավարման վահանակ" />
       
       {isAdmin && (
         <NavLink to="/admin/users" icon={<Users className="h-4 w-4" />} label="Օգտատերեր" />

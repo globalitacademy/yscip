@@ -22,7 +22,7 @@ const AdminDashboard: React.FC = () => {
   }
 
   return (
-    <AdminLayout>
+    <AdminLayout pageTitle="Կառավարման վահանակ">
       <DashboardHeader />
       <StatCards />
       <DashboardTabs />

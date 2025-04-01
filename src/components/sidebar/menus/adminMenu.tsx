@@ -21,9 +21,9 @@ export const adminMenuItems: SidebarMenuGroup[] = [
     title: 'Կառավարում',
     items: [
       {
-        title: 'Գլխավոր վահանակ',
+        title: 'Կառավարման վահանակ',
         icon: <LayoutDashboard className="h-4 w-4" />,
-        href: '/admin',
+        href: '/admin/dashboard',
         roles: ['admin']
       },
       {
