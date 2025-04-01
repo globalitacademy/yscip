@@ -6,20 +6,10 @@ import HeroContent from './HeroContent';
 
 const Hero: React.FC = () => {
   const heroRef = useRef<HTMLDivElement>(null);
-  const containerRef = useRef<HTMLDivElement>(null);
   const [categories, setCategories] = useState<string[]>([]);
   const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
   const [cursorVisible, setCursorVisible] = useState(false);
-  const [containerBounds, setContainerBounds] = useState({ top: 0, left: 0, width: 0, height: 0 });
-  
-  // Static cursor positions (relative to container)
-  const staticCursors = [
-    { x: 0.18, y: 0.25, style: 'diamond', color: 'pink', label: 'Դասընթացներ' },
-    { x: 0.82, y: 0.32, style: 'circle', color: 'blue', label: 'Ուսանողներ' },
-    { x: 0.30, y: 0.78, style: 'square', color: 'green', label: 'Դասախոսներ' },
-    { x: 0.70, y: 0.68, style: 'triangle', color: 'orange', label: 'Նախագծեր' },
-  ];
-  
+
   // Fetch categories from project themes
   useEffect(() => {
     const fetchCategories = async () => {
@@ -37,88 +27,27 @@ const Hero: React.FC = () => {
     fetchCategories();
   }, []);
 
-  // Measure container to position static cursors and constrain cursor movement
+  // Custom cursor tracking
   useEffect(() => {
-    const updateContainerBounds = () => {
-      if (containerRef.current) {
-        const rect = containerRef.current.getBoundingClientRect();
-        setContainerBounds({
-          top: rect.top,
-          left: rect.left,
-          width: rect.width,
-          height: rect.height
-        });
-      }
-    };
-    
-    updateContainerBounds();
-    
-    // Add a small delay to ensure proper measurement after layout
-    const timeoutId = setTimeout(updateContainerBounds, 300);
-    
-    window.addEventListener('resize', updateContainerBounds);
-    window.addEventListener('scroll', updateContainerBounds);
-    
-    return () => {
-      window.removeEventListener('resize', updateContainerBounds);
-      window.removeEventListener('scroll', updateContainerBounds);
-      clearTimeout(timeoutId);
-    };
-  }, []);
-
-  // Custom cursor tracking with smooth damping effect
-  useEffect(() => {
-    let animationFrameId: number;
-    let targetX = 0;
-    let targetY = 0;
-    let currentX = 0;
-    let currentY = 0;
-    
     const handleMouseMove = (e: MouseEvent) => {
-      // Only update cursor if mouse is within container bounds
-      if (containerRef.current) {
-        const rect = containerRef.current.getBoundingClientRect();
-        const isInContainer = 
-          e.clientX >= rect.left && 
-          e.clientX <= rect.left + rect.width && 
-          e.clientY >= rect.top && 
-          e.clientY <= rect.top + rect.height;
-        
-        if (isInContainer) {
-          targetX = e.clientX;
-          targetY = e.clientY;
-          
-          if (!cursorVisible) {
-            setCursorVisible(true);
-          }
-        } else {
-          setCursorVisible(false);
-        }
-      }
+      // Update mouse position for custom cursor
+      setMousePosition({ x: e.clientX, y: e.clientY });
+      setCursorVisible(true);
     };
     
-    const animateCursor = () => {
-      // Improved smooth damping animation
-      const ease = 0.15;
-      
-      currentX = currentX + (targetX - currentX) * ease;
-      currentY = currentY + (targetY - currentY) * ease;
-      
-      setMousePosition({ x: currentX, y: currentY });
-      
-      animationFrameId = requestAnimationFrame(animateCursor);
+    // Hide cursor when mouse leaves
+    const handleMouseLeave = () => {
+      setCursorVisible(false);
     };
-    
-    // Start the animation
-    animationFrameId = requestAnimationFrame(animateCursor);
     
     window.addEventListener('mousemove', handleMouseMove);
+    heroRef.current?.addEventListener('mouseleave', handleMouseLeave);
     
     return () => {
       window.removeEventListener('mousemove', handleMouseMove);
-      cancelAnimationFrame(animationFrameId);
+      heroRef.current?.removeEventListener('mouseleave', handleMouseLeave);
     };
-  }, [cursorVisible]);
+  }, []);
 
   // Function to scroll to themes section
   const scrollToThemes = () => {
@@ -140,39 +69,9 @@ const Hero: React.FC = () => {
 
   return (
     <section ref={heroRef} className="relative min-h-[90vh] flex items-center justify-center overflow-hidden pt-16 bg-gradient-to-b from-background/20 to-background">
-      {/* Main cursor that follows mouse */}
-      <CustomCursor 
-        mousePosition={mousePosition}
-        cursorVisible={cursorVisible}
-        color="primary"
-        style="circle"
-        size="medium"
-      />
-      
-      {/* Static cursors positioned around the hero section */}
-      {staticCursors.map((cursor, index) => (
-        <CustomCursor
-          key={index}
-          mousePosition={{
-            x: containerBounds.left + containerBounds.width * cursor.x,
-            y: containerBounds.top + containerBounds.height * cursor.y
-          }}
-          cursorVisible={true}
-          color={cursor.color}
-          isStatic={true}
-          style={cursor.style as any}
-          size={index % 2 === 0 ? 'small' : 'medium'}
-          label={cursor.label}
-        />
-      ))}
-      
+      <CustomCursor mousePosition={mousePosition} cursorVisible={cursorVisible} />
       <BackgroundEffects />
-      <div 
-        ref={containerRef} 
-        className="relative w-full cursor-none"
-      >
-        <HeroContent scrollToThemes={scrollToThemes} />
-      </div>
+      <HeroContent scrollToThemes={scrollToThemes} />
     </section>
   );
 };

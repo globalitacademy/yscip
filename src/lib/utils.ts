@@ -1,4 +1,3 @@
-
 import { clsx, type ClassValue } from "clsx"
 import { twMerge } from "tailwind-merge"
 
@@ -14,8 +13,4 @@ export function formatDate(date: string | Date): string {
     month: 'long', 
     day: 'numeric',
   }).format(dateObj);
-}
-
-export function getRandomOffset(min: number, max: number): number {
-  return Math.floor(Math.random() * (max - min + 1)) + min;
 }
