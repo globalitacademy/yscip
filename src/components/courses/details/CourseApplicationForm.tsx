@@ -5,12 +5,13 @@ import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Button } from '@/components/ui/button';
-import { useToast } from '@/components/ui/use-toast';
+import { useToast } from '@/hooks/use-toast';
 import { Loader2 } from 'lucide-react';
 import { ProfessionalCourse } from '../types/ProfessionalCourse';
 import { useAuth } from '@/contexts/AuthContext';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Checkbox } from '@/components/ui/checkbox';
+import { useCourseApplications } from '@/hooks/useCourseApplications';
 
 interface CourseApplicationFormProps {
   course: ProfessionalCourse;
@@ -21,6 +22,7 @@ interface CourseApplicationFormProps {
 const CourseApplicationForm: React.FC<CourseApplicationFormProps> = ({ course, isOpen = true, onClose = () => {} }) => {
   const { toast } = useToast();
   const { user } = useAuth();
+  const { submitApplication } = useCourseApplications();
 
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
@@ -44,37 +46,28 @@ const CourseApplicationForm: React.FC<CourseApplicationFormProps> = ({ course, i
     setLoading(true);
 
     try {
-      const response = await fetch('/api/apply-for-course', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          courseId: course.id,
-          courseTitle: course.title,
-          name,
-          email,
-          phone,
-          message,
-          format,
-          sessionType,
-          preferredLanguages,
-          acceptPractice,
-          userId: user?.id,
-          timestamp: new Date().toISOString(),
-        }),
+      const success = await submitApplication({
+        full_name: name,
+        email,
+        phone_number: phone,
+        course_id: course.id,
+        course_title: course.title,
+        message,
+        format,
+        session_type: sessionType,
+        languages: preferredLanguages,
+        free_practice: acceptPractice
       });
 
-      if (!response.ok) {
+      if (success) {
+        toast({
+          title: 'Հայտն ուղարկված է',
+          description: 'Ձեր դասընթացի հայտը հաջողությամբ ուղարկվել է։ Մենք կապ կհաստատենք Ձեզ հետ առաջիկա օրերին։',
+        });
+        onClose();
+      } else {
         throw new Error('Failed to submit application');
       }
-
-      toast({
-        title: 'Հայտն ուղարկված է',
-        description: 'Ձեր դասընթացի հայտը հաջողությամբ ուղարկվել է։ Մենք կապ կհաստատենք Ձեզ հետ առաջիկա օրերին։',
-      });
-
-      onClose();
     } catch (error) {
       console.error('Error submitting application:', error);
       toast({
