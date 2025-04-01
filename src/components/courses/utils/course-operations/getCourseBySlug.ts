@@ -5,11 +5,16 @@ import { convertIconNameToComponent } from '@/utils/iconUtils';
 
 export const getCourseBySlug = async (slug: string): Promise<ProfessionalCourse | null> => {
   try {
+    if (!slug || typeof slug !== 'string') {
+      console.error('Invalid course slug provided:', slug);
+      return null;
+    }
+    
     const { data, error } = await supabase
       .from('courses')
       .select('*')
       .eq('slug', slug)
-      .single();
+      .maybeSingle();
       
     if (error) {
       console.error('Error fetching course by slug:', error);
@@ -17,6 +22,7 @@ export const getCourseBySlug = async (slug: string): Promise<ProfessionalCourse 
     }
     
     if (!data) {
+      console.log('No course found with slug:', slug);
       return null;
     }
     

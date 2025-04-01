@@ -18,6 +18,7 @@ export const useCourseCreation = (setLoading: Dispatch<SetStateAction<boolean>>)
     setLoading(true);
     try {
       // Determine if the course should be public based on user role
+      // Only admin can directly publish courses
       const isPublic = user && (user.role === 'admin') 
                        ? course.is_public
                        : false;

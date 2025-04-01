@@ -80,7 +80,8 @@ export const useCourseFetching = (setLoading: Dispatch<SetStateAction<boolean>>)
             duration: lesson.duration
           })) || [],
           requirements: requirementsData?.map(req => req.requirement) || [],
-          outcomes: outcomesData?.map(outcome => outcome.outcome) || []
+          outcomes: outcomesData?.map(outcome => outcome.outcome) || [],
+          slug: course.slug
         } as ProfessionalCourse;
       }));
       

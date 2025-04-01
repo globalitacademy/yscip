@@ -1,9 +1,20 @@
 
 import React from 'react';
-import CourseDetailPage from '@/components/admin/courses/CourseDetailPage';
+import { useParams } from 'react-router-dom';
+import CourseDetail from '@/components/courses/CourseDetail';
+import Header from '@/components/Header';
+import Footer from '@/components/Footer';
 
 const CourseDetails: React.FC = () => {
-  return <CourseDetailPage />;
+  return (
+    <div className="flex min-h-screen flex-col">
+      <Header />
+      <main className="flex-1">
+        <CourseDetail />
+      </main>
+      <Footer />
+    </div>
+  );
 };
 
 export default CourseDetails;

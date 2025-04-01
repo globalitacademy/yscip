@@ -5,11 +5,16 @@ import { convertIconNameToComponent } from '@/utils/iconUtils';
 
 export const getCourseById = async (id: string): Promise<ProfessionalCourse | null> => {
   try {
+    if (!id || typeof id !== 'string') {
+      console.error('Invalid course ID provided:', id);
+      return null;
+    }
+
     const { data, error } = await supabase
       .from('courses')
       .select('*')
       .eq('id', id)
-      .single();
+      .maybeSingle();
       
     if (error) {
       console.error('Error fetching course by ID:', error);
@@ -17,6 +22,7 @@ export const getCourseById = async (id: string): Promise<ProfessionalCourse | nu
     }
     
     if (!data) {
+      console.log('No course found with ID:', id);
       return null;
     }
     

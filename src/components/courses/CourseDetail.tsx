@@ -27,6 +27,8 @@ const CourseDetail: React.FC = () => {
       setLoading(true);
       try {
         let courseData;
+        console.log("Fetching course with ID:", id, "or slug:", slug);
+        
         // Եթե ունենք slug, օգտագործում ենք այն
         if (slug) {
           courseData = await getCourseBySlug(slug);
@@ -44,8 +46,10 @@ const CourseDetail: React.FC = () => {
         }
 
         if (courseData) {
+          console.log("Course data fetched successfully:", courseData.title);
           setCourse(courseData);
         } else {
+          console.error("Course data not found for:", id || slug);
           toast.error('Դասընթացը չհաջողվեց գտնել');
           navigate('/courses');
         }
@@ -79,10 +83,26 @@ const CourseDetail: React.FC = () => {
     return <CourseDetailSkeleton type="not-found" />;
   }
 
-  const canEdit = user && (user.role === 'admin' || course?.createdBy === user.name);
+  // Check if user can view unpublished courses
+  const canViewUnpublished = user && (user.role === 'admin' || course.createdBy === user.name);
+  
+  // If course is not public and user cannot view unpublished courses, show not found
+  if (!course.is_public && !canViewUnpublished) {
+    return <CourseDetailSkeleton type="not-found" />;
+  }
+
+  const canEdit = user && (user.role === 'admin' || course.createdBy === user.name);
 
   return (
     <div className="container mx-auto px-4 py-8 max-w-6xl">
+      {/* Show unpublished warning for creators */}
+      {!course.is_public && canViewUnpublished && (
+        <div className="bg-amber-50 border border-amber-200 text-amber-800 px-4 py-3 rounded-md mb-6">
+          <p className="font-medium">Այս դասընթացը դեռ չի հրապարակված:</p>
+          <p className="text-sm">Միայն դուք և ադմինիստրատորները կարող են տեսնել այն:</p>
+        </div>
+      )}
+      
       {/* Course Header Banner */}
       <CourseBanner course={course} canEdit={canEdit} handleApply={handleApply} />
 
