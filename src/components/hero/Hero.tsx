@@ -3,7 +3,6 @@ import React, { useRef, useState, useEffect } from 'react';
 import CustomCursor from './CustomCursor';
 import BackgroundEffects from './BackgroundEffects';
 import HeroContent from './HeroContent';
-import { getRandomOffset } from '@/lib/utils';
 
 const Hero: React.FC = () => {
   const heroRef = useRef<HTMLDivElement>(null);
@@ -13,21 +12,6 @@ const Hero: React.FC = () => {
   const [cursorVisible, setCursorVisible] = useState(false);
   const [containerBounds, setContainerBounds] = useState({ top: 0, left: 0, width: 0, height: 0 });
   
-  // Fixed positions for static cursors (will be adjusted to be within container)
-  const staticPositions = [
-    { x: 0, y: 0 }, // Will be updated after container is measured
-    { x: 0, y: 0 }, // Will be updated after container is measured
-  ];
-  
-  // Tempo-style cursor configurations
-  const cursors = [
-    // Main cursor that follows mouse
-    { name: "Արման", color: "purple", direction: "top-left" as const, isStatic: false },
-    // Static cursors
-    { name: "Կարեն", color: "green", direction: "top-right" as const, isStatic: true, position: staticPositions[0] },
-    { name: "Մարիամ", color: "red", direction: "bottom-left" as const, isStatic: true, position: staticPositions[1] },
-  ];
-
   // Fetch categories from project themes
   useEffect(() => {
     const fetchCategories = async () => {
@@ -56,13 +40,6 @@ const Hero: React.FC = () => {
           width: rect.width,
           height: rect.height
         });
-        
-        // Update static cursor positions to be within the container with better spacing
-        staticPositions[0].x = rect.left + rect.width * 0.25;
-        staticPositions[0].y = rect.top + rect.height * 0.25;
-        
-        staticPositions[1].x = rect.left + rect.width * 0.75;
-        staticPositions[1].y = rect.top + rect.height * 0.7;
       }
     };
     
@@ -155,22 +132,12 @@ const Hero: React.FC = () => {
 
   return (
     <section ref={heroRef} className="relative min-h-[90vh] flex items-center justify-center overflow-hidden pt-16 bg-gradient-to-b from-background/20 to-background">
-      {/* Render all cursors - main one follows mouse, static ones stay in place */}
-      {cursors.map((cursor, index) => (
-        <CustomCursor 
-          key={index}
-          mousePosition={
-            cursor.isStatic 
-              ? cursor.position! // Use the static position for static cursors
-              : mousePosition    // Use the mouse position for the main cursor
-          } 
-          cursorVisible={cursorVisible}
-          color={cursor.color}
-          name={cursor.name}
-          direction={cursor.direction}
-          isStatic={cursor.isStatic}
-        />
-      ))}
+      {/* Simple triangular cursor that follows mouse */}
+      <CustomCursor 
+        mousePosition={mousePosition}
+        cursorVisible={cursorVisible}
+        color="yellow"
+      />
       
       <BackgroundEffects />
       <div 
