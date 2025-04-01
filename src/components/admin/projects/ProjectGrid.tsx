@@ -35,8 +35,9 @@ const ProjectGrid: React.FC<ProjectGridProps> = ({
   }
 
   // Filter out template projects - only show database projects
+  // Real projects have the is_public field from the database
   const filteredProjects = projects.filter(project => 
-    project.is_public !== undefined // This ensures we only show projects from the database
+    project.is_public !== undefined
   );
 
   if (filteredProjects.length === 0) {

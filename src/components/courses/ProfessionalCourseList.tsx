@@ -24,11 +24,22 @@ const ProfessionalCourseList: React.FC<ProfessionalCourseListProps> = ({
   const { user } = useAuth();
   const permissions = useCoursePermissions();
 
+  // Filter courses to show only those from database (real courses)
+  // Real courses have is_public field from the database
+  const realCourses = courses.filter(course => 
+    course.is_public !== undefined
+  );
+  
   // Filter courses to show only public ones created by admin/authorized users
   // or those created by the current user
-  const visibleCourses = courses.filter(course => 
+  const visibleCourses = realCourses.filter(course => 
     (course.is_public) || 
     (user && course.createdBy === user.name)
+  );
+
+  // Filter user courses to only show real courses
+  const realUserCourses = userCourses.filter(course => 
+    course.is_public !== undefined
   );
 
   return (
@@ -42,7 +53,7 @@ const ProfessionalCourseList: React.FC<ProfessionalCourseListProps> = ({
       
       <TabsContent value="all" className="space-y-4 mt-4">
         {visibleCourses.length === 0 ? (
-          <p className="text-center text-gray-500">Դասընթացներ չկան</p>
+          <p className="text-center text-gray-500">Իրական դասընթացներ չկան</p>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {visibleCourses.map((course) => (
@@ -61,11 +72,11 @@ const ProfessionalCourseList: React.FC<ProfessionalCourseListProps> = ({
       
       {user && (
         <TabsContent value="my" className="space-y-4 mt-4">
-          {userCourses.length === 0 ? (
-            <p className="text-center text-gray-500">Դուք դեռ չունեք ավելացված դասընթացներ</p>
+          {realUserCourses.length === 0 ? (
+            <p className="text-center text-gray-500">Դուք դեռ չունեք ավելացված իրական դասընթացներ</p>
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {userCourses.map((course) => (
+              {realUserCourses.map((course) => (
                 <ProfessionalCourseCard 
                   key={course.id} 
                   course={course} 

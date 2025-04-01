@@ -21,7 +21,7 @@ export const HomePageModules: React.FC = () => {
         const { data, error } = await supabase
           .from('courses')
           .select('*')
-          .eq('is_public', true) // Only show public courses
+          .eq('is_public', true) // Only show public courses from database
           .limit(6);
 
         if (error) {

@@ -11,11 +11,14 @@ interface ProjectListProps {
 }
 
 const ProjectList: React.FC<ProjectListProps> = ({ projects }) => {
+  // Filter to only show real projects from database (they have the is_public property)
+  const realProjects = projects.filter(project => project.is_public !== undefined);
+
   // Add safety check to handle undefined or null projects
-  if (!projects || projects.length === 0) {
+  if (!realProjects || realProjects.length === 0) {
     return (
       <div className="text-center p-10 bg-muted rounded-lg">
-        <p className="text-muted-foreground">Այս կատեգորիայում ծրագրեր չկան</p>
+        <p className="text-muted-foreground">Այս կատեգորիայում իրական նախագծեր չկան</p>
       </div>
     );
   }
@@ -23,7 +26,7 @@ const ProjectList: React.FC<ProjectListProps> = ({ projects }) => {
   return (
     <>
       <FadeIn className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-10">
-        {projects.map((project) => (
+        {realProjects.map((project) => (
           <ProjectCard
             key={project.id}
             project={project}

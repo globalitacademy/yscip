@@ -103,7 +103,7 @@ const ThemeGrid: React.FC<ThemeGridProps> = ({ limit, createdProjects = [] }) =>
         category: project.category || 'Այլ',
       }));
       
-      const mergedProjects = [...projectThemes];
+      const mergedProjects = [...projectThemes.filter(p => p.is_public !== undefined)];
       
       formattedCreatedProjects.forEach(newProject => {
         const existingIndex = mergedProjects.findIndex(p => p.id === newProject.id);
