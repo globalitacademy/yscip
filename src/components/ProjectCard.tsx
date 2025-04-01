@@ -1,3 +1,4 @@
+
 import React, { useCallback, memo } from 'react';
 import { Card, CardContent, CardFooter, CardHeader } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -7,6 +8,7 @@ import { Link } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { useProjectManagement } from '@/contexts/ProjectManagementContext';
 import { getProjectImage } from '@/lib/getProjectImage';
+import { cn } from '@/lib/utils';
 
 interface ProjectCardProps {
   project: ProjectTheme;
@@ -30,6 +32,20 @@ const ProjectCard: React.FC<ProjectCardProps> = ({
   
   // Use the getProjectImage utility to get a reliable image URL
   const imageUrl = getProjectImage(project);
+  
+  // Define complexity color classes
+  const getComplexityColor = (complexity?: string) => {
+    switch (complexity) {
+      case 'Սկսնակ':
+        return 'bg-green-500/10 text-green-600 border-green-200';
+      case 'Միջին':
+        return 'bg-amber-500/10 text-amber-600 border-amber-200';
+      case 'Առաջադեմ':
+        return 'bg-red-500/10 text-red-600 border-red-200';
+      default:
+        return 'bg-blue-500/10 text-blue-600 border-blue-200';
+    }
+  };
   
   // Memoize event handlers to prevent unnecessary re-renders
   const handleEdit = useCallback((e: React.MouseEvent) => {
@@ -105,7 +121,9 @@ const ProjectCard: React.FC<ProjectCardProps> = ({
           />
         </div>
         <h3 className="font-bold text-xl">{project.title}</h3>
-        <p className="text-sm text-muted-foreground">{project.complexity}</p>
+        <p className={cn("text-sm border px-2 py-0.5 rounded-full inline-block", getComplexityColor(project.complexity))}>
+          {project.complexity}
+        </p>
       </CardHeader>
       
       <CardContent className="flex-grow pb-2">

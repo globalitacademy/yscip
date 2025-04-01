@@ -18,11 +18,21 @@ const ProjectHeaderBanner: React.FC<ProjectHeaderBannerProps> = ({
   complexity,
   techStack
 }) => {
-  const complexityColor = {
-    'Սկսնակ': 'bg-green-500/10 text-green-600 border-green-200',
-    'Միջին': 'bg-amber-500/10 text-amber-600 border-amber-200',
-    'Առաջադեմ': 'bg-red-500/10 text-red-600 border-red-200',
-  }[complexity] || '';
+  // Define complexity color classes
+  const getComplexityColor = (complexity: string) => {
+    switch (complexity) {
+      case 'Սկսնակ':
+        return 'bg-green-500/10 text-green-600 border-green-200';
+      case 'Միջին':
+        return 'bg-amber-500/10 text-amber-600 border-amber-200';
+      case 'Առաջադեմ':
+        return 'bg-red-500/10 text-red-600 border-red-200';
+      default:
+        return 'bg-blue-500/10 text-blue-600 border-blue-200';
+    }
+  };
+  
+  const complexityColor = getComplexityColor(complexity);
   
   return (
     <>
