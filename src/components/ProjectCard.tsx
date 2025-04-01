@@ -1,4 +1,3 @@
-
 import React, { useCallback, memo } from 'react';
 import { Card, CardContent, CardFooter, CardHeader } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -128,7 +127,6 @@ const ProjectCard: React.FC<ProjectCardProps> = ({
           />
         </div>
         <h3 className="font-bold text-xl">{project.title}</h3>
-        {/* Removed complexity badge from here since it's now at the top */}
       </CardHeader>
       
       <CardContent className="flex-grow pb-2">
@@ -137,25 +135,27 @@ const ProjectCard: React.FC<ProjectCardProps> = ({
           <span>Հեղինակ՝ {creatorName}</span>
         </div>
         
-        <p className="text-sm text-gray-500 line-clamp-2 mb-4">{project.description}</p>
+        {/* Replaced description with Technologies subheading */}
+        <div className="mb-4">
+          <h4 className="text-sm font-bold mb-2 flex items-center">
+            <Code size={16} className="mr-2 text-primary" />
+            Տեխնոլոգիաներ
+          </h4>
+          <div className="flex flex-wrap gap-1">
+            {project.techStack && project.techStack.length > 0 ? (
+              project.techStack.map((tech, index) => (
+                <span key={index} className="text-xs bg-primary/10 text-primary px-2 py-1 rounded-full">
+                  {tech}
+                </span>
+              ))
+            ) : (
+              <span className="text-xs text-muted-foreground">Տեխնոլոգիաներ չկան</span>
+            )}
+          </div>
+        </div>
         
         <div className="flex justify-between w-full text-sm mt-auto">
           <span>{project.duration || 'Անորոշ ժամկետ'}</span>
-          
-          {/* Tech stack section with icon */}
-          <div className="flex items-center">
-            <Code size={16} className="mr-2 text-primary" />
-            <span className="font-semibold text-primary">
-              {project.techStack && project.techStack.length > 0 ? (
-                <>
-                  {project.techStack.slice(0, 2).join(', ')}
-                  {project.techStack.length > 2 ? '...' : ''}
-                </>
-              ) : (
-                'Տեխնոլոգիաներ չկան'
-              )}
-            </span>
-          </div>
         </div>
       </CardContent>
       
