@@ -1,3 +1,4 @@
+
 import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { ProfessionalCourse } from './types/ProfessionalCourse';
@@ -13,6 +14,7 @@ import CourseSidebar from './details/CourseSidebar';
 import CourseDescription from './details/CourseDescription';
 import CourseCurriculumTab from './details/CourseCurriculumTab';
 import CourseOutcomesTab from './details/CourseOutcomesTab';
+import CourseApplicationForm from './details/CourseApplicationForm';
 
 const CourseDetail: React.FC = () => {
   const { id, slug } = useParams<{ id?: string; slug?: string }>();
@@ -20,6 +22,7 @@ const CourseDetail: React.FC = () => {
   const { user } = useAuth();
   const [course, setCourse] = useState<ProfessionalCourse | null>(null);
   const [loading, setLoading] = useState(true);
+  const [showApplicationForm, setShowApplicationForm] = useState(false);
   
   useEffect(() => {
     const fetchCourse = async () => {
@@ -65,7 +68,7 @@ const CourseDetail: React.FC = () => {
   }, [id, slug, navigate]);
 
   const handleApply = () => {
-    console.log('Apply button clicked, form will open');
+    setShowApplicationForm(true);
   };
 
   if (loading) {
@@ -143,6 +146,15 @@ const CourseDetail: React.FC = () => {
           <CourseSidebar course={course} handleApply={handleApply} />
         </div>
       </div>
+      
+      {/* Application Form Dialog */}
+      {showApplicationForm && (
+        <CourseApplicationForm 
+          course={course} 
+          isOpen={showApplicationForm} 
+          onClose={() => setShowApplicationForm(false)} 
+        />
+      )}
     </div>
   );
 };

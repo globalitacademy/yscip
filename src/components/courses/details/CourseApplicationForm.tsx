@@ -23,8 +23,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { ProfessionalCourse } from "../types/ProfessionalCourse";
-import { toast } from "sonner";
-import { v4 as uuidv4 } from 'uuid';
+import { useCourseApplications } from "@/hooks/useCourseApplications";
 
 // Define the form schema
 const formSchema = z.object({
@@ -47,6 +46,9 @@ const CourseApplicationForm: React.FC<CourseApplicationFormProps> = ({
   isOpen,
   onClose,
 }) => {
+  const { submitApplication } = useCourseApplications();
+  const [isSubmitting, setIsSubmitting] = React.useState(false);
+  
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -58,48 +60,23 @@ const CourseApplicationForm: React.FC<CourseApplicationFormProps> = ({
   });
 
   const onSubmit = async (data: FormValues) => {
+    setIsSubmitting(true);
     try {
-      // Create application object
-      const application = {
-        id: uuidv4(),
-        created_at: new Date().toISOString(),
+      const success = await submitApplication({
         full_name: data.fullName,
         phone_number: data.phoneNumber,
         email: data.email,
         message: data.message || "",
         course_id: course.id,
         course_title: course.title,
-        status: 'new'
-      };
-
-      // Store in localStorage for now (will be replaced with database storage later)
-      const existingApplications = JSON.parse(localStorage.getItem('course_applications') || '[]');
-      existingApplications.push(application);
-      localStorage.setItem('course_applications', JSON.stringify(existingApplications));
-      
-      // Also send application to admin email (using localStorage for now)
-      const adminNotifications = JSON.parse(localStorage.getItem('admin_notifications') || '[]');
-      adminNotifications.push({
-        id: uuidv4(),
-        title: 'New Course Application',
-        message: `${data.fullName} applied for ${course.title}`,
-        date: new Date().toISOString()
-      });
-      localStorage.setItem('admin_notifications', JSON.stringify(adminNotifications));
-
-      // Success message
-      toast.success('Դիմումն ուղարկված է', {
-        description: 'Շուտով կապ կհաստատենք ձեզ հետ'
       });
 
-      // Reset form and close dialog
-      form.reset();
-      onClose();
-    } catch (err) {
-      console.error('Application submission error:', err);
-      toast.error('Դիմման ուղարկման սխալ', {
-        description: 'Խնդրում ենք փորձել կրկին'
-      });
+      if (success) {
+        form.reset();
+        onClose();
+      }
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -175,10 +152,12 @@ const CourseApplicationForm: React.FC<CourseApplicationFormProps> = ({
             />
 
             <DialogFooter>
-              <Button variant="outline" type="button" onClick={onClose}>
+              <Button variant="outline" type="button" onClick={onClose} disabled={isSubmitting}>
                 Չեղարկել
               </Button>
-              <Button type="submit">Ուղարկել դիմումը</Button>
+              <Button type="submit" disabled={isSubmitting}>
+                {isSubmitting ? "Ուղարկվում է..." : "Ուղարկել դիմումը"}
+              </Button>
             </DialogFooter>
           </form>
         </Form>
