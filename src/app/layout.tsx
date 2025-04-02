@@ -9,6 +9,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
+    // Remove the default class to prevent light theme from being always applied
     <html lang="en" className="h-full">
       <body className="h-full">
         <ThemeProvider>

@@ -19,6 +19,7 @@ export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   useEffect(() => {
     // Check if theme is stored in localStorage
     const storedTheme = localStorage.getItem('theme') as Theme | null;
+    
     if (storedTheme) {
       setTheme(storedTheme);
     } else if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
@@ -28,10 +29,19 @@ export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   }, []);
   
   useEffect(() => {
-    // Update localStorage and document class when theme changes
+    // Update localStorage when theme changes
     localStorage.setItem('theme', theme);
-    document.documentElement.classList.remove('light', 'dark');
-    document.documentElement.classList.add(theme);
+    
+    // Apply theme class to document and remove the other one
+    if (theme === 'dark') {
+      document.documentElement.classList.add('dark');
+      document.documentElement.classList.remove('light');
+    } else {
+      document.documentElement.classList.add('light');
+      document.documentElement.classList.remove('dark');
+    }
+    
+    console.log('Theme changed to:', theme); // Add debug log
   }, [theme]);
   
   return (
