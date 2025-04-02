@@ -61,7 +61,8 @@ export const useCourseEdit = (
         // Explicitly ensure required related data is present
         lessons: editedCourse.lessons || course.lessons || [],
         requirements: editedCourse.requirements || course.requirements || [],
-        outcomes: editedCourse.outcomes || course.outcomes || []
+        outcomes: editedCourse.outcomes || course.outcomes || [],
+        instructor: editedCourse.instructor || course.instructor || '' // Ensure instructor is explicitly included
       };
 
       console.log('Updating course with complete data:', completeEditedCourse);
@@ -129,7 +130,7 @@ export const useCourseEdit = (
               organizationLogo: data.organization_logo,
               description: data.description,
               is_public: data.is_public,
-              instructor: data.instructor, // Make sure to include instructor field from DB
+              instructor: data.instructor || '', // Ensure instructor is handled properly
               lessons: lessonsData?.data?.map(lesson => ({
                 title: lesson.title,
                 duration: lesson.duration

@@ -52,6 +52,7 @@ export const useCourseFetching = (setLoading: Dispatch<SetStateAction<boolean>>)
           organizationLogo: course.organization_logo,
           description: course.description || '',
           is_public: course.is_public || false,
+          instructor: course.instructor || '', // Make sure to include instructor
           lessons: lessonsResult.data?.map(lesson => ({
             title: lesson.title, 
             duration: lesson.duration

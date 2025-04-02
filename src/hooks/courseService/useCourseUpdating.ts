@@ -22,7 +22,7 @@ export const useCourseUpdating = (setLoading: Dispatch<SetStateAction<boolean>>)
         image_url: updates.imageUrl,
         organization_logo: updates.organizationLogo,
         description: updates.description,
-        instructor: updates.instructor, // Added instructor field
+        instructor: updates.instructor, // Ensure this field is included in the update
         is_public: updates.is_public,
         updated_at: new Date().toISOString()
       };
