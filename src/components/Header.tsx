@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
@@ -6,12 +5,12 @@ import UserMenu from './UserMenu';
 import DatabaseSyncButton from './DatabaseSyncButton';
 import { Square } from 'lucide-react';
 import { ThemeToggle } from './ui/theme-toggle';
-
 const Header: React.FC = () => {
-  const { user, isAuthenticated } = useAuth();
-
-  return (
-    <header className="bg-white shadow-md dark:bg-gray-800 dark:text-white">
+  const {
+    user,
+    isAuthenticated
+  } = useAuth();
+  return <header className="bg-white shadow-md dark:bg-gray-800 dark:text-white">
       <div className="container mx-auto px-4 py-4">
         <div className="flex justify-between items-center">
           <Link to="/" className="flex items-center gap-2">
@@ -22,44 +21,22 @@ const Header: React.FC = () => {
             <span className="text-xl font-bold text-blue-600 dark:text-blue-400">ԿԿՀ</span>
           </Link>
           
-          <nav className="hidden md:flex space-x-4 flex-1 justify-center">
-            <Link to="/" className="text-gray-600 hover:text-gray-900 dark:text-gray-300 dark:hover:text-white">Գլխավոր</Link>
-            <Link to="/projects" className="text-gray-600 hover:text-gray-900 dark:text-gray-300 dark:hover:text-white">Նախագծեր</Link>
-            <Link to="/courses" className="text-gray-600 hover:text-gray-900 dark:text-gray-300 dark:hover:text-white">Դասընթացներ</Link>
-            {isAuthenticated && (
-              <Link to="/portfolio" className="text-gray-600 hover:text-gray-900 dark:text-gray-300 dark:hover:text-white">Պորտֆոլիո</Link>
-            )}
-            <ThemeToggle />
-          </nav>
+          
           
           <div className="flex items-center space-x-4">
-            {isAuthenticated && (
-              <DatabaseSyncButton />
-            )}
+            {isAuthenticated && <DatabaseSyncButton />}
             
-            {isAuthenticated ? (
-              <UserMenu />
-            ) : (
-              <div className="space-x-2">
-                <Link
-                  to="/login"
-                  className="px-4 py-2 border border-gray-300 rounded text-gray-700 hover:bg-gray-50 dark:border-gray-600 dark:text-gray-300 dark:hover:bg-gray-700"
-                >
+            {isAuthenticated ? <UserMenu /> : <div className="space-x-2">
+                <Link to="/login" className="px-4 py-2 border border-gray-300 rounded text-gray-700 hover:bg-gray-50 dark:border-gray-600 dark:text-gray-300 dark:hover:bg-gray-700">
                   Մուտք
                 </Link>
-                <Link
-                  to="/register"
-                  className="px-4 py-2 bg-blue-600 rounded text-white hover:bg-blue-700"
-                >
+                <Link to="/register" className="px-4 py-2 bg-blue-600 rounded text-white hover:bg-blue-700">
                   Գրանցվել
                 </Link>
-              </div>
-            )}
+              </div>}
           </div>
         </div>
       </div>
-    </header>
-  );
+    </header>;
 };
-
 export default Header;
