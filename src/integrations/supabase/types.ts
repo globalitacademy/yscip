@@ -241,6 +241,7 @@ export type Database = {
           id: string
           image_url: string | null
           institution: string | null
+          instructor: string | null
           is_persistent: boolean | null
           is_public: boolean | null
           modules: string[] | null
@@ -266,6 +267,7 @@ export type Database = {
           id?: string
           image_url?: string | null
           institution?: string | null
+          instructor?: string | null
           is_persistent?: boolean | null
           is_public?: boolean | null
           modules?: string[] | null
@@ -291,6 +293,7 @@ export type Database = {
           id?: string
           image_url?: string | null
           institution?: string | null
+          instructor?: string | null
           is_persistent?: boolean | null
           is_public?: boolean | null
           modules?: string[] | null

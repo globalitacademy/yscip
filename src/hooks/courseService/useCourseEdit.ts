@@ -62,7 +62,7 @@ export const useCourseEdit = (
         lessons: editedCourse.lessons || course.lessons || [],
         requirements: editedCourse.requirements || course.requirements || [],
         outcomes: editedCourse.outcomes || course.outcomes || [],
-        instructor: editedCourse.instructor || course.instructor || '' // Ensure instructor is explicitly included
+        instructor: editedCourse.instructor || course.instructor || '' // Now correctly typed from database
       };
 
       console.log('Updating course with complete data:', completeEditedCourse);
@@ -130,7 +130,7 @@ export const useCourseEdit = (
               organizationLogo: data.organization_logo,
               description: data.description,
               is_public: data.is_public,
-              instructor: data.instructor || '', // Ensure instructor is handled properly
+              instructor: data.instructor || '', // Now correctly typed from database
               lessons: lessonsData?.data?.map(lesson => ({
                 title: lesson.title,
                 duration: lesson.duration
