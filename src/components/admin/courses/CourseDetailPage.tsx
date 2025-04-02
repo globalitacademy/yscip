@@ -1,5 +1,5 @@
 
-import React from 'react';
+import React, { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { useCourseDetails } from '@/hooks/courseService/useCourseDetails';
@@ -15,24 +15,48 @@ interface CourseDetailPageProps {
 
 export const CourseDetailPage: React.FC<CourseDetailPageProps> = ({ id, isEditMode = false }) => {
   const { user } = useAuth();
+  const navigate = useNavigate();
   
   // Use our custom hooks to handle different aspects of the course detail page
-  const { course, setCourse, loading, editedCourse, setEditedCourse } = useCourseDetails(id);
+  const { 
+    course, 
+    setCourse, 
+    loading: courseLoading, 
+    editedCourse, 
+    setEditedCourse,
+    fetchCourse 
+  } = useCourseDetails(id);
+  
   const { actionType, handlePublishToggle } = useCourseStatusToggle(course, setCourse);
   const { isDeleteDialogOpen, setIsDeleteDialogOpen, handleDeleteCourse } = useCourseDelete(id);
-  const { isEditDialogOpen, setIsEditDialogOpen, handleSaveChanges } = 
-    useCourseEdit(course, editedCourse, setEditedCourse, setCourse, isEditMode);
+  const { 
+    isEditDialogOpen, 
+    setIsEditDialogOpen, 
+    handleSaveChanges,
+    loading: editLoading 
+  } = useCourseEdit(course, editedCourse, setEditedCourse, setCourse, isEditMode);
 
   // Automatically open edit dialog if in edit mode
-  React.useEffect(() => {
+  useEffect(() => {
     if (isEditMode && course && !isEditDialogOpen) {
       setIsEditDialogOpen(true);
+      console.log('Automatically opening edit dialog in edit mode');
     }
   }, [isEditMode, course, isEditDialogOpen, setIsEditDialogOpen]);
 
+  // If course ID changes, refetch course data
+  useEffect(() => {
+    if (id) {
+      console.log('Course ID changed, refetching course data for ID:', id);
+      fetchCourse();
+    }
+  }, [id, fetchCourse]);
+
   // Determine if user can edit the course
   const canEdit = user && (user.role === 'admin' || course?.createdBy === user.name);
-
+  
+  const loading = courseLoading || editLoading;
+  
   return (
     <CourseWrapper
       course={course}

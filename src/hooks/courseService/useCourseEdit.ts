@@ -1,5 +1,5 @@
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom'; 
 import { ProfessionalCourse } from '@/components/courses/types/ProfessionalCourse';
 import { supabase } from '@/integrations/supabase/client';
@@ -20,26 +20,50 @@ export const useCourseEdit = (
   
   const { updateCourse } = useCourseUpdating(setLoading);
 
+  // When isEditDialogOpen or course changes, reset editedCourse to ensure we have latest data
+  useEffect(() => {
+    if (isEditDialogOpen && course) {
+      // Make a deep copy to avoid reference issues
+      setEditedCourse(JSON.parse(JSON.stringify(course)));
+      console.log('Initialized editedCourse with current course data:', course);
+    }
+  }, [isEditDialogOpen, course, setEditedCourse]);
+
+  // When in edit mode and course data is loaded, open dialog automatically
+  useEffect(() => {
+    if (isEditMode && course && !isEditDialogOpen) {
+      setIsEditDialogOpen(true);
+      console.log('Opening edit dialog in edit mode with course:', course);
+    }
+  }, [isEditMode, course, isEditDialogOpen, setIsEditDialogOpen]);
+
   const handleSaveChanges = async () => {
     if (!course || !editedCourse) {
       console.error('No course or edited course data available');
+      toast.error('Դասընթացի տվյալները բացակայում են');
       return;
     }
     
-    console.log('Saving changes:', editedCourse);
+    console.log('Saving changes with data:', editedCourse);
     setLoading(true);
     try {
-      // Make sure is_public status is not undefined
-      if (editedCourse.is_public === undefined) {
+      // Make sure is_public status is properly set
+      if (editedCourse.is_public === undefined && course.is_public !== undefined) {
         editedCourse.is_public = course.is_public;
       }
 
-      console.log('Updating course with data:', {
+      // Ensure we have all required fields from the original course if not in edited data
+      const completeEditedCourse = {
+        ...course,
+        ...editedCourse,
+      };
+
+      console.log('Updating course with complete data:', {
         id: course.id,
-        updates: editedCourse
+        updates: completeEditedCourse
       });
       
-      const success = await updateCourse(course.id, editedCourse);
+      const success = await updateCourse(course.id, completeEditedCourse);
       
       if (success) {
         toast.success('Դասընթացը հաջողությամբ թարմացվել է');
@@ -53,11 +77,12 @@ export const useCourseEdit = (
         // Update the local state with the edited values
         setCourse({
           ...course,
-          ...editedCourse,
-          icon: convertIconNameToComponent(editedCourse.iconName || course.iconName || 'book')
+          ...completeEditedCourse,
+          icon: convertIconNameToComponent(completeEditedCourse.iconName || course.iconName || 'book')
         });
         
         // Refetch the course to ensure we have the latest data
+        console.log('Refetching course data after update');
         const { data, error } = await supabase
           .from('courses')
           .select('*')
@@ -65,21 +90,21 @@ export const useCourseEdit = (
           .single();
           
         if (!error && data) {
-          const { data: lessonsData } = await supabase
-            .from('course_lessons')
-            .select('*')
-            .eq('course_id', course.id);
+          console.log('Successfully refetched course main data:', data);
+          
+          // Fetch related data in parallel
+          const [lessonsData, requirementsData, outcomesData] = await Promise.all([
+            supabase.from('course_lessons').select('*').eq('course_id', course.id),
+            supabase.from('course_requirements').select('*').eq('course_id', course.id),
+            supabase.from('course_outcomes').select('*').eq('course_id', course.id)
+          ]);
             
-          const { data: requirementsData } = await supabase
-            .from('course_requirements')
-            .select('*')
-            .eq('course_id', course.id);
-            
-          const { data: outcomesData } = await supabase
-            .from('course_outcomes')
-            .select('*')
-            .eq('course_id', course.id);
-            
+          console.log('Fetched related data:', {
+            lessons: lessonsData.data,
+            requirements: requirementsData.data,
+            outcomes: outcomesData.data
+          });
+          
           const updatedCourse: ProfessionalCourse = {
             ...course,
             title: data.title,
@@ -95,16 +120,20 @@ export const useCourseEdit = (
             organizationLogo: data.organization_logo,
             description: data.description,
             is_public: data.is_public,
-            lessons: lessonsData?.map(lesson => ({
+            lessons: lessonsData?.data?.map(lesson => ({
               title: lesson.title,
               duration: lesson.duration
             })) || [],
-            requirements: requirementsData?.map(req => req.requirement) || [],
-            outcomes: outcomesData?.map(outcome => outcome.outcome) || [],
+            requirements: requirementsData?.data?.map(req => req.requirement) || [],
+            outcomes: outcomesData?.data?.map(outcome => outcome.outcome) || [],
             slug: data.slug
           };
           
+          console.log('Setting updated course with complete data:', updatedCourse);
           setCourse(updatedCourse);
+          setEditedCourse(JSON.parse(JSON.stringify(updatedCourse))); // Deep copy
+        } else {
+          console.error('Error refetching course:', error);
         }
       } else {
         toast.error('Դասընթացի թարմացման ժամանակ սխալ է տեղի ունեցել');

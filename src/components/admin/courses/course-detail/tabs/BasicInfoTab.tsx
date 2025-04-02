@@ -9,7 +9,7 @@ import { MediaUploader } from '@/components/courses/form-components/MediaUploade
 
 interface BasicInfoTabProps {
   editedCourse: Partial<ProfessionalCourse>;
-  setEditedCourse: React.Dispatch<React.SetStateAction<Partial<ProfessionalCourse>>>;
+  setEditedCourse: (changes: Partial<ProfessionalCourse>) => void;
   isIconsOpen: boolean;
   setIsIconsOpen: (open: boolean) => void;
   handleIconSelect: (iconName: string) => void;
@@ -22,8 +22,13 @@ export const BasicInfoTab: React.FC<BasicInfoTabProps> = ({
   setIsIconsOpen,
   handleIconSelect
 }) => {
+  const handleInputChange = (field: string, value: string) => {
+    console.log(`Updating ${field} to:`, value);
+    setEditedCourse({ [field]: value });
+  };
+
   const handleImageChange = (imageUrl: string) => {
-    setEditedCourse({...editedCourse, imageUrl});
+    setEditedCourse({ imageUrl });
   };
 
   return (
@@ -34,7 +39,7 @@ export const BasicInfoTab: React.FC<BasicInfoTabProps> = ({
           <Input 
             id="title" 
             value={editedCourse.title || ''} 
-            onChange={(e) => setEditedCourse({...editedCourse, title: e.target.value})}
+            onChange={(e) => handleInputChange('title', e.target.value)}
           />
         </div>
         
@@ -43,7 +48,7 @@ export const BasicInfoTab: React.FC<BasicInfoTabProps> = ({
           <Input 
             id="subtitle" 
             value={editedCourse.subtitle || ''} 
-            onChange={(e) => setEditedCourse({...editedCourse, subtitle: e.target.value})}
+            onChange={(e) => handleInputChange('subtitle', e.target.value)}
           />
         </div>
       </div>
@@ -54,7 +59,7 @@ export const BasicInfoTab: React.FC<BasicInfoTabProps> = ({
           <Input 
             id="duration" 
             value={editedCourse.duration || ''} 
-            onChange={(e) => setEditedCourse({...editedCourse, duration: e.target.value})}
+            onChange={(e) => handleInputChange('duration', e.target.value)}
           />
         </div>
         
@@ -63,7 +68,7 @@ export const BasicInfoTab: React.FC<BasicInfoTabProps> = ({
           <Input 
             id="price" 
             value={editedCourse.price || ''} 
-            onChange={(e) => setEditedCourse({...editedCourse, price: e.target.value})}
+            onChange={(e) => handleInputChange('price', e.target.value)}
           />
         </div>
       </div>
@@ -85,7 +90,7 @@ export const BasicInfoTab: React.FC<BasicInfoTabProps> = ({
           <Input 
             id="institution" 
             value={editedCourse.institution || ''} 
-            onChange={(e) => setEditedCourse({...editedCourse, institution: e.target.value})}
+            onChange={(e) => handleInputChange('institution', e.target.value)}
           />
         </div>
       </div>
@@ -105,7 +110,7 @@ export const BasicInfoTab: React.FC<BasicInfoTabProps> = ({
         <Textarea 
           id="description" 
           value={editedCourse.description || ''} 
-          onChange={(e) => setEditedCourse({...editedCourse, description: e.target.value})}
+          onChange={(e) => handleInputChange('description', e.target.value)}
           rows={5}
         />
       </div>

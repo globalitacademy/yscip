@@ -1,30 +1,75 @@
 
-import React from 'react';
-import { OutcomesList } from '@/components/courses/form-components/OutcomesList';
+import React, { useState } from 'react';
 import { ProfessionalCourse } from '@/components/courses/types/ProfessionalCourse';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Trash2 } from 'lucide-react';
 
 interface OutcomesTabProps {
   editedCourse: Partial<ProfessionalCourse>;
-  setEditedCourse: React.Dispatch<React.SetStateAction<Partial<ProfessionalCourse>>>;
+  setEditedCourse: (changes: Partial<ProfessionalCourse>) => void;
 }
 
 export const OutcomesTab: React.FC<OutcomesTabProps> = ({ editedCourse, setEditedCourse }) => {
-  const handleAddOutcome = (outcome: string) => {
-    const outcomes = [...(editedCourse.outcomes || []), outcome];
-    setEditedCourse({ ...editedCourse, outcomes });
+  const [newOutcome, setNewOutcome] = useState('');
+  
+  const handleAddOutcome = () => {
+    if (!newOutcome.trim()) {
+      return;
+    }
+    
+    const updatedOutcomes = [...(editedCourse.outcomes || []), newOutcome.trim()];
+    console.log('Adding outcome, updated outcomes:', updatedOutcomes);
+    setEditedCourse({ outcomes: updatedOutcomes });
+    setNewOutcome('');
   };
-
+  
   const handleRemoveOutcome = (index: number) => {
-    const outcomes = [...(editedCourse.outcomes || [])];
-    outcomes.splice(index, 1);
-    setEditedCourse({ ...editedCourse, outcomes });
+    const updatedOutcomes = [...(editedCourse.outcomes || [])];
+    updatedOutcomes.splice(index, 1);
+    console.log('Removing outcome, updated outcomes:', updatedOutcomes);
+    setEditedCourse({ outcomes: updatedOutcomes });
+  };
+  
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter' && newOutcome.trim()) {
+      e.preventDefault();
+      handleAddOutcome();
+    }
   };
 
   return (
-    <OutcomesList 
-      outcomes={editedCourse.outcomes || []}
-      onAddOutcome={handleAddOutcome}
-      onRemoveOutcome={handleRemoveOutcome}
-    />
+    <div className="space-y-4">
+      <div className="space-y-2">
+        {(editedCourse.outcomes || []).map((outcome, index) => (
+          <div key={index} className="flex items-center space-x-2">
+            <div className="flex-grow p-2 bg-muted rounded">{outcome}</div>
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={() => handleRemoveOutcome(index)}
+              title="Հեռացնել"
+            >
+              <Trash2 className="h-4 w-4 text-destructive" />
+            </Button>
+          </div>
+        ))}
+      </div>
+      
+      <div className="flex space-x-2">
+        <Input
+          value={newOutcome}
+          onChange={(e) => setNewOutcome(e.target.value)}
+          placeholder="Նոր արդյունք"
+          onKeyDown={handleKeyDown}
+        />
+        <Button 
+          onClick={handleAddOutcome} 
+          disabled={!newOutcome.trim()}
+        >
+          Ավելացնել
+        </Button>
+      </div>
+    </div>
   );
 };

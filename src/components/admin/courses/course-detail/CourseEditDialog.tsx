@@ -33,26 +33,64 @@ const CourseEditDialog: React.FC<CourseEditDialogProps> = ({
 }) => {
   const [isIconsOpen, setIsIconsOpen] = useState(false);
   const [activeTab, setActiveTab] = useState('basic');
+  const [isDirty, setIsDirty] = useState(false);
   
-  // Reset active tab when dialog opens
+  // Reset active tab and isDirty when dialog opens
   useEffect(() => {
     if (isOpen) {
       setActiveTab('basic');
+      setIsDirty(false);
     }
   }, [isOpen]);
   
+  // Handle form changes and track when form becomes dirty
+  const handleFormChange = (changes: Partial<ProfessionalCourse>) => {
+    console.log('Form changed with:', changes);
+    setEditedCourse(prevState => {
+      const newState = { ...prevState, ...changes };
+      setIsDirty(true);
+      return newState;
+    });
+  };
+  
   const handleIconSelect = (iconName: string) => {
-    setEditedCourse({...editedCourse, iconName});
+    handleFormChange({ iconName });
     setIsIconsOpen(false);
   };
   
   const onSave = async () => {
     console.log('Save button clicked with edited course data:', editedCourse);
+    
+    // Ensure we have complete data for lessons, requirements, and outcomes
+    if (!editedCourse.lessons) {
+      handleFormChange({ lessons: [] });
+    }
+    
+    if (!editedCourse.requirements) {
+      handleFormChange({ requirements: [] });
+    }
+    
+    if (!editedCourse.outcomes) {
+      handleFormChange({ outcomes: [] });
+    }
+    
     await handleSaveChanges();
+    setIsDirty(false);
+  };
+  
+  // Confirmation dialog if form is dirty and user tries to close
+  const handleClose = (value: boolean) => {
+    if (value === false && isDirty) {
+      if (confirm('Դուք ունեք չպահպանված փոփոխություններ: Իսկապե՞ս ցանկանում եք փակել:')) {
+        setIsOpen(false);
+      }
+    } else {
+      setIsOpen(value);
+    }
   };
   
   return (
-    <Dialog open={isOpen} onOpenChange={setIsOpen}>
+    <Dialog open={isOpen} onOpenChange={handleClose}>
       <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>Խմբագրել դասընթացը</DialogTitle>
@@ -73,7 +111,7 @@ const CourseEditDialog: React.FC<CourseEditDialogProps> = ({
           <TabsContent value="basic">
             <BasicInfoTab 
               editedCourse={editedCourse}
-              setEditedCourse={setEditedCourse}
+              setEditedCourse={handleFormChange}
               isIconsOpen={isIconsOpen}
               setIsIconsOpen={setIsIconsOpen}
               handleIconSelect={handleIconSelect}
@@ -83,9 +121,8 @@ const CourseEditDialog: React.FC<CourseEditDialogProps> = ({
                 id="is_public" 
                 checked={editedCourse.is_public || false} 
                 onCheckedChange={(checked) => {
-                  console.log('Checkbox changed to:', checked);
-                  setEditedCourse({
-                    ...editedCourse,
+                  console.log('Visibility checkbox changed to:', checked);
+                  handleFormChange({
                     is_public: !!checked
                   });
                 }}
@@ -102,34 +139,34 @@ const CourseEditDialog: React.FC<CourseEditDialogProps> = ({
           <TabsContent value="lessons">
             <LessonsTab 
               editedCourse={editedCourse}
-              setEditedCourse={setEditedCourse}
+              setEditedCourse={handleFormChange}
             />
           </TabsContent>
           
           <TabsContent value="requirements">
             <RequirementsTab 
               editedCourse={editedCourse}
-              setEditedCourse={setEditedCourse}
+              setEditedCourse={handleFormChange}
             />
           </TabsContent>
           
           <TabsContent value="outcomes">
             <OutcomesTab 
               editedCourse={editedCourse}
-              setEditedCourse={setEditedCourse}
+              setEditedCourse={handleFormChange}
             />
           </TabsContent>
 
           <TabsContent value="author">
             <AuthorTab 
               editedCourse={editedCourse}
-              setEditedCourse={setEditedCourse}
+              setEditedCourse={handleFormChange}
             />
           </TabsContent>
         </Tabs>
         
         <DialogFooter>
-          <Button variant="ghost" onClick={() => setIsOpen(false)}>Չեղարկել</Button>
+          <Button variant="ghost" onClick={() => handleClose(false)} disabled={loading}>Չեղարկել</Button>
           <Button onClick={onSave} disabled={loading}>
             {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
             Պահպանել
