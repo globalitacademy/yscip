@@ -70,7 +70,7 @@ const AdminProjectContent = () => {
           onImageChange={handleImageChangeInit}
           onDeleteProject={handleDeleteInit}
           onSelectProject={handleSelectProject}
-          adminView
+          adminView={true}
         />
       ) : (
         <ProjectTable
@@ -95,15 +95,15 @@ const AdminProjectContent = () => {
       )}
 
       <ProjectAssignDialog
-        isOpen={isAssignDialogOpen}
-        onClose={() => setIsAssignDialogOpen(false)}
+        open={isAssignDialogOpen}
+        onOpenChange={setIsAssignDialogOpen}
         project={selectedProject}
         onAssign={handleAssignProject}
       />
 
       <ProjectApproveDialog
-        isOpen={isApproveDialogOpen}
-        onClose={() => setIsApproveDialogOpen(false)}
+        open={isApproveDialogOpen}
+        onOpenChange={setIsApproveDialogOpen}
         project={selectedProject}
         onApprove={handleApproveProject}
       />

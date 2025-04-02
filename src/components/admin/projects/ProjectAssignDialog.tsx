@@ -21,14 +21,14 @@ import {
 interface ProjectAssignDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  selectedProject: ProjectTheme | null;
+  project: ProjectTheme | null;
   onAssign: () => void;
 }
 
 const ProjectAssignDialog: React.FC<ProjectAssignDialogProps> = ({
   open,
   onOpenChange,
-  selectedProject,
+  project,
   onAssign
 }) => {
   return (
@@ -37,7 +37,7 @@ const ProjectAssignDialog: React.FC<ProjectAssignDialogProps> = ({
         <DialogHeader>
           <DialogTitle>Նախագծի նշանակում</DialogTitle>
           <DialogDescription>
-            {selectedProject && `Նշանակել "${selectedProject.title}" նախագիծը ուսանողին կամ խմբին։`}
+            {project && `Նշանակել "${project.title}" նախագիծը ուսանողին կամ խմբին։`}
           </DialogDescription>
         </DialogHeader>
         

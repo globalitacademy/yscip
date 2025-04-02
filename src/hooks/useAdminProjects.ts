@@ -5,17 +5,18 @@ import { toast } from "@/components/ui/use-toast";
 
 export const useAdminProjects = () => {
   const [displayLimit, setDisplayLimit] = useState(12);
-  const [activeCategory, setActiveCategory] = useState("all");
+  const [activeCategory, setActiveCategory] = useState<string | null>("all");
   const [selectedProject, setSelectedProject] = useState<ProjectTheme | null>(null);
   const [isAssignDialogOpen, setIsAssignDialogOpen] = useState(false);
   const [isApproveDialogOpen, setIsApproveDialogOpen] = useState(false);
   const [filterStatus, setFilterStatus] = useState("all");
+  const [searchQuery, setSearchQuery] = useState("");
   
   // Get categories from project themes
   const allProjects = [...projectThemes];
   const categories = ["all", ...new Set(allProjects.map(project => project.category))];
   
-  // Filter projects by category and status
+  // Filter projects by category, status and search
   const getFilteredProjects = useCallback(() => {
     let filtered = [...projectThemes];
     
@@ -24,10 +25,17 @@ export const useAdminProjects = () => {
       filtered = filtered.filter(project => project.category === activeCategory);
     }
     
-    // No status filtering for now as status field doesn't exist in ProjectTheme yet
+    // Filter by search query
+    if (searchQuery.trim() !== "") {
+      const query = searchQuery.toLowerCase().trim();
+      filtered = filtered.filter(project => 
+        project.title.toLowerCase().includes(query) || 
+        project.description.toLowerCase().includes(query)
+      );
+    }
     
     return filtered;
-  }, [activeCategory]);
+  }, [activeCategory, searchQuery]);
   
   const filteredProjects = getFilteredProjects();
   const visibleProjects = filteredProjects.slice(0, displayLimit);
@@ -82,6 +90,8 @@ export const useAdminProjects = () => {
     selectedProject,
     isAssignDialogOpen,
     isApproveDialogOpen,
+    searchQuery,
+    setSearchQuery,
     setActiveCategory,
     setFilterStatus,
     setDisplayLimit,

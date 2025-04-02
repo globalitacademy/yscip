@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { ProjectTheme } from '@/data/projectThemes';
 import ProjectCard from '@/components/ProjectCard';
@@ -14,6 +15,7 @@ interface ProjectGridProps {
   onImageChange: (project: ProjectTheme) => void;
   onDeleteProject: (project: ProjectTheme) => void;
   userRole?: string;
+  adminView?: boolean;
 }
 
 const ProjectGrid: React.FC<ProjectGridProps> = ({
@@ -22,7 +24,8 @@ const ProjectGrid: React.FC<ProjectGridProps> = ({
   onEditProject,
   onImageChange,
   onDeleteProject,
-  userRole
+  userRole,
+  adminView
 }) => {
   const permissions = useProjectPermissions(userRole);
   const { user } = useAuth();
@@ -61,7 +64,7 @@ const ProjectGrid: React.FC<ProjectGridProps> = ({
           <ProjectCard
             project={project}
             className="h-full"
-            adminView={true}
+            adminView={adminView}
           />
           <div className="absolute bottom-28 right-4 z-10 flex gap-2">
             <Button

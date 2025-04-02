@@ -14,14 +14,14 @@ import {
 interface ProjectApproveDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  selectedProject: ProjectTheme | null;
+  project: ProjectTheme | null;
   onApprove: () => void;
 }
 
 const ProjectApproveDialog: React.FC<ProjectApproveDialogProps> = ({
   open,
   onOpenChange,
-  selectedProject,
+  project,
   onApprove
 }) => {
   return (
@@ -30,7 +30,7 @@ const ProjectApproveDialog: React.FC<ProjectApproveDialogProps> = ({
         <DialogHeader>
           <DialogTitle>Նախագծի հաստատում</DialogTitle>
           <DialogDescription>
-            {selectedProject && `Հաստատել "${selectedProject.title}" նախագիծը։`}
+            {project && `Հաստատել "${project.title}" նախագիծը։`}
           </DialogDescription>
         </DialogHeader>
         
