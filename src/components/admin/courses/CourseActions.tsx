@@ -2,7 +2,7 @@
 import React, { useState } from 'react';
 import { ProfessionalCourse } from '@/components/courses/types/ProfessionalCourse';
 import { Button } from '@/components/ui/button';
-import { MoreHorizontal, Eye, Pencil, Trash2, GlobeLock, Globe, AlertCircle } from 'lucide-react';
+import { MoreHorizontal, Eye, Pencil, Trash2, GlobeLock, Globe, AlertCircle, Loader2 } from 'lucide-react';
 import {
   DropdownMenu,
   DropdownMenuContent,

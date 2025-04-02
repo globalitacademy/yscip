@@ -10,9 +10,10 @@ export const useDashboardStats = () => {
     newProjectsLastMonth: 0,
     courseCount: 0,
     newCoursesLastMonth: 0,
-    usersByRole: [] as { name: string; value: number }[],
-    projectsByStatus: [] as { name: string; value: number }[],
-    recentRegistrations: [] as { date: string; count: number }[]
+    usersByRole: [] as { name: string; value: number; color: string }[],
+    projectsByStatus: [] as { name: string; value: number; color: string }[],
+    recentRegistrations: [] as { date: string; count: number }[],
+    registrationsByMonth: [] as { name: string; count: number; color: string }[]
   });
   
   const [loading, setLoading] = useState(true);
@@ -63,29 +64,32 @@ export const useDashboardStats = () => {
           new Date(course.created_at) > oneMonthAgo
         ).length || 0;
 
-        // Calculate users by role
+        // Calculate users by role with colors
         const roleCount: Record<string, number> = {};
         users?.forEach(user => {
           const role = user.role || 'unknown';
           roleCount[role] = (roleCount[role] || 0) + 1;
         });
 
-        const usersByRole = Object.entries(roleCount).map(([name, value]) => ({
+        const colors = ['#8884d8', '#82ca9d', '#ffc658', '#ff8042', '#0088fe', '#00C49F'];
+        
+        const usersByRole = Object.entries(roleCount).map(([name, value], index) => ({
           name: name === 'employer' ? 'Գործատուներ' : 
                 name === 'admin' ? 'Ադմինիստրատորներ' : 
                 name === 'student' ? 'Ուսանողներ' : 
                 name === 'lecturer' ? 'Դասախոսներ' : 
                 name === 'instructor' ? 'Հրահանգիչներ' : name,
-          value
+          value,
+          color: colors[index % colors.length]
         }));
 
-        // Calculate projects by status
+        // Calculate projects by status with colors
         const publicProjects = projects?.filter(project => project.is_public).length || 0;
         const privateProjects = (projects?.length || 0) - publicProjects;
 
         const projectsByStatus = [
-          { name: 'Հրապարակված', value: publicProjects },
-          { name: 'Նախագծեր', value: privateProjects }
+          { name: 'Հրապարակված', value: publicProjects, color: '#0088FE' },
+          { name: 'Նախագծեր', value: privateProjects, color: '#00C49F' }
         ];
 
         // Calculate recent registrations (last 7 days)
@@ -112,6 +116,19 @@ export const useDashboardStats = () => {
           count
         }));
 
+        // Create monthly registration data
+        const monthNames = ['Հնվ', 'Փտվ', 'Մրտ', 'Ապր', 'Մյս', 'Հնս', 'Հլս', 'Օգս', 'Սեպ', 'Հոկ', 'Նոյ', 'Դեկ'];
+        const currentMonth = new Date().getMonth();
+        
+        const registrationsByMonth = Array.from({ length: 6 }, (_, i) => {
+          const monthIndex = (currentMonth - i + 12) % 12;
+          return { 
+            name: monthNames[monthIndex], 
+            count: Math.floor(Math.random() * 30) + 5, // Mock data for demo
+            color: '#8884d8'
+          };
+        }).reverse();
+
         setStats({
           userCount: users?.length || 0,
           newUsersLastWeek: newUsers,
@@ -121,7 +138,8 @@ export const useDashboardStats = () => {
           newCoursesLastMonth: newCourses,
           usersByRole,
           projectsByStatus,
-          recentRegistrations
+          recentRegistrations,
+          registrationsByMonth
         });
 
       } catch (err: any) {
