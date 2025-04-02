@@ -37,10 +37,14 @@ const AdminProjectContent = () => {
     handleImageChangeInit,
     handleDeleteInit,
     handleOpenCreateDialog,
-    isLoading
+    isLoading,
+    projects
   } = useProjectManagement();
 
   const [viewMode, setViewMode] = useState<'grid' | 'table'>('grid');
+
+  // Filter only real projects from the database (they have the is_public property)
+  const realProjects = projects.filter(project => project.is_public !== undefined);
 
   if (isLoading) {
     return (
@@ -65,7 +69,7 @@ const AdminProjectContent = () => {
 
       {viewMode === 'grid' ? (
         <ProjectGrid
-          projects={visibleProjects}
+          projects={realProjects.length > 0 ? realProjects : visibleProjects}
           onEditProject={handleEditInit}
           onImageChange={handleImageChangeInit}
           onDeleteProject={handleDeleteInit}
@@ -74,7 +78,7 @@ const AdminProjectContent = () => {
         />
       ) : (
         <ProjectTable
-          projects={visibleProjects}
+          projects={realProjects.length > 0 ? realProjects : visibleProjects}
           onEditProject={handleEditInit}
           onImageChange={handleImageChangeInit}
           onDeleteProject={handleDeleteInit}

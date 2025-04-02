@@ -14,11 +14,16 @@ export const useAdminProjects = () => {
   
   // Get categories from project themes
   const allProjects = [...projectThemes];
-  const categories = ["all", ...new Set(allProjects.map(project => project.category))];
+  
+  // Filter to only include real projects from the database (they have is_public property)
+  const realProjects = allProjects.filter(project => project.is_public !== undefined);
+  
+  const categories = ["all", ...new Set(realProjects.map(project => project.category))];
   
   // Filter projects by category, status and search
   const getFilteredProjects = useCallback(() => {
-    let filtered = [...projectThemes];
+    // Start with only real projects
+    let filtered = [...realProjects];
     
     // Filter by category
     if (activeCategory !== "all") {
