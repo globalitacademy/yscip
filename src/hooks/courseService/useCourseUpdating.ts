@@ -10,7 +10,7 @@ export const useCourseUpdating = (setLoading: Dispatch<SetStateAction<boolean>>)
     setLoading(true);
     try {
       // Prepare main course data for update
-      const courseUpdateData = {
+      const courseUpdateData: Record<string, any> = {
         title: updates.title,
         subtitle: updates.subtitle,
         icon_name: updates.iconName,
@@ -26,6 +26,13 @@ export const useCourseUpdating = (setLoading: Dispatch<SetStateAction<boolean>>)
         is_public: updates.is_public,
         updated_at: new Date().toISOString()
       };
+      
+      // Remove undefined values to avoid errors
+      Object.keys(courseUpdateData).forEach(key => {
+        if (courseUpdateData[key] === undefined) {
+          delete courseUpdateData[key];
+        }
+      });
       
       console.log('Updating course main data:', courseUpdateData);
       
