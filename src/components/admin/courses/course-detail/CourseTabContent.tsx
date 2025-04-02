@@ -12,7 +12,7 @@ interface CourseTabContentProps {
 
 const CourseTabContent: React.FC<CourseTabContentProps> = ({ course, onEditClick, canEdit }) => {
   return (
-    <Tabs defaultValue="description">
+    <Tabs defaultValue="description" className="w-full">
       <TabsList className="mb-4">
         <TabsTrigger value="description">Նկարագրություն</TabsTrigger>
         <TabsTrigger value="curriculum">Դասընթացի պլան</TabsTrigger>
@@ -20,8 +20,8 @@ const CourseTabContent: React.FC<CourseTabContentProps> = ({ course, onEditClick
         <TabsTrigger value="outcomes">Արդյունքներ</TabsTrigger>
       </TabsList>
       
-      <TabsContent value="description" className="mt-0">
-        <Card>
+      <TabsContent value="description" className="mt-0 w-full">
+        <Card className="w-full">
           <CardContent className="pt-6">
             {course.description ? (
               <div className="prose max-w-none">
@@ -36,8 +36,8 @@ const CourseTabContent: React.FC<CourseTabContentProps> = ({ course, onEditClick
         </Card>
       </TabsContent>
       
-      <TabsContent value="curriculum" className="mt-0">
-        <Card>
+      <TabsContent value="curriculum" className="mt-0 w-full">
+        <Card className="w-full">
           <CardContent className="pt-6">
             {course.lessons && course.lessons.length > 0 ? (
               <div className="space-y-4">
@@ -59,8 +59,8 @@ const CourseTabContent: React.FC<CourseTabContentProps> = ({ course, onEditClick
         </Card>
       </TabsContent>
       
-      <TabsContent value="requirements" className="mt-0">
-        <Card>
+      <TabsContent value="requirements" className="mt-0 w-full">
+        <Card className="w-full">
           <CardContent className="pt-6">
             {course.requirements && course.requirements.length > 0 ? (
               <ul className="list-disc pl-5 space-y-2">
@@ -75,8 +75,8 @@ const CourseTabContent: React.FC<CourseTabContentProps> = ({ course, onEditClick
         </Card>
       </TabsContent>
       
-      <TabsContent value="outcomes" className="mt-0">
-        <Card>
+      <TabsContent value="outcomes" className="mt-0 w-full">
+        <Card className="w-full">
           <CardContent className="pt-6">
             {course.outcomes && course.outcomes.length > 0 ? (
               <ul className="list-disc pl-5 space-y-2">
