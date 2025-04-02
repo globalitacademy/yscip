@@ -22,7 +22,7 @@ export const useCourseUpdating = (setLoading: Dispatch<SetStateAction<boolean>>)
         image_url: updates.imageUrl,
         organization_logo: updates.organizationLogo,
         description: updates.description,
-        instructor: updates.instructor, // Now correctly typed from database
+        instructor: updates.instructor,
         is_public: updates.is_public,
         updated_at: new Date().toISOString()
       };

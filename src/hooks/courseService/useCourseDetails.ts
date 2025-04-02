@@ -88,7 +88,7 @@ export const useCourseDetails = (id: string | undefined) => {
         organizationLogo: data.organization_logo,
         description: data.description || '',
         is_public: data.is_public || false,
-        instructor: data.instructor || '', // Now correctly typed from database
+        instructor: data.instructor || '',
         lessons: lessonsResult.data?.map(lesson => ({
           title: lesson.title,
           duration: lesson.duration

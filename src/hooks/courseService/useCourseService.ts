@@ -111,6 +111,7 @@ export const useCourseService = () => {
           organizationLogo: course.organization_logo,
           description: course.description || '',
           is_public: course.is_public || false,
+          instructor: course.instructor || '',
           lessons: (lessonsByCourseId[course.id] || []).map(lesson => ({
             title: lesson.title, 
             duration: lesson.duration
