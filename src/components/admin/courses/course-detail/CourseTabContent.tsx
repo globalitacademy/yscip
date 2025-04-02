@@ -1,16 +1,18 @@
 
 import React from 'react';
 import { ProfessionalCourse } from '@/components/courses/types/ProfessionalCourse';
-import { TabsContent } from '@/components/ui/tabs';
+import { Tabs, TabsContent } from '@/components/ui/tabs';
 import { Card, CardContent } from '@/components/ui/card';
 
 interface CourseTabContentProps {
   course: ProfessionalCourse;
+  onEditClick?: () => void;
+  canEdit?: boolean;
 }
 
-const CourseTabContent: React.FC<CourseTabContentProps> = ({ course }) => {
+const CourseTabContent: React.FC<CourseTabContentProps> = ({ course, onEditClick, canEdit }) => {
   return (
-    <>
+    <Tabs defaultValue="description">
       <TabsContent value="description" className="mt-0">
         <Card>
           <CardContent className="pt-6">
@@ -81,7 +83,7 @@ const CourseTabContent: React.FC<CourseTabContentProps> = ({ course }) => {
           </CardContent>
         </Card>
       </TabsContent>
-    </>
+    </Tabs>
   );
 };
 
