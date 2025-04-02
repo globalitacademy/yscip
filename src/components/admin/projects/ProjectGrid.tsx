@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { ProjectTheme } from '@/data/projectThemes';
 import ProjectCard from '@/components/ProjectCard';
@@ -30,22 +29,17 @@ const ProjectGrid: React.FC<ProjectGridProps> = ({
   const permissions = useProjectPermissions(userRole);
   const { user } = useAuth();
 
-  // Filter projects based on permissions
   const filteredProjects = projects.filter(project => {
-    // First check if it's a real project from database
     const isRealProject = project.is_public !== undefined;
     
-    if (!isRealProject) return true; // Allow template projects
+    if (!isRealProject) return true;
     
-    // Admin can see all projects
     if (user?.role === 'admin') return true;
     
-    // Instructors, lecturers, and employers can see their own projects
     if (user && (user.role === 'instructor' || user.role === 'lecturer' || user.role === 'employer')) {
       return project.createdBy === user.id;
     }
     
-    // Other roles only see public projects
     return project.is_public === true;
   });
 
@@ -66,7 +60,7 @@ const ProjectGrid: React.FC<ProjectGridProps> = ({
             className="h-full"
             adminView={adminView}
           />
-          <div className="absolute top-8 right-4 z-10 flex gap-2">
+          <div className="absolute top-12 right-4 z-10 flex gap-2">
             <Button
               variant="outline" 
               size="icon" 
