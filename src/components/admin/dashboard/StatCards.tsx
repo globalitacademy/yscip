@@ -1,15 +1,18 @@
+
 import React from 'react';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
-import { Users, FolderKanban, GraduationCap, Building } from 'lucide-react';
+import { Users, FolderKanban, GraduationCap, Building, BookOpen } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { useDashboardStats } from '@/hooks/useDashboardStats';
+
 const StatCards: React.FC = () => {
   const navigate = useNavigate();
   const {
     stats,
     loading
   } = useDashboardStats();
+  
   return <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-6">
       <Card className="shadow-sm">
         <CardHeader className="flex flex-row items-center justify-between pb-2">
@@ -60,7 +63,7 @@ const StatCards: React.FC = () => {
       <Card className="shadow-sm">
         <CardHeader className="flex flex-row items-center justify-between pb-2">
           <CardTitle className="text-sm font-medium">Կուրսեր</CardTitle>
-          <GraduationCap className="h-4 w-4 text-muted-foreground" />
+          <BookOpen className="h-4 w-4 text-muted-foreground" />
         </CardHeader>
         <CardContent>
           {loading ? <div className="flex flex-col gap-1">
@@ -106,4 +109,5 @@ const StatCards: React.FC = () => {
       </Card>
     </div>;
 };
+
 export default StatCards;
