@@ -1,7 +1,7 @@
 
 import React from 'react';
 import { ProfessionalCourse } from '@/components/courses/types/ProfessionalCourse';
-import { Tabs, TabsContent } from '@/components/ui/tabs';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Card, CardContent } from '@/components/ui/card';
 
 interface CourseTabContentProps {
@@ -13,6 +13,13 @@ interface CourseTabContentProps {
 const CourseTabContent: React.FC<CourseTabContentProps> = ({ course, onEditClick, canEdit }) => {
   return (
     <Tabs defaultValue="description">
+      <TabsList className="mb-4">
+        <TabsTrigger value="description">Նկարագրություն</TabsTrigger>
+        <TabsTrigger value="curriculum">Դասընթացի պլան</TabsTrigger>
+        <TabsTrigger value="requirements">Պահանջներ</TabsTrigger>
+        <TabsTrigger value="outcomes">Արդյունքներ</TabsTrigger>
+      </TabsList>
+      
       <TabsContent value="description" className="mt-0">
         <Card>
           <CardContent className="pt-6">
