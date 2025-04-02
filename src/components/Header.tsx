@@ -5,6 +5,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import UserMenu from './UserMenu';
 import DatabaseSyncButton from './DatabaseSyncButton';
 import { Square } from 'lucide-react';
+import { ThemeToggle } from './ui/theme-toggle';
 
 const Header: React.FC = () => {
   const { user, isAuthenticated } = useAuth();
@@ -28,6 +29,7 @@ const Header: React.FC = () => {
             {isAuthenticated && (
               <Link to="/portfolio" className="text-gray-600 hover:text-gray-900">Պորտֆոլիո</Link>
             )}
+            <ThemeToggle />
           </nav>
           
           <div className="flex items-center space-x-4">

@@ -1,5 +1,6 @@
 
 import '@/app/globals.css';
+import { ThemeProvider } from '@/hooks/use-theme';
 import { CustomCursor } from '@/components/ui/custom-cursor';
 
 export default function RootLayout({
@@ -10,8 +11,10 @@ export default function RootLayout({
   return (
     <html lang="en" className="h-full">
       <body className="h-full">
-        <CustomCursor />
-        {children}
+        <ThemeProvider>
+          <CustomCursor />
+          {children}
+        </ThemeProvider>
       </body>
     </html>
   );
