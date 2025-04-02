@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { projectThemes } from '@/data/projectThemes';
@@ -27,25 +26,15 @@ const ProjectEditPage: React.FC = () => {
   // Check if we're in admin mode based on the URL path
   const isAdminMode = location.pathname.includes('/admin/') || location.pathname.includes('/projects/edit/');
 
-  // Check if user has edit permissions
+  // Check if user has edit permissions - updated to include project creators
   const canEditProject = user && (
     user.role === 'admin' || 
     user.role === 'lecturer' || 
-    user.role === 'employer'
+    user.role === 'employer' ||
+    (project && project.createdBy === user.id)
   );
 
   useEffect(() => {
-    // Redirect if user doesn't have permission
-    if (user && !canEditProject) {
-      toast({
-        title: "Մուտքն արգելված է",
-        description: "Դուք չունեք նախագծերը խմբագրելու իրավունք։",
-        variant: "destructive",
-      });
-      navigate(`/project/${id}`);
-      return;
-    }
-
     const fetchProject = async () => {
       setIsLoading(true);
       
@@ -65,6 +54,17 @@ const ProjectEditPage: React.FC = () => {
         }
         
         setProject(foundProject);
+
+        // Moved redirect here after project is loaded to check ownership
+        if (user && !canEditProject && foundProject.createdBy !== user.id) {
+          toast({
+            title: "Մուտքն արգելված է",
+            description: "Դուք չունեք այս նախագիծը խմբագրելու իրավունք։",
+            variant: "destructive",
+          });
+          navigate(`/project/${id}`);
+          return;
+        }
       } catch (error) {
         console.error("Error fetching project:", error);
         toast({
@@ -78,7 +78,7 @@ const ProjectEditPage: React.FC = () => {
     };
 
     fetchProject();
-  }, [id, navigate, toast, user, canEditProject, isAdminMode]);
+  }, [id, navigate, toast, user, isAdminMode]);
 
   const handleProjectUpdated = async (updatedProject: ProjectTheme) => {
     try {

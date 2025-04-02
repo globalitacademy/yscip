@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
 import { Toaster } from 'sonner';
@@ -92,6 +91,7 @@ function App() {
           {/* Project Details */}
           <Route path="/project/:id" element={<ProjectDetails />} />
           <Route path="/project/:id/submit" element={<ProjectSubmissionPage />} />
+          <Route path="/projects/edit/:id" element={<ProjectEditPage />} />
           
           {/* Course Details */}
           <Route path="/course/:slug" element={<CourseDetails />} />

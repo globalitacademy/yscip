@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
@@ -61,7 +60,7 @@ const ProjectDetailsContent: React.FC = () => {
   // Mock data for organization
   const organization = {
     id: 'org1',
-    name: 'Պլեքսկոդ',
+    name: 'Պլեքկոդ',
     website: 'https://plexcode.am',
     logo: '/placeholder.svg'
   };
