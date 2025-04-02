@@ -9,18 +9,8 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en" suppressHydrationWarning>
-      <head>
-        <script dangerouslySetInnerHTML={{
-          __html: `
-            try {
-              const theme = localStorage.getItem('theme') || (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
-              document.documentElement.classList.add(theme);
-            } catch (e) {}
-          `
-        }} />
-      </head>
-      <body className="min-h-screen bg-background text-foreground">
+    <html lang="en" suppressHydrationWarning className="h-full">
+      <body className="h-full bg-background text-foreground">
         <ThemeProvider>
           <CustomCursor />
           {children}

@@ -20,13 +20,14 @@ const SidebarMenuItem: React.FC<SidebarMenuItemProps> = ({
   const isActive = location.pathname === path;
   
   return (
-    <Link to={path} onClick={onCloseMenu}>
+    <Link to={path}>
       <Button 
         variant={isActive ? "default" : "ghost"} 
-        className={`w-full justify-start ${isActive ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:bg-accent hover:text-accent-foreground"}`}
+        className={`w-full justify-start ${isActive ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:bg-accent hover:text-accent-foreground"}`} 
+        onClick={onCloseMenu}
       >
         {icon}
-        <span className="ml-2">{label}</span>
+        <span className="ml-2 mx-[6px]">{label}</span>
       </Button>
     </Link>
   );

@@ -72,19 +72,7 @@
     @apply border-border;
   }
   body {
-    @apply bg-background text-foreground;
-  }
-  
-  /* Theme transition - apply to both HTML and body */
-  .theme-transition,
-  .theme-transition * {
-    transition: background-color 0.3s ease-in-out,
-                color 0.3s ease-in-out,
-                border-color 0.3s ease-in-out,
-                fill 0.3s ease-in-out,
-                stroke 0.3s ease-in-out,
-                opacity 0.3s ease-in-out,
-                box-shadow 0.3s ease-in-out !important;
+    @apply bg-background text-foreground transition-colors duration-300;
   }
   
   /* Custom cursor style */

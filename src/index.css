@@ -56,20 +56,8 @@
   }
 
   body {
-    @apply bg-background text-foreground antialiased;
+    @apply bg-background text-foreground antialiased transition-colors duration-300;
     font-feature-settings: "ss01", "ss02", "cv01", "cv02";
-  }
-
-  /* Theme transition */
-  .theme-transition,
-  .theme-transition * {
-    transition: background-color 0.3s ease-in-out,
-                color 0.3s ease-in-out,
-                border-color 0.3s ease-in-out,
-                fill 0.3s ease-in-out,
-                stroke 0.3s ease-in-out,
-                opacity 0.3s ease-in-out,
-                box-shadow 0.3s ease-in-out !important;
   }
 
   h1, h2, h3, h4, h5, h6 {

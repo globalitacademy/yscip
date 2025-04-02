@@ -17,11 +17,11 @@ export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   const [theme, setTheme] = useState<Theme>('light');
   const [mounted, setMounted] = useState(false);
   
-  // Initialize theme from localStorage or system preference
+  // Only run this effect on client-side
   useEffect(() => {
     setMounted(true);
     
-    // Check localStorage first
+    // Check if theme is stored in localStorage
     const storedTheme = localStorage.getItem('theme') as Theme | null;
     
     if (storedTheme) {
@@ -32,36 +32,26 @@ export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     }
   }, []);
   
-  // Apply theme changes to document and localStorage
   useEffect(() => {
     if (!mounted) return;
     
+    // Update localStorage when theme changes
     localStorage.setItem('theme', theme);
     
-    const root = document.documentElement;
+    // Apply theme class to document and remove the other one
+    if (theme === 'dark') {
+      document.documentElement.classList.add('dark');
+      document.documentElement.classList.remove('light');
+    } else {
+      document.documentElement.classList.add('light');
+      document.documentElement.classList.remove('dark');
+    }
     
-    // Remove both classes first to ensure clean state
-    root.classList.remove('light', 'dark');
-    
-    // Apply new theme with transition classes
-    root.classList.add(theme);
-    root.classList.add('theme-transition');
-    
-    // Remove the transition class after the transition completes
-    const transitionTimeout = setTimeout(() => {
-      root.classList.remove('theme-transition');
-    }, 300);
-    
-    return () => clearTimeout(transitionTimeout);
+    console.log('Theme changed to:', theme);
   }, [theme, mounted]);
   
-  const value = {
-    theme,
-    setTheme,
-  };
-  
   return (
-    <ThemeContext.Provider value={value}>
+    <ThemeContext.Provider value={{ theme, setTheme }}>
       {children}
     </ThemeContext.Provider>
   );
