@@ -26,6 +26,28 @@ const ProjectsStatusChart: React.FC = () => {
       </Card>
     );
   }
+  
+  // Filter out entries with zero values
+  const filteredProjectsByStatus = stats.projectsByStatus.filter(entry => entry.value > 0);
+
+  if (filteredProjectsByStatus.length === 0) {
+    return (
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2 text-base md:text-lg">
+            <Briefcase className="h-5 w-5 text-green-500" />
+            Նախագծերն ըստ կարգավիճակի
+          </CardTitle>
+          <CardDescription>Նախագծերի բաշխումն ըստ կարգավիճակի</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="h-[250px] md:h-[300px] flex items-center justify-center text-muted-foreground">
+            Տվյալներ չկան
+          </div>
+        </CardContent>
+      </Card>
+    );
+  }
 
   return (
     <Card>
@@ -41,7 +63,7 @@ const ProjectsStatusChart: React.FC = () => {
           <ResponsiveContainer width="100%" height="100%">
             <PieChart>
               <Pie
-                data={stats.projectsByStatus}
+                data={filteredProjectsByStatus}
                 cx="50%"
                 cy="50%"
                 labelLine={false}
@@ -50,7 +72,7 @@ const ProjectsStatusChart: React.FC = () => {
                 fill="#8884d8"
                 dataKey="value"
               >
-                {stats.projectsByStatus.map((entry, index) => (
+                {filteredProjectsByStatus.map((entry, index) => (
                   <Cell key={`cell-${index}`} fill={entry.color} />
                 ))}
               </Pie>

@@ -21,6 +21,7 @@ const ProjectTabs: React.FC = () => {
   }, [loadProjects]);
 
   // Filter projects based on search, category, and visibility permissions
+  // Only show REAL projects (have is_public property from database)
   const filteredProjects = projects.filter(project => {
     // Only show projects that are from the database (real projects)
     const isRealProject = project.is_public !== undefined;

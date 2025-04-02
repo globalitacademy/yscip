@@ -26,6 +26,28 @@ const RegistrationChart: React.FC = () => {
       </Card>
     );
   }
+  
+  // Filter out entries with zero counts
+  const filteredRegistrationsByMonth = stats.registrationsByMonth.filter(entry => entry.count > 0);
+
+  if (filteredRegistrationsByMonth.length === 0) {
+    return (
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2 text-base md:text-lg">
+            <Activity className="h-5 w-5 text-blue-500" />
+            Գրանցումների դինամիկա
+          </CardTitle>
+          <CardDescription>Օգտատերերի գրանցումների քանակն ըստ ամիսների</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="h-[250px] md:h-[300px] flex items-center justify-center text-muted-foreground">
+            Տվյալներ չկան
+          </div>
+        </CardContent>
+      </Card>
+    );
+  }
 
   return (
     <Card>
@@ -39,7 +61,7 @@ const RegistrationChart: React.FC = () => {
       <CardContent>
         <div className="h-[250px] md:h-[300px]">
           <ResponsiveContainer width="100%" height="100%">
-            <BarChart data={stats.registrationsByMonth}>
+            <BarChart data={filteredRegistrationsByMonth}>
               <CartesianGrid strokeDasharray="3 3" />
               <XAxis dataKey="name" />
               <YAxis />
