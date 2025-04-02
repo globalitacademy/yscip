@@ -2,9 +2,9 @@
 import React, { memo } from 'react';
 import { Card, CardContent, CardFooter, CardHeader } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Eye } from 'lucide-react';
+import { Eye, Pencil } from 'lucide-react';
 import { ProjectTheme } from '@/data/projectThemes';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { useProjectManagement } from '@/contexts/ProjectManagementContext';
 import { useProjectCard } from '@/hooks/project/useProjectCard';
@@ -25,6 +25,7 @@ const ProjectCard: React.FC<ProjectCardProps> = ({
   adminView = false
 }) => {
   const { user } = useAuth();
+  const navigate = useNavigate();
   
   // Only try to use the context if we're not in admin view
   let projectManagement: any = {};
@@ -62,6 +63,10 @@ const ProjectCard: React.FC<ProjectCardProps> = ({
     handleDeleteInit,
     adminView
   );
+
+  const handleEditFullProject = () => {
+    navigate(`/projects/edit/${project.id}`);
+  };
   
   return (
     <Card className={`flex flex-col w-full hover:shadow-md transition-shadow relative ${className || ''}`}>
@@ -100,7 +105,7 @@ const ProjectCard: React.FC<ProjectCardProps> = ({
         </div>
       </CardContent>
       
-      <CardFooter className="pt-4">
+      <CardFooter className="pt-4 flex flex-col gap-2">
         <Link to={`/project/${project.id}`} className="w-full">
           <Button 
             variant="outline"
@@ -109,6 +114,16 @@ const ProjectCard: React.FC<ProjectCardProps> = ({
             <Eye className="h-4 w-4 mr-2" /> Մանրամասն
           </Button>
         </Link>
+        
+        {isCreatedByCurrentUser && (
+          <Button 
+            variant="secondary"
+            className="w-full"
+            onClick={handleEditFullProject}
+          >
+            <Pencil className="h-4 w-4 mr-2" /> Խմբագրել
+          </Button>
+        )}
       </CardFooter>
     </Card>
   );

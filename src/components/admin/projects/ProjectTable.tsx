@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { ProjectTheme } from '@/data/projectThemes';
 import { useProjectPermissions } from '@/hooks/useProjectPermissions';
@@ -12,7 +13,7 @@ import {
 } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Eye, Pencil, Trash, Image } from 'lucide-react';
+import { Eye, Pencil, Trash, Image, Edit } from 'lucide-react';
 import { FadeIn } from '@/components/LocalTransitions';
 import { useNavigate } from 'react-router-dom';
 
@@ -37,22 +38,17 @@ const ProjectTable: React.FC<ProjectTableProps> = ({
   const { user } = useAuth();
   const navigate = useNavigate();
 
-  // Filter projects based on permissions
   const filteredProjects = projects.filter(project => {
-    // First check if it's a real project from database
     const isRealProject = project.is_public !== undefined;
     
-    if (!isRealProject) return true; // Allow template projects
+    if (!isRealProject) return true;
     
-    // Admin can see all projects
     if (user?.role === 'admin') return true;
     
-    // Instructors, lecturers, and employers can see their own projects
     if (user && (user.role === 'instructor' || user.role === 'lecturer' || user.role === 'employer')) {
       return project.createdBy === user.id;
     }
     
-    // Other roles only see public projects
     return project.is_public === true;
   });
 
@@ -116,7 +112,7 @@ const ProjectTable: React.FC<ProjectTableProps> = ({
                       onClick={() => handleAdvancedEdit(project)}
                       title="Ընդլայնված խմբագրում"
                     >
-                      <Pencil size={16} />
+                      <Edit size={16} />
                     </Button>
                     <Button
                       variant="ghost" 
@@ -125,7 +121,7 @@ const ProjectTable: React.FC<ProjectTableProps> = ({
                       onClick={() => onEditProject(project)}
                       title="Արագ խմբագրում"
                     >
-                      <Eye size={16} />
+                      <Pencil size={16} />
                     </Button>
                     <Button
                       variant="ghost" 

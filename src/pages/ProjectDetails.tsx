@@ -25,7 +25,8 @@ const ProjectDetails: React.FC = () => {
   const canEditProject = user && (
     user.role === 'admin' || 
     user.role === 'lecturer' || 
-    user.role === 'employer'
+    user.role === 'employer' ||
+    (project?.createdBy === user.id)
   );
   
   // Check if this supervisor has pending approvals for this project

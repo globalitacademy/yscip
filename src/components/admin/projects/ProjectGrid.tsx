@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { ProjectTheme } from '@/data/projectThemes';
 import ProjectCard from '@/components/ProjectCard';
@@ -64,7 +65,7 @@ const ProjectGrid: React.FC<ProjectGridProps> = ({
             <Button
               variant="outline" 
               size="icon" 
-              className="h-6 w-6 rounded-full bg-white/80 backdrop-blur-sm" 
+              className="h-6 w-6 rounded-full bg-white/80 backdrop-blur-sm shadow-sm" 
               onClick={() => onEditProject(project)}
             >
               <Pencil size={12} />
@@ -72,7 +73,7 @@ const ProjectGrid: React.FC<ProjectGridProps> = ({
             <Button
               variant="outline" 
               size="icon" 
-              className="h-6 w-6 rounded-full bg-white/80 backdrop-blur-sm" 
+              className="h-6 w-6 rounded-full bg-white/80 backdrop-blur-sm shadow-sm" 
               onClick={() => onImageChange(project)}
             >
               <Image size={12} />
@@ -80,7 +81,7 @@ const ProjectGrid: React.FC<ProjectGridProps> = ({
             <Button
               variant="outline" 
               size="icon" 
-              className="h-6 w-6 rounded-full bg-white/80 backdrop-blur-sm" 
+              className="h-6 w-6 rounded-full bg-white/80 backdrop-blur-sm shadow-sm" 
               onClick={() => onDeleteProject(project)}
             >
               <Trash size={12} />

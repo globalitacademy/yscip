@@ -11,8 +11,9 @@ import { toast } from '@/components/ui/use-toast';
 import ProjectHeader from './ProjectHeader';
 import ProjectTabs from './ProjectTabs';
 import { cn } from '@/lib/utils';
-import { AlertCircle } from 'lucide-react';
+import { AlertCircle, Edit, Pencil } from 'lucide-react';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
+import { useAuth } from '@/contexts/AuthContext';
 
 const ProjectDetailsContent: React.FC = () => {
   const { 
@@ -28,9 +29,11 @@ const ProjectDetailsContent: React.FC = () => {
     approveProject, 
     rejectProject,
     isReserved,
-    projectProgress
+    projectProgress,
+    canEdit
   } = useProject();
   const navigate = useNavigate();
+  const { user } = useAuth();
   
   if (!project) {
     return (
@@ -63,6 +66,10 @@ const ProjectDetailsContent: React.FC = () => {
     logo: '/placeholder.svg'
   };
 
+  const handleEditProject = () => {
+    navigate(`/projects/edit/${project.id}`);
+  };
+
   return (
     <div className="min-h-screen flex flex-col">
       <Header />
@@ -78,6 +85,18 @@ const ProjectDetailsContent: React.FC = () => {
               </AlertDescription>
             </Alert>
           )}
+          
+          <div className="flex justify-between items-center mb-6">
+            {canEdit && (
+              <Button 
+                variant="outline"
+                className="flex items-center gap-2"
+                onClick={handleEditProject}
+              >
+                <Pencil size={16} /> Խմբագրել նախագիծը
+              </Button>
+            )}
+          </div>
           
           <ProjectHeader 
             project={project}
