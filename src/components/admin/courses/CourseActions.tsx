@@ -159,6 +159,7 @@ export const CourseActions: React.FC<CourseActionsProps> = ({
                     Հրապարակել
                   </>
                 )}
+                {isLoading && <Loader2 className="ml-2 h-4 w-4 animate-spin" />}
               </DropdownMenuItem>
               
               <DropdownMenuItem 
