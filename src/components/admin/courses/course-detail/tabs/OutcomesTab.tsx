@@ -18,24 +18,25 @@ export const OutcomesTab: React.FC<OutcomesTabProps> = ({ editedCourse, setEdite
       return;
     }
     
-    // Use a callback to ensure we're working with the latest state
-    setEditedCourse(prevState => {
-      const currentOutcomes = [...(prevState.outcomes || [])];
-      const updatedOutcomes = [...currentOutcomes, newOutcome.trim()];
-      console.log('OutcomesTab: Adding outcome, updated outcomes:', updatedOutcomes);
-      return { ...prevState, outcomes: updatedOutcomes };
-    });
+    // Create a new array with the existing outcomes plus the new one
+    const currentOutcomes = [...(editedCourse.outcomes || [])];
+    const updatedOutcomes = [...currentOutcomes, newOutcome.trim()];
+    console.log('OutcomesTab: Adding outcome, updated outcomes:', updatedOutcomes);
+    
+    // Pass the changes object directly to setEditedCourse
+    setEditedCourse({ outcomes: updatedOutcomes });
     
     setNewOutcome('');
   };
   
   const handleRemoveOutcome = (index: number) => {
-    setEditedCourse(prevState => {
-      const currentOutcomes = [...(prevState.outcomes || [])];
-      currentOutcomes.splice(index, 1);
-      console.log('OutcomesTab: Removing outcome, updated outcomes:', currentOutcomes);
-      return { ...prevState, outcomes: currentOutcomes };
-    });
+    // Create a new array with the outcome at the specified index removed
+    const currentOutcomes = [...(editedCourse.outcomes || [])];
+    currentOutcomes.splice(index, 1);
+    console.log('OutcomesTab: Removing outcome, updated outcomes:', currentOutcomes);
+    
+    // Pass the changes object directly to setEditedCourse
+    setEditedCourse({ outcomes: currentOutcomes });
   };
   
   const handleKeyDown = (e: React.KeyboardEvent) => {

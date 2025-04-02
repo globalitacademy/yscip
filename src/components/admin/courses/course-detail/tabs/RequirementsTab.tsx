@@ -18,24 +18,25 @@ export const RequirementsTab: React.FC<RequirementsTabProps> = ({ editedCourse, 
       return;
     }
     
-    // Use a callback to ensure we're working with the latest state
-    setEditedCourse(prevState => {
-      const currentRequirements = [...(prevState.requirements || [])];
-      const updatedRequirements = [...currentRequirements, newRequirement.trim()];
-      console.log('RequirementsTab: Adding requirement, updated requirements:', updatedRequirements);
-      return { ...prevState, requirements: updatedRequirements };
-    });
+    // Create a new array with the existing requirements plus the new one
+    const currentRequirements = [...(editedCourse.requirements || [])];
+    const updatedRequirements = [...currentRequirements, newRequirement.trim()];
+    console.log('RequirementsTab: Adding requirement, updated requirements:', updatedRequirements);
+    
+    // Pass the changes object directly to setEditedCourse
+    setEditedCourse({ requirements: updatedRequirements });
     
     setNewRequirement('');
   };
   
   const handleRemoveRequirement = (index: number) => {
-    setEditedCourse(prevState => {
-      const currentRequirements = [...(prevState.requirements || [])];
-      currentRequirements.splice(index, 1);
-      console.log('RequirementsTab: Removing requirement, updated requirements:', currentRequirements);
-      return { ...prevState, requirements: currentRequirements };
-    });
+    // Create a new array with the requirement at the specified index removed
+    const currentRequirements = [...(editedCourse.requirements || [])];
+    currentRequirements.splice(index, 1);
+    console.log('RequirementsTab: Removing requirement, updated requirements:', currentRequirements);
+    
+    // Pass the changes object directly to setEditedCourse
+    setEditedCourse({ requirements: currentRequirements });
   };
   
   const handleKeyDown = (e: React.KeyboardEvent) => {
