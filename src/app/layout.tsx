@@ -9,9 +9,8 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    // Remove the default class to prevent light theme from being always applied
-    <html lang="en" className="h-full">
-      <body className="h-full">
+    <html lang="en" suppressHydrationWarning className="h-full">
+      <body className="h-full bg-background text-foreground">
         <ThemeProvider>
           <CustomCursor />
           {children}

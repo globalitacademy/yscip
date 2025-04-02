@@ -15,8 +15,12 @@ const ThemeContext = createContext<ThemeContextType>({
 
 export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [theme, setTheme] = useState<Theme>('light');
+  const [mounted, setMounted] = useState(false);
   
+  // Only run this effect on client-side
   useEffect(() => {
+    setMounted(true);
+    
     // Check if theme is stored in localStorage
     const storedTheme = localStorage.getItem('theme') as Theme | null;
     
@@ -29,6 +33,8 @@ export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   }, []);
   
   useEffect(() => {
+    if (!mounted) return;
+    
     // Update localStorage when theme changes
     localStorage.setItem('theme', theme);
     
@@ -41,8 +47,8 @@ export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       document.documentElement.classList.remove('dark');
     }
     
-    console.log('Theme changed to:', theme); // Add debug log
-  }, [theme]);
+    console.log('Theme changed to:', theme);
+  }, [theme, mounted]);
   
   return (
     <ThemeContext.Provider value={{ theme, setTheme }}>
