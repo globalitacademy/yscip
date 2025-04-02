@@ -39,10 +39,20 @@ export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     localStorage.setItem('theme', theme);
     
     const root = document.documentElement;
-    root.classList.remove('light', 'dark');
-    root.classList.add(theme);
     
-    console.log('Theme applied:', theme);
+    // Remove both classes first to ensure clean state
+    root.classList.remove('light', 'dark');
+    
+    // Apply new theme with transition classes
+    root.classList.add(theme);
+    root.classList.add('theme-transition');
+    
+    // Remove the transition class after the transition completes
+    const transitionTimeout = setTimeout(() => {
+      root.classList.remove('theme-transition');
+    }, 300);
+    
+    return () => clearTimeout(transitionTimeout);
   }, [theme, mounted]);
   
   const value = {

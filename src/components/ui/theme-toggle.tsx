@@ -17,13 +17,16 @@ export const ThemeToggle: React.FC = () => {
       size="icon"
       onClick={toggleTheme}
       aria-label={`Switch to ${theme === 'dark' ? 'light' : 'dark'} theme`}
-      className="relative w-9 h-9 rounded-full"
+      className="relative w-9 h-9 rounded-full overflow-hidden"
     >
-      {theme === 'dark' ? (
+      <span className="absolute inset-0 flex items-center justify-center transition-opacity duration-300 ease-in-out" 
+            style={{ opacity: theme === 'dark' ? 1 : 0 }}>
         <Sun className="h-5 w-5 text-yellow-400 transition-all" />
-      ) : (
-        <Moon className="h-5 w-5 text-slate-700 transition-all dark:text-slate-400" />
-      )}
+      </span>
+      <span className="absolute inset-0 flex items-center justify-center transition-opacity duration-300 ease-in-out" 
+            style={{ opacity: theme === 'light' ? 1 : 0 }}>
+        <Moon className="h-5 w-5 text-slate-700 transition-all" />
+      </span>
     </Button>
   );
 };
