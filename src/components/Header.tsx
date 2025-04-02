@@ -11,7 +11,7 @@ const Header: React.FC = () => {
   const { user, isAuthenticated } = useAuth();
 
   return (
-    <header className="bg-white shadow-md">
+    <header className="bg-white shadow-md dark:bg-gray-800 dark:text-white">
       <div className="container mx-auto px-4 py-4">
         <div className="flex justify-between items-center">
           <Link to="/" className="flex items-center gap-2">
@@ -19,15 +19,15 @@ const Header: React.FC = () => {
               <span className="text-white text-sm font-bold">LC</span>
               <Square className="absolute inset-0 w-8 h-8 text-blue-600" strokeWidth={3} />
             </div>
-            <span className="text-xl font-bold text-blue-600">ԿԿՀ</span>
+            <span className="text-xl font-bold text-blue-600 dark:text-blue-400">ԿԿՀ</span>
           </Link>
           
           <nav className="hidden md:flex space-x-4 flex-1 justify-center">
-            <Link to="/" className="text-gray-600 hover:text-gray-900">Գլխավոր</Link>
-            <Link to="/projects" className="text-gray-600 hover:text-gray-900">Նախագծեր</Link>
-            <Link to="/courses" className="text-gray-600 hover:text-gray-900">Դասընթացներ</Link>
+            <Link to="/" className="text-gray-600 hover:text-gray-900 dark:text-gray-300 dark:hover:text-white">Գլխավոր</Link>
+            <Link to="/projects" className="text-gray-600 hover:text-gray-900 dark:text-gray-300 dark:hover:text-white">Նախագծեր</Link>
+            <Link to="/courses" className="text-gray-600 hover:text-gray-900 dark:text-gray-300 dark:hover:text-white">Դասընթացներ</Link>
             {isAuthenticated && (
-              <Link to="/portfolio" className="text-gray-600 hover:text-gray-900">Պորտֆոլիո</Link>
+              <Link to="/portfolio" className="text-gray-600 hover:text-gray-900 dark:text-gray-300 dark:hover:text-white">Պորտֆոլիո</Link>
             )}
             <ThemeToggle />
           </nav>
@@ -43,7 +43,7 @@ const Header: React.FC = () => {
               <div className="space-x-2">
                 <Link
                   to="/login"
-                  className="px-4 py-2 border border-gray-300 rounded text-gray-700 hover:bg-gray-50"
+                  className="px-4 py-2 border border-gray-300 rounded text-gray-700 hover:bg-gray-50 dark:border-gray-600 dark:text-gray-300 dark:hover:bg-gray-700"
                 >
                   Մուտք
                 </Link>
