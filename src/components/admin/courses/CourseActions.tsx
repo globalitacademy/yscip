@@ -2,13 +2,7 @@
 import React, { useState } from 'react';
 import { ProfessionalCourse } from '@/components/courses/types/ProfessionalCourse';
 import { Button } from '@/components/ui/button';
-import { MoreHorizontal, Eye, Pencil, Trash2, GlobeLock, Globe, AlertCircle, Loader2 } from 'lucide-react';
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
+import { Eye, Pencil, Trash2, GlobeLock, Globe, AlertCircle, Loader2 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import {
   AlertDialog,
@@ -23,6 +17,7 @@ import {
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { useAuth } from '@/contexts/AuthContext';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 
 interface CourseActionsProps {
   course: ProfessionalCourse;
@@ -37,6 +32,7 @@ export const CourseActions: React.FC<CourseActionsProps> = ({
 }) => {
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [actionType, setActionType] = useState<'delete' | 'status' | null>(null);
   const { user } = useAuth();
   
   // Check if user can modify this course
@@ -52,6 +48,7 @@ export const CourseActions: React.FC<CourseActionsProps> = ({
       return;
     }
     
+    setActionType('status');
     setIsLoading(true);
     try {
       const { error } = await supabase
@@ -79,6 +76,7 @@ export const CourseActions: React.FC<CourseActionsProps> = ({
       toast.error('Դասընթացի կարգավիճակի փոփոխման ժամանակ սխալ է տեղի ունեցել');
     } finally {
       setIsLoading(false);
+      setActionType(null);
     }
   };
 
@@ -88,6 +86,7 @@ export const CourseActions: React.FC<CourseActionsProps> = ({
       return;
     }
     
+    setActionType('delete');
     setIsLoading(true);
     try {
       // First delete related data
@@ -118,62 +117,83 @@ export const CourseActions: React.FC<CourseActionsProps> = ({
       toast.error('Դասընթացի ջնջման ժամանակ սխալ է տեղի ունեցել');
     } finally {
       setIsLoading(false);
+      setActionType(null);
     }
   };
 
   return (
     <>
-      <DropdownMenu>
-        <DropdownMenuTrigger asChild>
-          <Button variant="ghost" size="sm">
-            <MoreHorizontal className="h-4 w-4" />
-            <span className="sr-only">Գործողություններ</span>
-          </Button>
-        </DropdownMenuTrigger>
-        <DropdownMenuContent align="end">
-          <DropdownMenuItem asChild>
-            <Link to={`/admin/courses/${course.id}`} className="cursor-pointer">
-              <Eye className="h-4 w-4 mr-2" />
-              Դիտել
-            </Link>
-          </DropdownMenuItem>
-          
+      <div className="flex items-center space-x-2">
+        <TooltipProvider>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button variant="ghost" size="icon" asChild>
+                <Link to={`/admin/courses/${course.id}`}>
+                  <Eye className="h-4 w-4" />
+                </Link>
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent>
+              <p>Դիտել</p>
+            </TooltipContent>
+          </Tooltip>
+
           {canModify && (
             <>
-              <DropdownMenuItem asChild>
-                <Link to={`/admin/courses/${course.id}/edit`} className="cursor-pointer">
-                  <Pencil className="h-4 w-4 mr-2" />
-                  Խմբագրել
-                </Link>
-              </DropdownMenuItem>
-              
-              <DropdownMenuItem onClick={handleStatusToggle} disabled={isLoading}>
-                {course.is_public ? (
-                  <>
-                    <GlobeLock className="h-4 w-4 mr-2" />
-                    Հանել հրապարակումից
-                  </>
-                ) : (
-                  <>
-                    <Globe className="h-4 w-4 mr-2" />
-                    Հրապարակել
-                  </>
-                )}
-                {isLoading && <Loader2 className="ml-2 h-4 w-4 animate-spin" />}
-              </DropdownMenuItem>
-              
-              <DropdownMenuItem 
-                onClick={() => setIsDeleteDialogOpen(true)}
-                className="text-destructive"
-                disabled={isLoading}
-              >
-                <Trash2 className="h-4 w-4 mr-2" />
-                Ջնջել
-              </DropdownMenuItem>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button variant="ghost" size="icon" asChild>
+                    <Link to={`/admin/courses/${course.id}/edit`}>
+                      <Pencil className="h-4 w-4" />
+                    </Link>
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent>
+                  <p>Խմբագրել</p>
+                </TooltipContent>
+              </Tooltip>
+
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button 
+                    variant="ghost" 
+                    size="icon" 
+                    onClick={handleStatusToggle} 
+                    disabled={isLoading}
+                  >
+                    {actionType === 'status' && isLoading ? (
+                      <Loader2 className="h-4 w-4 animate-spin" />
+                    ) : course.is_public ? (
+                      <GlobeLock className="h-4 w-4" />
+                    ) : (
+                      <Globe className="h-4 w-4" />
+                    )}
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent>
+                  <p>{course.is_public ? 'Հանել հրապարակումից' : 'Հրապարակել'}</p>
+                </TooltipContent>
+              </Tooltip>
+
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button 
+                    variant="ghost" 
+                    size="icon" 
+                    onClick={() => setIsDeleteDialogOpen(true)}
+                    disabled={isLoading}
+                  >
+                    <Trash2 className="h-4 w-4 text-destructive" />
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent>
+                  <p>Ջնջել</p>
+                </TooltipContent>
+              </Tooltip>
             </>
           )}
-        </DropdownMenuContent>
-      </DropdownMenu>
+        </TooltipProvider>
+      </div>
 
       <AlertDialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
         <AlertDialogContent>
@@ -196,7 +216,7 @@ export const CourseActions: React.FC<CourseActionsProps> = ({
               disabled={isLoading}
               className="bg-destructive hover:bg-destructive/90"
             >
-              {isLoading ? (
+              {isLoading && actionType === 'delete' ? (
                 <>
                   <Loader2 className="h-4 w-4 mr-2 animate-spin" />
                   Ջնջում...

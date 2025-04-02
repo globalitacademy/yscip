@@ -30,7 +30,7 @@ export const CourseRow: React.FC<CourseRowProps> = ({
           {course.is_public ? 'Հրապարակված' : 'Թաքցված'}
         </Badge>
       </TableCell>
-      <TableCell className="text-right">
+      <TableCell>
         <CourseActions 
           course={course} 
           onStatusChange={onStatusChange}
