@@ -23,8 +23,11 @@ export const RequirementsTab: React.FC<RequirementsTabProps> = ({ editedCourse, 
     const updatedRequirements = [...currentRequirements, newRequirement.trim()];
     console.log('RequirementsTab: Adding requirement, updated requirements:', updatedRequirements);
     
-    // Pass the changes object directly to setEditedCourse
-    setEditedCourse({ requirements: updatedRequirements });
+    // Create a complete updated state object
+    const updatedCourse = { ...editedCourse, requirements: updatedRequirements };
+    
+    // Pass the complete updated state to setEditedCourse
+    setEditedCourse(updatedCourse);
     
     setNewRequirement('');
   };
@@ -35,8 +38,11 @@ export const RequirementsTab: React.FC<RequirementsTabProps> = ({ editedCourse, 
     currentRequirements.splice(index, 1);
     console.log('RequirementsTab: Removing requirement, updated requirements:', currentRequirements);
     
-    // Pass the changes object directly to setEditedCourse
-    setEditedCourse({ requirements: currentRequirements });
+    // Create a complete updated state object
+    const updatedCourse = { ...editedCourse, requirements: currentRequirements };
+    
+    // Pass the complete updated state to setEditedCourse
+    setEditedCourse(updatedCourse);
   };
   
   const handleKeyDown = (e: React.KeyboardEvent) => {

@@ -53,20 +53,18 @@ export const useCourseEdit = (
         editedCourse.is_public = course.is_public;
       }
 
-      // Ensure we have all required fields from the original course if not in edited data
+      // Ensure all important fields from course are preserved
       const completeEditedCourse = {
-        ...course,
-        ...editedCourse,
+        id: course.id,
+        ...course,          // First include all original course properties
+        ...editedCourse,    // Then override with edited properties
         // Explicitly ensure required related data is present
         lessons: editedCourse.lessons || course.lessons || [],
         requirements: editedCourse.requirements || course.requirements || [],
         outcomes: editedCourse.outcomes || course.outcomes || []
       };
 
-      console.log('Updating course with complete data:', {
-        id: course.id,
-        completeData: completeEditedCourse
-      });
+      console.log('Updating course with complete data:', completeEditedCourse);
       
       const success = await updateCourse(course.id, completeEditedCourse);
       
@@ -131,6 +129,7 @@ export const useCourseEdit = (
               organizationLogo: data.organization_logo,
               description: data.description,
               is_public: data.is_public,
+              instructor: data.instructor, // Make sure to include instructor field from DB
               lessons: lessonsData?.data?.map(lesson => ({
                 title: lesson.title,
                 duration: lesson.duration

@@ -23,8 +23,11 @@ export const OutcomesTab: React.FC<OutcomesTabProps> = ({ editedCourse, setEdite
     const updatedOutcomes = [...currentOutcomes, newOutcome.trim()];
     console.log('OutcomesTab: Adding outcome, updated outcomes:', updatedOutcomes);
     
-    // Pass the changes object directly to setEditedCourse
-    setEditedCourse({ outcomes: updatedOutcomes });
+    // Create a complete updated state object
+    const updatedCourse = { ...editedCourse, outcomes: updatedOutcomes };
+    
+    // Pass the complete updated state to setEditedCourse
+    setEditedCourse(updatedCourse);
     
     setNewOutcome('');
   };
@@ -35,8 +38,11 @@ export const OutcomesTab: React.FC<OutcomesTabProps> = ({ editedCourse, setEdite
     currentOutcomes.splice(index, 1);
     console.log('OutcomesTab: Removing outcome, updated outcomes:', currentOutcomes);
     
-    // Pass the changes object directly to setEditedCourse
-    setEditedCourse({ outcomes: currentOutcomes });
+    // Create a complete updated state object
+    const updatedCourse = { ...editedCourse, outcomes: currentOutcomes };
+    
+    // Pass the complete updated state to setEditedCourse
+    setEditedCourse(updatedCourse);
   };
   
   const handleKeyDown = (e: React.KeyboardEvent) => {

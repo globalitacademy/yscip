@@ -44,12 +44,12 @@ const CourseEditDialog: React.FC<CourseEditDialogProps> = ({
     }
   }, [isOpen, editedCourse]);
   
-  // Handle form changes and track when form becomes dirty
+  // Handle form changes while maintaining full state
   const handleFormChange = (changes: Partial<ProfessionalCourse>) => {
     console.log('CourseEditDialog: Form changed with:', changes);
     setEditedCourse(prevState => {
-      // Create a deep merged copy to ensure we don't lose any nested properties
-      const newState = JSON.parse(JSON.stringify({ ...prevState, ...changes }));
+      // Create a proper merged state with all previous values plus new changes
+      const newState = { ...prevState, ...changes };
       console.log('CourseEditDialog: New state after changes:', newState);
       setIsDirty(true);
       return newState;
