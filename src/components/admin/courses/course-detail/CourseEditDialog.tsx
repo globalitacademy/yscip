@@ -38,6 +38,11 @@ const CourseEditDialog: React.FC<CourseEditDialogProps> = ({
     setIsIconsOpen(false);
   };
   
+  const onSave = async () => {
+    console.log('Save button clicked with edited course data:', editedCourse);
+    await handleSaveChanges();
+  };
+  
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
       <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
@@ -68,8 +73,9 @@ const CourseEditDialog: React.FC<CourseEditDialogProps> = ({
             <div className="mt-4 flex items-center space-x-2">
               <Checkbox 
                 id="is_public" 
-                checked={editedCourse.is_public} 
+                checked={editedCourse.is_public || false} 
                 onCheckedChange={(checked) => {
+                  console.log('Checkbox changed to:', checked);
                   setEditedCourse({
                     ...editedCourse,
                     is_public: !!checked
@@ -116,7 +122,7 @@ const CourseEditDialog: React.FC<CourseEditDialogProps> = ({
         
         <DialogFooter>
           <Button variant="ghost" onClick={() => setIsOpen(false)}>Չեղարկել</Button>
-          <Button onClick={handleSaveChanges} disabled={loading}>
+          <Button onClick={onSave} disabled={loading}>
             {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
             Պահպանել
           </Button>

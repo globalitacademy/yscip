@@ -43,6 +43,7 @@ export const CourseDetailPage: React.FC<CourseDetailPageProps> = ({ id, isEditMo
       
       setLoading(true);
       try {
+        console.log('Fetching course with ID:', id);
         const { data, error } = await supabase
           .from('courses')
           .select('*')
@@ -105,6 +106,7 @@ export const CourseDetailPage: React.FC<CourseDetailPageProps> = ({ id, isEditMo
         
         setCourse(professionalCourse);
         setEditedCourse(professionalCourse);
+        console.log('Fetched course:', professionalCourse);
       } catch (e) {
         console.error('Error fetching course details:', e);
         toast.error('Դասընթացի բեռնման ժամանակ սխալ է տեղի ունեցել');
@@ -139,16 +141,24 @@ export const CourseDetailPage: React.FC<CourseDetailPageProps> = ({ id, isEditMo
   }, [id, navigate]);
 
   const handleSaveChanges = async () => {
-    if (!course || !editedCourse) return;
+    if (!course || !editedCourse) {
+      console.error('No course or edited course data available');
+      return;
+    }
     
+    console.log('Saving changes:', editedCourse);
     setLoading(true);
     setActionType('status');
     try {
-      // Ensure is_public status is carried over from the original course
-      // This prevents editedCourse from changing the publication status implicitly
+      // Make sure is_public status is not undefined
       if (editedCourse.is_public === undefined) {
         editedCourse.is_public = course.is_public;
       }
+
+      console.log('Updating course with data:', {
+        id: course.id,
+        updates: editedCourse
+      });
       
       const success = await updateCourse(course.id, editedCourse);
       
@@ -161,6 +171,7 @@ export const CourseDetailPage: React.FC<CourseDetailPageProps> = ({ id, isEditMo
           navigate(`/admin/course/${course.id}`);
         }
         
+        // Update the local state with the edited values
         setCourse({
           ...course,
           ...editedCourse,
