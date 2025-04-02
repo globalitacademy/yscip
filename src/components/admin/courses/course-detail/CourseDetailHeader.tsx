@@ -11,7 +11,7 @@ interface CourseDetailHeaderProps {
 
 const CourseDetailHeader: React.FC<CourseDetailHeaderProps> = ({ course }) => {
   return (
-    <div className="relative overflow-hidden mb-8">
+    <div className="relative overflow-hidden mb-8 w-full">
       {/* Light blue background */}
       <div className="absolute inset-0 bg-sky-50">
         {course.imageUrl && (
@@ -28,8 +28,8 @@ const CourseDetailHeader: React.FC<CourseDetailHeaderProps> = ({ course }) => {
         )}
       </div>
       
-      <div className="container mx-auto px-6 py-10 relative z-10">
-        <div className="space-y-5">
+      <div className="container mx-auto px-6 py-10 relative z-10 w-full max-w-none">
+        <div className="space-y-5 max-w-4xl">
           {/* Course title */}
           <h1 className="text-4xl md:text-5xl font-bold text-gray-900">
             {course.title}
