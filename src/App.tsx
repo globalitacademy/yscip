@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
 import { Toaster } from 'sonner';
@@ -69,6 +70,7 @@ function App() {
           <Route path="/admin/courses" element={<AdminCoursesPage />} />
           <Route path="/admin/courses/create" element={<CourseCreationPage />} />
           <Route path="/admin/course/:id" element={<CourseDetailPage />} />
+          <Route path="/admin/course/:id/edit" element={<CourseDetailPage />} />
           <Route path="/admin/all-courses" element={<AllCoursesPage />} />
           <Route path="/admin/course-applications" element={<CourseApplicationsPage />} />
           <Route path="/admin/modules" element={<ModulesPage />} />

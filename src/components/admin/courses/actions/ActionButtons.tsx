@@ -30,7 +30,7 @@ export const ActionButtons: React.FC<ActionButtonsProps> = ({
         <Tooltip>
           <TooltipTrigger asChild>
             <Button variant="ghost" size="icon" asChild>
-              <Link to={`/admin/courses/${courseId}`}>
+              <Link to={`/admin/course/${courseId}`}>
                 <Eye className="h-4 w-4" />
               </Link>
             </Button>
@@ -45,7 +45,7 @@ export const ActionButtons: React.FC<ActionButtonsProps> = ({
             <Tooltip>
               <TooltipTrigger asChild>
                 <Button variant="ghost" size="icon" asChild>
-                  <Link to={`/admin/courses/${courseId}/edit`}>
+                  <Link to={`/admin/course/${courseId}/edit`}>
                     <Pencil className="h-4 w-4" />
                   </Link>
                 </Button>

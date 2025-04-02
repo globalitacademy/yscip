@@ -1,8 +1,6 @@
 
 import React, { useEffect, useState } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
-import Header from '@/components/Header';
-import Footer from '@/components/Footer';
+import { useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
 import { ProfessionalCourse } from '@/components/courses/types/ProfessionalCourse';
 import { supabase } from '@/integrations/supabase/client';
@@ -14,8 +12,12 @@ import CourseDetailContent from './course-detail/CourseDetailContent';
 import CourseEditDialog from './course-detail/CourseEditDialog';
 import CourseDeleteDialog from './course-detail/CourseDeleteDialog';
 
-const CourseDetailPage: React.FC = () => {
-  const { id } = useParams<{ id: string }>();
+interface CourseDetailPageProps {
+  id?: string;
+  isEditMode?: boolean;
+}
+
+export const CourseDetailPage: React.FC<CourseDetailPageProps> = ({ id, isEditMode = false }) => {
   const navigate = useNavigate();
   const { user } = useAuth();
   const [course, setCourse] = useState<ProfessionalCourse | null>(null);
@@ -23,6 +25,13 @@ const CourseDetailPage: React.FC = () => {
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [editedCourse, setEditedCourse] = useState<Partial<ProfessionalCourse>>({});
+
+  // Automatically open edit dialog if in edit mode
+  useEffect(() => {
+    if (isEditMode && course && !isEditDialogOpen) {
+      setIsEditDialogOpen(true);
+    }
+  }, [isEditMode, course, isEditDialogOpen]);
 
   useEffect(() => {
     const fetchCourse = async () => {
@@ -44,7 +53,7 @@ const CourseDetailPage: React.FC = () => {
         
         if (!data) {
           toast.error('Դասընթացը չի գտնվել');
-          navigate('/courses');
+          navigate('/admin/courses');
           return;
         }
         
@@ -136,6 +145,11 @@ const CourseDetailPage: React.FC = () => {
         toast.success('Դասընթացը հաջողությամբ թարմացվել է');
         setIsEditDialogOpen(false);
         
+        // If in edit mode, navigate back to view mode
+        if (isEditMode) {
+          navigate(`/admin/course/${course.id}`);
+        }
+        
         setCourse({
           ...course,
           ...editedCourse,
@@ -175,7 +189,7 @@ const CourseDetailPage: React.FC = () => {
       }
       
       toast.success('Դասընթացը հաջողությամբ ջնջվել է');
-      navigate('/courses');
+      navigate('/admin/courses');
     } catch (e) {
       console.error('Error deleting course:', e);
       toast.error('Դասընթացի ջնջման ժամանակ սխալ է տեղի ունեցել');
@@ -222,54 +236,48 @@ const CourseDetailPage: React.FC = () => {
 
   if (loading && !course) {
     return (
-      <div className="flex min-h-screen flex-col">
-        <Header />
-        <main className="flex-1 flex items-center justify-center">
-          <div className="text-center">
-            <Loader2 className="h-10 w-10 animate-spin mx-auto mb-4 text-primary" />
-            <p>Դասընթացի բեռնում...</p>
-          </div>
-        </main>
-        <Footer />
+      <div className="container mx-auto px-4 py-8">
+        <div className="text-center">
+          <Loader2 className="h-10 w-10 animate-spin mx-auto mb-4 text-primary" />
+          <p>Դասընթացի բեռնում...</p>
+        </div>
       </div>
     );
   }
 
   if (!course) {
     return (
-      <div className="flex min-h-screen flex-col">
-        <Header />
-        <main className="flex-1 container mx-auto px-4 py-8">
-          <div className="text-center py-12">
-            <AlertTriangle className="h-12 w-12 text-amber-500 mx-auto mb-4" />
-            <h1 className="text-2xl font-bold mb-2">Դասընթացը չի գտնվել</h1>
-            <p className="mb-6 text-muted-foreground">Հնարավոր է այն ջնջվել է կամ հասանելի չէ</p>
-            <Button onClick={() => navigate('/courses')}>Վերադառնալ դասընթացների էջ</Button>
-          </div>
-        </main>
-        <Footer />
+      <div className="container mx-auto px-4 py-8">
+        <div className="text-center py-12">
+          <AlertTriangle className="h-12 w-12 text-amber-500 mx-auto mb-4" />
+          <h1 className="text-2xl font-bold mb-2">Դասընթացը չի գտնվել</h1>
+          <p className="mb-6 text-muted-foreground">Հնարավոր է այն ջնջվել է կամ հասանելի չէ</p>
+          <Button onClick={() => navigate('/admin/courses')}>Վերադառնալ դասընթացների էջ</Button>
+        </div>
       </div>
     );
   }
 
   return (
-    <div className="flex min-h-screen flex-col">
-      <Header />
-      <main className="flex-1 container mx-auto px-4 py-8">
-        <CourseDetailContent 
-          course={course}
-          canEdit={canEdit}
-          setIsEditDialogOpen={setIsEditDialogOpen}
-          setIsDeleteDialogOpen={setIsDeleteDialogOpen}
-          handlePublishToggle={handlePublishToggle}
-          loading={loading}
-        />
-      </main>
-      <Footer />
+    <div className="container mx-auto px-4 py-8">
+      <CourseDetailContent 
+        course={course}
+        canEdit={canEdit}
+        setIsEditDialogOpen={setIsEditDialogOpen}
+        setIsDeleteDialogOpen={setIsDeleteDialogOpen}
+        handlePublishToggle={handlePublishToggle}
+        loading={loading}
+      />
       
       <CourseEditDialog 
         isOpen={isEditDialogOpen}
-        setIsOpen={setIsEditDialogOpen}
+        setIsOpen={(open) => {
+          setIsEditDialogOpen(open);
+          // If closing dialog in edit mode, navigate back to view mode
+          if (!open && isEditMode) {
+            navigate(`/admin/course/${course.id}`);
+          }
+        }}
         editedCourse={editedCourse}
         setEditedCourse={setEditedCourse}
         handleSaveChanges={handleSaveChanges}
@@ -286,7 +294,7 @@ const CourseDetailPage: React.FC = () => {
   );
 };
 
-// Import from newly created utils file
+// Import from utils file
 import { updateCourseDirectly } from './utils/courseUpdateUtils';
 
 export default CourseDetailPage;
