@@ -4,6 +4,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { ProfessionalCourse } from '@/components/courses/types/ProfessionalCourse';
 import { useCourseDeletion } from './courseService/useCourseDeletion';
 import { useCourseUpdating } from './courseService/useCourseUpdating';
+import { convertIconNameToComponent } from '@/utils/iconUtils';
 
 export const useCourseService = () => {
   const [loading, setLoading] = useState<boolean>(false);
@@ -75,27 +76,34 @@ export const useCourseService = () => {
       });
       
       // Map courses to ProfessionalCourse type
-      const transformedCourses: ProfessionalCourse[] = courses.map(course => ({
-        id: course.id,
-        title: course.title,
-        subtitle: course.subtitle,
-        duration: course.duration,
-        price: course.price,
-        color: course.color,
-        institution: course.institution,
-        createdBy: course.created_by,
-        buttonText: course.button_text,
-        iconName: course.icon_name,
-        description: course.description,
-        is_public: course.is_public,
-        imageUrl: course.image_url,
-        organizationLogo: course.organization_logo,
-        createdAt: course.created_at,
-        lessons: lessonsMap[course.id] || [],
-        requirements: requirementsMap[course.id] || [],
-        outcomes: outcomesMap[course.id] || [],
-        slug: course.slug
-      }));
+      const transformedCourses: ProfessionalCourse[] = courses.map(course => {
+        // Generate the icon component from the icon name
+        const iconComponent = convertIconNameToComponent(course.icon_name);
+        
+        return {
+          id: course.id,
+          title: course.title,
+          subtitle: course.subtitle,
+          duration: course.duration,
+          price: course.price,
+          color: course.color,
+          institution: course.institution,
+          createdBy: course.created_by,
+          buttonText: course.button_text,
+          iconName: course.icon_name,
+          // Add the icon component which was missing
+          icon: iconComponent,
+          description: course.description,
+          is_public: course.is_public,
+          imageUrl: course.image_url,
+          organizationLogo: course.organization_logo,
+          createdAt: course.created_at,
+          lessons: lessonsMap[course.id] || [],
+          requirements: requirementsMap[course.id] || [],
+          outcomes: outcomesMap[course.id] || [],
+          slug: course.slug
+        };
+      });
       
       console.info(`Successfully loaded ${transformedCourses.length} courses`);
       return transformedCourses;

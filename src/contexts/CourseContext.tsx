@@ -12,8 +12,9 @@ export const CourseProvider: React.FC<{ children: ReactNode }> = ({ children }) 
   // Use the refactored useCourseManagement hook
   const courseManagement = useCourseManagement();
   
-  // Use the course service for direct database operations
-  const { fetchCourses, loading: serviceLoading } = useCourseService();
+  // Use the course service for direct database operations 
+  // Changed to use fetchAllCourses instead of non-existent fetchCourses
+  const { fetchAllCourses, loading: serviceLoading } = useCourseService();
   
   // Add a state for error handling
   const [error, setError] = useState<string | null>(null);
