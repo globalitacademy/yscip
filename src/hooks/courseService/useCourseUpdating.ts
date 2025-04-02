@@ -39,6 +39,7 @@ export const useCourseUpdating = (setLoading: Dispatch<SetStateAction<boolean>>)
       
       // Update lessons if provided
       if (updates.lessons !== undefined) {
+        console.log('Updating lessons for course ID:', id);
         // First delete existing lessons
         const { error: deleteError } = await supabase
           .from('course_lessons')
@@ -64,7 +65,6 @@ export const useCourseUpdating = (setLoading: Dispatch<SetStateAction<boolean>>)
             
           if (lessonsError) {
             console.error('Error inserting lessons:', lessonsError);
-            // Continue despite error
           } else {
             console.log('Successfully updated lessons for course ID:', id);
           }
@@ -73,6 +73,7 @@ export const useCourseUpdating = (setLoading: Dispatch<SetStateAction<boolean>>)
       
       // Update requirements if provided
       if (updates.requirements !== undefined) {
+        console.log('Updating requirements for course ID:', id);
         // First delete existing requirements
         const { error: deleteError } = await supabase
           .from('course_requirements')
@@ -81,7 +82,6 @@ export const useCourseUpdating = (setLoading: Dispatch<SetStateAction<boolean>>)
           
         if (deleteError) {
           console.error('Error deleting existing requirements:', deleteError);
-          // Continue despite error
         }
         
         // Then insert new requirements
@@ -97,7 +97,6 @@ export const useCourseUpdating = (setLoading: Dispatch<SetStateAction<boolean>>)
             
           if (requirementsError) {
             console.error('Error inserting requirements:', requirementsError);
-            // Continue despite error
           } else {
             console.log('Successfully updated requirements for course ID:', id);
           }
@@ -106,6 +105,7 @@ export const useCourseUpdating = (setLoading: Dispatch<SetStateAction<boolean>>)
       
       // Update outcomes if provided
       if (updates.outcomes !== undefined) {
+        console.log('Updating outcomes for course ID:', id);
         // First delete existing outcomes
         const { error: deleteError } = await supabase
           .from('course_outcomes')
@@ -114,7 +114,6 @@ export const useCourseUpdating = (setLoading: Dispatch<SetStateAction<boolean>>)
           
         if (deleteError) {
           console.error('Error deleting existing outcomes:', deleteError);
-          // Continue despite error
         }
         
         // Then insert new outcomes
@@ -130,7 +129,6 @@ export const useCourseUpdating = (setLoading: Dispatch<SetStateAction<boolean>>)
             
           if (outcomesError) {
             console.error('Error inserting outcomes:', outcomesError);
-            // Continue despite error
           } else {
             console.log('Successfully updated outcomes for course ID:', id);
           }
@@ -138,7 +136,6 @@ export const useCourseUpdating = (setLoading: Dispatch<SetStateAction<boolean>>)
       }
       
       console.log('Course update completed successfully for ID:', id);
-      toast.success('Դասընթացը հաջողությամբ թարմացվել է։');
       return true;
     } catch (error) {
       console.error('Error in updateCourse:', error);

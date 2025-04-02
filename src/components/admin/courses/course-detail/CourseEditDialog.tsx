@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Dialog, DialogContent, DialogTitle, DialogDescription, DialogFooter, DialogHeader } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -32,6 +32,14 @@ const CourseEditDialog: React.FC<CourseEditDialogProps> = ({
   loading
 }) => {
   const [isIconsOpen, setIsIconsOpen] = useState(false);
+  const [activeTab, setActiveTab] = useState('basic');
+  
+  // Reset active tab when dialog opens
+  useEffect(() => {
+    if (isOpen) {
+      setActiveTab('basic');
+    }
+  }, [isOpen]);
   
   const handleIconSelect = (iconName: string) => {
     setEditedCourse({...editedCourse, iconName});
@@ -53,7 +61,7 @@ const CourseEditDialog: React.FC<CourseEditDialogProps> = ({
           </DialogDescription>
         </DialogHeader>
         
-        <Tabs defaultValue="basic">
+        <Tabs defaultValue="basic" value={activeTab} onValueChange={setActiveTab}>
           <TabsList className="mb-4">
             <TabsTrigger value="basic">Հիմնական տվյալներ</TabsTrigger>
             <TabsTrigger value="lessons">Դասերի ցանկ</TabsTrigger>

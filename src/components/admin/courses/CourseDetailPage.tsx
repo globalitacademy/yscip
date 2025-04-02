@@ -30,6 +30,13 @@ export const CourseDetailPage: React.FC<CourseDetailPageProps> = ({ id, isEditMo
   
   const { updateCourse } = useCourseUpdating(setLoading);
 
+  // Reset editedCourse whenever course changes
+  useEffect(() => {
+    if (course) {
+      setEditedCourse(JSON.parse(JSON.stringify(course))); // Deep copy to avoid reference issues
+    }
+  }, [course]);
+
   // Automatically open edit dialog if in edit mode
   useEffect(() => {
     if (isEditMode && course && !isEditDialogOpen) {
@@ -105,7 +112,7 @@ export const CourseDetailPage: React.FC<CourseDetailPageProps> = ({ id, isEditMo
         };
         
         setCourse(professionalCourse);
-        setEditedCourse(professionalCourse);
+        setEditedCourse(JSON.parse(JSON.stringify(professionalCourse))); // Deep copy
         console.log('Fetched course:', professionalCourse);
       } catch (e) {
         console.error('Error fetching course details:', e);
@@ -177,6 +184,56 @@ export const CourseDetailPage: React.FC<CourseDetailPageProps> = ({ id, isEditMo
           ...editedCourse,
           icon: convertIconNameToComponent(editedCourse.iconName || course.iconName || 'book')
         });
+        
+        // Refetch the course to ensure we have the latest data
+        const { data, error } = await supabase
+          .from('courses')
+          .select('*')
+          .eq('id', course.id)
+          .single();
+          
+        if (!error && data) {
+          const { data: lessonsData } = await supabase
+            .from('course_lessons')
+            .select('*')
+            .eq('course_id', course.id);
+            
+          const { data: requirementsData } = await supabase
+            .from('course_requirements')
+            .select('*')
+            .eq('course_id', course.id);
+            
+          const { data: outcomesData } = await supabase
+            .from('course_outcomes')
+            .select('*')
+            .eq('course_id', course.id);
+            
+          const updatedCourse: ProfessionalCourse = {
+            ...course,
+            title: data.title,
+            subtitle: data.subtitle,
+            iconName: data.icon_name,
+            icon: convertIconNameToComponent(data.icon_name),
+            duration: data.duration,
+            price: data.price,
+            buttonText: data.button_text,
+            color: data.color,
+            institution: data.institution,
+            imageUrl: data.image_url,
+            organizationLogo: data.organization_logo,
+            description: data.description,
+            is_public: data.is_public,
+            lessons: lessonsData?.map(lesson => ({
+              title: lesson.title,
+              duration: lesson.duration
+            })) || [],
+            requirements: requirementsData?.map(req => req.requirement) || [],
+            outcomes: outcomesData?.map(outcome => outcome.outcome) || [],
+            slug: data.slug
+          };
+          
+          setCourse(updatedCourse);
+        }
       } else {
         toast.error('Դասընթացի թարմացման ժամանակ սխալ է տեղի ունեցել');
       }
@@ -304,6 +361,10 @@ export const CourseDetailPage: React.FC<CourseDetailPageProps> = ({ id, isEditMo
           // If closing dialog in edit mode, navigate back to view mode
           if (!open && isEditMode) {
             navigate(`/admin/course/${course.id}`);
+          }
+          // Reset editedCourse to current course state if dialog is closed without saving
+          if (!open) {
+            setEditedCourse(JSON.parse(JSON.stringify(course))); // Deep copy
           }
         }}
         editedCourse={editedCourse}
