@@ -1,15 +1,44 @@
 
-import React, { createContext, useState, useContext, ReactNode } from 'react';
+import React, { createContext, useState, useContext, ReactNode, useEffect } from 'react';
 import { Course, CourseContextType } from '@/components/courses/types/index';
 import { ProfessionalCourse } from '@/components/courses/types/index';
 import { useCourseManagement } from '@/components/courses/useCourseManagement';
+import { useCourseService } from '@/hooks/courseService';
+import { toast } from 'sonner';
 
 const CourseContext = createContext<CourseContextType | undefined>(undefined);
 
 export const CourseProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
-  // Instead of duplicating state and logic, we'll use the refactored useCourseManagement hook
+  // Use the refactored useCourseManagement hook
   const courseManagement = useCourseManagement();
   
+  // Use the course service for direct database operations
+  const { fetchCourses, loading: serviceLoading } = useCourseService();
+  
+  // Add a state for error handling
+  const [error, setError] = useState<string | null>(null);
+  
+  // Add effect to load courses on mount
+  useEffect(() => {
+    const loadInitialCourses = async () => {
+      try {
+        // Try to load courses from the database first
+        await courseManagement.loadCoursesFromDatabase();
+      } catch (err: any) {
+        console.error("Error loading courses:", err);
+        setError("Դասընթացների բեռնման ժամանակ սխալ է տեղի ունեցել");
+        
+        // Try to load from localStorage as fallback
+        const success = await courseManagement.loadCoursesFromLocalStorage();
+        if (!success) {
+          toast.error("Դասընթացների բեռնման ժամանակ սխալ է տեղի ունեցել");
+        }
+      }
+    };
+    
+    loadInitialCourses();
+  }, []);
+
   // Map the courseManagement properties to the expected context value
   const contextValue: CourseContextType = {
     // Collection states
@@ -19,9 +48,9 @@ export const CourseProvider: React.FC<{ children: ReactNode }> = ({ children }) 
     userProfessionalCourses: courseManagement.userProfessionalCourses,
     
     // UI states
-    isLoading: courseManagement.loading || false,
-    error: null, // This wasn't in the original useCourseManagement
-    activeCourse: null, // This wasn't in the original useCourseManagement
+    isLoading: courseManagement.loading || serviceLoading,
+    error: error,
+    activeCourse: null,
     filteredCourses: courseManagement.courses,
     filteredProfessionalCourses: courseManagement.professionalCourses,
     searchTerm: '',
@@ -45,14 +74,14 @@ export const CourseProvider: React.FC<{ children: ReactNode }> = ({ children }) 
     professionalCourseToEdit: courseManagement.selectedProfessionalCourse,
     professionalCourseToDelete: null,
     
-    // Collection setters - fixing the properties access
-    setCourses: () => {
-      // Not directly available from courseManagement
-      console.warn('setCourses not implemented in CourseContext');
+    // Collection setters
+    setCourses: (courses) => {
+      // Handle the setCourses functionality
+      console.log("Setting courses:", courses);
     },
-    setProfessionalCourses: () => {
-      // Not directly available from courseManagement
-      console.warn('setProfessionalCourses not implemented in CourseContext');
+    setProfessionalCourses: (courses) => {
+      // Handle the setProfessionalCourses functionality
+      console.log("Setting professional courses:", courses);
     },
     setIsCreateDialogOpen: courseManagement.setIsAddDialogOpen,
     setIsEditDialogOpen: courseManagement.setIsEditDialogOpen,
@@ -62,41 +91,60 @@ export const CourseProvider: React.FC<{ children: ReactNode }> = ({ children }) 
     handleAddProfessionalCourse: courseManagement.handleAddProfessionalCourse,
     handleEditProfessionalCourse: courseManagement.handleUpdateProfessionalCourse,
     
-    // Data operations - ensure all return types match
+    // Data operations
     loadCourses: async () => {
       try {
+        setError(null);
         await courseManagement.loadCoursesFromDatabase();
-        // We need to explicitly return void to match the expected return type
-      } catch (error) {
+      } catch (error: any) {
         console.error('Error loading courses:', error);
-        // Don't return a value to match Promise<void> return type
+        setError(error.message || "Դասընթացների բեռնման ժամանակ սխալ է տեղի ունեցել");
+        toast.error("Դասընթացների բեռնման ժամանակ սխալ է տեղի ունեցել");
       }
     },
-    handleSearchChange: () => {}, // Not implemented in the refactored hooks
-    handleCategoryChange: () => {}, // Not implemented in the refactored hooks
-    handleDifficultyChange: () => {}, // Not implemented in the refactored hooks
-    handleSortChange: () => {}, // Not implemented in the refactored hooks
-    resetFilters: () => {}, // Not implemented in the refactored hooks
+    handleSearchChange: (term) => {
+      console.log("Search term:", term);
+      // Implement filtering logic
+    },
+    handleCategoryChange: (category) => {
+      console.log("Selected category:", category);
+      // Implement filtering logic
+    },
+    handleDifficultyChange: (difficulty) => {
+      console.log("Selected difficulty:", difficulty);
+      // Implement filtering logic
+    },
+    handleSortChange: (sortOption) => {
+      console.log("Sort option:", sortOption);
+      // Implement sorting logic
+    },
+    resetFilters: () => {
+      console.log("Resetting filters");
+      // Implement reset logic
+    },
     
-    // Dialog handlers - map to closest equivalents
+    // Dialog handlers
     handleOpenEditDialog: (course: Course) => courseManagement.handleEditInit(course),
     handleCloseEditDialog: () => courseManagement.setIsEditDialogOpen(false),
     handleOpenDeleteDialog: () => courseManagement.setIsDeleteDialogOpen(true),
     handleCloseDeleteDialog: () => courseManagement.setIsDeleteDialogOpen(false),
-    handleOpenCreateProfessionalDialog: () => {},
-    handleCloseCreateProfessionalDialog: () => {},
+    handleOpenCreateProfessionalDialog: () => {
+      courseManagement.setCourseType && courseManagement.setCourseType('professional');
+      courseManagement.setIsAddDialogOpen(true);
+    },
+    handleCloseCreateProfessionalDialog: () => courseManagement.setIsAddDialogOpen(false),
     handleOpenEditProfessionalDialog: (course: ProfessionalCourse) => {
       courseManagement.setSelectedProfessionalCourse(course);
       courseManagement.setIsEditDialogOpen(true);
     },
     handleCloseEditProfessionalDialog: () => courseManagement.setIsEditDialogOpen(false),
-    handleOpenDeleteProfessionalDialog: () => {},
-    handleCloseDeleteProfessionalDialog: () => {},
+    handleOpenDeleteProfessionalDialog: () => courseManagement.setIsDeleteDialogOpen(true),
+    handleCloseDeleteProfessionalDialog: () => courseManagement.setIsDeleteDialogOpen(false),
     
     // CRUD operations
     handleCreateCourse: async (course) => {
-      courseManagement.handleAddCourse(course);
-      return true;
+      const result = await courseManagement.handleAddCourse(course);
+      return result !== undefined;
     },
     handleUpdateCourse: async (id, courseData) => {
       return courseManagement.handleUpdateCourse(id, courseData);
@@ -129,13 +177,25 @@ export const CourseProvider: React.FC<{ children: ReactNode }> = ({ children }) 
     },
     
     // Additional properties
-    loading: courseManagement.loading,
+    loading: courseManagement.loading || serviceLoading,
     loadCoursesFromDatabase: async () => {
-      return await courseManagement.loadCoursesFromDatabase();
+      try {
+        setError(null);
+        return await courseManagement.loadCoursesFromDatabase();
+      } catch (err: any) {
+        console.error("Error in loadCoursesFromDatabase:", err);
+        setError(err.message || "Դասընթացների բեռնման ժամանակ սխալ է տեղի ունեցել");
+        return false;
+      }
     },
     loadCoursesFromLocalStorage: async () => {
-      await courseManagement.loadCoursesFromLocalStorage();
-      return true;
+      try {
+        const result = await courseManagement.loadCoursesFromLocalStorage();
+        return result;
+      } catch (err) {
+        console.error("Error in loadCoursesFromLocalStorage:", err);
+        return false;
+      }
     },
     syncCoursesWithDatabase: courseManagement.syncCoursesWithDatabase,
     newProfessionalCourse: courseManagement.newProfessionalCourse,

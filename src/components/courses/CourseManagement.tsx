@@ -2,7 +2,7 @@
 import React, { useEffect, useState } from 'react';
 import { Dialog, DialogContent } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
-import { Plus, AlertCircle } from 'lucide-react';
+import { Plus, AlertCircle, Loader2 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { CourseProvider, useCourseContext } from '@/contexts/CourseContext';
 import CourseList from './CourseList';
@@ -10,9 +10,6 @@ import CourseFilterSection from './CourseFilterSection';
 import CourseDialogManager from './CourseDialogManager';
 import CourseCreationForm from './CourseCreationForm';
 import { toast } from 'sonner';
-import { supabase } from '@/integrations/supabase/client';
-import { ProfessionalCourse } from './types/index';
-import { convertIconNameToComponent } from '@/utils/iconUtils';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { useAuth } from '@/contexts/AuthContext';
 import { useCoursePermissions } from '@/hooks/useCoursePermissions';
@@ -26,7 +23,8 @@ const CourseManagementContent: React.FC = () => {
     handleCreateInit,
     courses,
     professionalCourses,
-    setProfessionalCourses
+    loading: contextLoading,
+    error: contextError
   } = useCourseContext();
   
   const { user } = useAuth();
@@ -34,115 +32,29 @@ const CourseManagementContent: React.FC = () => {
   
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [loadAttempted, setLoadAttempted] = useState(false); // Flag to prevent infinite loops
-  
-  // Load courses directly from Supabase
-  const loadCoursesDirectly = async () => {
-    if (loadAttempted) return; // Prevent multiple load attempts
-    
-    setIsLoading(true);
-    setError(null);
-    
-    try {
-      console.log("Loading courses directly from Supabase");
-      const { data, error } = await supabase
-        .from('courses')
-        .select('*');
-        
-      if (error) {
-        console.error("Error fetching courses from Supabase:", error);
-        setError("Դասընթացների բեռնման ժամանակ սխալ է տեղի ունեցել");
-        // Try to load via context
-        await loadCourses();
-        return;
-      }
-      
-      console.log("Courses loaded from Supabase:", data);
-      
-      if (data && data.length > 0) {
-        // Process courses
-        const formattedCourses = await Promise.all(data.map(async (course) => {
-          // Fetch related data
-          const { data: lessonsData } = await supabase
-            .from('course_lessons')
-            .select('*')
-            .eq('course_id', course.id);
-            
-          const { data: requirementsData } = await supabase
-            .from('course_requirements')
-            .select('*')
-            .eq('course_id', course.id);
-            
-          const { data: outcomesData } = await supabase
-            .from('course_outcomes')
-            .select('*')
-            .eq('course_id', course.id);
-            
-          // Convert to ProfessionalCourse format
-          const iconElement = convertIconNameToComponent(course.icon_name);
-          
-          return {
-            id: course.id,
-            title: course.title,
-            subtitle: course.subtitle || 'ԴԱՍԸՆԹԱՑ',
-            icon: iconElement,
-            iconName: course.icon_name,
-            duration: course.duration,
-            price: course.price,
-            buttonText: course.button_text || 'Դիտել',
-            color: course.color || 'text-amber-500',
-            createdBy: course.created_by || '',
-            institution: course.institution || 'ՀՊՏՀ',
-            imageUrl: course.image_url,
-            organizationLogo: course.organization_logo,
-            description: course.description || '',
-            is_public: course.is_public || false,
-            lessons: lessonsData?.map(lesson => ({
-              title: lesson.title, 
-              duration: lesson.duration
-            })) || [],
-            requirements: requirementsData?.map(req => req.requirement) || [],
-            outcomes: outcomesData?.map(outcome => outcome.outcome) || [],
-            slug: course.slug || '',
-            createdAt: course.created_at || new Date().toISOString()
-          } as ProfessionalCourse;
-        }));
-        
-        console.log("Formatted courses:", formattedCourses);
-        setProfessionalCourses(formattedCourses);
-      }
-    } catch (e) {
-      console.error("Error in loadCoursesDirectly:", e);
-      setError("Դասընթացների բեռնման ժամանակ սխալ է տեղի ունեցել");
-      // Try to load via context
-      await loadCourses();
-    } finally {
-      setIsLoading(false);
-      setLoadAttempted(true); // Mark loading as attempted to prevent loops
-    }
-  };
   
   // Load courses on component mount
   useEffect(() => {
     const fetchCourses = async () => {
       try {
-        // Try direct loading first
-        await loadCoursesDirectly();
-        
-        // If that fails, fall back to context
-        if (professionalCourses.length === 0 && !loadAttempted) {
-          console.log("No courses loaded directly, trying context method");
-          await loadCourses();
-        }
-      } catch (error) {
+        setIsLoading(true);
+        setError(null);
+        await loadCourses();
+      } catch (error: any) {
         console.error("Error loading courses:", error);
+        setError("Դասընթացների բեռնման ժամանակ սխալ է տեղի ունեցել");
         toast.error("Դասընթացների բեռնման ժամանակ սխալ է տեղի ունեցել");
+      } finally {
+        setIsLoading(false);
       }
     };
     
     fetchCourses();
-    // Only run this effect once on mount
-  }, []); // Empty dependency array to run only on mount
+  }, [loadCourses]);
+
+  // Combined loading and error states
+  const combinedLoading = isLoading || contextLoading;
+  const combinedError = error || contextError;
 
   // Check if user has permission to manage courses
   const canManageCourses = permissions.canCreateCourse;
@@ -178,15 +90,25 @@ const CourseManagementContent: React.FC = () => {
       
       <CourseFilterSection />
       
-      {isLoading ? (
-        <div className="flex justify-center p-8">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+      {combinedLoading ? (
+        <div className="flex justify-center items-center p-8 space-x-2">
+          <Loader2 className="h-8 w-8 animate-spin text-primary" />
+          <span className="text-muted-foreground">Բեռնում...</span>
         </div>
-      ) : error ? (
+      ) : combinedError ? (
         <Alert variant="destructive">
           <AlertCircle className="h-4 w-4" />
-          <AlertDescription>{error}</AlertDescription>
+          <AlertDescription>{combinedError}</AlertDescription>
         </Alert>
+      ) : (professionalCourses.length === 0 && courses.length === 0) ? (
+        <div className="text-center py-10 border rounded-lg bg-muted/20">
+          <h3 className="text-lg font-medium mb-2">Դասընթացներ չեն գտնվել</h3>
+          {canManageCourses && (
+            <p className="text-muted-foreground mb-4">
+              Ստեղծեք ձեր առաջին դասընթացը սեղմելով «Նոր դասընթաց» կոճակը
+            </p>
+          )}
+        </div>
       ) : (
         <CourseList 
           courses={courses} 
