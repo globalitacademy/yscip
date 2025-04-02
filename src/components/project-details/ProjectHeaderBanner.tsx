@@ -2,7 +2,7 @@
 import React, { useState } from 'react';
 import { Badge } from '@/components/ui/badge';
 import { Link, useNavigate } from 'react-router-dom';
-import { ArrowLeft, BarChart, Edit, Copy, Trash2 } from 'lucide-react';
+import { ArrowLeft, BarChart, Edit, Copy, Trash2, Save, X } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import { 
@@ -26,6 +26,9 @@ import {
 import { deleteProject, updateProject } from '@/services/projectService';
 import { useProjectManagement } from '@/contexts/ProjectManagementContext';
 import { useProject } from '@/contexts/ProjectContext';
+import { Input } from '@/components/ui/input';
+import { Textarea } from '@/components/ui/textarea';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 
 interface ProjectHeaderBannerProps {
   title: string;
@@ -46,7 +49,13 @@ const ProjectHeaderBanner: React.FC<ProjectHeaderBannerProps> = ({
   const navigate = useNavigate();
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const { handleEditInit } = useProjectManagement();
-  const { canEdit } = useProject();
+  const { canEdit, project, setIsEditing, isEditing } = useProject();
+  
+  // State for inline editing
+  const [editedTitle, setEditedTitle] = useState(title);
+  const [editedDescription, setEditedDescription] = useState(description);
+  const [editedComplexity, setEditedComplexity] = useState(complexity);
+  const [editedTechStack, setEditedTechStack] = useState<string>(techStack.join(', '));
   
   const getComplexityColor = (complexity: string) => {
     switch (complexity) {
@@ -63,7 +72,18 @@ const ProjectHeaderBanner: React.FC<ProjectHeaderBannerProps> = ({
   
   const complexityColor = getComplexityColor(complexity);
   
-  const handleEdit = () => {
+  const handleToggleEdit = () => {
+    if (!isEditing) {
+      // Initialize edit state
+      setEditedTitle(title);
+      setEditedDescription(description);
+      setEditedComplexity(complexity);
+      setEditedTechStack(techStack.join(', '));
+    }
+    setIsEditing(!isEditing);
+  };
+  
+  const handleSaveChanges = async () => {
     if (!projectId) {
       toast({
         title: "Սխալ",
@@ -73,7 +93,42 @@ const ProjectHeaderBanner: React.FC<ProjectHeaderBannerProps> = ({
       return;
     }
     
-    navigate(`/projects/edit/${projectId}`);
+    try {
+      const processedTechStack = editedTechStack
+        .split(',')
+        .map(tech => tech.trim())
+        .filter(tech => tech.length > 0);
+      
+      const updatedData = {
+        title: editedTitle,
+        description: editedDescription,
+        complexity: editedComplexity,
+        techStack: processedTechStack,
+        updatedAt: new Date().toISOString(),
+      };
+      
+      const success = await updateProject(projectId, updatedData);
+      
+      if (success) {
+        toast({
+          title: "Թարմացում",
+          description: "Նախագիծը հաջողությամբ թարմացվել է։",
+        });
+        setIsEditing(false);
+        
+        // Refresh the page to show updated data
+        window.location.reload();
+      } else {
+        throw new Error("Failed to update project");
+      }
+    } catch (error) {
+      console.error("Error updating project:", error);
+      toast({
+        title: "Սխալ",
+        description: "Նախագծի թարմացման ժամանակ սխալ է տեղի ունեցել։",
+        variant: "destructive",
+      });
+    }
   };
   
   const handleCopy = async () => {
@@ -159,32 +214,55 @@ const ProjectHeaderBanner: React.FC<ProjectHeaderBannerProps> = ({
         
         {canEdit && (
           <div className="flex gap-2">
-            <Button 
-              variant="outline" 
-              size="sm" 
-              onClick={handleEdit}
-              className="hidden sm:flex"
-            >
-              <Edit size={16} className="mr-2" /> Խմբագրել
-            </Button>
-            
-            <Button 
-              variant="outline" 
-              size="sm" 
-              onClick={handleCopy}
-              className="hidden sm:flex"
-            >
-              <Copy size={16} className="mr-2" /> Պատճենել
-            </Button>
-            
-            <Button 
-              variant="destructive" 
-              size="sm" 
-              onClick={() => setIsDeleteDialogOpen(true)}
-              className="hidden sm:flex"
-            >
-              <Trash2 size={16} className="mr-2" /> Ջնջել
-            </Button>
+            {isEditing ? (
+              <>
+                <Button 
+                  variant="outline" 
+                  size="sm" 
+                  onClick={handleSaveChanges}
+                  className="hidden sm:flex"
+                >
+                  <Save size={16} className="mr-2" /> Պահպանել
+                </Button>
+                <Button 
+                  variant="ghost" 
+                  size="sm" 
+                  onClick={handleToggleEdit}
+                  className="hidden sm:flex"
+                >
+                  <X size={16} className="mr-2" /> Չեղարկել
+                </Button>
+              </>
+            ) : (
+              <>
+                <Button 
+                  variant="outline" 
+                  size="sm" 
+                  onClick={handleToggleEdit}
+                  className="hidden sm:flex"
+                >
+                  <Edit size={16} className="mr-2" /> Խմբագրել
+                </Button>
+                
+                <Button 
+                  variant="outline" 
+                  size="sm" 
+                  onClick={handleCopy}
+                  className="hidden sm:flex"
+                >
+                  <Copy size={16} className="mr-2" /> Պատճենել
+                </Button>
+                
+                <Button 
+                  variant="destructive" 
+                  size="sm" 
+                  onClick={() => setIsDeleteDialogOpen(true)}
+                  className="hidden sm:flex"
+                >
+                  <Trash2 size={16} className="mr-2" /> Ջնջել
+                </Button>
+              </>
+            )}
             
             <DropdownMenu>
               <DropdownMenuTrigger asChild className="sm:hidden">
@@ -193,46 +271,110 @@ const ProjectHeaderBanner: React.FC<ProjectHeaderBannerProps> = ({
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end">
-                <DropdownMenuItem onClick={handleEdit}>
-                  <Edit size={16} className="mr-2" /> Խմբագրել
-                </DropdownMenuItem>
-                <DropdownMenuItem onClick={handleCopy}>
-                  <Copy size={16} className="mr-2" /> Պատճենել
-                </DropdownMenuItem>
-                <DropdownMenuSeparator />
-                <DropdownMenuItem 
-                  onClick={() => setIsDeleteDialogOpen(true)}
-                  className="text-destructive focus:text-destructive"
-                >
-                  <Trash2 size={16} className="mr-2" /> Ջնջել
-                </DropdownMenuItem>
+                {isEditing ? (
+                  <>
+                    <DropdownMenuItem onClick={handleSaveChanges}>
+                      <Save size={16} className="mr-2" /> Պահպանել
+                    </DropdownMenuItem>
+                    <DropdownMenuItem onClick={handleToggleEdit}>
+                      <X size={16} className="mr-2" /> Չեղարկել
+                    </DropdownMenuItem>
+                  </>
+                ) : (
+                  <>
+                    <DropdownMenuItem onClick={handleToggleEdit}>
+                      <Edit size={16} className="mr-2" /> Խմբագրել
+                    </DropdownMenuItem>
+                    <DropdownMenuItem onClick={handleCopy}>
+                      <Copy size={16} className="mr-2" /> Պատճենել
+                    </DropdownMenuItem>
+                    <DropdownMenuSeparator />
+                    <DropdownMenuItem 
+                      onClick={() => setIsDeleteDialogOpen(true)}
+                      className="text-destructive focus:text-destructive"
+                    >
+                      <Trash2 size={16} className="mr-2" /> Ջնջել
+                    </DropdownMenuItem>
+                  </>
+                )}
               </DropdownMenuContent>
             </DropdownMenu>
           </div>
         )}
       </div>
       
-      <h1 className="text-3xl md:text-4xl font-bold mb-2">{title}</h1>
-      
-      <div className="flex items-center gap-2 mb-6">
-        <span className="text-muted-foreground flex items-center">
-          <BarChart size={16} className="mr-1" />
-          Բարդություն:
-        </span>
-        <Badge variant="outline" className={cn("font-medium", complexityColor)}>
-          {complexity}
-        </Badge>
-      </div>
-      
-      <p className="text-lg text-muted-foreground mb-6">{description}</p>
-      
-      <div className="flex flex-wrap gap-3 mb-6">
-        {techStack.map((tech, index) => (
-          <Badge key={index} variant="secondary" className="px-3 py-1">
-            {tech}
-          </Badge>
-        ))}
-      </div>
+      {isEditing ? (
+        <>
+          <div className="mb-4">
+            <Input 
+              value={editedTitle} 
+              onChange={(e) => setEditedTitle(e.target.value)} 
+              className="text-2xl font-bold mb-2"
+              placeholder="Նախագծի վերնագիր"
+            />
+          </div>
+          
+          <div className="flex items-center gap-2 mb-4">
+            <span className="text-muted-foreground flex items-center">
+              <BarChart size={16} className="mr-1" />
+              Բարդություն:
+            </span>
+            <Select value={editedComplexity} onValueChange={setEditedComplexity}>
+              <SelectTrigger className="w-[180px]">
+                <SelectValue placeholder="Ընտրել բարդությունը" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="Սկսնակ">Սկսնակ</SelectItem>
+                <SelectItem value="Միջին">Միջին</SelectItem>
+                <SelectItem value="Առաջադեմ">Առաջադեմ</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+          
+          <Textarea 
+            value={editedDescription} 
+            onChange={(e) => setEditedDescription(e.target.value)} 
+            className="text-lg mb-4"
+            placeholder="Նախագծի նկարագրություն"
+            rows={4}
+          />
+          
+          <div className="mb-6">
+            <label className="block text-sm font-medium mb-2">Տեխնոլոգիաներ (բաժանված ստորակետներով)</label>
+            <Input 
+              value={editedTechStack} 
+              onChange={(e) => setEditedTechStack(e.target.value)} 
+              className="mb-2"
+              placeholder="React, Node.js, MongoDB, ..."
+            />
+            <p className="text-sm text-muted-foreground">Օրինակ՝ React, TypeScript, Node.js</p>
+          </div>
+        </>
+      ) : (
+        <>
+          <h1 className="text-3xl md:text-4xl font-bold mb-2">{title}</h1>
+          
+          <div className="flex items-center gap-2 mb-6">
+            <span className="text-muted-foreground flex items-center">
+              <BarChart size={16} className="mr-1" />
+              Բարդություն:
+            </span>
+            <Badge variant="outline" className={cn("font-medium", complexityColor)}>
+              {complexity}
+            </Badge>
+          </div>
+          
+          <p className="text-lg text-muted-foreground mb-6">{description}</p>
+          
+          <div className="flex flex-wrap gap-3 mb-6">
+            {techStack.map((tech, index) => (
+              <Badge key={index} variant="secondary" className="px-3 py-1">
+                {tech}
+              </Badge>
+            ))}
+          </div>
+        </>
+      )}
 
       <AlertDialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
         <AlertDialogContent>
