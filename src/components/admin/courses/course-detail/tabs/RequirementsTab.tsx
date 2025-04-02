@@ -18,17 +18,24 @@ export const RequirementsTab: React.FC<RequirementsTabProps> = ({ editedCourse, 
       return;
     }
     
-    const updatedRequirements = [...(editedCourse.requirements || []), newRequirement.trim()];
-    console.log('Adding requirement, updated requirements:', updatedRequirements);
-    setEditedCourse({ requirements: updatedRequirements });
+    // Use a callback to ensure we're working with the latest state
+    setEditedCourse(prevState => {
+      const currentRequirements = [...(prevState.requirements || [])];
+      const updatedRequirements = [...currentRequirements, newRequirement.trim()];
+      console.log('RequirementsTab: Adding requirement, updated requirements:', updatedRequirements);
+      return { ...prevState, requirements: updatedRequirements };
+    });
+    
     setNewRequirement('');
   };
   
   const handleRemoveRequirement = (index: number) => {
-    const updatedRequirements = [...(editedCourse.requirements || [])];
-    updatedRequirements.splice(index, 1);
-    console.log('Removing requirement, updated requirements:', updatedRequirements);
-    setEditedCourse({ requirements: updatedRequirements });
+    setEditedCourse(prevState => {
+      const currentRequirements = [...(prevState.requirements || [])];
+      currentRequirements.splice(index, 1);
+      console.log('RequirementsTab: Removing requirement, updated requirements:', currentRequirements);
+      return { ...prevState, requirements: currentRequirements };
+    });
   };
   
   const handleKeyDown = (e: React.KeyboardEvent) => {

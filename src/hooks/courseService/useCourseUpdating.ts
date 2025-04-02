@@ -22,6 +22,7 @@ export const useCourseUpdating = (setLoading: Dispatch<SetStateAction<boolean>>)
         image_url: updates.imageUrl,
         organization_logo: updates.organizationLogo,
         description: updates.description,
+        instructor: updates.instructor, // Added instructor field
         is_public: updates.is_public,
         updated_at: new Date().toISOString()
       };
@@ -29,10 +30,11 @@ export const useCourseUpdating = (setLoading: Dispatch<SetStateAction<boolean>>)
       console.log('Updating course main data:', courseUpdateData);
       
       // Update the main course record
-      const { error: courseError } = await supabase
+      const { data, error: courseError } = await supabase
         .from('courses')
         .update(courseUpdateData)
-        .eq('id', id);
+        .eq('id', id)
+        .select();
         
       if (courseError) {
         console.error('Error updating course:', courseError);
@@ -40,7 +42,7 @@ export const useCourseUpdating = (setLoading: Dispatch<SetStateAction<boolean>>)
         return false;
       }
       
-      console.log('Successfully updated main course data for ID:', id);
+      console.log('Successfully updated main course data for ID:', id, 'Response:', data);
       
       // Update lessons
       console.log('Updating lessons for course ID:', id, 'lessons:', updates.lessons);
@@ -66,14 +68,15 @@ export const useCourseUpdating = (setLoading: Dispatch<SetStateAction<boolean>>)
         
         console.log('Inserting lesson data:', lessonData);
         
-        const { error: lessonsError } = await supabase
+        const { data: lessonsData, error: lessonsError } = await supabase
           .from('course_lessons')
-          .insert(lessonData);
+          .insert(lessonData)
+          .select();
           
         if (lessonsError) {
           console.error('Error inserting lessons:', lessonsError);
         } else {
-          console.log('Successfully updated lessons for course ID:', id);
+          console.log('Successfully updated lessons for course ID:', id, 'Response:', lessonsData);
         }
       } else {
         console.log('No lessons to insert for course ID:', id);
@@ -101,14 +104,15 @@ export const useCourseUpdating = (setLoading: Dispatch<SetStateAction<boolean>>)
         
         console.log('Inserting requirement data:', requirementData);
         
-        const { error: requirementsError } = await supabase
+        const { data: requirementsData, error: requirementsError } = await supabase
           .from('course_requirements')
-          .insert(requirementData);
+          .insert(requirementData)
+          .select();
           
         if (requirementsError) {
           console.error('Error inserting requirements:', requirementsError);
         } else {
-          console.log('Successfully updated requirements for course ID:', id);
+          console.log('Successfully updated requirements for course ID:', id, 'Response:', requirementsData);
         }
       } else {
         console.log('No requirements to insert for course ID:', id);
@@ -136,14 +140,15 @@ export const useCourseUpdating = (setLoading: Dispatch<SetStateAction<boolean>>)
         
         console.log('Inserting outcome data:', outcomeData);
         
-        const { error: outcomesError } = await supabase
+        const { data: outcomesData, error: outcomesError } = await supabase
           .from('course_outcomes')
-          .insert(outcomeData);
+          .insert(outcomeData)
+          .select();
           
         if (outcomesError) {
           console.error('Error inserting outcomes:', outcomesError);
         } else {
-          console.log('Successfully updated outcomes for course ID:', id);
+          console.log('Successfully updated outcomes for course ID:', id, 'Response:', outcomesData);
         }
       } else {
         console.log('No outcomes to insert for course ID:', id);

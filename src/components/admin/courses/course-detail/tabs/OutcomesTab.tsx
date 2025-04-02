@@ -18,17 +18,24 @@ export const OutcomesTab: React.FC<OutcomesTabProps> = ({ editedCourse, setEdite
       return;
     }
     
-    const updatedOutcomes = [...(editedCourse.outcomes || []), newOutcome.trim()];
-    console.log('Adding outcome, updated outcomes:', updatedOutcomes);
-    setEditedCourse({ outcomes: updatedOutcomes });
+    // Use a callback to ensure we're working with the latest state
+    setEditedCourse(prevState => {
+      const currentOutcomes = [...(prevState.outcomes || [])];
+      const updatedOutcomes = [...currentOutcomes, newOutcome.trim()];
+      console.log('OutcomesTab: Adding outcome, updated outcomes:', updatedOutcomes);
+      return { ...prevState, outcomes: updatedOutcomes };
+    });
+    
     setNewOutcome('');
   };
   
   const handleRemoveOutcome = (index: number) => {
-    const updatedOutcomes = [...(editedCourse.outcomes || [])];
-    updatedOutcomes.splice(index, 1);
-    console.log('Removing outcome, updated outcomes:', updatedOutcomes);
-    setEditedCourse({ outcomes: updatedOutcomes });
+    setEditedCourse(prevState => {
+      const currentOutcomes = [...(prevState.outcomes || [])];
+      currentOutcomes.splice(index, 1);
+      console.log('OutcomesTab: Removing outcome, updated outcomes:', currentOutcomes);
+      return { ...prevState, outcomes: currentOutcomes };
+    });
   };
   
   const handleKeyDown = (e: React.KeyboardEvent) => {

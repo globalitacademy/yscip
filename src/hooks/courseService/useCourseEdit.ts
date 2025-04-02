@@ -23,9 +23,10 @@ export const useCourseEdit = (
   // When isEditDialogOpen or course changes, reset editedCourse to ensure we have latest data
   useEffect(() => {
     if (isEditDialogOpen && course) {
-      // Make a deep copy to avoid reference issues
-      setEditedCourse(JSON.parse(JSON.stringify(course)));
-      console.log('Initialized editedCourse with current course data:', course);
+      // Make a proper deep copy to avoid reference issues
+      const courseCopy = JSON.parse(JSON.stringify(course));
+      console.log('Initializing editedCourse with deep copy of course data:', courseCopy);
+      setEditedCourse(courseCopy);
     }
   }, [isEditDialogOpen, course, setEditedCourse]);
 
@@ -44,7 +45,7 @@ export const useCourseEdit = (
       return;
     }
     
-    console.log('Saving changes with data:', editedCourse);
+    console.log('Starting save process with editedCourse data:', editedCourse);
     setLoading(true);
     try {
       // Make sure is_public status is properly set
@@ -56,84 +57,97 @@ export const useCourseEdit = (
       const completeEditedCourse = {
         ...course,
         ...editedCourse,
+        // Explicitly ensure required related data is present
+        lessons: editedCourse.lessons || course.lessons || [],
+        requirements: editedCourse.requirements || course.requirements || [],
+        outcomes: editedCourse.outcomes || course.outcomes || []
       };
 
       console.log('Updating course with complete data:', {
         id: course.id,
-        updates: completeEditedCourse
+        completeData: completeEditedCourse
       });
       
       const success = await updateCourse(course.id, completeEditedCourse);
       
       if (success) {
         toast.success('Դասընթացը հաջողությամբ թարմացվել է');
-        setIsEditDialogOpen(false);
         
-        // If in edit mode, navigate back to view mode
-        if (isEditMode) {
-          navigate(`/admin/course/${course.id}`);
-        }
-        
-        // Update the local state with the edited values
-        setCourse({
+        // First update the local state with the edited values to reflect changes immediately
+        const updatedCourse = {
           ...course,
           ...completeEditedCourse,
           icon: convertIconNameToComponent(completeEditedCourse.iconName || course.iconName || 'book')
-        });
+        };
         
-        // Refetch the course to ensure we have the latest data
-        console.log('Refetching course data after update');
-        const { data, error } = await supabase
-          .from('courses')
-          .select('*')
-          .eq('id', course.id)
-          .single();
-          
-        if (!error && data) {
-          console.log('Successfully refetched course main data:', data);
-          
-          // Fetch related data in parallel
-          const [lessonsData, requirementsData, outcomesData] = await Promise.all([
-            supabase.from('course_lessons').select('*').eq('course_id', course.id),
-            supabase.from('course_requirements').select('*').eq('course_id', course.id),
-            supabase.from('course_outcomes').select('*').eq('course_id', course.id)
-          ]);
-            
-          console.log('Fetched related data:', {
-            lessons: lessonsData.data,
-            requirements: requirementsData.data,
-            outcomes: outcomesData.data
-          });
-          
-          const updatedCourse: ProfessionalCourse = {
-            ...course,
-            title: data.title,
-            subtitle: data.subtitle,
-            iconName: data.icon_name,
-            icon: convertIconNameToComponent(data.icon_name),
-            duration: data.duration,
-            price: data.price,
-            buttonText: data.button_text,
-            color: data.color,
-            institution: data.institution,
-            imageUrl: data.image_url,
-            organizationLogo: data.organization_logo,
-            description: data.description,
-            is_public: data.is_public,
-            lessons: lessonsData?.data?.map(lesson => ({
-              title: lesson.title,
-              duration: lesson.duration
-            })) || [],
-            requirements: requirementsData?.data?.map(req => req.requirement) || [],
-            outcomes: outcomesData?.data?.map(outcome => outcome.outcome) || [],
-            slug: data.slug
-          };
-          
-          console.log('Setting updated course with complete data:', updatedCourse);
-          setCourse(updatedCourse);
-          setEditedCourse(JSON.parse(JSON.stringify(updatedCourse))); // Deep copy
+        console.log('Setting course with updated data before refetch:', updatedCourse);
+        setCourse(updatedCourse);
+        
+        // If in edit mode, close dialog and navigate back to view mode
+        if (isEditMode) {
+          setIsEditDialogOpen(false);
+          navigate(`/admin/course/${course.id}`);
         } else {
-          console.error('Error refetching course:', error);
+          setIsEditDialogOpen(false);
+        }
+        
+        // Then refetch the course to ensure we have the latest data
+        console.log('Refetching course data after update');
+        try {
+          const { data, error } = await supabase
+            .from('courses')
+            .select('*')
+            .eq('id', course.id)
+            .single();
+            
+          if (!error && data) {
+            console.log('Successfully refetched course main data:', data);
+            
+            // Fetch related data in parallel
+            const [lessonsData, requirementsData, outcomesData] = await Promise.all([
+              supabase.from('course_lessons').select('*').eq('course_id', course.id),
+              supabase.from('course_requirements').select('*').eq('course_id', course.id),
+              supabase.from('course_outcomes').select('*').eq('course_id', course.id)
+            ]);
+              
+            console.log('Fetched related data:', {
+              lessons: lessonsData.data,
+              requirements: requirementsData.data,
+              outcomes: outcomesData.data
+            });
+            
+            const refreshedCourse: ProfessionalCourse = {
+              ...course,
+              title: data.title,
+              subtitle: data.subtitle,
+              iconName: data.icon_name,
+              icon: convertIconNameToComponent(data.icon_name),
+              duration: data.duration,
+              price: data.price,
+              buttonText: data.button_text,
+              color: data.color,
+              institution: data.institution,
+              imageUrl: data.image_url,
+              organizationLogo: data.organization_logo,
+              description: data.description,
+              is_public: data.is_public,
+              lessons: lessonsData?.data?.map(lesson => ({
+                title: lesson.title,
+                duration: lesson.duration
+              })) || [],
+              requirements: requirementsData?.data?.map(req => req.requirement) || [],
+              outcomes: outcomesData?.data?.map(outcome => outcome.outcome) || [],
+              slug: data.slug
+            };
+            
+            console.log('Setting course with refreshed data from database:', refreshedCourse);
+            setCourse(refreshedCourse);
+            setEditedCourse(JSON.parse(JSON.stringify(refreshedCourse))); // Deep copy
+          } else {
+            console.error('Error refetching course:', error);
+          }
+        } catch (refetchError) {
+          console.error('Error during course refetch:', refetchError);
         }
       } else {
         toast.error('Դասընթացի թարմացման ժամանակ սխալ է տեղի ունեցել');
