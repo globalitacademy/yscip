@@ -85,7 +85,11 @@ export const ActionButtons: React.FC<ActionButtonsProps> = ({
                   onClick={onDeleteClick}
                   disabled={isLoadingStatus}
                 >
-                  <Trash2 className="h-4 w-4 text-destructive" />
+                  {actionType === 'delete' && isLoadingStatus ? (
+                    <Loader2 className="h-4 w-4 animate-spin text-destructive" />
+                  ) : (
+                    <Trash2 className="h-4 w-4 text-destructive" />
+                  )}
                 </Button>
               </TooltipTrigger>
               <TooltipContent>

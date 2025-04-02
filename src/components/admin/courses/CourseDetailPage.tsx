@@ -11,6 +11,7 @@ import { Button } from '@/components/ui/button';
 import CourseDetailContent from './course-detail/CourseDetailContent';
 import CourseEditDialog from './course-detail/CourseEditDialog';
 import CourseDeleteDialog from './course-detail/CourseDeleteDialog';
+import { useCourseUpdating } from '@/hooks/courseService/useCourseUpdating';
 
 interface CourseDetailPageProps {
   id?: string;
@@ -22,9 +23,12 @@ export const CourseDetailPage: React.FC<CourseDetailPageProps> = ({ id, isEditMo
   const { user } = useAuth();
   const [course, setCourse] = useState<ProfessionalCourse | null>(null);
   const [loading, setLoading] = useState(true);
+  const [actionType, setActionType] = useState<'delete' | 'status' | null>(null);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [editedCourse, setEditedCourse] = useState<Partial<ProfessionalCourse>>({});
+  
+  const { updateCourse } = useCourseUpdating(setLoading);
 
   // Automatically open edit dialog if in edit mode
   useEffect(() => {
@@ -138,8 +142,15 @@ export const CourseDetailPage: React.FC<CourseDetailPageProps> = ({ id, isEditMo
     if (!course || !editedCourse) return;
     
     setLoading(true);
+    setActionType('status');
     try {
-      const success = await updateCourseDirectly(course.id, editedCourse);
+      // Ensure is_public status is carried over from the original course
+      // This prevents editedCourse from changing the publication status implicitly
+      if (editedCourse.is_public === undefined) {
+        editedCourse.is_public = course.is_public;
+      }
+      
+      const success = await updateCourse(course.id, editedCourse);
       
       if (success) {
         toast.success('Դասընթացը հաջողությամբ թարմացվել է');
@@ -163,6 +174,7 @@ export const CourseDetailPage: React.FC<CourseDetailPageProps> = ({ id, isEditMo
       toast.error('Դասընթացի թարմացման ժամանակ սխալ է տեղի ունեցել');
     } finally {
       setLoading(false);
+      setActionType(null);
     }
   };
 
@@ -170,6 +182,7 @@ export const CourseDetailPage: React.FC<CourseDetailPageProps> = ({ id, isEditMo
     if (!course) return;
     
     setLoading(true);
+    setActionType('delete');
     try {
       await Promise.all([
         supabase.from('course_lessons').delete().eq('course_id', course.id),
@@ -195,6 +208,7 @@ export const CourseDetailPage: React.FC<CourseDetailPageProps> = ({ id, isEditMo
       toast.error('Դասընթացի ջնջման ժամանակ սխալ է տեղի ունեցել');
     } finally {
       setLoading(false);
+      setActionType(null);
       setIsDeleteDialogOpen(false);
     }
   };
@@ -203,6 +217,7 @@ export const CourseDetailPage: React.FC<CourseDetailPageProps> = ({ id, isEditMo
     if (!course) return;
     
     setLoading(true);
+    setActionType('status');
     try {
       const { error } = await supabase
         .from('courses')
@@ -229,6 +244,7 @@ export const CourseDetailPage: React.FC<CourseDetailPageProps> = ({ id, isEditMo
       toast.error('Դասընթացի կարգավիճակի փոփոխման ժամանակ սխալ է տեղի ունեցել');
     } finally {
       setLoading(false);
+      setActionType(null);
     }
   };
 
@@ -267,6 +283,7 @@ export const CourseDetailPage: React.FC<CourseDetailPageProps> = ({ id, isEditMo
         setIsDeleteDialogOpen={setIsDeleteDialogOpen}
         handlePublishToggle={handlePublishToggle}
         loading={loading}
+        actionType={actionType}
       />
       
       <CourseEditDialog 
@@ -293,8 +310,5 @@ export const CourseDetailPage: React.FC<CourseDetailPageProps> = ({ id, isEditMo
     </div>
   );
 };
-
-// Import from utils file
-import { updateCourseDirectly } from './utils/courseUpdateUtils';
 
 export default CourseDetailPage;

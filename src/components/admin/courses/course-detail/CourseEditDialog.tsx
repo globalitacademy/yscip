@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Loader2 } from 'lucide-react';
 import { ProfessionalCourse } from '@/components/courses/types/ProfessionalCourse';
+import { Checkbox } from '@/components/ui/checkbox';
 
 // Import tab components
 import { BasicInfoTab } from './tabs/BasicInfoTab';
@@ -64,6 +65,24 @@ const CourseEditDialog: React.FC<CourseEditDialogProps> = ({
               setIsIconsOpen={setIsIconsOpen}
               handleIconSelect={handleIconSelect}
             />
+            <div className="mt-4 flex items-center space-x-2">
+              <Checkbox 
+                id="is_public" 
+                checked={editedCourse.is_public} 
+                onCheckedChange={(checked) => {
+                  setEditedCourse({
+                    ...editedCourse,
+                    is_public: !!checked
+                  });
+                }}
+              />
+              <label 
+                htmlFor="is_public" 
+                className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+              >
+                Հրապարակել դասընթացը
+              </label>
+            </div>
           </TabsContent>
           
           <TabsContent value="lessons">
