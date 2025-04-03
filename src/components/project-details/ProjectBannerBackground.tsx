@@ -1,7 +1,7 @@
 
 import React, { useState } from 'react';
 import { Edit } from 'lucide-react';
-import ImageUploader from '@/components/common/ImageUploader';
+import ImageUploader from '@/components/common/image-uploader';
 import { cn } from '@/lib/utils';
 
 interface ProjectBannerBackgroundProps {

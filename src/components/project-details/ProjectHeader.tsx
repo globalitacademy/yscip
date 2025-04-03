@@ -4,7 +4,7 @@ import { useProject } from '@/contexts/ProjectContext';
 import { Button } from '@/components/ui/button';
 import { ArrowLeft, Edit, Image } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
-import ImageUploader from '@/components/common/ImageUploader';
+import ImageUploader from '@/components/common/image-uploader';
 import ProjectImageDialog from '@/components/projects/ProjectImageDialog';
 import { getProjectImage } from '@/lib/getProjectImage';
 
