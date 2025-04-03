@@ -34,7 +34,7 @@ export const fetchProjects = async (): Promise<ProjectTheme[]> => {
       prerequisites: project.prerequisites || [],
       learningOutcomes: project.learning_outcomes || [],
       organizationName: project.organization_name,
-      detailedDescription: project.detailed_description
+      detailedDescription: project.description // Use description as fallback if detailed_description doesn't exist
     }));
   } catch (error) {
     console.error('Error in fetchProjects:', error);
@@ -62,7 +62,8 @@ export const createProject = async (project: ProjectTheme): Promise<boolean> => 
       learning_outcomes: project.learningOutcomes || [],
       is_public: project.is_public || false,
       organization_name: project.organizationName || null,
-      detailed_description: project.detailedDescription || project.description
+      // Store detailed description in the description field if the database doesn't have a separate column
+      description: project.detailedDescription || project.description
     };
 
     const { error } = await supabase
@@ -94,7 +95,9 @@ export const updateProject = async (id: number, updatedData: Partial<ProjectThem
     
     if (updatedData.title !== undefined) dataToUpdate.title = updatedData.title;
     if (updatedData.description !== undefined) dataToUpdate.description = updatedData.description;
-    if (updatedData.detailedDescription !== undefined) dataToUpdate.detailed_description = updatedData.detailedDescription;
+    // If detailedDescription is provided, update the description field as well
+    // since our database doesn't have a separate detailed_description column
+    if (updatedData.detailedDescription !== undefined) dataToUpdate.description = updatedData.detailedDescription;
     if (updatedData.image !== undefined) dataToUpdate.image = updatedData.image;
     if (updatedData.category !== undefined) dataToUpdate.category = updatedData.category;
     if (updatedData.techStack !== undefined) dataToUpdate.tech_stack = updatedData.techStack;
