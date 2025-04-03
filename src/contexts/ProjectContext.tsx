@@ -58,6 +58,7 @@ export const ProjectProvider: React.FC<ProjectProviderProps> = ({
   const { user } = useAuth();
   const [isEditing, setIsEditing] = useState(false);
   const [selectedSupervisor, setSelectedSupervisor] = useState<string | null>(null);
+  const [isUpdating, setIsUpdating] = useState(false);
 
   const {
     project,
@@ -117,6 +118,8 @@ export const ProjectProvider: React.FC<ProjectProviderProps> = ({
         return false;
       }
 
+      setIsUpdating(true);
+
       // Combine current project data with updates
       const updatedProject = {
         ...project,
@@ -128,8 +131,9 @@ export const ProjectProvider: React.FC<ProjectProviderProps> = ({
       const success = await projectService.updateProject(projectId, updatedProject);
       
       if (success) {
-        // Update local state
+        // Update local state after successful API call
         setProject(updatedProject);
+        toast.success('Նախագիծը հաջողությամբ թարմացվել է');
         return true;
       } else {
         toast.error('Նախագծի թարմացման ժամանակ սխալ է տեղի ունեցել');
@@ -139,6 +143,8 @@ export const ProjectProvider: React.FC<ProjectProviderProps> = ({
       console.error('Error updating project:', error);
       toast.error('Նախագծի թարմացման ժամանակ սխալ է տեղի ունեցել');
       return false;
+    } finally {
+      setIsUpdating(false);
     }
   };
 

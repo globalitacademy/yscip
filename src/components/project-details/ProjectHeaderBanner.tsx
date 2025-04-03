@@ -1,12 +1,12 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { useProjectManagement } from '@/contexts/ProjectManagementContext';
 import { useAuth } from '@/contexts/AuthContext';
 import { useProject } from '@/contexts/ProjectContext';
 import { ProjectTheme } from '@/data/projectThemes';
-import { Edit, ArrowLeft, Calendar, Clock, BarChart3, Eye, EyeOff, Save, X } from 'lucide-react';
+import { Edit, ArrowLeft, Calendar, Clock, BarChart3, Eye, EyeOff, Save, X, Loader2 } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import EditableField from '@/components/common/EditableField';
 import ImageUploader from '@/components/common/ImageUploader';
@@ -21,6 +21,7 @@ const ProjectHeaderBanner: React.FC<ProjectHeaderBannerProps> = ({ project }) =>
   const { user } = useAuth();
   const { handleEditInit } = useProjectManagement();
   const { canEdit, isEditing, setIsEditing, updateProject } = useProject();
+  const [isSaving, setIsSaving] = useState(false);
   
   const [editedProject, setEditedProject] = useState<Partial<ProjectTheme>>({
     title: project.title,
@@ -29,6 +30,17 @@ const ProjectHeaderBanner: React.FC<ProjectHeaderBannerProps> = ({ project }) =>
     is_public: project.is_public,
     image: project.image
   });
+  
+  // Update local state when project changes
+  useEffect(() => {
+    setEditedProject({
+      title: project.title,
+      description: project.description,
+      category: project.category,
+      is_public: project.is_public,
+      image: project.image
+    });
+  }, [project]);
   
   // Safety check to prevent errors if project is undefined
   if (!project) {
@@ -40,12 +52,18 @@ const ProjectHeaderBanner: React.FC<ProjectHeaderBannerProps> = ({ project }) =>
   }
   
   // Check if user can edit this project (admin, lecturer, employer, or creator)
-  const handleEditClick = () => {
+  const handleEditClick = async () => {
     if (isEditing) {
       // Save changes
-      updateProject(editedProject);
-      setIsEditing(false);
-      toast.success('Փոփոխությունները պահպանվել են');
+      setIsSaving(true);
+      try {
+        const success = await updateProject(editedProject);
+        if (success) {
+          setIsEditing(false);
+        }
+      } finally {
+        setIsSaving(false);
+      }
     } else {
       // Start editing
       setIsEditing(true);
@@ -166,7 +184,7 @@ const ProjectHeaderBanner: React.FC<ProjectHeaderBannerProps> = ({ project }) =>
               value={editedProject.title || ''}
               onChange={(value) => setEditedProject({...editedProject, title: value})}
               size="xl"
-              className="text-3xl font-bold text-white bg-black/30 rounded"
+              className="text-3xl font-bold text-white bg-black/40 rounded"
               placeholder="Մուտքագրեք նախագծի անվանումը"
               showEditButton={false}
             />
@@ -182,14 +200,19 @@ const ProjectHeaderBanner: React.FC<ProjectHeaderBannerProps> = ({ project }) =>
                     variant="outline" 
                     className="text-white border-white hover:bg-green-500 hover:border-green-500 hover:text-white transition-colors"
                     onClick={handleEditClick}
+                    disabled={isSaving}
                   >
-                    <Save className="h-4 w-4 mr-2" />
-                    Պահպանել
+                    {isSaving ? (
+                      <><Loader2 className="h-4 w-4 mr-2 animate-spin" /> Պահպանվում է...</>
+                    ) : (
+                      <><Save className="h-4 w-4 mr-2" /> Պահպանել</>
+                    )}
                   </Button>
                   <Button 
                     variant="outline" 
                     className="text-white border-white hover:bg-red-500 hover:border-red-500 hover:text-white transition-colors"
                     onClick={handleCancelEdit}
+                    disabled={isSaving}
                   >
                     <X className="h-4 w-4 mr-2" />
                     Չեղարկել
@@ -266,7 +289,7 @@ const ProjectHeaderBanner: React.FC<ProjectHeaderBannerProps> = ({ project }) =>
             value={editedProject.description || ''}
             onChange={(value) => setEditedProject({...editedProject, description: value})}
             multiline={true}
-            className="text-white text-lg mb-4 max-w-3xl bg-black/30 rounded"
+            className="text-white text-lg mb-4 max-w-3xl bg-black/40 rounded"
             placeholder="Մուտքագրեք նախագծի նկարագրությունը"
             showEditButton={false}
           />

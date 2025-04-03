@@ -1,9 +1,9 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { ProjectTheme } from '@/data/projectThemes';
 import { Separator } from '@/components/ui/separator';
-import { CheckCircle, ArrowRight, BookOpen, Save, X } from 'lucide-react';
+import { CheckCircle, ArrowRight, BookOpen, Save, X, Loader2 } from 'lucide-react';
 import { SlideUp } from '@/components/LocalTransitions';
 import ProjectMembers from '@/components/projects/ProjectMembers';
 import { getProjectImage } from '@/lib/getProjectImage';
@@ -39,11 +39,28 @@ const ProjectOverview: React.FC<ProjectOverviewProps> = ({
     learningOutcomes: project.learningOutcomes || [],
     prerequisites: project.prerequisites || []
   });
+  const [isSaving, setIsSaving] = useState(false);
 
-  const handleSaveChanges = () => {
-    updateProject(editedProject);
-    setIsEditing(false);
-    toast.success('Փոփոխությունները պահպանվել են');
+  // Update local state when project changes
+  useEffect(() => {
+    setEditedProject({
+      detailedDescription: project.detailedDescription || project.description,
+      steps: project.steps || [],
+      learningOutcomes: project.learningOutcomes || [],
+      prerequisites: project.prerequisites || []
+    });
+  }, [project]);
+
+  const handleSaveChanges = async () => {
+    setIsSaving(true);
+    try {
+      const success = await updateProject(editedProject);
+      if (success) {
+        setIsEditing(false);
+      }
+    } finally {
+      setIsSaving(false);
+    }
   };
 
   const handleCancelEdit = () => {
@@ -66,14 +83,19 @@ const ProjectOverview: React.FC<ProjectOverviewProps> = ({
                 variant="outline" 
                 className="border-green-200 bg-green-100 text-green-700 hover:bg-green-200"
                 onClick={handleSaveChanges}
+                disabled={isSaving}
               >
-                <Save className="h-4 w-4 mr-2" />
-                Պահպանել
+                {isSaving ? (
+                  <><Loader2 className="h-4 w-4 mr-2 animate-spin" /> Պահպանվում է...</>
+                ) : (
+                  <><Save className="h-4 w-4 mr-2" /> Պահպանել</>
+                )}
               </Button>
               <Button 
                 variant="outline" 
                 className="border-red-200 bg-red-100 text-red-700 hover:bg-red-200"
                 onClick={handleCancelEdit}
+                disabled={isSaving}
               >
                 <X className="h-4 w-4 mr-2" />
                 Չեղարկել

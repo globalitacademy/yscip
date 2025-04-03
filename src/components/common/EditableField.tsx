@@ -151,8 +151,10 @@ const EditableField: React.FC<EditableFieldProps> = ({
       onClick={handleStartEditing}
     >
       <div className={cn(
-        value ? sizeClasses[size] : "text-muted italic",
-        "min-h-[1.5em]"
+        value ? sizeClasses[size] : "text-muted-foreground italic",
+        "min-h-[1.5em]",
+        // Improve text visibility when in dark backgrounds
+        className?.includes('text-white') ? "text-white" : ""
       )}>
         {value || placeholder}
       </div>

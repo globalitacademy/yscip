@@ -7,7 +7,7 @@ import Footer from '@/components/Footer';
 import { useProject } from '@/contexts/ProjectContext';
 import { projectThemes } from '@/data/projectThemes';
 import { getProjectImage } from '@/lib/getProjectImage';
-import { toast } from '@/components/ui/use-toast';
+import { toast } from 'sonner';  
 import ProjectHeader from './ProjectHeader';
 import ProjectTabs from './ProjectTabs';
 import { cn } from '@/lib/utils';
