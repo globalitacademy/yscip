@@ -128,15 +128,8 @@ const ProjectDetailsContent: React.FC = () => {
             </Alert>
           )}
           
-          <ProjectHeader 
-            project={project}
-            projectStatus={projectStatus}
-            isReserved={isReserved}
-            imageUrl={imageUrl}
-            projectMembers={projectMembers}
-            organization={organization}
-            progressPercentage={projectProgress}
-          />
+          {/* Removing extra props that ProjectHeader doesn't accept */}
+          <ProjectHeader />
           
           <ProjectTabs 
             project={project}
