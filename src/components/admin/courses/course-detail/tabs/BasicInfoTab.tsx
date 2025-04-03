@@ -24,11 +24,15 @@ export const BasicInfoTab: React.FC<BasicInfoTabProps> = ({
 }) => {
   const handleInputChange = (field: string, value: string) => {
     console.log(`Updating ${field} to:`, value);
-    setEditedCourse({ [field]: value });
+    // Create a complete updated course object with the new field value
+    const updatedCourse = { ...editedCourse, [field]: value };
+    setEditedCourse(updatedCourse);
   };
 
   const handleImageChange = (imageUrl: string) => {
-    setEditedCourse({ imageUrl });
+    // Create a complete updated course object with the new image URL
+    const updatedCourse = { ...editedCourse, imageUrl };
+    setEditedCourse(updatedCourse);
   };
 
   return (

@@ -44,20 +44,16 @@ const CourseEditDialog: React.FC<CourseEditDialogProps> = ({
     }
   }, [isOpen, editedCourse]);
   
-  // Handle form changes while maintaining full state
+  // Handle form changes to maintain consistent complete state
   const handleFormChange = (changes: Partial<ProfessionalCourse>) => {
     console.log('CourseEditDialog: Form changed with:', changes);
-    setEditedCourse(prevState => {
-      // Create a proper merged state with all previous values plus new changes
-      const newState = { ...prevState, ...changes };
-      console.log('CourseEditDialog: New state after changes:', newState);
-      setIsDirty(true);
-      return newState;
-    });
+    setEditedCourse(changes);
+    setIsDirty(true);
   };
   
   const handleIconSelect = (iconName: string) => {
-    handleFormChange({ iconName });
+    const updatedCourse = { ...editedCourse, iconName };
+    handleFormChange(updatedCourse);
     setIsIconsOpen(false);
   };
   
@@ -65,28 +61,14 @@ const CourseEditDialog: React.FC<CourseEditDialogProps> = ({
     console.log('CourseEditDialog: Save button clicked with edited course data:', editedCourse);
     
     // Ensure we have complete data for lessons, requirements, and outcomes
-    const updatedCourse = { ...editedCourse };
+    const updatedCourse = { 
+      ...editedCourse,
+      lessons: editedCourse.lessons || [],
+      requirements: editedCourse.requirements || [],
+      outcomes: editedCourse.outcomes || []
+    };
     
-    if (!updatedCourse.lessons) {
-      updatedCourse.lessons = [];
-      console.log('CourseEditDialog: Initializing empty lessons array');
-    }
-    
-    if (!updatedCourse.requirements) {
-      updatedCourse.requirements = [];
-      console.log('CourseEditDialog: Initializing empty requirements array');
-    }
-    
-    if (!updatedCourse.outcomes) {
-      updatedCourse.outcomes = [];
-      console.log('CourseEditDialog: Initializing empty outcomes array');
-    }
-    
-    if (Object.keys(updatedCourse).length !== Object.keys(editedCourse).length) {
-      console.log('CourseEditDialog: Updating editedCourse with complete data before save:', updatedCourse);
-      setEditedCourse(updatedCourse);
-    }
-    
+    setEditedCourse(updatedCourse);
     await handleSaveChanges();
     setIsDirty(false);
   };
@@ -136,6 +118,7 @@ const CourseEditDialog: React.FC<CourseEditDialogProps> = ({
                 onCheckedChange={(checked) => {
                   console.log('CourseEditDialog: Visibility checkbox changed to:', checked);
                   handleFormChange({
+                    ...editedCourse,
                     is_public: !!checked
                   });
                 }}

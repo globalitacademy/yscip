@@ -13,12 +13,12 @@ export const AuthorTab: React.FC<AuthorTabProps> = ({ editedCourse, setEditedCou
   const handleInputChange = (field: string, value: string) => {
     console.log(`AuthorTab: Updating ${field} to:`, value);
     
-    // Create a new changes object with the updated field
-    const changes = { ...editedCourse, [field]: value };
-    console.log(`AuthorTab: New state after updating ${field}:`, changes);
+    // Create a complete updated course object with the updated field
+    const updatedCourse = { ...editedCourse, [field]: value };
+    console.log(`AuthorTab: New state after updating ${field}:`, updatedCourse);
     
     // Pass the complete updated state to setEditedCourse
-    setEditedCourse(changes);
+    setEditedCourse(updatedCourse);
   };
 
   return (

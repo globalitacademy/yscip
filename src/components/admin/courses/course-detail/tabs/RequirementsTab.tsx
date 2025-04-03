@@ -19,14 +19,11 @@ export const RequirementsTab: React.FC<RequirementsTabProps> = ({ editedCourse, 
     }
     
     // Create a new array with the existing requirements plus the new one
-    const currentRequirements = [...(editedCourse.requirements || [])];
-    const updatedRequirements = [...currentRequirements, newRequirement.trim()];
+    const updatedRequirements = [...(editedCourse.requirements || []), newRequirement.trim()];
     console.log('RequirementsTab: Adding requirement, updated requirements:', updatedRequirements);
     
-    // Create a complete updated state object
+    // Create a complete updated course object with the updated requirements
     const updatedCourse = { ...editedCourse, requirements: updatedRequirements };
-    
-    // Pass the complete updated state to setEditedCourse
     setEditedCourse(updatedCourse);
     
     setNewRequirement('');
@@ -34,14 +31,12 @@ export const RequirementsTab: React.FC<RequirementsTabProps> = ({ editedCourse, 
   
   const handleRemoveRequirement = (index: number) => {
     // Create a new array with the requirement at the specified index removed
-    const currentRequirements = [...(editedCourse.requirements || [])];
-    currentRequirements.splice(index, 1);
-    console.log('RequirementsTab: Removing requirement, updated requirements:', currentRequirements);
+    const updatedRequirements = [...(editedCourse.requirements || [])];
+    updatedRequirements.splice(index, 1);
+    console.log('RequirementsTab: Removing requirement, updated requirements:', updatedRequirements);
     
-    // Create a complete updated state object
-    const updatedCourse = { ...editedCourse, requirements: currentRequirements };
-    
-    // Pass the complete updated state to setEditedCourse
+    // Create a complete updated course object with the updated requirements
+    const updatedCourse = { ...editedCourse, requirements: updatedRequirements };
     setEditedCourse(updatedCourse);
   };
   

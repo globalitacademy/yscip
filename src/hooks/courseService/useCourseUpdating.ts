@@ -6,7 +6,15 @@ import { toast } from 'sonner';
 
 export const useCourseUpdating = (setLoading: Dispatch<SetStateAction<boolean>>) => {
   const updateCourse = useCallback(async (id: string, updates: Partial<ProfessionalCourse>): Promise<boolean> => {
-    console.log('Starting course update with ID:', id, 'and updates:', updates);
+    console.log('Starting course update with ID:', id);
+    console.log('Course update payload:', JSON.stringify(updates, null, 2));
+    
+    if (!id) {
+      console.error('Invalid course ID for update');
+      toast.error('Անվավեր դասընթացի ID');
+      return false;
+    }
+    
     setLoading(true);
     try {
       // Prepare main course data for update
@@ -51,114 +59,120 @@ export const useCourseUpdating = (setLoading: Dispatch<SetStateAction<boolean>>)
       
       console.log('Successfully updated main course data for ID:', id, 'Response:', data);
       
-      // Update lessons
-      console.log('Updating lessons for course ID:', id, 'lessons:', updates.lessons);
-      
-      // First delete existing lessons
-      const { error: deleteError } = await supabase
-        .from('course_lessons')
-        .delete()
-        .eq('course_id', id);
+      // Update lessons if they exist
+      if (updates.lessons) {
+        console.log('Updating lessons for course ID:', id, 'lessons:', updates.lessons);
         
-      if (deleteError) {
-        console.error('Error deleting existing lessons:', deleteError);
-        // Continue despite error
-      }
-      
-      // Then insert new lessons if they exist
-      if (updates.lessons && updates.lessons.length > 0) {
-        const lessonData = updates.lessons.map(lesson => ({
-          course_id: id,
-          title: lesson.title,
-          duration: lesson.duration
-        }));
-        
-        console.log('Inserting lesson data:', lessonData);
-        
-        const { data: lessonsData, error: lessonsError } = await supabase
+        // First delete existing lessons
+        const { error: deleteError } = await supabase
           .from('course_lessons')
-          .insert(lessonData)
-          .select();
+          .delete()
+          .eq('course_id', id);
           
-        if (lessonsError) {
-          console.error('Error inserting lessons:', lessonsError);
-        } else {
-          console.log('Successfully updated lessons for course ID:', id, 'Response:', lessonsData);
+        if (deleteError) {
+          console.error('Error deleting existing lessons:', deleteError);
+          // Continue despite error
         }
-      } else {
-        console.log('No lessons to insert for course ID:', id);
+        
+        // Then insert new lessons if they exist
+        if (updates.lessons.length > 0) {
+          const lessonData = updates.lessons.map(lesson => ({
+            course_id: id,
+            title: lesson.title,
+            duration: lesson.duration
+          }));
+          
+          console.log('Inserting lesson data:', lessonData);
+          
+          const { data: lessonsData, error: lessonsError } = await supabase
+            .from('course_lessons')
+            .insert(lessonData)
+            .select();
+            
+          if (lessonsError) {
+            console.error('Error inserting lessons:', lessonsError);
+          } else {
+            console.log('Successfully updated lessons for course ID:', id, 'Response:', lessonsData);
+          }
+        } else {
+          console.log('No lessons to insert for course ID:', id);
+        }
       }
       
-      // Update requirements
-      console.log('Updating requirements for course ID:', id, 'requirements:', updates.requirements);
-      
-      // First delete existing requirements
-      const { error: deleteReqError } = await supabase
-        .from('course_requirements')
-        .delete()
-        .eq('course_id', id);
+      // Update requirements if they exist
+      if (updates.requirements) {
+        console.log('Updating requirements for course ID:', id, 'requirements:', updates.requirements);
         
-      if (deleteReqError) {
-        console.error('Error deleting existing requirements:', deleteReqError);
-      }
-      
-      // Then insert new requirements if they exist
-      if (updates.requirements && updates.requirements.length > 0) {
-        const requirementData = updates.requirements.map(requirement => ({
-          course_id: id,
-          requirement: requirement
-        }));
-        
-        console.log('Inserting requirement data:', requirementData);
-        
-        const { data: requirementsData, error: requirementsError } = await supabase
+        // First delete existing requirements
+        const { error: deleteReqError } = await supabase
           .from('course_requirements')
-          .insert(requirementData)
-          .select();
+          .delete()
+          .eq('course_id', id);
           
-        if (requirementsError) {
-          console.error('Error inserting requirements:', requirementsError);
-        } else {
-          console.log('Successfully updated requirements for course ID:', id, 'Response:', requirementsData);
+        if (deleteReqError) {
+          console.error('Error deleting existing requirements:', deleteReqError);
         }
-      } else {
-        console.log('No requirements to insert for course ID:', id);
+        
+        // Then insert new requirements if they exist
+        if (updates.requirements.length > 0) {
+          const requirementData = updates.requirements.map(requirement => ({
+            course_id: id,
+            requirement: requirement
+          }));
+          
+          console.log('Inserting requirement data:', requirementData);
+          
+          const { data: requirementsData, error: requirementsError } = await supabase
+            .from('course_requirements')
+            .insert(requirementData)
+            .select();
+            
+          if (requirementsError) {
+            console.error('Error inserting requirements:', requirementsError);
+          } else {
+            console.log('Successfully updated requirements for course ID:', id, 'Response:', requirementsData);
+          }
+        } else {
+          console.log('No requirements to insert for course ID:', id);
+        }
       }
       
-      // Update outcomes
-      console.log('Updating outcomes for course ID:', id, 'outcomes:', updates.outcomes);
-      
-      // First delete existing outcomes
-      const { error: deleteOutcomesError } = await supabase
-        .from('course_outcomes')
-        .delete()
-        .eq('course_id', id);
+      // Update outcomes if they exist
+      if (updates.outcomes) {
+        console.log('Updating outcomes for course ID:', id, 'outcomes:', updates.outcomes);
         
-      if (deleteOutcomesError) {
-        console.error('Error deleting existing outcomes:', deleteOutcomesError);
-      }
-      
-      // Then insert new outcomes if they exist
-      if (updates.outcomes && updates.outcomes.length > 0) {
-        const outcomeData = updates.outcomes.map(outcome => ({
-          course_id: id,
-          outcome: outcome
-        }));
-        
-        console.log('Inserting outcome data:', outcomeData);
-        
-        const { data: outcomesData, error: outcomesError } = await supabase
+        // First delete existing outcomes
+        const { error: deleteOutcomesError } = await supabase
           .from('course_outcomes')
-          .insert(outcomeData)
-          .select();
+          .delete()
+          .eq('course_id', id);
           
-        if (outcomesError) {
-          console.error('Error inserting outcomes:', outcomesError);
-        } else {
-          console.log('Successfully updated outcomes for course ID:', id, 'Response:', outcomesData);
+        if (deleteOutcomesError) {
+          console.error('Error deleting existing outcomes:', deleteOutcomesError);
         }
-      } else {
-        console.log('No outcomes to insert for course ID:', id);
+        
+        // Then insert new outcomes if they exist
+        if (updates.outcomes.length > 0) {
+          const outcomeData = updates.outcomes.map(outcome => ({
+            course_id: id,
+            outcome: outcome
+          }));
+          
+          console.log('Inserting outcome data:', outcomeData);
+          
+          const { data: outcomesData, error: outcomesError } = await supabase
+            .from('course_outcomes')
+            .insert(outcomeData)
+            .select();
+            
+          if (outcomesError) {
+            console.error('Error inserting outcomes:', outcomesError);
+          } else {
+            console.log('Successfully updated outcomes for course ID:', id, 'Response:', outcomesData);
+          }
+        } else {
+          console.log('No outcomes to insert for course ID:', id);
+        }
       }
       
       console.log('Course update completed successfully for ID:', id);

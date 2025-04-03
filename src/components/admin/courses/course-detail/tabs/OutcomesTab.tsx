@@ -19,14 +19,11 @@ export const OutcomesTab: React.FC<OutcomesTabProps> = ({ editedCourse, setEdite
     }
     
     // Create a new array with the existing outcomes plus the new one
-    const currentOutcomes = [...(editedCourse.outcomes || [])];
-    const updatedOutcomes = [...currentOutcomes, newOutcome.trim()];
+    const updatedOutcomes = [...(editedCourse.outcomes || []), newOutcome.trim()];
     console.log('OutcomesTab: Adding outcome, updated outcomes:', updatedOutcomes);
     
-    // Create a complete updated state object
+    // Create a complete updated course object with the updated outcomes
     const updatedCourse = { ...editedCourse, outcomes: updatedOutcomes };
-    
-    // Pass the complete updated state to setEditedCourse
     setEditedCourse(updatedCourse);
     
     setNewOutcome('');
@@ -34,14 +31,12 @@ export const OutcomesTab: React.FC<OutcomesTabProps> = ({ editedCourse, setEdite
   
   const handleRemoveOutcome = (index: number) => {
     // Create a new array with the outcome at the specified index removed
-    const currentOutcomes = [...(editedCourse.outcomes || [])];
-    currentOutcomes.splice(index, 1);
-    console.log('OutcomesTab: Removing outcome, updated outcomes:', currentOutcomes);
+    const updatedOutcomes = [...(editedCourse.outcomes || [])];
+    updatedOutcomes.splice(index, 1);
+    console.log('OutcomesTab: Removing outcome, updated outcomes:', updatedOutcomes);
     
-    // Create a complete updated state object
-    const updatedCourse = { ...editedCourse, outcomes: currentOutcomes };
-    
-    // Pass the complete updated state to setEditedCourse
+    // Create a complete updated course object with the updated outcomes
+    const updatedCourse = { ...editedCourse, outcomes: updatedOutcomes };
     setEditedCourse(updatedCourse);
   };
   

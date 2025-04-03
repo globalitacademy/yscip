@@ -20,7 +20,11 @@ export const LessonsTab: React.FC<LessonsTabProps> = ({ editedCourse, setEditedC
     
     const updatedLessons = [...(editedCourse.lessons || []), { ...newLesson }];
     console.log('Adding lesson, updated lessons:', updatedLessons);
-    setEditedCourse({ lessons: updatedLessons });
+    
+    // Create a complete updated course object with the new lessons
+    const updatedCourse = { ...editedCourse, lessons: updatedLessons };
+    setEditedCourse(updatedCourse);
+    
     setNewLesson({ title: '', duration: '' });
   };
   
@@ -28,7 +32,10 @@ export const LessonsTab: React.FC<LessonsTabProps> = ({ editedCourse, setEditedC
     const updatedLessons = [...(editedCourse.lessons || [])];
     updatedLessons.splice(index, 1);
     console.log('Removing lesson, updated lessons:', updatedLessons);
-    setEditedCourse({ lessons: updatedLessons });
+    
+    // Create a complete updated course object with the updated lessons
+    const updatedCourse = { ...editedCourse, lessons: updatedLessons };
+    setEditedCourse(updatedCourse);
   };
   
   const handleLessonChange = (index: number, field: keyof LessonItem, value: string) => {
@@ -38,7 +45,10 @@ export const LessonsTab: React.FC<LessonsTabProps> = ({ editedCourse, setEditedC
       [field]: value
     };
     console.log(`Updating lesson ${index} ${field} to ${value}, lessons:`, updatedLessons);
-    setEditedCourse({ lessons: updatedLessons });
+    
+    // Create a complete updated course object with the updated lessons
+    const updatedCourse = { ...editedCourse, lessons: updatedLessons };
+    setEditedCourse(updatedCourse);
   };
 
   return (
