@@ -27,7 +27,7 @@ const ProjectBannerBackground: React.FC<ProjectBannerBackgroundProps> = ({
     ? `url(${image})` 
     : 'url(https://images.unsplash.com/photo-1629904853716-f0bc54eea481?q=80&w=2070)';
 
-  const handleImageChange = (newImageUrl: string) => {
+  const handleImageChange = async (newImageUrl: string) => {
     setIsUploading(true);
     try {
       onImageChange(newImageUrl);

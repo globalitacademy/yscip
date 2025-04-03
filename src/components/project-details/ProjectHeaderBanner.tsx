@@ -61,7 +61,13 @@ const ProjectHeaderBanner: React.FC<ProjectHeaderBannerProps> = ({ project }) =>
         const success = await updateProject(editedProject);
         if (success) {
           setIsEditing(false);
+          toast.success('Փոփոխությունները հաջողությամբ պահպանվել են');
+        } else {
+          toast.error('Փոփոխությունների պահպանման ժամանակ սխալ է տեղի ունեցել');
         }
+      } catch (error) {
+        console.error('Error updating project:', error);
+        toast.error('Փոփոխությունների պահպանման ժամանակ սխալ է տեղի ունեցել');
       } finally {
         setIsSaving(false);
       }
@@ -80,6 +86,7 @@ const ProjectHeaderBanner: React.FC<ProjectHeaderBannerProps> = ({ project }) =>
       image: project.image
     });
     setIsEditing(false);
+    toast.info('Խմբագրումը չեղարկվել է');
   };
   
   const goBack = () => {
@@ -91,8 +98,26 @@ const ProjectHeaderBanner: React.FC<ProjectHeaderBannerProps> = ({ project }) =>
     navigate(`/project/edit/${project.id}`);
   };
   
-  const handleImageChange = (imageUrl: string) => {
-    setEditedProject({...editedProject, image: imageUrl});
+  const handleImageChange = async (imageUrl: string) => {
+    setEditedProject(prev => {
+      const updated = {...prev, image: imageUrl};
+      
+      // If we're not in full editing mode, immediately save the image change
+      if (!isEditing) {
+        updateProject({ image: imageUrl })
+          .then(success => {
+            if (!success) {
+              toast.error('Նկարի պահպանման ժամանակ սխալ է տեղի ունեցել');
+            }
+          })
+          .catch(error => {
+            console.error('Error saving image:', error);
+            toast.error('Նկարի պահպանման ժամանակ սխալ է տեղի ունեցել');
+          });
+      }
+      
+      return updated;
+    });
   };
   
   const handleCategoryChange = (value: string) => {

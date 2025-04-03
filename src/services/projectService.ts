@@ -111,9 +111,7 @@ export const updateProject = async (id: number, updatedData: Partial<ProjectThem
 
     console.log('Mapped data to update:', dataToUpdate);
 
-    // For mock implementation, we'll simulate success for now
-    // UNCOMMENT THIS FOR REAL SUPABASE INTEGRATION:
-    /*
+    // UNCOMMENT AND USE REAL SUPABASE IMPLEMENTATION
     const { error } = await supabase
       .from('projects')
       .update(dataToUpdate)
@@ -124,10 +122,9 @@ export const updateProject = async (id: number, updatedData: Partial<ProjectThem
       toast.error('Նախագծի թարմացման ժամանակ սխալ է տեղի ունեցել');
       return false;
     }
-    */
     
-    // Success response (simulated for now)
     console.log('Project updated successfully');
+    toast.success('Նախագիծը հաջողությամբ թարմացվել է');
     return true;
   } catch (error) {
     console.error('Error in updateProject:', error);
