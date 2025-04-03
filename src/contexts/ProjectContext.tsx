@@ -6,6 +6,8 @@ import { useAuth } from '@/contexts/AuthContext';
 import { Task, TimelineEvent } from '@/data/projectThemes';
 import { ProjectReservation } from '@/types/project';
 import { calculateProjectProgress } from '@/utils/projectProgressUtils';
+import { toast } from 'sonner';
+import * as projectService from '@/services/projectService';
 
 interface ProjectContextType {
   projectId: number;
@@ -35,6 +37,7 @@ interface ProjectContextType {
   selectedSupervisor: string | null;
   selectSupervisor: (supervisorId: string) => void;
   getReservationStatus: () => 'pending' | 'approved' | 'rejected' | null;
+  updateProject: (updates: Partial<any>) => Promise<boolean>;
 }
 
 const ProjectContext = createContext<ProjectContextType | undefined>(undefined);
@@ -58,6 +61,7 @@ export const ProjectProvider: React.FC<ProjectProviderProps> = ({
 
   const {
     project,
+    setProject,
     timeline,
     setTimeline,
     tasks,
@@ -106,6 +110,38 @@ export const ProjectProvider: React.FC<ProjectProviderProps> = ({
     setSelectedSupervisor(supervisorId);
   };
 
+  const updateProject = async (updates: Partial<any>): Promise<boolean> => {
+    try {
+      if (!project || !projectId) {
+        toast.error('Նախագիծը չի գտնվել');
+        return false;
+      }
+
+      // Combine current project data with updates
+      const updatedProject = {
+        ...project,
+        ...updates,
+        updatedAt: new Date().toISOString()
+      };
+
+      // Call the projectService to update the project in the database
+      const success = await projectService.updateProject(projectId, updatedProject);
+      
+      if (success) {
+        // Update local state
+        setProject(updatedProject);
+        return true;
+      } else {
+        toast.error('Նախագծի թարմացման ժամանակ սխալ է տեղի ունեցել');
+        return false;
+      }
+    } catch (error) {
+      console.error('Error updating project:', error);
+      toast.error('Նախագծի թարմացման ժամանակ սխալ է տեղի ունեցել');
+      return false;
+    }
+  };
+
   return (
     <ProjectContext.Provider value={{ 
       projectId, 
@@ -134,7 +170,8 @@ export const ProjectProvider: React.FC<ProjectProviderProps> = ({
       showSupervisorDialog,
       selectedSupervisor,
       selectSupervisor,
-      getReservationStatus
+      getReservationStatus,
+      updateProject
     }}>
       {children}
     </ProjectContext.Provider>
