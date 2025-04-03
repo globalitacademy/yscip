@@ -2,7 +2,7 @@
 import React from 'react';
 import { cn } from "@/lib/utils";
 import { Button } from '@/components/ui/button';
-import { Check, X, Camera } from 'lucide-react';
+import { Edit, Save, X } from 'lucide-react';
 import ImagePreview from './ImagePreview';
 
 interface OverlayModeControlsProps {
@@ -34,14 +34,11 @@ const OverlayModeControls: React.FC<OverlayModeControlsProps> = ({
   onSave,
   onCancel
 }) => {
+  // Use the preview URL if available, otherwise use the current image
   const displayImage = previewUrl || currentImage;
   
   return (
-    <div 
-      className="relative"
-      onMouseEnter={() => {}}
-      onMouseLeave={() => {}}
-    >
+    <div className="relative w-full">
       <ImagePreview 
         imgSrc={displayImage}
         placeholder={placeholder}
@@ -49,47 +46,61 @@ const OverlayModeControls: React.FC<OverlayModeControlsProps> = ({
         rounded={rounded}
         disabled={disabled}
         isEditing={isEditing}
-        showHoverControls={true}
-        isHovering={isHovering}
-        onTriggerFileInput={onTriggerFileInput}
       />
       
-      {isEditing && (
-        <div className="absolute bottom-4 right-4 flex gap-2">
+      {/* Overlay gradient */}
+      <div className="absolute inset-0 bg-gradient-to-b from-black/70 to-black/30"></div>
+      
+      {/* Edit controls */}
+      {isEditing ? (
+        <div className="absolute top-4 right-4 flex space-x-2">
           <Button 
-            variant="secondary" 
             size="sm" 
+            variant="default" 
             onClick={onSave}
-            className="bg-green-100 hover:bg-green-200 text-green-700"
+            className="flex items-center gap-1"
           >
-            <Check size={16} className="mr-1" />
+            <Save size={16} />
             Պահպանել
           </Button>
           <Button 
-            variant="secondary" 
             size="sm" 
+            variant="ghost" 
             onClick={onCancel}
-            className="bg-red-100 hover:bg-red-200 text-red-700"
+            className="bg-white/80 hover:bg-white/100 flex items-center gap-1"
           >
-            <X size={16} className="mr-1" />
+            <X size={16} />
             Չեղարկել
           </Button>
         </div>
+      ) : (
+        <>
+          {(isHovering || showEditButton) && !disabled && (
+            <div className="absolute top-4 right-4 transition-opacity duration-200">
+              <Button 
+                size="sm"
+                variant="ghost" 
+                onClick={onTriggerFileInput}
+                className="bg-white/80 hover:bg-white/100 flex items-center gap-1"
+              >
+                <Edit size={16} />
+                Փոխել նկարը
+              </Button>
+            </div>
+          )}
+        </>
       )}
-
-      {!isEditing && !disabled && showEditButton && (
-        <div className={cn(
-          "absolute bottom-4 right-4 transition-opacity",
-          isHovering ? "opacity-100" : "opacity-0"
-        )}>
-          <Button
-            variant="secondary"
+      
+      {isEditing && (
+        <div className="absolute bottom-4 left-4">
+          <Button 
+            size="sm" 
+            variant="ghost" 
             onClick={onTriggerFileInput}
-            size="sm"
-            className="bg-white/90 hover:bg-white text-gray-800"
+            className="bg-white/80 hover:bg-white/100 flex items-center gap-1"
           >
-            <Camera size={16} className="mr-1.5" />
-            Փոխել նկարը
+            <Edit size={16} />
+            Ընտրել այլ նկար
           </Button>
         </div>
       )}

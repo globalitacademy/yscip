@@ -3,6 +3,7 @@ import React, { useState } from 'react';
 import { Edit } from 'lucide-react';
 import ImageUploader from '@/components/common/image-uploader';
 import { cn } from '@/lib/utils';
+import { toast } from 'sonner';
 
 interface ProjectBannerBackgroundProps {
   image?: string;
@@ -19,19 +20,35 @@ const ProjectBannerBackground: React.FC<ProjectBannerBackgroundProps> = ({
   onImageChange,
   onEditClick
 }) => {
+  const [isUploading, setIsUploading] = useState(false);
+  
   // Default image if none is provided
   const backgroundImage = image 
     ? `url(${image})` 
     : 'url(https://images.unsplash.com/photo-1629904853716-f0bc54eea481?q=80&w=2070)';
 
+  const handleImageChange = (newImageUrl: string) => {
+    setIsUploading(true);
+    try {
+      onImageChange(newImageUrl);
+      toast.success('Նկարը հաջողությամբ պահպանվել է');
+    } catch (error) {
+      console.error('Error saving image:', error);
+      toast.error('Նկարի պահպանման ժամանակ սխալ է տեղի ունեցել');
+    } finally {
+      setIsUploading(false);
+    }
+  };
+
   if (isEditing) {
     return (
       <ImageUploader
         currentImage={image || backgroundImage.replace(/^url\(["']?|["']?\)$/g, '')}
-        onImageChange={onImageChange}
+        onImageChange={handleImageChange}
         previewHeight="h-64"
         overlayMode={true}
         className="w-full"
+        disabled={isUploading}
       />
     );
   }

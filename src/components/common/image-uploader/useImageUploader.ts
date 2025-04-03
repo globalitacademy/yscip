@@ -1,5 +1,5 @@
 
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { toast } from 'sonner';
 
 interface UseImageUploaderProps {
@@ -17,6 +17,13 @@ export const useImageUploader = ({
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const [isHovering, setIsHovering] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  // Reset preview URL when current image changes
+  useEffect(() => {
+    if (!isEditing) {
+      setPreviewUrl(null);
+    }
+  }, [currentImage, isEditing]);
 
   const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -45,15 +52,31 @@ export const useImageUploader = ({
 
   const handleSave = () => {
     if (previewUrl) {
-      onImageChange(previewUrl);
+      try {
+        onImageChange(previewUrl);
+        toast.success('Նկարը հաջողությամբ պահպանվել է');
+      } catch (error) {
+        console.error('Error saving image:', error);
+        toast.error('Նկարի պահպանման ժամանակ սխալ է տեղի ունեցել');
+      }
     }
     setIsEditing(false);
     setPreviewUrl(null);
+    
+    // Reset file input
+    if (fileInputRef.current) {
+      fileInputRef.current.value = '';
+    }
   };
 
   const handleCancel = () => {
     setIsEditing(false);
     setPreviewUrl(null);
+    
+    // Reset file input
+    if (fileInputRef.current) {
+      fileInputRef.current.value = '';
+    }
   };
 
   const triggerFileInput = () => {

@@ -1,7 +1,6 @@
 
 import React from 'react';
 import { cn } from "@/lib/utils";
-import { Camera } from 'lucide-react';
 
 interface ImagePreviewProps {
   imgSrc: string | null;
@@ -10,9 +9,6 @@ interface ImagePreviewProps {
   rounded: boolean;
   disabled: boolean;
   isEditing: boolean;
-  showHoverControls?: boolean;
-  isHovering?: boolean;
-  onTriggerFileInput?: () => void;
 }
 
 const ImagePreview: React.FC<ImagePreviewProps> = ({
@@ -21,58 +17,34 @@ const ImagePreview: React.FC<ImagePreviewProps> = ({
   previewHeight,
   rounded,
   disabled,
-  isEditing,
-  showHoverControls = false,
-  isHovering = false,
-  onTriggerFileInput
+  isEditing
 }) => {
-  if (!imgSrc) {
-    return (
-      <div className={cn(
-        "flex flex-col items-center justify-center bg-muted text-muted-foreground",
-        previewHeight, 
-        "w-full"
-      )}>
-        <Camera size={32} />
-        <p className="mt-2 text-sm">{placeholder}</p>
-      </div>
-    );
-  }
-
   return (
-    <div 
+    <div
       className={cn(
-        "relative overflow-hidden",
+        "overflow-hidden bg-muted relative",
         previewHeight,
-        "w-full",
-        rounded && "rounded-lg"
+        rounded ? "rounded-full aspect-square" : "rounded-md",
+        isEditing ? "ring-2 ring-primary ring-offset-2" : "",
+        disabled ? "opacity-50" : ""
       )}
     >
-      <img 
-        src={imgSrc} 
-        alt="Preview" 
-        className="w-full h-full object-cover"
-        onError={(e) => {
-          (e.target as HTMLImageElement).src = 'https://placehold.co/600x400?text=Նկարը+չի+գտնվել';
-        }}
-      />
-      
-      {/* Hover overlay */}
-      {!disabled && !isEditing && showHoverControls && (
-        <div 
+      {imgSrc ? (
+        <img
+          src={imgSrc}
+          alt="Uploaded image"
           className={cn(
-            "absolute inset-0 flex items-center justify-center transition-opacity",
-            isHovering ? "opacity-100" : "opacity-0",
-            "bg-black/40"
+            "w-full h-full object-cover transition-all",
+            rounded ? "" : "object-center"
           )}
-        >
-          <button
-            className="bg-white/90 hover:bg-white text-gray-800 px-3 py-1.5 rounded text-sm font-medium"
-            onClick={onTriggerFileInput}
-          >
-            <Camera size={16} className="mr-2 inline-block" />
-            Փոխել նկարը
-          </button>
+          onError={(e) => {
+            // Handle image load error
+            (e.target as HTMLImageElement).src = 'https://via.placeholder.com/640x360?text=Սխալ+նկար';
+          }}
+        />
+      ) : (
+        <div className="flex items-center justify-center h-full w-full bg-gray-100 text-gray-400">
+          {placeholder}
         </div>
       )}
     </div>
