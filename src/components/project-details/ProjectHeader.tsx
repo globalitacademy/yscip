@@ -44,6 +44,15 @@ const ProjectHeader: React.FC<ProjectHeaderProps> = ({
     getReservationStatus
   } = useProject();
 
+  // Safety check to prevent errors
+  if (!project) {
+    return (
+      <div className="bg-gray-100 p-4 rounded-lg shadow mb-4">
+        <p className="text-gray-500">Project information unavailable</p>
+      </div>
+    );
+  }
+
   // Project deadline
   const deadline = project.duration ? new Date() : null;
   if (deadline) {

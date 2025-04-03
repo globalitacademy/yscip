@@ -17,6 +17,15 @@ const ProjectHeaderBanner: React.FC<ProjectHeaderBannerProps> = ({ project }) =>
   const { user } = useAuth();
   const { handleEditInit } = useProjectManagement();
   
+  // Safety check to prevent errors if project is undefined
+  if (!project) {
+    return (
+      <div className="bg-gray-100 p-4 rounded-lg shadow mb-4">
+        <p className="text-gray-500">Project information unavailable</p>
+      </div>
+    );
+  }
+  
   // Check if user can edit this project (admin, lecturer, employer, or creator)
   const canEdit = user && (
     user.role === 'admin' || 
@@ -38,29 +47,31 @@ const ProjectHeaderBanner: React.FC<ProjectHeaderBannerProps> = ({ project }) =>
   const getCategoryBadge = () => {
     let colorClass = "bg-gray-100 text-gray-800";
     
-    switch (project.category?.toLowerCase()) {
-      case 'web development':
-      case 'web':
-        colorClass = "bg-blue-100 text-blue-800";
-        break;
-      case 'mobile':
-      case 'mobile development':
-        colorClass = "bg-green-100 text-green-800";
-        break;
-      case 'ai':
-      case 'machine learning':
-        colorClass = "bg-purple-100 text-purple-800";
-        break;
-      case 'data science':
-        colorClass = "bg-yellow-100 text-yellow-800";
-        break;
-      default:
-        break;
+    if (project.category) {
+      switch (project.category.toLowerCase()) {
+        case 'web development':
+        case 'web':
+          colorClass = "bg-blue-100 text-blue-800";
+          break;
+        case 'mobile':
+        case 'mobile development':
+          colorClass = "bg-green-100 text-green-800";
+          break;
+        case 'ai':
+        case 'machine learning':
+          colorClass = "bg-purple-100 text-purple-800";
+          break;
+        case 'data science':
+          colorClass = "bg-yellow-100 text-yellow-800";
+          break;
+        default:
+          break;
+      }
     }
     
     return (
       <Badge variant="outline" className={`${colorClass} px-3 py-1 rounded-full`}>
-        {project.category}
+        {project.category || 'Uncategorized'}
       </Badge>
     );
   };
@@ -83,14 +94,17 @@ const ProjectHeaderBanner: React.FC<ProjectHeaderBannerProps> = ({ project }) =>
     );
   };
   
+  // Default image if none is provided
+  const backgroundImage = project.image 
+    ? `url(${project.image})` 
+    : 'url(https://images.unsplash.com/photo-1629904853716-f0bc54eea481?q=80&w=2070)';
+  
   return (
     <div className="relative mb-8">
       {/* Background image with overlay */}
       <div 
         className="absolute inset-0 h-64 bg-cover bg-center"
-        style={{ 
-          backgroundImage: `url(${project.image || 'https://images.unsplash.com/photo-1629904853716-f0bc54eea481?q=80&w=2070'})`,
-        }}
+        style={{ backgroundImage }}
       >
         <div className="absolute inset-0 bg-gradient-to-b from-black/70 to-black/30"></div>
       </div>
@@ -134,17 +148,19 @@ const ProjectHeaderBanner: React.FC<ProjectHeaderBannerProps> = ({ project }) =>
         <div className="flex flex-wrap gap-3 mb-4">
           {project.category && getCategoryBadge()}
           {getComplexityBadge()}
-          {project.is_public ? (
-            <Badge variant="outline" className="bg-green-100 text-green-800 px-3 py-1 rounded-full flex items-center">
-              <Eye className="h-3 w-3 mr-1" />
-              Հրապարակային
-            </Badge>
-          ) : (
-            <Badge variant="outline" className="bg-amber-100 text-amber-800 px-3 py-1 rounded-full flex items-center">
-              <EyeOff className="h-3 w-3 mr-1" />
-              Մասնավոր
-            </Badge>
-          )}
+          {project.is_public !== undefined ? (
+            project.is_public ? (
+              <Badge variant="outline" className="bg-green-100 text-green-800 px-3 py-1 rounded-full flex items-center">
+                <Eye className="h-3 w-3 mr-1" />
+                Հրապարակային
+              </Badge>
+            ) : (
+              <Badge variant="outline" className="bg-amber-100 text-amber-800 px-3 py-1 rounded-full flex items-center">
+                <EyeOff className="h-3 w-3 mr-1" />
+                Մասնավոր
+              </Badge>
+            )
+          ) : null}
         </div>
         
         <p className="text-white text-lg mb-4 max-w-3xl">{project.description}</p>
