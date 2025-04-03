@@ -158,11 +158,27 @@ const ProjectHeaderBanner: React.FC<ProjectHeaderBannerProps> = ({ project }) =>
           className="w-full"
         />
       ) : (
-        <div 
-          className="absolute inset-0 h-64 bg-cover bg-center"
-          style={{ backgroundImage }}
-        >
-          <div className="absolute inset-0 bg-gradient-to-b from-black/70 to-black/30"></div>
+        <div className="relative">
+          <div 
+            className="absolute inset-0 h-64 bg-cover bg-center"
+            style={{ backgroundImage }}
+          >
+            <div className="absolute inset-0 bg-gradient-to-b from-black/70 to-black/30"></div>
+          </div>
+          
+          {/* Add image edit button when not in editing mode but user can edit */}
+          {canEdit && !isEditing && (
+            <button 
+              onClick={(e) => {
+                e.stopPropagation();
+                setIsEditing(true);
+              }}
+              className="absolute top-4 right-20 z-10 bg-white/80 hover:bg-white/100 p-2 rounded-full shadow-md transition-colors"
+              title="Փոխել նկարը"
+            >
+              <Edit size={16} />
+            </button>
+          )}
         </div>
       )}
       
