@@ -1,7 +1,7 @@
+
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ArrowRight, BookOpen, Users, Tag, GraduationCap, Layers, ChevronDown } from 'lucide-react';
-import { projectThemes } from '@/data/projectThemes';
 import ProjectCard from '@/components/ProjectCard';
 import { Button } from '@/components/ui/button';
 import { FadeIn } from '@/components/LocalTransitions';
@@ -10,6 +10,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { getProjectImage } from '@/lib/getProjectImage';
 import { cn } from '@/lib/utils';
+import { useProjectManagement } from '@/contexts/ProjectManagementContext';
 import { 
   Select,
   SelectContent,
@@ -33,12 +34,21 @@ const ThemeGrid: React.FC<ThemeGridProps> = ({ limit, createdProjects = [] }) =>
   const navigate = useNavigate();
   const [displayLimit, setDisplayLimit] = useState(limit || 6);
   const { user } = useAuth();
-  const [allProjects, setAllProjects] = useState([...projectThemes]);
   const [activeCategory, setActiveCategory] = useState("all");
   const [reservedProjects, setReservedProjects] = useState<any[]>([]);
   const [assignments, setAssignments] = useState<any[]>([]);
   
-  const categories = ["all", ...new Set(projectThemes.map(project => project.category))];
+  // Use ProjectManagementContext to get projects from database
+  const { projects, loadProjects, isLoading } = useProjectManagement();
+  
+  useEffect(() => {
+    // Load projects from database when component mounts
+    loadProjects();
+  }, [loadProjects]);
+  
+  // Get unique categories from projects
+  const projectCategories = Array.from(new Set(projects.map(project => project.category).filter(Boolean)));
+  const categories = ["all", ...projectCategories];
   
   useEffect(() => {
     const handleCategoryChange = (event: CustomEvent) => {
@@ -92,94 +102,31 @@ const ThemeGrid: React.FC<ThemeGridProps> = ({ limit, createdProjects = [] }) =>
     }
   }, [user]);
   
-  useEffect(() => {
-    if (createdProjects && createdProjects.length > 0) {
-      const formattedCreatedProjects = createdProjects.map(project => ({
-        ...project,
-        id: project.id || Date.now() + Math.random(),
-        complexity: project.complexity || 'Միջին',
-        techStack: project.techStack || [],
-        steps: project.steps || [],
-        category: project.category || 'Այլ',
-      }));
-      
-      const mergedProjects = [...projectThemes.filter(p => p.is_public !== undefined)];
-      
-      formattedCreatedProjects.forEach(newProject => {
-        const existingIndex = mergedProjects.findIndex(p => p.id === newProject.id);
-        if (existingIndex >= 0) {
-          mergedProjects[existingIndex] = newProject;
-        } else {
-          mergedProjects.push(newProject);
-        }
-      });
-      
-      setAllProjects(mergedProjects);
-    }
-  }, [createdProjects]);
-  
-  const getFilteredProjects = () => {
-    if (!user) return allProjects;
+  // Filter projects based on visibility rules and user roles
+  const filteredProjects = projects.filter(project => {
+    // Only show projects from the database (they have the is_public property)
+    const isRealProject = project.is_public !== undefined;
     
-    if (user.role === 'student') {
-      const reservedIds = reservedProjects
-        .filter(r => r.userId === user.id)
-        .map(r => Number(r.projectId));
-        
-      const assignedIds = assignments
-        .filter((a: any) => a.studentId === user.id)
-        .map((a: any) => Number(a.projectId));
-      
-      const userProjectIds = [...new Set([...reservedIds, ...assignedIds])];
-      
-      if (userProjectIds.length > 0) {
-        return allProjects.filter(p => userProjectIds.includes(Number(p.id)));
-      }
-      
-      return allProjects;
-    } 
-    else if (user.role === 'instructor') {
-      const instructorProjects = allProjects.filter(p => 
-        (p.createdBy && p.createdBy === user.id) || 
-        (user.assignedProjects && user.assignedProjects.includes(Number(p.id)))
-      );
-      
-      const assignedByInstructor = assignments
-        .filter((a: any) => a.assignedBy === user.id)
-        .map((a: any) => Number(a.projectId));
-      
-      const combinedProjectIds = [...new Set([
-        ...instructorProjects.map(p => Number(p.id)),
-        ...assignedByInstructor
-      ])];
-      
-      return allProjects.filter(p => combinedProjectIds.includes(Number(p.id)));
-    }
-    else if (user.role === 'supervisor') {
-      if (!user.supervisedStudents || user.supervisedStudents.length === 0) {
-        return allProjects;
-      }
-      
-      const studentProjectIds = assignments
-        .filter((a: any) => user.supervisedStudents?.includes(a.studentId))
-        .map((a: any) => Number(a.projectId));
-      
-      const supervisorProjects = allProjects.filter(p => 
-        (p.createdBy && p.createdBy === user.id) || studentProjectIds.includes(Number(p.id))
-      );
-      
-      return supervisorProjects.length > 0 ? supervisorProjects : allProjects;
+    if (!isRealProject) return false;
+    
+    // Admin can see all projects
+    if (user?.role === 'admin') return true;
+    
+    // Authenticated users can see public projects or their own projects
+    if (user) {
+      return project.is_public === true || project.createdBy === user.id;
     }
     
-    return allProjects;
-  };
+    // Non-authenticated users can only see public projects
+    return project.is_public === true;
+  });
   
-  const filteredProjects = getFilteredProjects();
-  
+  // Filter by category
   const categoryFilteredProjects = activeCategory === "all" 
     ? filteredProjects 
     : filteredProjects.filter(project => project.category === activeCategory);
   
+  // Apply display limit
   const themes = categoryFilteredProjects.slice(0, displayLimit);
   
   const loadMore = () => {
@@ -187,6 +134,19 @@ const ThemeGrid: React.FC<ThemeGridProps> = ({ limit, createdProjects = [] }) =>
   };
   
   const hasMore = displayLimit < categoryFilteredProjects.length;
+  
+  if (isLoading) {
+    return (
+      <div className="mt-12 text-left">
+        <div className="mb-8">
+          <h2 className="text-2xl font-semibold mb-4">Ծրագրերի թեմաներն ըստ կատեգորիաների</h2>
+          <div className="text-center p-10">
+            <p className="text-muted-foreground">Տվյալները բեռնվում են...</p>
+          </div>
+        </div>
+      </div>
+    );
+  }
   
   return (
     <div id="themes-section" className="mt-12 text-left">
