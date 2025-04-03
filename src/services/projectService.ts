@@ -34,7 +34,7 @@ export const fetchProjects = async (): Promise<ProjectTheme[]> => {
       prerequisites: project.prerequisites || [],
       learningOutcomes: project.learning_outcomes || [],
       organizationName: project.organization_name,
-      detailedDescription: project.description // Use description as fallback if detailed_description doesn't exist
+      detailedDescription: project.description // Use description as fallback
     }));
   } catch (error) {
     console.error('Error in fetchProjects:', error);
@@ -48,7 +48,7 @@ export const createProject = async (project: ProjectTheme): Promise<boolean> => 
     // Ensure all required fields are present
     const projectToCreate = {
       title: project.title,
-      description: project.description,
+      description: project.detailedDescription || project.description, // Use detailed description for the description field
       image: project.image,
       category: project.category,
       tech_stack: project.techStack || [],
@@ -61,9 +61,7 @@ export const createProject = async (project: ProjectTheme): Promise<boolean> => 
       prerequisites: project.prerequisites || [],
       learning_outcomes: project.learningOutcomes || [],
       is_public: project.is_public || false,
-      organization_name: project.organizationName || null,
-      // Store detailed description in the description field if the database doesn't have a separate column
-      description: project.detailedDescription || project.description
+      organization_name: project.organizationName || null
     };
 
     const { error } = await supabase
@@ -95,8 +93,7 @@ export const updateProject = async (id: number, updatedData: Partial<ProjectThem
     
     if (updatedData.title !== undefined) dataToUpdate.title = updatedData.title;
     if (updatedData.description !== undefined) dataToUpdate.description = updatedData.description;
-    // If detailedDescription is provided, update the description field as well
-    // since our database doesn't have a separate detailed_description column
+    // If detailedDescription is provided, update the description field
     if (updatedData.detailedDescription !== undefined) dataToUpdate.description = updatedData.detailedDescription;
     if (updatedData.image !== undefined) dataToUpdate.image = updatedData.image;
     if (updatedData.category !== undefined) dataToUpdate.category = updatedData.category;
