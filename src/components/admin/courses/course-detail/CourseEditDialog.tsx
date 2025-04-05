@@ -1,18 +1,21 @@
 
-import React, { useState, useEffect } from 'react';
-import { Dialog, DialogContent, DialogTitle, DialogDescription, DialogFooter, DialogHeader } from '@/components/ui/dialog';
-import { Button } from '@/components/ui/button';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Loader2 } from 'lucide-react';
+import React from 'react';
+import { Dialog, DialogContent } from '@/components/ui/dialog';
 import { ProfessionalCourse } from '@/components/courses/types/ProfessionalCourse';
-import { Checkbox } from '@/components/ui/checkbox';
+import { Button } from '@/components/ui/button';
+import { ScrollArea } from '@/components/ui/scroll-area';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Save, X } from 'lucide-react';
+import CourseBanner from './CourseBanner';
 
-// Import tab components
-import { BasicInfoTab } from './tabs/BasicInfoTab';
-import { LessonsTab } from './tabs/LessonsTab';
-import { RequirementsTab } from './tabs/RequirementsTab';
-import { OutcomesTab } from './tabs/OutcomesTab';
-import { AuthorTab } from './tabs/AuthorTab';
+// Import tabs
+import { 
+  BasicInfoTab,
+  LessonsTab,
+  RequirementsTab,
+  OutcomesTab,
+  AuthorTab
+} from './tabs';
 
 interface CourseEditDialogProps {
   isOpen: boolean;
@@ -31,143 +34,73 @@ const CourseEditDialog: React.FC<CourseEditDialogProps> = ({
   handleSaveChanges,
   loading
 }) => {
-  const [isIconsOpen, setIsIconsOpen] = useState(false);
-  const [activeTab, setActiveTab] = useState('basic');
-  const [isDirty, setIsDirty] = useState(false);
-  
-  // Reset active tab and isDirty when dialog opens
-  useEffect(() => {
-    if (isOpen) {
-      setActiveTab('basic');
-      setIsDirty(false);
-      console.log('CourseEditDialog: Dialog opened with editedCourse:', editedCourse);
-    }
-  }, [isOpen, editedCourse]);
-  
-  // Handle form changes to maintain consistent complete state
-  const handleFormChange = (changes: Partial<ProfessionalCourse>) => {
-    console.log('CourseEditDialog: Form changed with:', changes);
-    setEditedCourse(changes);
-    setIsDirty(true);
-  };
-  
-  const handleIconSelect = (iconName: string) => {
-    const updatedCourse = { ...editedCourse, iconName };
-    handleFormChange(updatedCourse);
-    setIsIconsOpen(false);
-  };
-  
-  const onSave = async () => {
-    console.log('CourseEditDialog: Save button clicked with edited course data:', editedCourse);
-    
-    // Ensure we have complete data for lessons, requirements, and outcomes
-    const updatedCourse = { 
-      ...editedCourse,
-      lessons: editedCourse.lessons || [],
-      requirements: editedCourse.requirements || [],
-      outcomes: editedCourse.outcomes || []
-    };
-    
-    setEditedCourse(updatedCourse);
-    await handleSaveChanges();
-    setIsDirty(false);
-  };
-  
-  // Confirmation dialog if form is dirty and user tries to close
-  const handleClose = (value: boolean) => {
-    if (value === false && isDirty) {
-      if (confirm('Դուք ունեք չպահպանված փոփոխություններ: Իսկապե՞ս ցանկանում եք փակել:')) {
-        setIsOpen(false);
-      }
-    } else {
-      setIsOpen(value);
-    }
-  };
-  
   return (
-    <Dialog open={isOpen} onOpenChange={handleClose}>
-      <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
-        <DialogHeader>
-          <DialogTitle>Խմբագրել դասընթացը</DialogTitle>
-          <DialogDescription>
-            Թարմացրեք դասընթացի տվյալները: Պահպանելուց հետո փոփոխությունները կհայտնվեն հանրային էջում:
-          </DialogDescription>
-        </DialogHeader>
-        
-        <Tabs defaultValue="basic" value={activeTab} onValueChange={setActiveTab}>
-          <TabsList className="mb-4">
-            <TabsTrigger value="basic">Հիմնական տվյալներ</TabsTrigger>
-            <TabsTrigger value="lessons">Դասերի ցանկ</TabsTrigger>
-            <TabsTrigger value="requirements">Պահանջներ</TabsTrigger>
-            <TabsTrigger value="outcomes">Արդյունքներ</TabsTrigger>
-            <TabsTrigger value="author">Հեղինակ</TabsTrigger>
-          </TabsList>
+    <Dialog open={isOpen} onOpenChange={setIsOpen} modal={false}>
+      <DialogContent className="max-w-6xl p-0 h-[90vh] bg-white">
+        <div className="h-full flex flex-col">
+          {/* Course Banner at the top */}
+          {editedCourse && (
+            <CourseBanner course={editedCourse as ProfessionalCourse} isEditMode={true} />
+          )}
           
-          <TabsContent value="basic">
-            <BasicInfoTab 
-              editedCourse={editedCourse}
-              setEditedCourse={handleFormChange}
-              isIconsOpen={isIconsOpen}
-              setIsIconsOpen={setIsIconsOpen}
-              handleIconSelect={handleIconSelect}
-            />
-            <div className="mt-4 flex items-center space-x-2">
-              <Checkbox 
-                id="is_public" 
-                checked={editedCourse.is_public || false} 
-                onCheckedChange={(checked) => {
-                  console.log('CourseEditDialog: Visibility checkbox changed to:', checked);
-                  handleFormChange({
-                    ...editedCourse,
-                    is_public: !!checked
-                  });
-                }}
-              />
-              <label 
-                htmlFor="is_public" 
-                className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+          {/* Edit controls */}
+          <div className="flex justify-between items-center p-4 border-b">
+            <h2 className="text-xl font-bold">Դասընթացի խմբագրում</h2>
+            <div className="flex gap-2">
+              <Button 
+                onClick={handleSaveChanges} 
+                disabled={loading}
+                className="flex items-center gap-2"
               >
-                Հրապարակել դասընթացը
-              </label>
+                <Save size={16} />
+                Պահպանել փոփոխությունները
+              </Button>
+              <Button 
+                variant="outline" 
+                onClick={() => setIsOpen(false)}
+                className="flex items-center gap-2"
+              >
+                <X size={16} />
+                Չեղարկել
+              </Button>
             </div>
-          </TabsContent>
+          </div>
           
-          <TabsContent value="lessons">
-            <LessonsTab 
-              editedCourse={editedCourse}
-              setEditedCourse={handleFormChange}
-            />
-          </TabsContent>
-          
-          <TabsContent value="requirements">
-            <RequirementsTab 
-              editedCourse={editedCourse}
-              setEditedCourse={handleFormChange}
-            />
-          </TabsContent>
-          
-          <TabsContent value="outcomes">
-            <OutcomesTab 
-              editedCourse={editedCourse}
-              setEditedCourse={handleFormChange}
-            />
-          </TabsContent>
-
-          <TabsContent value="author">
-            <AuthorTab 
-              editedCourse={editedCourse}
-              setEditedCourse={handleFormChange}
-            />
-          </TabsContent>
-        </Tabs>
-        
-        <DialogFooter>
-          <Button variant="ghost" onClick={() => handleClose(false)} disabled={loading}>Չեղարկել</Button>
-          <Button onClick={onSave} disabled={loading}>
-            {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-            Պահպանել
-          </Button>
-        </DialogFooter>
+          {/* Tabs content */}
+          <ScrollArea className="flex-grow">
+            <div className="p-6">
+              <Tabs defaultValue="basic-info" className="w-full">
+                <TabsList className="mb-6">
+                  <TabsTrigger value="basic-info">Հիմնական տվյալներ</TabsTrigger>
+                  <TabsTrigger value="lessons">Դասընթացի պլան</TabsTrigger>
+                  <TabsTrigger value="requirements">Պահանջներ</TabsTrigger>
+                  <TabsTrigger value="outcomes">Արդյունքներ</TabsTrigger>
+                  <TabsTrigger value="author">Հեղինակի մասին</TabsTrigger>
+                </TabsList>
+                
+                <TabsContent value="basic-info">
+                  <BasicInfoTab course={editedCourse} setCourse={setEditedCourse} isEditing={true} />
+                </TabsContent>
+                
+                <TabsContent value="lessons">
+                  <LessonsTab course={editedCourse} setCourse={setEditedCourse} isEditing={true} />
+                </TabsContent>
+                
+                <TabsContent value="requirements">
+                  <RequirementsTab course={editedCourse} setCourse={setEditedCourse} isEditing={true} />
+                </TabsContent>
+                
+                <TabsContent value="outcomes">
+                  <OutcomesTab course={editedCourse} setCourse={setEditedCourse} isEditing={true} />
+                </TabsContent>
+                
+                <TabsContent value="author">
+                  <AuthorTab course={editedCourse} setCourse={setEditedCourse} isEditing={true} />
+                </TabsContent>
+              </Tabs>
+            </div>
+          </ScrollArea>
+        </div>
       </DialogContent>
     </Dialog>
   );

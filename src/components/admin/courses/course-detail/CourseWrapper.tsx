@@ -68,6 +68,13 @@ const CourseWrapper: React.FC<CourseWrapperProps> = ({
     );
   }
 
+  // If we're in edit mode but the dialog isn't open yet, open it
+  React.useEffect(() => {
+    if (isEditMode && !isEditDialogOpen) {
+      setIsEditDialogOpen(true);
+    }
+  }, [isEditMode, isEditDialogOpen, setIsEditDialogOpen]);
+
   return (
     <div className="container mx-auto px-4 py-8">
       <CourseDetailContent 
