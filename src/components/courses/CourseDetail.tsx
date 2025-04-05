@@ -23,42 +23,51 @@ const CourseDetail: React.FC = () => {
   const [course, setCourse] = useState<ProfessionalCourse | null>(null);
   const [loading, setLoading] = useState(true);
   const [showApplicationForm, setShowApplicationForm] = useState(false);
+  const [fetchError, setFetchError] = useState<string | null>(null);
   
   useEffect(() => {
     const fetchCourse = async () => {
       setLoading(true);
+      setFetchError(null);
+      
       try {
-        let courseData;
-        console.log("Fetching course with ID:", id, "or slug:", slug);
+        let courseData = null;
+        console.log("Փորձում ենք բեռնել դասընթացը հետևյալ տվյալներով:", { id, slug });
         
-        // Եթե ունենք slug, օգտագործում ենք այն
+        // Նախ փորձենք slug-ով
         if (slug) {
+          console.log("Փորձում ենք slug-ով:", slug);
           courseData = await getCourseBySlug(slug);
         } 
-        // Եթե ունենք id, օգտագործում ենք այն
-        else if (id) {
+        // Եթե slug չկա կամ արդյունք չվերադարձվեց, փորձենք ID-ով
+        if (!courseData && id) {
+          console.log("Փորձում ենք ID-ով:", id);
           courseData = await getCourseById(id);
-        } 
-        // Եթե ոչ id, ոչ slug չկա
-        else {
-          setLoading(false);
-          toast.error('Դասընթացի ճանապարհը սխալ է տրված');
-          navigate('/courses');
+        }
+        
+        // Եթե դեռ չենք գտել և URI-ն կարող է լինել ID կամ slug
+        if (!courseData && slug) {
+          // Ստուգենք, թե slug-ը արդյոք UUID ձևաչափով է
+          if (slug.match(/^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$/)) {
+            console.log("slug-ը նման է UUID-ի, փորձում ենք որպես ID:", slug);
+            courseData = await getCourseById(slug);
+          }
+        }
+        
+        // Եթե ոչ մի եղանակով չկարողացանք գտնել դասընթացը
+        if (!courseData) {
+          console.error("Դասընթացը չի գտնվել:", { id, slug });
+          setFetchError('Դասընթացը չի գտնվել');
           return;
         }
 
-        if (courseData) {
-          console.log("Course data fetched successfully:", courseData.title);
-          setCourse(courseData);
-        } else {
-          console.error("Course data not found for:", id || slug);
-          toast.error('Դասընթացը չհաջողվեց գտնել');
-          navigate('/courses');
-        }
+        // Դասընթացը գտնվել է
+        console.log("Դասընթացը հաջողությամբ բեռնվել է:", courseData.title);
+        setCourse(courseData);
       } catch (error) {
         console.error('Error fetching course:', error);
+        setFetchError('Դասընթացի բեռնման ժամանակ սխալ է տեղի ունեցել');
         toast.error('Դասընթացի բեռնման ժամանակ սխալ է տեղի ունեցել');
-        navigate('/courses');
       } finally {
         setLoading(false);
       }
@@ -75,7 +84,7 @@ const CourseDetail: React.FC = () => {
     return <CourseDetailSkeleton type="loading" />;
   }
 
-  if (!course) {
+  if (fetchError || !course) {
     return <CourseDetailSkeleton type="not-found" />;
   }
 

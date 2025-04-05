@@ -95,8 +95,11 @@ function App() {
           <Route path="/project/:id/submit" element={<ProjectSubmissionPage />} />
           <Route path="/projects/edit/:id" element={<ProjectEditPage />} />
           
-          {/* Course Details */}
+          {/* Course Details - Ավելացնենք և կարգավորենք դասընթացների ուղիները */}
           <Route path="/course/:slug" element={<CourseDetails />} />
+          <Route path="/courses" element={<AllCoursesPage />} />
+          <Route path="/courses/:slug" element={<CourseDetails />} />
+          <Route path="/course/id/:id" element={<CourseDetails />} />
           
           {/* 404 Page */}
           <Route path="*" element={<NotFound />} />

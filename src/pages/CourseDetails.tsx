@@ -6,6 +6,10 @@ import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 
 const CourseDetails: React.FC = () => {
+  const { slug } = useParams<{ slug?: string }>();
+  
+  console.log("CourseDetails էջ: Ստացված slug:", slug);
+  
   return (
     <div className="flex min-h-screen flex-col">
       <Header />
