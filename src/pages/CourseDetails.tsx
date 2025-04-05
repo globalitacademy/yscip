@@ -12,9 +12,9 @@ const CourseDetails: React.FC = () => {
   console.log("CourseDetails էջ: Ստացված պարամետրեր:", { slug, id });
   
   return (
-    <div className="flex min-h-screen flex-col">
+    <div className="flex min-h-screen flex-col overflow-hidden">
       <Header />
-      <main className="flex-1">
+      <main className="flex-1 overflow-y-auto">
         <CourseDetail />
       </main>
       <Footer />

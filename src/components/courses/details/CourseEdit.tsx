@@ -72,7 +72,7 @@ const CourseEdit: React.FC<CourseEditProps> = ({
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-6xl p-0 h-[90vh] bg-white">
+      <DialogContent className="max-w-6xl p-0 h-[90vh] bg-white overflow-hidden">
         <div className="h-full flex flex-col">
           {/* Edit controls */}
           <div className="flex justify-between items-center p-4 border-b">
@@ -98,7 +98,7 @@ const CourseEdit: React.FC<CourseEditProps> = ({
           </div>
           
           {/* Tabs content */}
-          <ScrollArea className="flex-grow">
+          <ScrollArea className="flex-grow overflow-y-auto">
             <div className="p-6">
               <Tabs defaultValue="basic-info" className="w-full">
                 <TabsList className="mb-6">

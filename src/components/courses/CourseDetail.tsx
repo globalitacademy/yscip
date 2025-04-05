@@ -103,7 +103,7 @@ const CourseDetail: React.FC = () => {
   const canEdit = user && (user.role === 'admin' || course.createdBy === user.name);
 
   return (
-    <div className="container mx-auto px-4 py-8 max-w-6xl">
+    <div className="container mx-auto px-4 py-8 max-w-6xl overflow-y-auto max-h-screen">
       {/* Show unpublished warning for creators */}
       {!course.is_public && canViewUnpublished && (
         <div className="bg-amber-50 border border-amber-200 text-amber-800 px-4 py-3 rounded-md mb-6">
