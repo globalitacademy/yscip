@@ -12,7 +12,8 @@ export const getCourseBySlug = async (slug: string): Promise<ProfessionalCourse 
     
     console.log("Փորձում ենք գտնել դասընթացը հետևյալ slug-ով:", slug);
     
-    const { data, error } = await supabase
+    // Նախ փորձենք slug-ով գտնել
+    let { data, error } = await supabase
       .from('courses')
       .select('*')
       .eq('slug', slug)
@@ -23,25 +24,27 @@ export const getCourseBySlug = async (slug: string): Promise<ProfessionalCourse 
       return null;
     }
     
-    if (!data) {
-      console.log('No course found with slug:', slug);
-      // Փորձենք գտնել ID-ով, թե արդյոք slug-ը իրականում ID է
-      if (slug.match(/^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$/)) {
-        console.log("Slug-ը նման է UUID-ի, փորձում ենք որպես ID օգտագործել:", slug);
-        const { data: dataById, error: errorById } = await supabase
-          .from('courses')
-          .select('*')
-          .eq('id', slug)
-          .maybeSingle();
-          
-        if (errorById || !dataById) {
-          return null;
-        }
+    // Եթե slug-ով չգտնվեց և slug-ը նման է UUID-ի, փորձենք ID-ով գտնել
+    if (!data && slug.match(/^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$/)) {
+      console.log("Slug-ը նման է UUID-ի, փորձում ենք որպես ID օգտագործել:", slug);
+      const { data: dataById, error: errorById } = await supabase
+        .from('courses')
+        .select('*')
+        .eq('id', slug)
+        .maybeSingle();
         
-        data = dataById;
-      } else {
+      if (errorById) {
+        console.error('Error fetching course by ID:', errorById);
         return null;
       }
+      
+      data = dataById;
+    }
+    
+    // Եթե դեռ չենք գտել դասընթացը, վերադարձնենք null
+    if (!data) {
+      console.log('Դասընթացը չգտնվեց ոչ slug-ով, ոչ էլ ID-ով:', slug);
+      return null;
     }
     
     // Ստացանք դասընթացի տվյալները, հիմա լրացուցիչ տվյալներ ենք ստանում
