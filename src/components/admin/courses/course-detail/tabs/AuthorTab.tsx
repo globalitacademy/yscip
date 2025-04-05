@@ -24,13 +24,15 @@ export const AuthorTab: React.FC<AuthorTabProps> = ({ editedCourse, setEditedCou
   return (
     <div className="space-y-4">
       <div className="space-y-2">
-        <Label htmlFor="instructor">Դասավանդող</Label>
+        <Label htmlFor="instructor" className="text-base">Դասավանդող</Label>
         <Input 
           id="instructor" 
           value={editedCourse.instructor || ''} 
           onChange={(e) => handleInputChange('instructor', e.target.value)}
-          placeholder="Դասավանդողի անունը"
+          placeholder="Մուտքագրեք դասավանդողի անունը"
+          className="focus:border-blue-500"
         />
+        <p className="text-xs text-muted-foreground">Նշեք դասընթացը դասավանդողի անունը և ազգանունը</p>
       </div>
       
       <div className="space-y-2">
