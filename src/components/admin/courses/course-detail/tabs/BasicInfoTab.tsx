@@ -1,27 +1,24 @@
 
-import React from 'react';
+import React, { useState } from 'react';
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { ProfessionalCourse } from '@/components/courses/types/ProfessionalCourse';
 import { IconSelector } from '@/components/courses/form-components/IconSelector';
 import { MediaUploader } from '@/components/courses/form-components/MediaUploader';
+import { Code, BookText, BrainCircuit, Database, FileCode, Globe } from 'lucide-react';
 
 interface BasicInfoTabProps {
   editedCourse: Partial<ProfessionalCourse>;
-  setEditedCourse: (changes: Partial<ProfessionalCourse>) => void;
-  isIconsOpen: boolean;
-  setIsIconsOpen: (open: boolean) => void;
-  handleIconSelect: (iconName: string) => void;
+  setEditedCourse: React.Dispatch<React.SetStateAction<Partial<ProfessionalCourse>>>;
 }
 
 export const BasicInfoTab: React.FC<BasicInfoTabProps> = ({
   editedCourse,
-  setEditedCourse,
-  isIconsOpen,
-  setIsIconsOpen,
-  handleIconSelect
+  setEditedCourse
 }) => {
+  const [isIconsOpen, setIsIconsOpen] = useState(false);
+  
   const handleInputChange = (field: string, value: string) => {
     console.log(`Updating ${field} to:`, value);
     // Create a complete updated course object with the new field value
@@ -33,6 +30,34 @@ export const BasicInfoTab: React.FC<BasicInfoTabProps> = ({
     // Create a complete updated course object with the new image URL
     const updatedCourse = { ...editedCourse, imageUrl };
     setEditedCourse(updatedCourse);
+  };
+  
+  const handleIconSelect = (iconName: string) => {
+    let newIcon;
+    switch (iconName) {
+      case 'code':
+        newIcon = <Code className="w-16 h-16" />;
+        break;
+      case 'book':
+        newIcon = <BookText className="w-16 h-16" />;
+        break;
+      case 'ai':
+        newIcon = <BrainCircuit className="w-16 h-16" />;
+        break;
+      case 'database':
+        newIcon = <Database className="w-16 h-16" />;
+        break;
+      case 'files':
+        newIcon = <FileCode className="w-16 h-16" />;
+        break;
+      case 'web':
+        newIcon = <Globe className="w-16 h-16" />;
+        break;
+      default:
+        newIcon = <Code className="w-16 h-16" />;
+    }
+    setEditedCourse({ ...editedCourse, icon: newIcon, iconName: iconName });
+    setIsIconsOpen(false);
   };
 
   return (

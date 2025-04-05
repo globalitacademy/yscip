@@ -4,7 +4,6 @@ import { ProfessionalCourse } from '@/components/courses/types/ProfessionalCours
 import { Loader2, AlertTriangle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useNavigate } from 'react-router-dom';
-import { useAuth } from '@/contexts/AuthContext';
 import CourseDetailContent from './CourseDetailContent';
 import CourseEditDialog from './CourseEditDialog';
 import CourseDeleteDialog from './CourseDeleteDialog';
@@ -44,6 +43,7 @@ const CourseWrapper: React.FC<CourseWrapperProps> = ({
 }) => {
   const navigate = useNavigate();
 
+  // Rendering logic for loading state
   if (loading && !course) {
     return (
       <div className="container mx-auto px-4 py-8">
@@ -55,6 +55,7 @@ const CourseWrapper: React.FC<CourseWrapperProps> = ({
     );
   }
 
+  // Rendering logic for when the course is not found
   if (!course) {
     return (
       <div className="container mx-auto px-4 py-8">
@@ -68,12 +69,22 @@ const CourseWrapper: React.FC<CourseWrapperProps> = ({
     );
   }
 
-  // If we're in edit mode but the dialog isn't open yet, open it
-  React.useEffect(() => {
-    if (isEditMode && !isEditDialogOpen) {
-      setIsEditDialogOpen(true);
+  // Handle dialog closing and navigation
+  const handleEditDialogClose = (open: boolean) => {
+    setIsEditDialogOpen(open);
+    // If closing dialog in edit mode, navigate back to view mode
+    if (!open && isEditMode) {
+      navigate(`/admin/course/${course.id}`);
     }
-  }, [isEditMode, isEditDialogOpen, setIsEditDialogOpen]);
+    // Reset editedCourse to current course state if dialog is closed without saving
+    if (!open) {
+      setEditedCourse(JSON.parse(JSON.stringify(course))); // Deep copy
+    }
+  };
+
+  // If we're in edit mode, automatically open the dialog
+  // Important: This is now handled at the CourseDetailPage component level
+  // to avoid hook ordering issues
 
   return (
     <div className="container mx-auto px-4 py-8">
@@ -89,17 +100,7 @@ const CourseWrapper: React.FC<CourseWrapperProps> = ({
       
       <CourseEditDialog 
         isOpen={isEditDialogOpen}
-        setIsOpen={(open) => {
-          setIsEditDialogOpen(open);
-          // If closing dialog in edit mode, navigate back to view mode
-          if (!open && isEditMode) {
-            navigate(`/admin/course/${course.id}`);
-          }
-          // Reset editedCourse to current course state if dialog is closed without saving
-          if (!open) {
-            setEditedCourse(JSON.parse(JSON.stringify(course))); // Deep copy
-          }
-        }}
+        setIsOpen={handleEditDialogClose}
         editedCourse={editedCourse}
         setEditedCourse={setEditedCourse}
         handleSaveChanges={handleSaveChanges}

@@ -36,14 +36,6 @@ export const CourseDetailPage: React.FC<CourseDetailPageProps> = ({ id, isEditMo
     loading: editLoading 
   } = useCourseEdit(course, editedCourse, setEditedCourse, setCourse, isEditMode);
 
-  // Automatically open edit dialog if in edit mode
-  useEffect(() => {
-    if (isEditMode && course && !isEditDialogOpen) {
-      setIsEditDialogOpen(true);
-      console.log('Automatically opening edit dialog in edit mode');
-    }
-  }, [isEditMode, course, isEditDialogOpen, setIsEditDialogOpen]);
-
   // If course ID changes, refetch course data
   useEffect(() => {
     if (id) {
@@ -51,6 +43,14 @@ export const CourseDetailPage: React.FC<CourseDetailPageProps> = ({ id, isEditMo
       fetchCourse();
     }
   }, [id, fetchCourse]);
+
+  // Automatically open edit dialog if in edit mode
+  useEffect(() => {
+    if (isEditMode && course && !isEditDialogOpen) {
+      setIsEditDialogOpen(true);
+      console.log('Automatically opening edit dialog in edit mode');
+    }
+  }, [isEditMode, course, isEditDialogOpen, setIsEditDialogOpen]);
 
   // Determine if user can edit the course
   const canEdit = user && (user.role === 'admin' || course?.createdBy === user.name);
