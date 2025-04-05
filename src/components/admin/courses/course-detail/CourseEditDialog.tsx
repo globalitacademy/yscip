@@ -79,23 +79,23 @@ const CourseEditDialog: React.FC<CourseEditDialogProps> = ({
                 </TabsList>
                 
                 <TabsContent value="basic-info">
-                  <BasicInfoTab course={editedCourse} setCourse={setEditedCourse} isEditing={true} />
+                  <BasicInfoTab editedCourse={editedCourse} setEditedCourse={setEditedCourse} />
                 </TabsContent>
                 
                 <TabsContent value="lessons">
-                  <LessonsTab course={editedCourse} setCourse={setEditedCourse} isEditing={true} />
+                  <LessonsTab editedCourse={editedCourse} setEditedCourse={setEditedCourse} />
                 </TabsContent>
                 
                 <TabsContent value="requirements">
-                  <RequirementsTab course={editedCourse} setCourse={setEditedCourse} isEditing={true} />
+                  <RequirementsTab editedCourse={editedCourse} setEditedCourse={setEditedCourse} />
                 </TabsContent>
                 
                 <TabsContent value="outcomes">
-                  <OutcomesTab course={editedCourse} setCourse={setEditedCourse} isEditing={true} />
+                  <OutcomesTab editedCourse={editedCourse} setEditedCourse={setEditedCourse} />
                 </TabsContent>
                 
                 <TabsContent value="author">
-                  <AuthorTab course={editedCourse} setCourse={setEditedCourse} isEditing={true} />
+                  <AuthorTab editedCourse={editedCourse} setEditedCourse={setEditedCourse} />
                 </TabsContent>
               </Tabs>
             </div>
