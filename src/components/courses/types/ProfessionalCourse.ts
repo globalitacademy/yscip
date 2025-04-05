@@ -23,11 +23,15 @@ export interface ProfessionalCourse {
   createdAt?: string;
   updatedAt?: string;
   category?: string;
-  instructor?: string;  // Added for compatibility with Course
+  instructor?: string;  // Legacy field kept for backward compatibility
   modules?: string[];   // Added for compatibility with Course
   prerequisites?: string[];  // Added for compatibility with Course
   
-  // New fields for display controls
+  // New fields for authors and instructors
+  author_type?: 'lecturer' | 'institution';
+  instructor_ids?: string[];  // Array of instructor IDs
+  
+  // Fields for display controls
   show_on_homepage?: boolean;
   display_order?: number;
   slug?: string;  // For friendly URLs
@@ -36,4 +40,15 @@ export interface ProfessionalCourse {
 export interface LessonItem {
   title: string;
   duration: string;
+}
+
+export interface CourseInstructor {
+  id: string;
+  name: string;
+  title?: string;
+  bio?: string;
+  avatar_url?: string;
+  course_id: string;
+  created_at?: string;
+  updated_at?: string;
 }

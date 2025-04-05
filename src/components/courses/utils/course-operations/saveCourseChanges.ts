@@ -31,6 +31,8 @@ export const saveCourseChanges = async (course: ProfessionalCourse): Promise<boo
         created_by: course.createdBy,
         instructor: course.instructor,
         is_public: course.is_public,
+        author_type: course.author_type || 'lecturer',
+        instructor_ids: course.instructor_ids || [],
         updated_at: new Date().toISOString()
       })
       .eq('id', course.id);
@@ -40,6 +42,9 @@ export const saveCourseChanges = async (course: ProfessionalCourse): Promise<boo
       return false;
     }
 
+    // Handle course instructors separately - we'll manage them in the AuthorTab component
+
+    // Handle lessons
     const { error: deleteError } = await supabase
       .from('course_lessons')
       .delete()
@@ -67,6 +72,7 @@ export const saveCourseChanges = async (course: ProfessionalCourse): Promise<boo
       }
     }
 
+    // Handle requirements
     const { error: deleteReqError } = await supabase
       .from('course_requirements')
       .delete()
@@ -93,6 +99,7 @@ export const saveCourseChanges = async (course: ProfessionalCourse): Promise<boo
       }
     }
 
+    // Handle outcomes
     const { error: deleteOutcomesError } = await supabase
       .from('course_outcomes')
       .delete()

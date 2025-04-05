@@ -1,11 +1,13 @@
 
-import React, { useState } from 'react';
-import { ProfessionalCourse } from '../types/ProfessionalCourse';
+import React, { useState, useEffect } from 'react';
+import { ProfessionalCourse, CourseInstructor } from '../types/ProfessionalCourse';
 import { Button } from '@/components/ui/button';
 import { Link } from 'react-router-dom';
-import { ArrowLeft, User, Clock, Pencil } from 'lucide-react';
+import { ArrowLeft, User, Users, Clock, Pencil, Building } from 'lucide-react';
 import CourseApplicationForm from './CourseApplicationForm';
 import CourseEdit from './CourseEdit';
+import { supabase } from '@/integrations/supabase/client';
+import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 
 interface CourseBannerProps {
   course: ProfessionalCourse;
@@ -22,6 +24,33 @@ const CourseBanner: React.FC<CourseBannerProps> = ({
 }) => {
   const [isApplicationFormOpen, setIsApplicationFormOpen] = useState(false);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
+  const [instructors, setInstructors] = useState<CourseInstructor[]>([]);
+  const [loading, setLoading] = useState(false);
+
+  // Fetch instructors when component mounts or when course changes
+  useEffect(() => {
+    if (course.id) {
+      fetchInstructors();
+    }
+  }, [course.id]);
+
+  const fetchInstructors = async () => {
+    setLoading(true);
+    try {
+      const { data, error } = await supabase
+        .from('course_instructors')
+        .select('*')
+        .eq('course_id', course.id);
+        
+      if (error) throw error;
+      
+      setInstructors(data || []);
+    } catch (error) {
+      console.error('Error fetching instructors:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const openApplicationForm = () => {
     setIsApplicationFormOpen(true);
@@ -35,6 +64,9 @@ const CourseBanner: React.FC<CourseBannerProps> = ({
     if (onCourseUpdate) {
       onCourseUpdate(updatedCourse);
     }
+    
+    // Refetch instructors in case they were updated
+    fetchInstructors();
   };
 
   return (
@@ -68,14 +100,60 @@ const CourseBanner: React.FC<CourseBannerProps> = ({
           
           {/* Course metadata */}
           <div className="flex flex-wrap gap-5 items-center">
-            <div className="flex items-center gap-2 text-gray-600">
-              <User size={18} />
-              <span className="text-sm md:text-base">Դասախոս՝ {course.instructor || 'Արամ Հակոբյան'}</span>
-            </div>
+            {/* Show author based on author_type */}
+            {course.author_type === 'institution' ? (
+              <div className="flex items-center gap-2 text-gray-600">
+                <Building size={18} />
+                <span className="text-sm md:text-base">Հաստատություն՝ {course.institution}</span>
+                {course.organizationLogo && (
+                  <img 
+                    src={course.organizationLogo} 
+                    alt={course.institution} 
+                    className="h-5 ml-2" 
+                  />
+                )}
+              </div>
+            ) : (
+              <div className="flex items-center gap-2 text-gray-600">
+                <User size={18} />
+                <span className="text-sm md:text-base">Հեղինակ՝ {course.createdBy || 'Անանուն'}</span>
+              </div>
+            )}
+            
+            {/* Show course duration */}
             <div className="flex items-center gap-2 text-gray-600">
               <Clock size={18} />
               <span className="text-sm md:text-base">Տևողություն՝ {course.duration}</span>
             </div>
+            
+            {/* Show instructors if available */}
+            {instructors.length > 0 && (
+              <div className="flex items-start gap-2 text-gray-600">
+                <Users size={18} className="mt-1" />
+                <div>
+                  <span className="text-sm md:text-base">Դասավանդողներ՝</span>
+                  <div className="flex flex-wrap items-center mt-1 gap-2">
+                    {instructors.map(instructor => (
+                      <div key={instructor.id} className="flex items-center gap-2 bg-white/80 rounded-full px-3 py-1">
+                        <Avatar className="h-6 w-6">
+                          <AvatarImage src={instructor.avatar_url || ''} alt={instructor.name} />
+                          <AvatarFallback>{instructor.name.substring(0, 2).toUpperCase()}</AvatarFallback>
+                        </Avatar>
+                        <span className="text-sm">{instructor.name}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            )}
+            
+            {/* Fallback to old instructor field if no instructors found and field exists */}
+            {instructors.length === 0 && course.instructor && (
+              <div className="flex items-center gap-2 text-gray-600">
+                <User size={18} />
+                <span className="text-sm md:text-base">Դասախոս՝ {course.instructor}</span>
+              </div>
+            )}
           </div>
           
           {/* Buttons */}
@@ -85,7 +163,7 @@ const CourseBanner: React.FC<CourseBannerProps> = ({
               size="lg"
               className="bg-blue-600 hover:bg-blue-700 text-white"
             >
-              Դիմել դասընթացին
+              {course.buttonText || "Դիմել դասընթացին"}
             </Button>
             
             {canEdit && (

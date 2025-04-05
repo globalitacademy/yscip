@@ -129,6 +129,47 @@ export type Database = {
           },
         ]
       }
+      course_instructors: {
+        Row: {
+          avatar_url: string | null
+          bio: string | null
+          course_id: string
+          created_at: string | null
+          id: string
+          name: string
+          title: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          avatar_url?: string | null
+          bio?: string | null
+          course_id: string
+          created_at?: string | null
+          id?: string
+          name: string
+          title?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          avatar_url?: string | null
+          bio?: string | null
+          course_id?: string
+          created_at?: string | null
+          id?: string
+          name?: string
+          title?: string | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "course_instructors_course_id_fkey"
+            columns: ["course_id"]
+            isOneToOne: false
+            referencedRelation: "courses"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       course_lessons: {
         Row: {
           course_id: string
@@ -230,6 +271,7 @@ export type Database = {
       }
       courses: {
         Row: {
+          author_type: string | null
           button_text: string | null
           color: string
           created_at: string | null
@@ -242,6 +284,7 @@ export type Database = {
           image_url: string | null
           institution: string | null
           instructor: string | null
+          instructor_ids: string[] | null
           is_persistent: boolean | null
           is_public: boolean | null
           modules: string[] | null
@@ -256,6 +299,7 @@ export type Database = {
           updated_at: string | null
         }
         Insert: {
+          author_type?: string | null
           button_text?: string | null
           color?: string
           created_at?: string | null
@@ -268,6 +312,7 @@ export type Database = {
           image_url?: string | null
           institution?: string | null
           instructor?: string | null
+          instructor_ids?: string[] | null
           is_persistent?: boolean | null
           is_public?: boolean | null
           modules?: string[] | null
@@ -282,6 +327,7 @@ export type Database = {
           updated_at?: string | null
         }
         Update: {
+          author_type?: string | null
           button_text?: string | null
           color?: string
           created_at?: string | null
@@ -294,6 +340,7 @@ export type Database = {
           image_url?: string | null
           institution?: string | null
           instructor?: string | null
+          instructor_ids?: string[] | null
           is_persistent?: boolean | null
           is_public?: boolean | null
           modules?: string[] | null

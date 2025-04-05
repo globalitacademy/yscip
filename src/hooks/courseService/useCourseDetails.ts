@@ -1,6 +1,6 @@
 
 import { useState, useEffect, useCallback } from 'react';
-import { ProfessionalCourse } from '@/components/courses/types/ProfessionalCourse';
+import { ProfessionalCourse, CourseInstructor } from '@/components/courses/types/ProfessionalCourse';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { convertIconNameToComponent } from '@/utils/iconUtils';
@@ -56,20 +56,25 @@ export const useCourseDetails = (id: string | undefined) => {
       console.log('Successfully fetched main course data:', data);
       
       // Fetch related data in parallel for better performance
-      const [lessonsResult, requirementsResult, outcomesResult] = await Promise.all([
+      const [lessonsResult, requirementsResult, outcomesResult, instructorsResult] = await Promise.all([
         supabase.from('course_lessons').select('*').eq('course_id', id),
         supabase.from('course_requirements').select('*').eq('course_id', id),
-        supabase.from('course_outcomes').select('*').eq('course_id', id)
+        supabase.from('course_outcomes').select('*').eq('course_id', id),
+        supabase.from('course_instructors').select('*').eq('course_id', id)
       ]);
       
       console.log('Fetched related data:', {
         lessons: lessonsResult.data,
         requirements: requirementsResult.data,
-        outcomes: outcomesResult.data
+        outcomes: outcomesResult.data,
+        instructors: instructorsResult.data
       });
       
       // Create icon component
       const iconElement = convertIconNameToComponent(data.icon_name);
+      
+      // Get instructor IDs from fetched instructors
+      const instructorIds = instructorsResult.data?.map(instructor => instructor.id) || [];
       
       // Construct complete course object with all related data
       const professionalCourse: ProfessionalCourse = {
@@ -89,6 +94,8 @@ export const useCourseDetails = (id: string | undefined) => {
         description: data.description || '',
         is_public: data.is_public || false,
         instructor: data.instructor || '',
+        author_type: data.author_type || 'lecturer',
+        instructor_ids: instructorIds,
         lessons: lessonsResult.data?.map(lesson => ({
           title: lesson.title,
           duration: lesson.duration
