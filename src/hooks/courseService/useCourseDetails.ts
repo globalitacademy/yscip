@@ -62,29 +62,47 @@ export const useCourseDetails = (id: string | undefined) => {
         supabase.from('course_outcomes').select('*').eq('course_id', id)
       ]);
       
-      // Fetch instructors separately due to typing issues
-      let instructorsResult = { data: [] as any[] };
+      // Fetch instructors separately 
+      let instructorsData: CourseInstructor[] = [];
       try {
-        instructorsResult = await supabase
+        const { data: instructorsResult, error: instructorsError } = await supabase
           .from('course_instructors')
           .select('*')
           .eq('course_id', id);
+          
+        if (instructorsError) {
+          console.error('Error fetching instructors:', instructorsError);
+        } else if (instructorsResult) {
+          // Convert the raw data to strongly typed CourseInstructor objects
+          instructorsData = instructorsResult.map(instructor => ({
+            id: instructor.id,
+            name: instructor.name,
+            title: instructor.title || '',
+            bio: instructor.bio || '',
+            avatar_url: instructor.avatar_url || '',
+            course_id: instructor.course_id
+          }));
+        }
       } catch (e) {
-        console.error('Error fetching instructors:', e);
+        console.error('Error in instructor data processing:', e);
       }
       
       console.log('Fetched related data:', {
         lessons: lessonsResult.data,
         requirements: requirementsResult.data,
         outcomes: outcomesResult.data,
-        instructors: instructorsResult.data
+        instructors: instructorsData
       });
       
       // Create icon component
       const iconElement = convertIconNameToComponent(data.icon_name);
       
       // Get instructor IDs from fetched instructors
-      const instructorIds = instructorsResult.data?.map(instructor => instructor.id) || [];
+      const instructorIds = instructorsData.map(instructor => instructor.id.toString());
+      
+      // Ensure author_type is either 'lecturer' or 'institution' to satisfy TypeScript
+      const authorType: 'lecturer' | 'institution' = 
+        data.author_type === 'institution' ? 'institution' : 'lecturer';
       
       // Construct complete course object with all related data
       const professionalCourse: ProfessionalCourse = {
@@ -104,8 +122,8 @@ export const useCourseDetails = (id: string | undefined) => {
         description: data.description || '',
         is_public: data.is_public || false,
         instructor: data.instructor || '',
-        author_type: data.author_type || 'lecturer',
-        instructor_ids: instructorIds.map(id => id.toString()),
+        author_type: authorType,
+        instructor_ids: instructorIds,
         lessons: lessonsResult.data?.map(lesson => ({
           title: lesson.title,
           duration: lesson.duration
