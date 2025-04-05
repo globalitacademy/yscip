@@ -80,6 +80,10 @@ const CourseDetail: React.FC = () => {
     setShowApplicationForm(true);
   };
 
+  const handleCourseUpdate = (updatedCourse: ProfessionalCourse) => {
+    setCourse(updatedCourse);
+  };
+
   if (loading) {
     return <CourseDetailSkeleton type="loading" />;
   }
@@ -109,7 +113,12 @@ const CourseDetail: React.FC = () => {
       )}
       
       {/* Course Header Banner */}
-      <CourseBanner course={course} canEdit={canEdit} handleApply={handleApply} />
+      <CourseBanner 
+        course={course} 
+        canEdit={canEdit} 
+        handleApply={handleApply} 
+        onCourseUpdate={handleCourseUpdate}
+      />
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         {/* Main Content */}

@@ -5,22 +5,36 @@ import { Button } from '@/components/ui/button';
 import { Link } from 'react-router-dom';
 import { ArrowLeft, User, Clock, Pencil } from 'lucide-react';
 import CourseApplicationForm from './CourseApplicationForm';
+import CourseEdit from './CourseEdit';
 
 interface CourseBannerProps {
   course: ProfessionalCourse;
   canEdit?: boolean;
   handleApply: () => void;
+  onCourseUpdate?: (updatedCourse: ProfessionalCourse) => void;
 }
 
 const CourseBanner: React.FC<CourseBannerProps> = ({ 
   course, 
   canEdit = false,
-  handleApply
+  handleApply,
+  onCourseUpdate
 }) => {
   const [isApplicationFormOpen, setIsApplicationFormOpen] = useState(false);
+  const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
 
   const openApplicationForm = () => {
     setIsApplicationFormOpen(true);
+  };
+
+  const handleEditClick = () => {
+    setIsEditDialogOpen(true);
+  };
+
+  const handleCourseUpdate = (updatedCourse: ProfessionalCourse) => {
+    if (onCourseUpdate) {
+      onCourseUpdate(updatedCourse);
+    }
   };
 
   return (
@@ -75,16 +89,15 @@ const CourseBanner: React.FC<CourseBannerProps> = ({
             </Button>
             
             {canEdit && (
-              <Link to={`/admin/courses/${course.id}`}>
-                <Button 
-                  variant="outline" 
-                  size="lg" 
-                  className="border-gray-300 hover:bg-gray-50 flex items-center gap-2"
-                >
-                  <Pencil size={16} />
-                  Խմբագրել
-                </Button>
-              </Link>
+              <Button 
+                variant="outline" 
+                size="lg" 
+                className="border-gray-300 hover:bg-gray-50 flex items-center gap-2"
+                onClick={handleEditClick}
+              >
+                <Pencil size={16} />
+                Խմբագրել
+              </Button>
             )}
           </div>
         </div>
@@ -96,6 +109,16 @@ const CourseBanner: React.FC<CourseBannerProps> = ({
         isOpen={isApplicationFormOpen}
         onClose={() => setIsApplicationFormOpen(false)}
       />
+
+      {/* Course Edit Dialog */}
+      {canEdit && (
+        <CourseEdit
+          isOpen={isEditDialogOpen}
+          onClose={() => setIsEditDialogOpen(false)}
+          course={course}
+          onCourseUpdate={handleCourseUpdate}
+        />
+      )}
     </div>
   );
 };
