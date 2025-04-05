@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { ProfessionalCourse, CourseInstructor } from '../types/ProfessionalCourse';
 import { Button } from '@/components/ui/button';
@@ -37,14 +36,27 @@ const CourseBanner: React.FC<CourseBannerProps> = ({
   const fetchInstructors = async () => {
     setLoading(true);
     try {
-      const { data, error } = await supabase
+      // Need to handle course_instructors table specially due to typing issues
+      const response = await supabase
         .from('course_instructors')
         .select('*')
         .eq('course_id', course.id);
         
-      if (error) throw error;
+      if (response.error) throw response.error;
       
-      setInstructors(data || []);
+      // Convert the raw data to the CourseInstructor type
+      const instructorData = response.data?.map(item => ({
+        id: item.id,
+        name: item.name,
+        title: item.title,
+        bio: item.bio,
+        avatar_url: item.avatar_url,
+        course_id: item.course_id,
+        created_at: item.created_at,
+        updated_at: item.updated_at
+      })) as CourseInstructor[];
+      
+      setInstructors(instructorData || []);
     } catch (error) {
       console.error('Error fetching instructors:', error);
     } finally {

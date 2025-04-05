@@ -42,8 +42,6 @@ export const saveCourseChanges = async (course: ProfessionalCourse): Promise<boo
       return false;
     }
 
-    // Handle course instructors separately - we'll manage them in the AuthorTab component
-
     // Handle lessons
     const { error: deleteError } = await supabase
       .from('course_lessons')

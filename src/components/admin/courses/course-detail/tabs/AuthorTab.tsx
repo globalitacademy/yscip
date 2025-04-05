@@ -34,16 +34,30 @@ export const AuthorTab: React.FC<AuthorTabProps> = ({ editedCourse, setEditedCou
   const fetchInstructors = async () => {
     setLoading(true);
     try {
-      const { data, error } = await supabase
+      const response = await supabase
         .from('course_instructors')
         .select('*')
         .eq('course_id', editedCourse.id);
         
-      if (error) throw error;
+      if (response.error) throw response.error;
       
-      setInstructors(data || []);
+      const instructorData = response.data?.map(item => ({
+        id: item.id,
+        name: item.name,
+        title: item.title,
+        bio: item.bio,
+        avatar_url: item.avatar_url,
+        course_id: item.course_id,
+        created_at: item.created_at,
+        updated_at: item.updated_at
+      })) as CourseInstructor[];
       
-      const instructorIds = data?.map(instructor => instructor.id) || [];
+      setInstructors(instructorData || []);
+      
+      const instructorIds = instructorData?.map(instructor => 
+        instructor.id?.toString()
+      ).filter(Boolean) as string[] || [];
+      
       setEditedCourse({
         ...editedCourse,
         instructor_ids: instructorIds
@@ -69,7 +83,7 @@ export const AuthorTab: React.FC<AuthorTabProps> = ({ editedCourse, setEditedCou
     
     setLoading(true);
     try {
-      const { data, error } = await supabase
+      const response = await supabase
         .from('course_instructors')
         .insert({
           name: newInstructor.name,
@@ -80,12 +94,23 @@ export const AuthorTab: React.FC<AuthorTabProps> = ({ editedCourse, setEditedCou
         })
         .select();
         
-      if (error) throw error;
+      if (response.error) throw response.error;
       
-      if (data && data[0]) {
-        setInstructors([...instructors, data[0]]);
+      if (response.data && response.data[0]) {
+        const newInstructorData: CourseInstructor = {
+          id: response.data[0].id,
+          name: response.data[0].name,
+          title: response.data[0].title,
+          bio: response.data[0].bio,
+          avatar_url: response.data[0].avatar_url,
+          course_id: response.data[0].course_id,
+          created_at: response.data[0].created_at,
+          updated_at: response.data[0].updated_at
+        };
         
-        const updatedIds = [...(editedCourse.instructor_ids || []), data[0].id];
+        setInstructors([...instructors, newInstructorData]);
+        
+        const updatedIds = [...(editedCourse.instructor_ids || []), newInstructorData.id.toString()];
         setEditedCourse({
           ...editedCourse,
           instructor_ids: updatedIds
@@ -108,17 +133,19 @@ export const AuthorTab: React.FC<AuthorTabProps> = ({ editedCourse, setEditedCou
   const removeInstructor = async (instructorId: string) => {
     setLoading(true);
     try {
-      const { error } = await supabase
+      const response = await supabase
         .from('course_instructors')
         .delete()
         .eq('id', instructorId);
         
-      if (error) throw error;
+      if (response.error) throw response.error;
       
       const updatedInstructors = instructors.filter(instructor => instructor.id !== instructorId);
       setInstructors(updatedInstructors);
       
-      const updatedIds = (editedCourse.instructor_ids || []).filter(id => id !== instructorId);
+      const updatedIds = (editedCourse.instructor_ids || [])
+        .filter(id => id !== instructorId);
+      
       setEditedCourse({
         ...editedCourse,
         instructor_ids: updatedIds

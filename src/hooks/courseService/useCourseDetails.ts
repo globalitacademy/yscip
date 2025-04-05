@@ -56,12 +56,22 @@ export const useCourseDetails = (id: string | undefined) => {
       console.log('Successfully fetched main course data:', data);
       
       // Fetch related data in parallel for better performance
-      const [lessonsResult, requirementsResult, outcomesResult, instructorsResult] = await Promise.all([
+      const [lessonsResult, requirementsResult, outcomesResult] = await Promise.all([
         supabase.from('course_lessons').select('*').eq('course_id', id),
         supabase.from('course_requirements').select('*').eq('course_id', id),
-        supabase.from('course_outcomes').select('*').eq('course_id', id),
-        supabase.from('course_instructors').select('*').eq('course_id', id)
+        supabase.from('course_outcomes').select('*').eq('course_id', id)
       ]);
+      
+      // Fetch instructors separately due to typing issues
+      let instructorsResult = { data: [] as any[] };
+      try {
+        instructorsResult = await supabase
+          .from('course_instructors')
+          .select('*')
+          .eq('course_id', id);
+      } catch (e) {
+        console.error('Error fetching instructors:', e);
+      }
       
       console.log('Fetched related data:', {
         lessons: lessonsResult.data,
@@ -95,7 +105,7 @@ export const useCourseDetails = (id: string | undefined) => {
         is_public: data.is_public || false,
         instructor: data.instructor || '',
         author_type: data.author_type || 'lecturer',
-        instructor_ids: instructorIds,
+        instructor_ids: instructorIds.map(id => id.toString()),
         lessons: lessonsResult.data?.map(lesson => ({
           title: lesson.title,
           duration: lesson.duration
