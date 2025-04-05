@@ -24,13 +24,17 @@ export const ActionButtons: React.FC<ActionButtonsProps> = ({
   isLoadingStatus,
   actionType
 }) => {
+  // Correct URL formatting for course viewing and editing
+  const viewUrl = `/admin/course/${courseId}`;
+  const editUrl = `/admin/course/${courseId}/edit`;
+
   return (
     <div className="flex items-center space-x-2">
       <TooltipProvider>
         <Tooltip>
           <TooltipTrigger asChild>
             <Button variant="ghost" size="icon" asChild>
-              <Link to={`/admin/course/${courseId}`}>
+              <Link to={viewUrl}>
                 <Eye className="h-4 w-4" />
               </Link>
             </Button>
@@ -45,7 +49,7 @@ export const ActionButtons: React.FC<ActionButtonsProps> = ({
             <Tooltip>
               <TooltipTrigger asChild>
                 <Button variant="ghost" size="icon" asChild>
-                  <Link to={`/admin/course/${courseId}/edit`}>
+                  <Link to={editUrl}>
                     <Pencil className="h-4 w-4" />
                   </Link>
                 </Button>

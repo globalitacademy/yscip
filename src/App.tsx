@@ -3,7 +3,6 @@ import React from 'react';
 import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
 import { Toaster } from 'sonner';
 import AuthProvider from './contexts/AuthContext';
-import { supabase } from './integrations/supabase/client';
 
 // Import Pages
 import Index from './pages/Index';
@@ -69,8 +68,13 @@ function App() {
           {/* Course Routes */}
           <Route path="/admin/courses" element={<AdminCoursesPage />} />
           <Route path="/admin/courses/create" element={<CourseCreationPage />} />
+          
+          {/* Course detail routes - handle both /admin/course/:id and /admin/courses/:id */}
           <Route path="/admin/course/:id" element={<CourseDetailPage />} />
           <Route path="/admin/course/:id/edit" element={<CourseDetailPage />} />
+          <Route path="/admin/courses/:id" element={<CourseDetailPage />} />
+          <Route path="/admin/courses/:id/edit" element={<CourseDetailPage />} />
+          
           <Route path="/admin/all-courses" element={<AllCoursesPage />} />
           <Route path="/admin/course-applications" element={<CourseApplicationsPage />} />
           <Route path="/admin/modules" element={<ModulesPage />} />

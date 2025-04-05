@@ -10,6 +10,8 @@ const CourseDetailPage: React.FC = () => {
   const location = useLocation();
   const isEditMode = location.pathname.includes('/edit');
 
+  console.log('CourseDetailPage: Loaded with ID:', id, 'Edit mode:', isEditMode);
+
   return (
     <div className="min-h-screen flex flex-col">
       <Header />
