@@ -8,7 +8,6 @@ import CourseTabContent from './CourseTabContent';
 interface CourseDetailContentProps {
   course: ProfessionalCourse;
   canEdit: boolean;
-  setIsEditDialogOpen: (isOpen: boolean) => void;
   setIsDeleteDialogOpen: (isOpen: boolean) => void;
   handlePublishToggle: () => void;
   loading: boolean;
@@ -18,7 +17,6 @@ interface CourseDetailContentProps {
 const CourseDetailContent: React.FC<CourseDetailContentProps> = ({
   course,
   canEdit,
-  setIsEditDialogOpen,
   setIsDeleteDialogOpen,
   handlePublishToggle,
   loading,
@@ -42,7 +40,6 @@ const CourseDetailContent: React.FC<CourseDetailContentProps> = ({
       
       <CourseTabContent 
         course={course} 
-        onEditClick={() => setIsEditDialogOpen(true)}
         canEdit={canEdit}
       />
     </>

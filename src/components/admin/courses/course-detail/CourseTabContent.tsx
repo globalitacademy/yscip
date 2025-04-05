@@ -6,11 +6,10 @@ import { Card, CardContent } from '@/components/ui/card';
 
 interface CourseTabContentProps {
   course: ProfessionalCourse;
-  onEditClick?: () => void;
   canEdit?: boolean;
 }
 
-const CourseTabContent: React.FC<CourseTabContentProps> = ({ course, onEditClick, canEdit }) => {
+const CourseTabContent: React.FC<CourseTabContentProps> = ({ course, canEdit }) => {
   return (
     <Tabs defaultValue="description" className="w-full">
       <TabsList className="mb-4">
