@@ -55,6 +55,11 @@
     @apply border-border;
   }
 
+  /* Hide default cursor globally */
+  html, body, * {
+    cursor: none !important;
+  }
+
   body {
     @apply bg-background text-foreground antialiased transition-colors duration-300;
     font-feature-settings: "ss01", "ss02", "cv01", "cv02";
@@ -147,3 +152,4 @@
     transform: rotateY(180deg);
   }
 }
+

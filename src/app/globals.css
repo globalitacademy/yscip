@@ -71,19 +71,22 @@
   * {
     @apply border-border;
   }
-  body {
-    @apply bg-background text-foreground transition-colors duration-300;
-  }
   
-  /* Custom cursor style */
+  /* Hide default cursor globally */
   html, 
+  body, 
   a, 
   button, 
   input, 
   textarea, 
   select,
-  [role="button"] {
-    cursor: none;
+  [role="button"],
+  * {
+    cursor: none !important;
+  }
+  
+  body {
+    @apply bg-background text-foreground transition-colors duration-300;
   }
 }
 
