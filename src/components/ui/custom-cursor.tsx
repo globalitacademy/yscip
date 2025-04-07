@@ -18,6 +18,7 @@ export const CustomCursor = ({
   const [isVisible, setIsVisible] = useState(false);
   const [isClicking, setIsClicking] = useState(false);
   const [isInitialized, setIsInitialized] = useState(false);
+  const [isOverDiv, setIsOverDiv] = useState(false);
 
   useEffect(() => {
     // Short timeout to ensure the cursor appears after component mount
@@ -28,6 +29,10 @@ export const CustomCursor = ({
     const updatePosition = (e: MouseEvent) => {
       setPosition({ x: e.clientX, y: e.clientY });
       if (!isVisible) setIsVisible(true);
+      
+      // Check if the mouse is over a div element
+      const elementUnderMouse = document.elementFromPoint(e.clientX, e.clientY);
+      setIsOverDiv(elementUnderMouse?.tagName === 'DIV');
     };
 
     const handleMouseDown = () => setIsClicking(true);
@@ -58,7 +63,7 @@ export const CustomCursor = ({
       <div
         className={cn(
           'fixed pointer-events-none z-[999] transition-opacity duration-300',
-          isVisible && isInitialized ? 'opacity-100' : 'opacity-0',
+          (isVisible && isInitialized && isOverDiv) ? 'opacity-100' : 'opacity-0',
           className
         )}
         style={{ 

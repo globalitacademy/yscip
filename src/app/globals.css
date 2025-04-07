@@ -72,7 +72,7 @@
     @apply border-border;
   }
   
-  /* Hide default cursor globally */
+  /* Reset cursor to default for all elements */
   html, 
   body, 
   a, 
@@ -82,6 +82,11 @@
   select,
   [role="button"],
   * {
+    cursor: auto !important;
+  }
+  
+  /* Apply custom cursor only to div elements */
+  div {
     cursor: none !important;
   }
   
