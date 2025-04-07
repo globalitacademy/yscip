@@ -71,27 +71,19 @@
   * {
     @apply border-border;
   }
+  body {
+    @apply bg-background text-foreground transition-colors duration-300;
+  }
   
-  /* Reset cursor to default for all elements */
+  /* Custom cursor style */
   html, 
-  body, 
   a, 
   button, 
   input, 
   textarea, 
   select,
-  [role="button"],
-  * {
-    cursor: auto !important;
-  }
-  
-  /* Apply custom cursor only to div elements */
-  div {
-    cursor: none !important;
-  }
-  
-  body {
-    @apply bg-background text-foreground transition-colors duration-300;
+  [role="button"] {
+    cursor: none;
   }
 }
 

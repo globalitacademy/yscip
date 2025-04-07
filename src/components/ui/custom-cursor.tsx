@@ -17,22 +17,11 @@ export const CustomCursor = ({
   const [position, setPosition] = useState({ x: 0, y: 0 });
   const [isVisible, setIsVisible] = useState(false);
   const [isClicking, setIsClicking] = useState(false);
-  const [isInitialized, setIsInitialized] = useState(false);
-  const [isOverDiv, setIsOverDiv] = useState(false);
 
   useEffect(() => {
-    // Short timeout to ensure the cursor appears after component mount
-    const timer = setTimeout(() => {
-      setIsInitialized(true);
-    }, 100);
-
     const updatePosition = (e: MouseEvent) => {
       setPosition({ x: e.clientX, y: e.clientY });
       if (!isVisible) setIsVisible(true);
-      
-      // Check if the mouse is over a div element
-      const elementUnderMouse = document.elementFromPoint(e.clientX, e.clientY);
-      setIsOverDiv(elementUnderMouse?.tagName === 'DIV');
     };
 
     const handleMouseDown = () => setIsClicking(true);
@@ -40,7 +29,6 @@ export const CustomCursor = ({
     const handleMouseLeave = () => setIsVisible(false);
     const handleMouseEnter = () => setIsVisible(true);
 
-    // Add global event listeners
     window.addEventListener('mousemove', updatePosition);
     window.addEventListener('mousedown', handleMouseDown);
     window.addEventListener('mouseup', handleMouseUp);
@@ -48,7 +36,6 @@ export const CustomCursor = ({
     document.documentElement.addEventListener('mouseenter', handleMouseEnter);
 
     return () => {
-      clearTimeout(timer);
       window.removeEventListener('mousemove', updatePosition);
       window.removeEventListener('mousedown', handleMouseDown);
       window.removeEventListener('mouseup', handleMouseUp);
@@ -63,25 +50,21 @@ export const CustomCursor = ({
       <div
         className={cn(
           'fixed pointer-events-none z-[999] transition-opacity duration-300',
-          (isVisible && isInitialized && isOverDiv) ? 'opacity-100' : 'opacity-0',
+          isVisible ? 'opacity-100' : 'opacity-0',
           className
         )}
-        style={{ 
-          left: `${position.x}px`, 
-          top: `${position.y}px`,
-          willChange: 'transform'
-        }}
+        style={{ left: `${position.x}px`, top: `${position.y}px` }}
       >
         <div 
           className={cn(
             'relative flex items-center justify-center',
-            'h-7 w-7 -ml-3.5 -mt-3.5',
-            'transition-all duration-100 ease-out',
-            isClicking ? 'scale-75' : 'scale-100'
+            'h-6 w-6 -ml-3 -mt-3',
+            'transition-all duration-200 ease-out',
+            isClicking ? 'scale-90' : 'scale-100'
           )}
         >
-          <div className="absolute rounded-full bg-primary/30 h-full w-full backdrop-blur-sm" />
-          <div className="absolute rounded-full bg-primary/50 h-2.5 w-2.5" />
+          <div className="absolute rounded-full bg-primary/20 h-full w-full backdrop-blur-sm" />
+          <div className="absolute rounded-full bg-primary/30 h-2 w-2" />
         </div>
       </div>
       

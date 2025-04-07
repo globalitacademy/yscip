@@ -1,11 +1,14 @@
 
 import React, { useRef, useState, useEffect } from 'react';
+import CustomCursor from './CustomCursor';
 import BackgroundEffects from './BackgroundEffects';
 import HeroContent from './HeroContent';
 
 const Hero: React.FC = () => {
   const heroRef = useRef<HTMLDivElement>(null);
   const [categories, setCategories] = useState<string[]>([]);
+  const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
+  const [cursorVisible, setCursorVisible] = useState(false);
 
   // Fetch categories from project themes
   useEffect(() => {
@@ -22,6 +25,28 @@ const Hero: React.FC = () => {
     };
     
     fetchCategories();
+  }, []);
+
+  // Custom cursor tracking
+  useEffect(() => {
+    const handleMouseMove = (e: MouseEvent) => {
+      // Update mouse position for custom cursor
+      setMousePosition({ x: e.clientX, y: e.clientY });
+      setCursorVisible(true);
+    };
+    
+    // Hide cursor when mouse leaves
+    const handleMouseLeave = () => {
+      setCursorVisible(false);
+    };
+    
+    window.addEventListener('mousemove', handleMouseMove);
+    heroRef.current?.addEventListener('mouseleave', handleMouseLeave);
+    
+    return () => {
+      window.removeEventListener('mousemove', handleMouseMove);
+      heroRef.current?.removeEventListener('mouseleave', handleMouseLeave);
+    };
   }, []);
 
   // Function to scroll to themes section
@@ -44,6 +69,7 @@ const Hero: React.FC = () => {
 
   return (
     <section ref={heroRef} className="relative min-h-[90vh] flex items-center justify-center overflow-hidden pt-16 bg-gradient-to-b from-background/20 to-background">
+      <CustomCursor mousePosition={mousePosition} cursorVisible={cursorVisible} />
       <BackgroundEffects />
       <HeroContent scrollToThemes={scrollToThemes} />
     </section>

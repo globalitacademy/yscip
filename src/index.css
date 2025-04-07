@@ -55,16 +55,6 @@
     @apply border-border;
   }
 
-  /* Reset cursor to default for all elements */
-  html, body, * {
-    cursor: auto !important;
-  }
-
-  /* Apply custom cursor only to div elements */
-  div {
-    cursor: none !important;
-  }
-
   body {
     @apply bg-background text-foreground antialiased transition-colors duration-300;
     font-feature-settings: "ss01", "ss02", "cv01", "cv02";
