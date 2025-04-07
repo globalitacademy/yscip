@@ -3,17 +3,147 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Hide default cursor */
-.no-cursor {
-  cursor: none;
+@layer base {
+  :root {
+    --background: 0 0% 100%;
+    --foreground: 240 10% 3.9%;
+    --card: 0 0% 100%;
+    --card-foreground: 240 10% 3.9%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 240 10% 3.9%;
+    --primary: 210 100% 50%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 240 4.8% 95.9%;
+    --secondary-foreground: 240 5.9% 10%;
+    --muted: 240 4.8% 95.9%;
+    --muted-foreground: 240 3.8% 46.1%;
+    --accent: 210 100% 95%;
+    --accent-foreground: 240 5.9% 10%;
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 0 0% 98%;
+    --border: 240 5.9% 90%;
+    --input: 240 5.9% 90%;
+    --ring: 210 100% 50%;
+    --radius: 0.5rem;
+  }
+
+  .dark {
+    --background: 240 10% 3.9%;
+    --foreground: 0 0% 98%;
+    --card: 240 10% 3.9%;
+    --card-foreground: 0 0% 98%;
+    --popover: 240 10% 3.9%;
+    --popover-foreground: 0 0% 98%;
+    --primary: 210 100% 50%;
+    --primary-foreground: 0 0% 98%;
+    --secondary: 240 3.7% 15.9%;
+    --secondary-foreground: 0 0% 98%;
+    --muted: 240 3.7% 15.9%;
+    --muted-foreground: 240 5% 64.9%;
+    --accent: 240 3.7% 15.9%;
+    --accent-foreground: 0 0% 98%;
+    --destructive: 0 62.8% 30.6%;
+    --destructive-foreground: 0 0% 98%;
+    --border: 240 3.7% 15.9%;
+    --input: 240 3.7% 15.9%;
+    --ring: 210 100% 50%;
+  }
 }
 
-/* Ensure form elements still show the appropriate cursor */
-.no-cursor button, 
-.no-cursor a, 
-.no-cursor input, 
-.no-cursor select, 
-.no-cursor textarea,
-.no-cursor label {
-  cursor: none;
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply bg-background text-foreground antialiased transition-colors duration-300;
+    font-feature-settings: "ss01", "ss02", "cv01", "cv02";
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    @apply tracking-tight font-medium;
+  }
+
+  /* Card hover effect */
+  .card-hover {
+    transition: all 0.5s cubic-bezier(0.25, 0.1, 0.25, 1);
+  }
+  
+  .card-hover:hover {
+    transform: translateY(-8px);
+  }
+
+  /* Custom scroll bar */
+  ::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+  
+  ::-webkit-scrollbar-track {
+    @apply bg-transparent;
+  }
+  
+  ::-webkit-scrollbar-thumb {
+    @apply bg-muted-foreground/30 rounded-full;
+  }
+  
+  ::-webkit-scrollbar-thumb:hover {
+    @apply bg-muted-foreground/50;
+  }
+
+  /* Animation delays */
+  .delay-0 { animation-delay: 0ms; }
+  .delay-100 { animation-delay: 100ms; }
+  .delay-200 { animation-delay: 200ms; }
+  .delay-300 { animation-delay: 300ms; }
+  .delay-400 { animation-delay: 400ms; }
+  .delay-500 { animation-delay: 500ms; }
+  .delay-600 { animation-delay: 600ms; }
+  .delay-700 { animation-delay: 700ms; }
+  .delay-800 { animation-delay: 800ms; }
+  .delay-900 { animation-delay: 900ms; }
+  .delay-1000 { animation-delay: 1000ms; }
+
+  /* Initially hide animation elements */
+  .animate-on-scroll {
+    opacity: 0;
+  }
+  
+  /* Floating animation */
+  @keyframes float {
+    0%, 100% {
+      transform: translateY(0) scale(1);
+    }
+    50% {
+      transform: translateY(-20px) scale(1.2);
+    }
+  }
+  
+  /* 3D Card Flip Effect */
+  .flip-card {
+    perspective: 1000px;
+  }
+  
+  .flip-card-inner {
+    transition: transform 0.8s;
+    transform-style: preserve-3d;
+  }
+  
+  .flip-card:hover .flip-card-inner {
+    transform: rotateY(5deg);
+  }
+  
+  .flipped .flip-card-inner {
+    transform: rotateY(180deg) !important;
+  }
+  
+  .flip-card-front, .flip-card-back {
+    -webkit-backface-visibility: hidden;
+    backface-visibility: hidden;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+  }
+  
+  .flip-card-back {
+    transform: rotateY(180deg);
+  }
 }

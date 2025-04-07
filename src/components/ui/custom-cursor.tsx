@@ -19,9 +19,6 @@ export const CustomCursor = ({
   const [isClicking, setIsClicking] = useState(false);
 
   useEffect(() => {
-    // Add a style to hide the default cursor for the entire document body
-    document.body.classList.add('no-cursor');
-
     const updatePosition = (e: MouseEvent) => {
       setPosition({ x: e.clientX, y: e.clientY });
       if (!isVisible) setIsVisible(true);
@@ -39,9 +36,6 @@ export const CustomCursor = ({
     document.documentElement.addEventListener('mouseenter', handleMouseEnter);
 
     return () => {
-      // Remove the style when component unmounts
-      document.body.classList.remove('no-cursor');
-      
       window.removeEventListener('mousemove', updatePosition);
       window.removeEventListener('mousedown', handleMouseDown);
       window.removeEventListener('mouseup', handleMouseUp);
