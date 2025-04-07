@@ -1,12 +1,19 @@
 
 import React, { useEffect, useState } from 'react';
 import { cn } from '@/lib/utils';
+import { CollaborativePointers } from '@/components/collaborative';
 
 interface CustomCursorProps {
   className?: string;
+  showVirtualPointers?: boolean;
+  virtualUsersCount?: number;
 }
 
-export const CustomCursor = ({ className }: CustomCursorProps) => {
+export const CustomCursor = ({ 
+  className,
+  showVirtualPointers = true,
+  virtualUsersCount = 3
+}: CustomCursorProps) => {
   const [position, setPosition] = useState({ x: 0, y: 0 });
   const [isVisible, setIsVisible] = useState(false);
   const [isClicking, setIsClicking] = useState(false);
@@ -38,25 +45,37 @@ export const CustomCursor = ({ className }: CustomCursorProps) => {
   }, [isVisible]);
 
   return (
-    <div
-      className={cn(
-        'fixed pointer-events-none z-50 transition-opacity duration-300',
-        isVisible ? 'opacity-100' : 'opacity-0',
-        className
-      )}
-      style={{ left: `${position.x}px`, top: `${position.y}px` }}
-    >
-      <div 
+    <>
+      {/* Custom cursor */}
+      <div
         className={cn(
-          'relative flex items-center justify-center',
-          'h-6 w-6 -ml-3 -mt-3',
-          'transition-all duration-200 ease-out',
-          isClicking ? 'scale-90' : 'scale-100'
+          'fixed pointer-events-none z-[999] transition-opacity duration-300',
+          isVisible ? 'opacity-100' : 'opacity-0',
+          className
         )}
+        style={{ left: `${position.x}px`, top: `${position.y}px` }}
       >
-        <div className="absolute rounded-full bg-primary/20 h-full w-full backdrop-blur-sm" />
-        <div className="absolute rounded-full bg-primary/30 h-2 w-2" />
+        <div 
+          className={cn(
+            'relative flex items-center justify-center',
+            'h-6 w-6 -ml-3 -mt-3',
+            'transition-all duration-200 ease-out',
+            isClicking ? 'scale-90' : 'scale-100'
+          )}
+        >
+          <div className="absolute rounded-full bg-primary/20 h-full w-full backdrop-blur-sm" />
+          <div className="absolute rounded-full bg-primary/30 h-2 w-2" />
+        </div>
       </div>
-    </div>
+      
+      {/* Virtual collaborative pointers */}
+      {showVirtualPointers && (
+        <CollaborativePointers 
+          virtualUsersCount={virtualUsersCount}
+          currentUserName="You"
+          currentUserColor="hsl(var(--primary))"
+        />
+      )}
+    </>
   );
 };

@@ -1,8 +1,8 @@
-
 import React from 'react';
 import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
 import { Toaster } from 'sonner';
 import AuthProvider from './contexts/AuthContext';
+import { CollaborativePointers } from './components/collaborative';
 
 // Import Pages
 import Index from './pages/Index';
@@ -108,6 +108,10 @@ function App() {
           {/* 404 Page */}
           <Route path="*" element={<NotFound />} />
         </Routes>
+        
+        {/* Collaborative Pointers - will appear on all pages */}
+        <CollaborativePointers virtualUsersCount={4} />
+        
         <Toaster />
       </Router>
     </AuthProvider>

@@ -12,7 +12,7 @@ export default function RootLayout({
     <html lang="en" suppressHydrationWarning className="h-full">
       <body className="h-full bg-background text-foreground">
         <ThemeProvider>
-          <CustomCursor />
+          <CustomCursor showVirtualPointers={true} virtualUsersCount={4} />
           {children}
         </ThemeProvider>
       </body>
