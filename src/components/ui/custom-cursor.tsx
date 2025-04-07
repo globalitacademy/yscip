@@ -72,7 +72,7 @@ export const CustomCursor = ({
       {showVirtualPointers && (
         <CollaborativePointers 
           virtualUsersCount={virtualUsersCount}
-          currentUserName="You"
+          currentUserName="Դուք"
           currentUserColor="hsl(var(--primary))"
         />
       )}

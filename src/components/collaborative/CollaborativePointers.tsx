@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import MousePointer, { PointerUser } from './MousePointer';
 
@@ -11,10 +12,10 @@ const VIRTUAL_USER_COLORS = [
   '#f43f5e', // rose
 ];
 
-// Names for virtual collaborators
+// Armenian names for virtual collaborators
 const VIRTUAL_NAMES = [
-  'Anna', 'David', 'Sophie', 'Michael',
-  'Emma', 'Alex', 'Olivia', 'Daniel'
+  'Արամ', 'Լիլիթ', 'Տիգրան', 'Անի',
+  'Հայկ', 'Նարե', 'Վահան', 'Լուսինե'
 ];
 
 interface CollaborativePointersProps {
@@ -26,7 +27,7 @@ interface CollaborativePointersProps {
 
 const CollaborativePointers: React.FC<CollaborativePointersProps> = ({ 
   virtualUsersCount = 3, 
-  currentUserName = 'You', 
+  currentUserName = 'Դուք', 
   currentUserColor = '#3b82f6', // blue
   containerRef
 }) => {

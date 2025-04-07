@@ -20,7 +20,7 @@ const MousePointer: React.FC<MousePointerProps> = ({ user }) => {
   
   return (
     <div 
-      className="absolute pointer-events-none"
+      className="absolute pointer-events-none select-none"
       style={{ 
         left: 0,
         top: 0,
@@ -37,6 +37,7 @@ const MousePointer: React.FC<MousePointerProps> = ({ user }) => {
         fill="none" 
         xmlns="http://www.w3.org/2000/svg"
         style={{ filter: 'drop-shadow(0 1px 2px rgba(0,0,0,0.25))' }}
+        className="pointer-events-none"
       >
         <path 
           d="M5.5 3.5L18 14.5L12.5 15.5L10 20.5L5.5 3.5Z" 
@@ -51,7 +52,7 @@ const MousePointer: React.FC<MousePointerProps> = ({ user }) => {
         className={cn(
           "absolute px-2 py-0.5 rounded text-xs font-medium text-white",
           "whitespace-nowrap transform -translate-y-full -translate-x-1/4",
-          "animate-pulse shadow-sm"
+          "animate-pulse shadow-sm pointer-events-none select-none"
         )}
         style={{ 
           backgroundColor: color,
