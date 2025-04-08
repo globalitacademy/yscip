@@ -15,9 +15,9 @@ const CourseOutcomesTab: React.FC<CourseOutcomesTabProps> = ({ course }) => {
   
   if (!course.outcomes || course.outcomes.length === 0) {
     return (
-      <div className={`text-center py-16 border rounded-xl ${theme === 'dark' ? 'bg-gray-800/50 border-gray-700' : 'bg-gray-50'}`}>
+      <div className={`text-center py-16 border rounded-xl ${theme === 'dark' ? 'bg-gray-800/50 border-gray-700' : 'bg-gray-50 border-gray-100'}`}>
         <Sparkles className={`mx-auto h-12 w-12 ${theme === 'dark' ? 'text-gray-500' : 'text-gray-400'} mb-4`} />
-        <p className={`${theme === 'dark' ? 'text-gray-300' : 'text-gray-500'} text-lg`}>
+        <p className={`${theme === 'dark' ? 'text-gray-300' : 'text-gray-600'} text-lg`}>
           Ակնկալվող արդյունքների ցանկը հասանելի չէ
         </p>
         <p className={`${theme === 'dark' ? 'text-gray-500' : 'text-gray-400'} text-sm mt-2`}>
@@ -36,7 +36,7 @@ const CourseOutcomesTab: React.FC<CourseOutcomesTabProps> = ({ course }) => {
         : 'bg-gradient-to-r from-indigo-50 to-purple-50'} 
         p-6 rounded-xl shadow-sm`}
       >
-        <h2 className={`text-xl font-semibold mb-4 flex items-center ${theme === 'dark' ? 'text-gray-100' : ''}`}>
+        <h2 className={`text-xl font-semibold mb-4 flex items-center ${theme === 'dark' ? 'text-gray-100' : 'text-gray-800'}`}>
           <Sparkles className={`h-5 w-5 mr-2 ${theme === 'dark' ? 'text-indigo-400' : 'text-indigo-600'}`} />
           Ինչ կսովորեք այս դասընթացում
         </h2>

@@ -106,7 +106,7 @@ const CourseDetail: React.FC = () => {
   const canEdit = user && (user.role === 'admin' || course.createdBy === user.name);
 
   return (
-    <div className={`container mx-auto px-4 py-8 max-w-6xl ${theme === 'dark' ? 'text-gray-200' : ''}`}>
+    <div className={`container mx-auto px-4 py-8 max-w-6xl ${theme === 'dark' ? 'text-gray-200' : 'text-gray-800'}`}>
       {/* Show unpublished warning for creators */}
       {!course.is_public && canViewUnpublished && (
         <div className={`${theme === 'dark' 

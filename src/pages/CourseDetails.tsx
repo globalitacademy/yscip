@@ -15,7 +15,7 @@ const CourseDetails: React.FC = () => {
   console.log("CourseDetails էջ: Ստացված պարամետրեր:", { slug, id });
   
   return (
-    <div className={`flex min-h-screen flex-col ${theme === 'dark' ? 'bg-background text-foreground' : ''}`}>
+    <div className={`flex min-h-screen flex-col ${theme === 'dark' ? 'bg-background text-foreground' : 'bg-white text-gray-900'}`}>
       <Header />
       <ScrollArea className="flex-1 h-[calc(100vh-150px)]">
         <main className="flex-1">

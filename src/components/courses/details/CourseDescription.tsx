@@ -32,7 +32,7 @@ const CourseDescription: React.FC<CourseDescriptionProps> = ({
         {course.description ? (
           <div className="space-y-4">
             {course.description.split('\n').map((paragraph, index) => (
-              <p key={index} className={`leading-relaxed ${theme === 'dark' ? 'text-gray-300' : 'text-gray-50'}`}>{paragraph}</p>
+              <p key={index} className={`leading-relaxed ${theme === 'dark' ? 'text-gray-300' : 'text-gray-700'}`}>{paragraph}</p>
             ))}
           </div>
         ) : (

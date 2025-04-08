@@ -16,9 +16,9 @@ const CourseCurriculumTab: React.FC<CourseCurriculumTabProps> = ({ course }) => 
   
   if (!course.lessons || course.lessons.length === 0) {
     return (
-      <div className={`text-center py-16 border rounded-xl ${theme === 'dark' ? 'bg-gray-800/50 border-gray-700' : 'bg-gray-50'}`}>
+      <div className={`text-center py-16 border rounded-xl ${theme === 'dark' ? 'bg-gray-800/50 border-gray-700' : 'bg-gray-50 border-gray-100'}`}>
         <Book className={`mx-auto h-12 w-12 ${theme === 'dark' ? 'text-gray-500' : 'text-gray-400'} mb-4`} />
-        <p className={`${theme === 'dark' ? 'text-gray-300' : 'text-gray-500'} text-lg`}>
+        <p className={`${theme === 'dark' ? 'text-gray-300' : 'text-gray-600'} text-lg`}>
           Դասընթացի պլանը դեռ հասանելի չէ
         </p>
         <p className={`${theme === 'dark' ? 'text-gray-500' : 'text-gray-400'} text-sm mt-2`}>
@@ -35,7 +35,7 @@ const CourseCurriculumTab: React.FC<CourseCurriculumTabProps> = ({ course }) => 
   return (
     <div className="space-y-6">
       <div className="flex justify-between items-center mb-2">
-        <h2 className={`text-xl font-semibold ${theme === 'dark' ? 'text-gray-200' : ''}`}>
+        <h2 className={`text-xl font-semibold ${theme === 'dark' ? 'text-gray-200' : 'text-gray-800'}`}>
           {course.lessons.length} դասեր
         </h2>
         <Button 
@@ -56,7 +56,7 @@ const CourseCurriculumTab: React.FC<CourseCurriculumTabProps> = ({ course }) => 
           <AccordionItem 
             value={`item-${index}`} 
             key={index} 
-            className={`border mb-4 rounded-lg overflow-hidden shadow-sm hover:shadow-md transition-shadow ${theme === 'dark' ? 'border-gray-700' : ''}`}
+            className={`border mb-4 rounded-lg overflow-hidden shadow-sm hover:shadow-md transition-shadow ${theme === 'dark' ? 'border-gray-700' : 'border-gray-200'}`}
           >
             <AccordionTrigger className="hover:no-underline px-4 py-3">
               <div className="flex items-center w-full">
