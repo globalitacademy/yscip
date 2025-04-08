@@ -1,11 +1,9 @@
-
 import React from 'react';
 import { Card, CardContent, CardFooter, CardHeader } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { ProfessionalCourse } from './types/ProfessionalCourse';
 import { Eye, Pencil, Trash, Building, User } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
-
 interface ProfessionalCourseCardProps {
   course: ProfessionalCourse;
   onEdit?: (course: ProfessionalCourse) => void;
@@ -14,7 +12,6 @@ interface ProfessionalCourseCardProps {
   canEdit?: boolean;
   onClick?: () => void;
 }
-
 const ProfessionalCourseCard: React.FC<ProfessionalCourseCardProps> = ({
   course,
   onEdit,
@@ -24,21 +21,18 @@ const ProfessionalCourseCard: React.FC<ProfessionalCourseCardProps> = ({
   onClick
 }) => {
   const navigate = useNavigate();
-  
   const handleDelete = (e: React.MouseEvent) => {
     e.stopPropagation(); // Prevent event propagation
     if (onDelete && course.id) {
       onDelete(course.id);
     }
   };
-
   const handleEdit = (e: React.MouseEvent) => {
     e.stopPropagation(); // Prevent event propagation
     if (onEdit) {
       onEdit(course);
     }
   };
-  
   const handleViewClick = () => {
     if (onClick) {
       onClick();
@@ -47,65 +41,34 @@ const ProfessionalCourseCard: React.FC<ProfessionalCourseCardProps> = ({
       navigate(`/course/${course.id}`);
     }
   };
-
-  return (
-    <Card className="flex flex-col w-full hover:shadow-md transition-shadow relative">
-      {course.organizationLogo ? (
-        <div className="absolute top-4 left-4 flex items-center text-xs bg-gray-100 px-2 py-1 rounded-full z-10">
-          <img 
-            src={course.organizationLogo} 
-            alt={course.institution}
-            className="w-6 h-6 mr-1 object-contain rounded-full"
-          />
+  return <Card className="flex flex-col w-full hover:shadow-md transition-shadow relative">
+      {course.organizationLogo ? <div className="absolute top-4 left-4 flex items-center text-xs bg-gray-100 px-2 py-1 rounded-full z-10">
+          <img src={course.organizationLogo} alt={course.institution} className="w-6 h-6 mr-1 object-contain rounded-full" />
           <span>{course.institution}</span>
-        </div>
-      ) : (
-        <div className="absolute top-4 left-4 flex items-center text-xs bg-gray-100 px-2 py-1 rounded-full z-10">
-          <Building size={12} className="mr-1" />
-          <span>{course.institution}</span>
-        </div>
-      )}
+        </div> : <div className="absolute top-4 left-4 flex items-center text-xs bg-gray-100 px-2 py-1 rounded-full z-10">
+          <Building size={12} className="mr-1 bg-gray-900" />
+          <span className="text-gray-900">{course.institution}</span>
+        </div>}
 
-      {(isAdmin || canEdit) && (
-        <div className="absolute top-4 right-4 z-10 flex gap-2">
-          <Button
-            variant="outline" 
-            size="icon" 
-            className="h-6 w-6 rounded-full" 
-            onClick={handleEdit}
-          >
+      {(isAdmin || canEdit) && <div className="absolute top-4 right-4 z-10 flex gap-2">
+          <Button variant="outline" size="icon" className="h-6 w-6 rounded-full" onClick={handleEdit}>
             <Pencil size={12} />
           </Button>
-          <Button
-            variant="outline" 
-            size="icon" 
-            className="h-6 w-6 rounded-full" 
-            onClick={handleDelete}
-          >
+          <Button variant="outline" size="icon" className="h-6 w-6 rounded-full" onClick={handleDelete}>
             <Trash size={12} />
           </Button>
-        </div>
-      )}
+        </div>}
 
       <CardHeader className="pb-2 text-center pt-12 relative">
-        {course.imageUrl ? (
-          <div className="w-full h-32 mb-4 overflow-hidden rounded-md">
-            <img 
-              src={course.imageUrl} 
-              alt={course.title}
-              className="w-full h-full object-cover"
-              onError={(e) => {
-                e.currentTarget.style.display = 'none';
-                const iconElement = document.getElementById(`course-icon-${course.id}`);
-                if (iconElement) iconElement.style.display = 'block';
-              }}
-            />
-          </div>
-        ) : (
-          <div id={`course-icon-${course.id}`} className={`mb-4 ${course.color} mx-auto`}>
+        {course.imageUrl ? <div className="w-full h-32 mb-4 overflow-hidden rounded-md">
+            <img src={course.imageUrl} alt={course.title} className="w-full h-full object-cover" onError={e => {
+          e.currentTarget.style.display = 'none';
+          const iconElement = document.getElementById(`course-icon-${course.id}`);
+          if (iconElement) iconElement.style.display = 'block';
+        }} />
+          </div> : <div id={`course-icon-${course.id}`} className={`mb-4 ${course.color} mx-auto`}>
             {course.icon}
-          </div>
-        )}
+          </div>}
         <h3 className="font-bold text-xl">{course.title}</h3>
         <p className="text-sm text-muted-foreground">{course.subtitle}</p>
       </CardHeader>
@@ -123,16 +86,10 @@ const ProfessionalCourseCard: React.FC<ProfessionalCourseCardProps> = ({
       </CardContent>
       
       <CardFooter className="pt-4">
-        <Button 
-          variant="outline"
-          className="w-full"
-          onClick={handleViewClick}
-        >
+        <Button variant="outline" className="w-full" onClick={handleViewClick}>
           <Eye className="h-4 w-4 mr-2" /> {course.buttonText || "Մանրամասն"}
         </Button>
       </CardFooter>
-    </Card>
-  );
+    </Card>;
 };
-
 export default ProfessionalCourseCard;
