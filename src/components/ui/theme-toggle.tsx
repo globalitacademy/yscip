@@ -22,7 +22,7 @@ export const ThemeToggle: React.FC = () => {
         pressed={theme === 'dark'}
         onPressedChange={toggleTheme}
         aria-label="Toggle theme"
-        className="p-2 bg-secondary dark:bg-gray-800 hover:bg-secondary/80 dark:hover:bg-gray-700/90 transition-colors rounded-md border border-transparent dark:border-gray-700 shadow-sm"
+        className="p-2 bg-secondary/80 dark:bg-gray-800 hover:bg-secondary/60 dark:hover:bg-gray-700 transition-colors rounded-md border border-transparent dark:border-gray-700 shadow-sm"
       >
         {theme === 'dark' ? (
           <Moon className="h-5 w-5 text-blue-300 transition-transform duration-500 rotate-0" />

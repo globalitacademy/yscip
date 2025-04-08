@@ -1,5 +1,5 @@
 
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useRef } from 'react';
 import { useTheme } from '@/hooks/use-theme';
 
 const BackgroundEffects: React.FC = () => {
@@ -65,8 +65,8 @@ const BackgroundEffects: React.FC = () => {
         ctx.arc(node.x, node.y, node.radius, 0, Math.PI * 2);
         // Use higher opacity in both modes for better visibility
         ctx.fillStyle = theme === 'dark' 
-          ? 'rgba(255, 255, 255, 0.3)' 
-          : 'rgba(0, 0, 0, 0.25)';
+          ? 'rgba(255, 255, 255, 0.35)' 
+          : 'rgba(0, 0, 0, 0.3)';
         ctx.fill();
         
         // Connect nearby nodes
@@ -82,9 +82,9 @@ const BackgroundEffects: React.FC = () => {
             ctx.lineTo(node2.x, node2.y);
             // Use higher opacity in both modes for connections too
             ctx.strokeStyle = theme === 'dark'
-              ? `rgba(255, 255, 255, ${0.25 - distance2 / 1000})`
-              : `rgba(0, 0, 0, ${0.2 - distance2 / 1000})`;
-            ctx.lineWidth = theme === 'dark' ? 0.5 : 0.6;
+              ? `rgba(255, 255, 255, ${0.3 - distance2 / 1000})`
+              : `rgba(0, 0, 0, ${0.25 - distance2 / 1000})`;
+            ctx.lineWidth = theme === 'dark' ? 0.6 : 0.6;
             ctx.stroke();
           }
         }
@@ -104,9 +104,9 @@ const BackgroundEffects: React.FC = () => {
   return (
     <>
       {/* Modern colorful blobs/shapes with enhanced effects */}
-      <div className="blob absolute top-[20%] left-[15%] w-72 h-72 rounded-full bg-gradient-to-br from-primary/20 to-primary/5 blur-[80px] opacity-70 mix-blend-multiply transition-transform duration-700" />
-      <div className="blob absolute bottom-[25%] right-[15%] w-96 h-96 rounded-full bg-gradient-to-bl from-accent/30 to-accent/10 blur-[100px] opacity-60 mix-blend-multiply transition-transform duration-700" />
-      <div className="blob absolute top-[40%] right-[30%] w-64 h-64 rounded-full bg-gradient-to-tr from-secondary/25 to-secondary/5 blur-[70px] opacity-50 mix-blend-multiply transition-transform duration-700" />
+      <div className="blob absolute top-[20%] left-[15%] w-72 h-72 rounded-full bg-gradient-to-br from-primary/20 to-primary/5 dark:from-primary/10 dark:to-blue-500/10 blur-[80px] opacity-70 mix-blend-multiply dark:mix-blend-screen transition-transform duration-700" />
+      <div className="blob absolute bottom-[25%] right-[15%] w-96 h-96 rounded-full bg-gradient-to-bl from-accent/30 to-accent/10 dark:from-purple-500/20 dark:to-blue-600/10 blur-[100px] opacity-60 mix-blend-multiply dark:mix-blend-screen transition-transform duration-700" />
+      <div className="blob absolute top-[40%] right-[30%] w-64 h-64 rounded-full bg-gradient-to-tr from-secondary/25 to-secondary/5 dark:from-cyan-500/15 dark:to-blue-400/5 blur-[70px] opacity-50 mix-blend-multiply dark:mix-blend-screen transition-transform duration-700" />
       
       {/* Code particles background */}
       {codeSymbols.map((symbol, i) => (
@@ -133,7 +133,7 @@ const BackgroundEffects: React.FC = () => {
       />
       
       {/* Subtle grid pattern overlay with reduced opacity */}
-      <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAiIGhlaWdodD0iNjAiIHZpZXdCb3g9IjAgMCA2MCA2MCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48ZyBmaWxsPSJub25lIiBmaWxsLXJ1bGU9ImV2ZW5vZGQiPjxnIGZpbGw9IiMyMTIxMjEiIGZpbGwtb3BhY2l0eT0iMC4wMSI+PHBhdGggZD0iTTM2IDM0aDR2MWgtNHYtMXptMC0yaC00djFoNHYtMXptNiAwaC00djFoNHYtMXptLTEyIDBoLTR2MWg0di0xem0tNiAwaC00djFoNHYtMXptMTggMGgtNHYxaDR2LTF6bS0xMiAyaC00djFoNHYtMXptLTYgMGgtNHYxaDR2LTF6bTEyIDBoLTR2MWg0di0xem0tMTYtNGgtNHYxaDR2LTF6bTYgMGgtNHYxaDR2LTF6bTYgMGgtNHYxaDR2LTF6bTYgMGgtNHYxaDR2LTF6Ii8+PC9nPjwvZz48L3N2Zz4=')] opacity-20 cursor-none" />
+      <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAiIGhlaWdodD0iNjAiIHZpZXdCb3g9IjAgMCA2MCA2MCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48ZyBmaWxsPSJub25lIiBmaWxsLXJ1bGU9ImV2ZW5vZGQiPjxnIGZpbGw9IiMyMTIxMjEiIGZpbGwtb3BhY2l0eT0iMC4wMSI+PHBhdGggZD0iTTM2IDM0aDR2MWgtNHYtMXptMC0yaC00djFoNHYtMXptNiAwaC00djFoNHYtMXptLTEyIDBoLTR2MWg0di0xem0tNiAwaC00djFoNHYtMXptMTggMGgtNHYxaDR2LTF6bS0xMiAyaC00djFoNHYtMXptLTYgMGgtNHYxaDR2LTF6bTEyIDBoLTR2MWg0di0xem0tMTYtNGgtNHYxaDR2LTF6bTYgMGgtNHYxaDR2LTF6bTYgMGgtNHYxaDR2LTF6bTYgMGgtNHYxaDR2LTF6Ii8+PC9nPjwvZz48L3N2Zz4=')] opacity-20 dark:opacity-10 cursor-none" />
       
       {/* Animated floating dots with improved behavior */}
       <div className="absolute inset-0 pointer-events-none overflow-hidden">

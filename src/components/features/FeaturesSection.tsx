@@ -22,7 +22,7 @@ const FeatureCard = ({
 }) => (
   <SlideUp delay={delay}>
     <div className="bg-card dark:bg-gray-800/70 rounded-lg p-6 shadow-sm h-full flex flex-col items-center text-center transition-all duration-300 hover:shadow-md hover:-translate-y-2 hover:bg-accent/50 dark:hover:bg-gray-700/70 group border border-border">
-      <div className={`p-3 rounded-lg bg-primary/10 dark:bg-primary/20 text-primary mb-4 transition-all duration-300 group-hover:scale-110`}>
+      <div className="p-3 rounded-lg bg-primary/10 dark:bg-primary/20 text-primary mb-4 transition-all duration-300 group-hover:scale-110">
         <Icon size={24} />
       </div>
       <h3 className="text-lg font-medium mb-2 transition-colors duration-300 group-hover:text-primary">{title}</h3>
