@@ -3,17 +3,15 @@ import React from 'react';
 import { Moon, Sun } from 'lucide-react';
 import { useTheme } from '@/hooks/use-theme';
 import { Toggle } from '@/components/ui/toggle';
-import { useToast } from '@/hooks/use-toast';
+import { toast } from 'sonner';
 
 export const ThemeToggle: React.FC = () => {
   const { theme, setTheme } = useTheme();
-  const { toast } = useToast();
   
   const toggleTheme = () => {
     const newTheme = theme === 'dark' ? 'light' : 'dark';
     setTheme(newTheme);
-    toast({
-      title: `${newTheme === 'dark' ? 'Dark' : 'Light'} mode activated`,
+    toast(`${newTheme === 'dark' ? 'Dark' : 'Light'} mode activated`, {
       duration: 1500,
     });
   };
