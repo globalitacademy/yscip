@@ -38,16 +38,33 @@ export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     // Update localStorage when theme changes
     localStorage.setItem('theme', theme);
     
-    // Apply theme class to document and remove the other one
+    // Apply theme class to document and remove the other one with a transition
+    const root = document.documentElement;
+    
     if (theme === 'dark') {
-      document.documentElement.classList.add('dark');
-      document.documentElement.classList.remove('light');
+      root.classList.add('dark');
+      root.classList.remove('light');
     } else {
-      document.documentElement.classList.add('light');
-      document.documentElement.classList.remove('dark');
+      root.classList.add('light');
+      root.classList.remove('dark');
     }
     
-    console.log('Theme changed to:', theme);
+    // Add transition class to add smooth transitions between themes
+    const transitionElement = document.createElement('style');
+    transitionElement.appendChild(document.createTextNode(`
+      * {
+        transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease !important;
+      }
+    `));
+    
+    document.head.appendChild(transitionElement);
+    
+    // Remove the transition effect after it's complete to prevent it affecting other UI changes
+    const timeoutId = setTimeout(() => {
+      document.head.removeChild(transitionElement);
+    }, 300);
+    
+    return () => clearTimeout(timeoutId);
   }, [theme, mounted]);
   
   return (

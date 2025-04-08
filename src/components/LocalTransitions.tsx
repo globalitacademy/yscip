@@ -10,14 +10,14 @@ interface AnimationProps {
 }
 
 export const FadeIn: React.FC<AnimationProps> = ({ children, className, delay = 'delay-0' }) => {
-  const [elementRef, isInView] = useInView<HTMLDivElement>();
+  const [elementRef, isInView] = useInView<HTMLDivElement>({ threshold: 0.1 });
   
   return (
     <div 
       ref={elementRef} 
       className={cn(
-        'transition-opacity duration-700 ease-in-out',
-        isInView ? 'opacity-100' : 'opacity-0',
+        'transition-all duration-700 ease-in-out',
+        isInView ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4',
         delay,
         className
       )}
@@ -28,7 +28,7 @@ export const FadeIn: React.FC<AnimationProps> = ({ children, className, delay = 
 };
 
 export const SlideUp: React.FC<AnimationProps> = ({ children, className, delay = 'delay-0' }) => {
-  const [elementRef, isInView] = useInView<HTMLDivElement>();
+  const [elementRef, isInView] = useInView<HTMLDivElement>({ threshold: 0.1 });
   
   return (
     <div 
@@ -46,7 +46,7 @@ export const SlideUp: React.FC<AnimationProps> = ({ children, className, delay =
 };
 
 export const SlideDown: React.FC<AnimationProps> = ({ children, className, delay = 'delay-0' }) => {
-  const [elementRef, isInView] = useInView<HTMLDivElement>();
+  const [elementRef, isInView] = useInView<HTMLDivElement>({ threshold: 0.1 });
   
   return (
     <div 
@@ -67,12 +67,14 @@ interface StaggeredContainerProps {
   children: ReactNode;
   className?: string;
   staggerDelay?: number;
+  baseDelay?: number;
 }
 
 export const StaggeredContainer: React.FC<StaggeredContainerProps> = ({ 
   children, 
-  className,
-  staggerDelay = 100
+  className = '',
+  staggerDelay = 100,
+  baseDelay = 0
 }) => {
   const containerRef = useRef<HTMLDivElement>(null);
   const [isInView, setIsInView] = useState(false);
@@ -88,7 +90,7 @@ export const StaggeredContainer: React.FC<StaggeredContainerProps> = ({
           observer.unobserve(container);
         }
       },
-      { threshold: 0.1 }
+      { threshold: 0.1, rootMargin: '50px' }
     );
     
     observer.observe(container);
@@ -101,13 +103,23 @@ export const StaggeredContainer: React.FC<StaggeredContainerProps> = ({
   return (
     <div ref={containerRef} className={className}>
       {React.Children.map(children, (child, index) => {
-        return React.isValidElement(child)
-          ? React.cloneElement(child as React.ReactElement<any>, {
-              style: {
-                transitionDelay: isInView ? `${index * staggerDelay}ms` : '0ms',
-              },
-            })
-          : child;
+        if (!React.isValidElement(child)) return child;
+        
+        // Calculate delay class based on index
+        const delayValue = baseDelay + (index * staggerDelay);
+        const delayClass = `delay-${Math.min(delayValue, 1000)}` as 
+          'delay-0' | 'delay-100' | 'delay-200' | 'delay-300' | 'delay-400' | 
+          'delay-500' | 'delay-600' | 'delay-700' | 'delay-800' | 'delay-900' | 'delay-1000';
+        
+        return React.cloneElement(child, {
+          ...child.props,
+          delay: delayClass,
+          key: index,
+          style: {
+            ...child.props.style,
+            transitionDelay: isInView ? `${index * staggerDelay}ms` : '0ms',
+          },
+        });
       })}
     </div>
   );

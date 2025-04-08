@@ -9,6 +9,7 @@ export const networkingModules: EducationalModule[] = [
     icon: Globe, 
     status: 'in-progress', 
     progress: 40,
+    description: "Տվյալների փոխանակման և ցանցային տեխնոլոգիաների ուսումնասիրություն",
     topics: [
       "Համակարգչային ցանցերի ներածություն",
       "Ցանցերի տեսակներ (LAN, WAN, MAN)",

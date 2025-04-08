@@ -9,6 +9,7 @@ export const interfaceModules: EducationalModule[] = [
     icon: Smartphone, 
     status: 'not-started', 
     progress: 0,
+    description: "Ինտերֆեյսների նախագծման և ստեղծման առաջատար տեխնոլոգիաներ և գործիքներ",
     topics: [
       "UI/UX հիմունքներ",
       "Օգտագործողների փորձի սկզբունքներ",
