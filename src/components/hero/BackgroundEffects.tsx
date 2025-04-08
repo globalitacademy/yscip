@@ -1,10 +1,12 @@
 
 import React, { useEffect, useRef, useState } from 'react';
+import { useTheme } from '@/hooks/use-theme';
 
 const BackgroundEffects: React.FC = () => {
   // Generate code symbols for the background
   const codeSymbols = ['{', '}', '()', '=>', '</>', '[];', 'if', '==', '!=', '&&', '||', '++', '--', '*', '/', '%', '+='];
   const networkCanvasRef = useRef<HTMLCanvasElement>(null);
+  const { theme } = useTheme();
   
   // Network animation effect
   useEffect(() => {
@@ -58,10 +60,13 @@ const BackgroundEffects: React.FC = () => {
         if (node.x < 0 || node.x > canvas.width) node.vx *= -1;
         if (node.y < 0 || node.y > canvas.height) node.vy *= -1;
         
-        // Draw node
+        // Draw node with appropriate opacity based on theme
         ctx.beginPath();
         ctx.arc(node.x, node.y, node.radius, 0, Math.PI * 2);
-        ctx.fillStyle = 'rgba(var(--foreground), 0.1)';
+        // Use higher opacity in dark mode for better visibility
+        ctx.fillStyle = theme === 'dark' 
+          ? 'rgba(255, 255, 255, 0.25)' 
+          : 'rgba(var(--foreground), 0.1)';
         ctx.fill();
         
         // Connect nearby nodes
@@ -75,8 +80,11 @@ const BackgroundEffects: React.FC = () => {
             ctx.beginPath();
             ctx.moveTo(node.x, node.y);
             ctx.lineTo(node2.x, node2.y);
-            ctx.strokeStyle = `rgba(var(--foreground), ${0.1 - distance2 / 1000})`;
-            ctx.lineWidth = 0.3;
+            // Use higher opacity in dark mode for connections too
+            ctx.strokeStyle = theme === 'dark'
+              ? `rgba(255, 255, 255, ${0.2 - distance2 / 1000})`
+              : `rgba(var(--foreground), ${0.1 - distance2 / 1000})`;
+            ctx.lineWidth = theme === 'dark' ? 0.5 : 0.3;
             ctx.stroke();
           }
         }
@@ -91,7 +99,7 @@ const BackgroundEffects: React.FC = () => {
     return () => {
       window.removeEventListener('resize', updateCanvasSize);
     };
-  }, []);
+  }, [theme]);
 
   return (
     <>
