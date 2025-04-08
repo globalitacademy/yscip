@@ -9,6 +9,7 @@ import { ProjectManagementProvider } from '@/contexts/ProjectManagementContext';
 import { useAuth } from '@/contexts/AuthContext';
 import Hero from '@/components/hero';
 import Header from '@/components/Header';
+import { CollaborativePointers } from '@/components/collaborative';
 
 // Lazy load components that are not immediately visible
 const FeaturesSection = lazy(() => import('@/components/features/FeaturesSection'));
@@ -60,6 +61,14 @@ const Index = () => {
     <div className="flex flex-col min-h-screen pt-16"> {/* Added pt-16 for header height */}
       {/* Header */}
       <Header />
+      
+      {/* Collaborative Pointers - only on home page */}
+      <CollaborativePointers 
+        virtualUsersCount={4} 
+        currentUserName="Դուք"
+        currentUserColor="hsl(var(--primary))"
+        currentUserRole="Ուսանող"
+      />
       
       {/* Hero Section */}
       <div

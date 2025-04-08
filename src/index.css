@@ -1,3 +1,4 @@
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -66,6 +67,20 @@
 
   h1, h2, h3, h4, h5, h6 {
     @apply tracking-tight font-medium;
+  }
+
+  /* Typing animation for cursor */
+  .typing-cursor {
+    @apply border-r-2 border-white/70 animate-blink;
+  }
+
+  @keyframes blink {
+    0%, 100% {
+      opacity: 1;
+    }
+    50% {
+      opacity: 0;
+    }
   }
 
   /* Card hover effect */

@@ -1,9 +1,7 @@
-
 import React from 'react';
-import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
+import { BrowserRouter as Router, Route, Routes, useLocation } from 'react-router-dom';
 import { Toaster } from 'sonner';
 import AuthProvider from './contexts/AuthContext';
-import { CollaborativePointers } from './components/collaborative';
 import { ThemeProvider } from './hooks/use-theme';
 
 // Import Pages
@@ -43,6 +41,16 @@ import ProjectSubmissionPage from './pages/ProjectSubmissionPage';
 import CourseDetails from './pages/CourseDetails';
 import AdminDashboard from './pages/AdminDashboard';
 import AdminRedirectPage from './pages/AdminRedirectPage';
+
+// Custom cursor for homepage only
+const CursorManager = () => {
+  const location = useLocation();
+  const isHomepage = location.pathname === '/';
+  
+  return isHomepage ? (
+    <CollaborativePointers virtualUsersCount={4} />
+  ) : null;
+};
 
 function App() {
   return (
@@ -112,9 +120,7 @@ function App() {
             <Route path="*" element={<NotFound />} />
           </Routes>
           
-          {/* Collaborative Pointers - will appear on all pages */}
-          <CollaborativePointers virtualUsersCount={4} />
-          
+          {/* Toaster component for notifications */}
           <Toaster />
         </Router>
       </ThemeProvider>

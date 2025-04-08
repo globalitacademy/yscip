@@ -18,21 +18,33 @@ const VIRTUAL_NAMES = [
   'Հայկ', 'Նարե', 'Վահան', 'Լուսինե'
 ];
 
+// Roles in Armenian
+const VIRTUAL_ROLES = [
+  'Դասախոս', 'Ուսանող', 'Գործատու', 'Ուսանողուհի'
+];
+
 interface CollaborativePointersProps {
   virtualUsersCount?: number;
   currentUserName?: string;
   currentUserColor?: string;
+  currentUserRole?: string;
   containerRef?: React.RefObject<HTMLElement>;
+  enabled?: boolean;
 }
 
 const CollaborativePointers: React.FC<CollaborativePointersProps> = ({ 
   virtualUsersCount = 3, 
   currentUserName = 'Դուք', 
   currentUserColor = '#3b82f6', // blue
-  containerRef
+  currentUserRole = 'Ուսանող',
+  containerRef,
+  enabled = true
 }) => {
   const [users, setUsers] = useState<PointerUser[]>([]);
   const [containerRect, setContainerRect] = useState<DOMRect | null>(null);
+  
+  // Don't render if not enabled
+  if (!enabled) return null;
   
   // Initialize users including current user and virtual users
   useEffect(() => {
@@ -44,7 +56,8 @@ const CollaborativePointers: React.FC<CollaborativePointersProps> = ({
         color: currentUserColor,
         position: { x: 0, y: 0 },
         isCurrentUser: true,
-        zIndex: 100 // Highest z-index for current user
+        zIndex: 100, // Highest z-index for current user
+        role: currentUserRole
       }
     ];
     
@@ -56,12 +69,13 @@ const CollaborativePointers: React.FC<CollaborativePointersProps> = ({
         color: VIRTUAL_USER_COLORS[i % VIRTUAL_USER_COLORS.length],
         position: getRandomPosition(),
         isCurrentUser: false,
-        zIndex: 50 - i // Different z-indexes to prevent overlap
+        zIndex: 50 - i, // Different z-indexes to prevent overlap
+        role: VIRTUAL_ROLES[i % VIRTUAL_ROLES.length]
       });
     }
     
     setUsers(initialUsers);
-  }, [virtualUsersCount, currentUserName, currentUserColor]);
+  }, [virtualUsersCount, currentUserName, currentUserColor, currentUserRole]);
   
   // Update container dimensions when it changes
   useEffect(() => {

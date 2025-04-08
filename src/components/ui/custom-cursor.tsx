@@ -2,6 +2,7 @@
 import React, { useEffect, useState } from 'react';
 import { cn } from '@/lib/utils';
 import { CollaborativePointers } from '@/components/collaborative';
+import { useLocation } from 'react-router-dom';
 
 interface CustomCursorProps {
   className?: string;
@@ -17,8 +18,14 @@ export const CustomCursor = ({
   const [position, setPosition] = useState({ x: 0, y: 0 });
   const [isVisible, setIsVisible] = useState(false);
   const [isClicking, setIsClicking] = useState(false);
-
+  const location = useLocation();
+  
+  // Only show cursor on the home page
+  const isHomePage = location.pathname === '/';
+  
   useEffect(() => {
+    if (!isHomePage) return;
+    
     const updatePosition = (e: MouseEvent) => {
       setPosition({ x: e.clientX, y: e.clientY });
       if (!isVisible) setIsVisible(true);
@@ -42,7 +49,10 @@ export const CustomCursor = ({
       document.documentElement.removeEventListener('mouseleave', handleMouseLeave);
       document.documentElement.removeEventListener('mouseenter', handleMouseEnter);
     };
-  }, [isVisible]);
+  }, [isVisible, isHomePage]);
+
+  // Don't render if not on homepage
+  if (!isHomePage) return null;
 
   return (
     <>
@@ -68,12 +78,14 @@ export const CustomCursor = ({
         </div>
       </div>
       
-      {/* Virtual collaborative pointers */}
+      {/* Virtual collaborative pointers - only on homepage */}
       {showVirtualPointers && (
         <CollaborativePointers 
           virtualUsersCount={virtualUsersCount}
           currentUserName="Դուք"
           currentUserColor="hsl(var(--primary))"
+          currentUserRole="Ուսանող"
+          enabled={isHomePage}
         />
       )}
     </>
