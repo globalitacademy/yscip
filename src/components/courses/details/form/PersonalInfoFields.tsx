@@ -2,6 +2,7 @@
 import React from 'react';
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
+import { useTheme } from '@/hooks/use-theme';
 
 interface PersonalInfoFieldsProps {
   name: string;
@@ -15,23 +16,25 @@ interface PersonalInfoFieldsProps {
 const PersonalInfoFields: React.FC<PersonalInfoFieldsProps> = ({ 
   name, setName, email, setEmail, phone, setPhone 
 }) => {
+  const { theme } = useTheme();
+  
   return (
     <>
       <div className="grid grid-cols-4 items-center gap-4">
-        <Label htmlFor="name" className="text-right">
+        <Label htmlFor="name" className={`text-right ${theme === 'dark' ? 'text-gray-300' : ''}`}>
           Անուն
         </Label>
         <Input
           id="name"
           value={name}
           onChange={(e) => setName(e.target.value)}
-          className="col-span-3"
+          className={`col-span-3 ${theme === 'dark' ? 'bg-gray-800 border-gray-700' : ''}`}
           required
         />
       </div>
       
       <div className="grid grid-cols-4 items-center gap-4">
-        <Label htmlFor="email" className="text-right">
+        <Label htmlFor="email" className={`text-right ${theme === 'dark' ? 'text-gray-300' : ''}`}>
           Էլ․ հասցե
         </Label>
         <Input
@@ -39,20 +42,20 @@ const PersonalInfoFields: React.FC<PersonalInfoFieldsProps> = ({
           type="email"
           value={email}
           onChange={(e) => setEmail(e.target.value)}
-          className="col-span-3"
+          className={`col-span-3 ${theme === 'dark' ? 'bg-gray-800 border-gray-700' : ''}`}
           required
         />
       </div>
       
       <div className="grid grid-cols-4 items-center gap-4">
-        <Label htmlFor="phone" className="text-right">
+        <Label htmlFor="phone" className={`text-right ${theme === 'dark' ? 'text-gray-300' : ''}`}>
           Հեռախոս
         </Label>
         <Input
           id="phone"
           value={phone}
           onChange={(e) => setPhone(e.target.value)}
-          className="col-span-3"
+          className={`col-span-3 ${theme === 'dark' ? 'bg-gray-800 border-gray-700' : ''}`}
           required
         />
       </div>

@@ -4,15 +4,17 @@ import { useParams, useNavigate } from 'react-router-dom';
 import CourseDetail from '@/components/courses/CourseDetail';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
+import { useTheme } from '@/hooks/use-theme';
 
 const CourseDetails: React.FC = () => {
   const { slug, id } = useParams<{ slug?: string; id?: string }>();
   const navigate = useNavigate();
+  const { theme } = useTheme();
   
   console.log("CourseDetails էջ: Ստացված պարամետրեր:", { slug, id });
   
   return (
-    <div className="flex min-h-screen flex-col">
+    <div className={`flex min-h-screen flex-col ${theme === 'dark' ? 'bg-background' : ''}`}>
       <Header />
       <main className="flex-1">
         <CourseDetail />

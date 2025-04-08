@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { ProfessionalCourse, CourseInstructor } from '../types/ProfessionalCourse';
 import { Button } from '@/components/ui/button';
@@ -7,6 +8,7 @@ import CourseApplicationForm from './CourseApplicationForm';
 import CourseEdit from './CourseEdit';
 import { supabase } from '@/integrations/supabase/client';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
+import { useTheme } from '@/hooks/use-theme';
 
 interface CourseBannerProps {
   course: ProfessionalCourse;
@@ -25,6 +27,7 @@ const CourseBanner: React.FC<CourseBannerProps> = ({
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [instructors, setInstructors] = useState<CourseInstructor[]>([]);
   const [loading, setLoading] = useState(false);
+  const { theme } = useTheme();
 
   // Fetch instructors when component mounts or when course changes
   useEffect(() => {
@@ -83,30 +86,34 @@ const CourseBanner: React.FC<CourseBannerProps> = ({
 
   return (
     <div className="relative mb-8 overflow-hidden">
-      {/* Light blue background */}
-      <div className="absolute inset-0 bg-sky-50">
+      {/* Background */}
+      <div className={`absolute inset-0 ${theme === 'dark' ? 'bg-gray-900' : 'bg-sky-50'}`}>
         {course.imageUrl && (
           <>
             <div className="absolute top-0 right-0 w-1/2 h-full overflow-hidden">
               <img 
                 src={course.imageUrl} 
                 alt={course.title} 
-                className="absolute inset-0 w-full h-full object-cover opacity-30"
+                className={`absolute inset-0 w-full h-full object-cover ${theme === 'dark' ? 'opacity-20' : 'opacity-30'}`}
               />
-              <div className="absolute inset-0 bg-gradient-to-l from-blue-500/30 to-sky-50/95"></div>
+              <div className={`absolute inset-0 ${theme === 'dark' 
+                ? 'bg-gradient-to-l from-blue-900/40 to-gray-900/95' 
+                : 'bg-gradient-to-l from-blue-500/30 to-sky-50/95'}`}></div>
             </div>
           </>
         )}
       </div>
       
       <div className="container mx-auto px-6 py-10 relative z-10">
-        <Link to="/courses" className="inline-flex items-center text-sm font-medium text-gray-700 hover:text-blue-600 transition-colors mb-5">
+        <Link to="/courses" className={`inline-flex items-center text-sm font-medium ${theme === 'dark' 
+          ? 'text-gray-300 hover:text-blue-400' 
+          : 'text-gray-700 hover:text-blue-600'} transition-colors mb-5`}>
           <ArrowLeft size={16} className="mr-2" /> Վերադառնալ դասընթացների ցանկին
         </Link>
         
         <div className="space-y-5">
           {/* Course title */}
-          <h1 className="text-4xl md:text-5xl font-bold text-gray-900">
+          <h1 className={`text-4xl md:text-5xl font-bold ${theme === 'dark' ? 'text-gray-100' : 'text-gray-900'}`}>
             {course.title}
           </h1>
           
@@ -114,7 +121,7 @@ const CourseBanner: React.FC<CourseBannerProps> = ({
           <div className="flex flex-wrap gap-5 items-center">
             {/* Show author based on author_type */}
             {course.author_type === 'institution' ? (
-              <div className="flex items-center gap-2 text-gray-600">
+              <div className={`flex items-center gap-2 ${theme === 'dark' ? 'text-gray-300' : 'text-gray-600'}`}>
                 <Building size={18} />
                 <span className="text-sm md:text-base">Հաստատություն՝ {course.institution}</span>
                 {course.organizationLogo && (
@@ -126,27 +133,30 @@ const CourseBanner: React.FC<CourseBannerProps> = ({
                 )}
               </div>
             ) : (
-              <div className="flex items-center gap-2 text-gray-600">
+              <div className={`flex items-center gap-2 ${theme === 'dark' ? 'text-gray-300' : 'text-gray-600'}`}>
                 <User size={18} />
                 <span className="text-sm md:text-base">Հեղինակ՝ {course.createdBy || 'Անանուն'}</span>
               </div>
             )}
             
             {/* Show course duration */}
-            <div className="flex items-center gap-2 text-gray-600">
+            <div className={`flex items-center gap-2 ${theme === 'dark' ? 'text-gray-300' : 'text-gray-600'}`}>
               <Clock size={18} />
               <span className="text-sm md:text-base">Տևողություն՝ {course.duration}</span>
             </div>
             
             {/* Show instructors if available */}
             {instructors.length > 0 && (
-              <div className="flex items-start gap-2 text-gray-600">
+              <div className={`flex items-start gap-2 ${theme === 'dark' ? 'text-gray-300' : 'text-gray-600'}`}>
                 <Users size={18} className="mt-1" />
                 <div>
                   <span className="text-sm md:text-base">Դասավանդողներ՝</span>
                   <div className="flex flex-wrap items-center mt-1 gap-2">
                     {instructors.map(instructor => (
-                      <div key={instructor.id} className="flex items-center gap-2 bg-white/80 rounded-full px-3 py-1">
+                      <div key={instructor.id} className={`flex items-center gap-2 ${theme === 'dark' 
+                        ? 'bg-gray-800/80' 
+                        : 'bg-white/80'} rounded-full px-3 py-1`}
+                      >
                         <Avatar className="h-6 w-6">
                           <AvatarImage src={instructor.avatar_url || ''} alt={instructor.name} />
                           <AvatarFallback>{instructor.name.substring(0, 2).toUpperCase()}</AvatarFallback>
@@ -161,7 +171,7 @@ const CourseBanner: React.FC<CourseBannerProps> = ({
             
             {/* Fallback to old instructor field if no instructors found and field exists */}
             {instructors.length === 0 && course.instructor && (
-              <div className="flex items-center gap-2 text-gray-600">
+              <div className={`flex items-center gap-2 ${theme === 'dark' ? 'text-gray-300' : 'text-gray-600'}`}>
                 <User size={18} />
                 <span className="text-sm md:text-base">Դասախոս՝ {course.instructor}</span>
               </div>
@@ -173,7 +183,9 @@ const CourseBanner: React.FC<CourseBannerProps> = ({
             <Button
               onClick={openApplicationForm}
               size="lg"
-              className="bg-blue-600 hover:bg-blue-700 text-white"
+              className={`${theme === 'dark' 
+                ? 'bg-blue-500 hover:bg-blue-600' 
+                : 'bg-blue-600 hover:bg-blue-700'} text-white`}
             >
               {course.buttonText || "Դիմել դասընթացին"}
             </Button>
@@ -182,7 +194,9 @@ const CourseBanner: React.FC<CourseBannerProps> = ({
               <Button 
                 variant="outline" 
                 size="lg" 
-                className="border-gray-300 hover:bg-gray-50 flex items-center gap-2"
+                className={`${theme === 'dark' 
+                  ? 'border-gray-600 hover:bg-gray-800' 
+                  : 'border-gray-300 hover:bg-gray-50'} flex items-center gap-2`}
                 onClick={handleEditClick}
               >
                 <Pencil size={16} />

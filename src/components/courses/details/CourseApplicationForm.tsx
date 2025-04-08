@@ -7,6 +7,7 @@ import PersonalInfoFields from './form/PersonalInfoFields';
 import CoursePreferenceFields from './form/CoursePreferenceFields';
 import ApplicationFormFooter from './form/ApplicationFormFooter';
 import { useApplicationForm } from './hooks/useApplicationForm';
+import { useTheme } from '@/hooks/use-theme';
 
 interface CourseApplicationFormProps {
   course: ProfessionalCourse;
@@ -33,9 +34,11 @@ const CourseApplicationForm: React.FC<CourseApplicationFormProps> = ({
     handleSubmit
   } = useApplicationForm(course, onClose);
 
+  const { theme } = useTheme();
+
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-[500px]">
+      <DialogContent className={`sm:max-w-[500px] ${theme === 'dark' ? 'bg-gray-900 border-gray-700 text-gray-100' : ''}`}>
         <ApplicationFormHeader course={course} />
         
         <form onSubmit={handleSubmit} className="space-y-4">

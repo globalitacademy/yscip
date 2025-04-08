@@ -6,6 +6,7 @@ import { getCourseById, getCourseBySlug } from './utils/courseUtils';
 import { toast } from 'sonner';
 import { useAuth } from '@/contexts/AuthContext';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { useTheme } from '@/hooks/use-theme';
 
 // Import refactored components
 import CourseDetailSkeleton from './details/CourseDetailSkeleton';
@@ -20,6 +21,7 @@ const CourseDetail: React.FC = () => {
   const { id, slug } = useParams<{ id?: string; slug?: string }>();
   const navigate = useNavigate();
   const { user } = useAuth();
+  const { theme } = useTheme();
   const [course, setCourse] = useState<ProfessionalCourse | null>(null);
   const [loading, setLoading] = useState(true);
   const [showApplicationForm, setShowApplicationForm] = useState(false);
@@ -103,10 +105,14 @@ const CourseDetail: React.FC = () => {
   const canEdit = user && (user.role === 'admin' || course.createdBy === user.name);
 
   return (
-    <div className="container mx-auto px-4 py-8 max-w-6xl">
+    <div className={`container mx-auto px-4 py-8 max-w-6xl ${theme === 'dark' ? 'text-gray-200' : ''}`}>
       {/* Show unpublished warning for creators */}
       {!course.is_public && canViewUnpublished && (
-        <div className="bg-amber-50 border border-amber-200 text-amber-800 px-4 py-3 rounded-md mb-6">
+        <div className={`${theme === 'dark' 
+          ? 'bg-amber-900/20 border-amber-800/40 text-amber-200' 
+          : 'bg-amber-50 border-amber-200 text-amber-800'} 
+          px-4 py-3 rounded-md mb-6 border`}
+        >
           <p className="font-medium">Այս դասընթացը դեռ չի հրապարակված:</p>
           <p className="text-sm">Միայն դուք և ադմինիստրատորները կարող են տեսնել այն:</p>
         </div>
@@ -124,22 +130,34 @@ const CourseDetail: React.FC = () => {
         {/* Main Content */}
         <div className="lg:col-span-2">
           <Tabs defaultValue="description" className="w-full">
-            <TabsList className="mb-6 bg-gray-100 p-1 rounded-lg w-full">
+            <TabsList className={`mb-6 ${theme === 'dark' 
+              ? 'bg-gray-800 p-1 rounded-lg w-full' 
+              : 'bg-gray-100 p-1 rounded-lg w-full'}`}
+            >
               <TabsTrigger 
                 value="description" 
-                className="flex-1 data-[state=active]:bg-white data-[state=active]:text-indigo-700 data-[state=active]:shadow-sm rounded-md"
+                className={`flex-1 ${theme === 'dark' 
+                  ? 'data-[state=active]:bg-gray-700 data-[state=active]:text-indigo-400' 
+                  : 'data-[state=active]:bg-white data-[state=active]:text-indigo-700'} 
+                  data-[state=active]:shadow-sm rounded-md`}
               >
                 Նկարագրություն
               </TabsTrigger>
               <TabsTrigger 
                 value="curriculum" 
-                className="flex-1 data-[state=active]:bg-white data-[state=active]:text-indigo-700 data-[state=active]:shadow-sm rounded-md"
+                className={`flex-1 ${theme === 'dark' 
+                  ? 'data-[state=active]:bg-gray-700 data-[state=active]:text-indigo-400' 
+                  : 'data-[state=active]:bg-white data-[state=active]:text-indigo-700'} 
+                  data-[state=active]:shadow-sm rounded-md`}
               >
                 Դասընթացի պլան
               </TabsTrigger>
               <TabsTrigger 
                 value="outcomes" 
-                className="flex-1 data-[state=active]:bg-white data-[state=active]:text-indigo-700 data-[state=active]:shadow-sm rounded-md"
+                className={`flex-1 ${theme === 'dark' 
+                  ? 'data-[state=active]:bg-gray-700 data-[state=active]:text-indigo-400' 
+                  : 'data-[state=active]:bg-white data-[state=active]:text-indigo-700'} 
+                  data-[state=active]:shadow-sm rounded-md`}
               >
                 Արդյունքներ
               </TabsTrigger>
