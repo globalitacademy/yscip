@@ -1,8 +1,6 @@
-
 import React from 'react';
 import { Building } from 'lucide-react';
 import { cn } from '@/lib/utils';
-
 interface ProjectBadgesProps {
   category: string;
   complexity?: string;
@@ -10,7 +8,6 @@ interface ProjectBadgesProps {
   adminView?: boolean;
   showComplexity?: boolean;
 }
-
 const ProjectBadges: React.FC<ProjectBadgesProps> = ({
   category,
   complexity,
@@ -31,29 +28,21 @@ const ProjectBadges: React.FC<ProjectBadgesProps> = ({
         return 'bg-blue-500/10 text-blue-600 border-blue-200';
     }
   };
-
-  return (
-    <>
-      <div className="absolute top-4 left-4 flex items-center text-xs bg-gray-100 px-2 py-1 rounded-full z-10">
+  return <>
+      <div className="absolute top-4 left-4 flex items-center text-xs px-2 py-1 rounded-full z-10 bg-gray-800">
         <Building size={12} className="mr-1" />
         <span>{category}</span>
       </div>
 
-      {showComplexity && complexity && (
-        <div className={`absolute top-4 right-4 z-10 ${adminView ? 'block' : ''}`}>
+      {showComplexity && complexity && <div className={`absolute top-4 right-4 z-10 ${adminView ? 'block' : ''}`}>
           <span className={cn("text-xs border px-2 py-1 rounded-full inline-block", getComplexityColor(complexity))}>
             {complexity}
           </span>
-        </div>
-      )}
+        </div>}
 
-      {!isPublic && (
-        <div className="absolute top-4 left-1/2 transform -translate-x-1/2 flex items-center text-xs bg-amber-100 text-amber-800 px-2 py-1 rounded-full z-10">
+      {!isPublic && <div className="absolute top-4 left-1/2 transform -translate-x-1/2 flex items-center text-xs bg-amber-100 text-amber-800 px-2 py-1 rounded-full z-10">
           <span>Չհրապարակված</span>
-        </div>
-      )}
-    </>
-  );
+        </div>}
+    </>;
 };
-
 export default ProjectBadges;
