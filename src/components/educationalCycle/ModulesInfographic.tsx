@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { FadeIn } from '@/components/LocalTransitions';
 import { useAuth } from '@/contexts/AuthContext';
@@ -140,7 +139,7 @@ export const ModulesInfographic: React.FC = () => {
                     asChild
                     size="sm" 
                     variant="outline"
-                    className={`${module.textColor} border-current hover:bg-opacity-20 hover:bg-current hover:text-white dark:hover:bg-opacity-20 dark:hover:bg-current dark:hover:text-white`}
+                    className={`${module.textColor} border-current hover:bg-opacity-90 hover:bg-current hover:text-white dark:hover:bg-opacity-90 dark:hover:bg-current dark:hover:text-white`}
                   >
                     <Link to={`/module/${module.id}`}>
                       Սկսել ուսուցումը
