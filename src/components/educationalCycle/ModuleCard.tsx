@@ -84,7 +84,7 @@ const ModuleCard: React.FC<ModuleCardProps> = ({ module, delay, showProgress = f
           <div className="flip-card-front absolute w-full h-full">
             <Card className={`card-hover border ${styles.accent} transition-all h-full shadow-sm hover:shadow-md dark:shadow-gray-900/30`}>
               <CardContent className="p-4 sm:p-5 flex flex-col h-full">
-                <div className="flex items-start gap-3 mb-3">
+                <div className="flex items-start gap-3 mb-4">
                   {Icon && (
                     <div className={`mt-1 ${styles.icon}`} aria-hidden="true">
                       <Icon size={20} />
@@ -94,13 +94,13 @@ const ModuleCard: React.FC<ModuleCardProps> = ({ module, delay, showProgress = f
                 </div>
                 
                 {description && (
-                  <p className="text-sm text-muted-foreground mb-4 line-clamp-3">{description}</p>
+                  <p className="text-sm text-muted-foreground mb-6 line-clamp-3">{description}</p>
                 )}
                 
-                <div className="mt-auto space-y-4">
+                <div className="mt-auto space-y-5">
                   {showProgress && (
                     <div>
-                      <div className="flex justify-between text-xs text-muted-foreground mb-1">
+                      <div className="flex justify-between text-xs text-muted-foreground mb-2">
                         <span>{getStatusText()}</span>
                         <span>{progress}%</span>
                       </div>
@@ -112,7 +112,7 @@ const ModuleCard: React.FC<ModuleCardProps> = ({ module, delay, showProgress = f
                     </div>
                   )}
                   
-                  <div className="flex justify-between items-center">
+                  <div className="flex justify-between items-center pt-2">
                     <Button
                       variant="outline"
                       size="sm"
@@ -146,7 +146,7 @@ const ModuleCard: React.FC<ModuleCardProps> = ({ module, delay, showProgress = f
           <div className="flip-card-back absolute w-full h-full">
             <Card className={`border ${styles.accent} h-full overflow-hidden shadow-sm dark:shadow-gray-900/30`}>
               <CardContent className="p-4 sm:p-5 flex flex-col h-full">
-                <div className="flex items-center justify-between mb-3">
+                <div className="flex items-center justify-between mb-4">
                   <h3 className="font-medium text-foreground line-clamp-1">{title} - Թեմաներ</h3>
                   <button 
                     onClick={handleFlip}
@@ -158,9 +158,9 @@ const ModuleCard: React.FC<ModuleCardProps> = ({ module, delay, showProgress = f
                   </button>
                 </div>
 
-                <div className="overflow-y-auto flex-grow pr-2 -mr-2">
+                <div className="overflow-y-auto flex-grow pr-2 -mr-2 mb-4">
                   {visibleTopics && visibleTopics.length > 0 ? (
-                    <ul className="text-sm space-y-1.5" aria-label="Module topics">
+                    <ul className="text-sm space-y-2.5" aria-label="Module topics">
                       {visibleTopics.map((topic, index) => (
                         <li key={index} className="text-muted-foreground">
                           • {topic}
@@ -177,7 +177,7 @@ const ModuleCard: React.FC<ModuleCardProps> = ({ module, delay, showProgress = f
                   )}
                 </div>
                 
-                <div className="mt-4 pt-2 border-t dark:border-gray-700">
+                <div className="mt-auto pt-3 border-t dark:border-gray-700">
                   <Button
                     variant="default"
                     size="sm"
