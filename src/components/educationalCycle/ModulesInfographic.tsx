@@ -2,7 +2,9 @@
 import React from 'react';
 import { FadeIn } from '@/components/LocalTransitions';
 import { useAuth } from '@/contexts/AuthContext';
-import { Code, FileText, Layers, Globe } from 'lucide-react';
+import { Code, FileText, Layers, Globe, Brain, Database, Lock, Palette } from 'lucide-react';
+import { Link } from 'react-router-dom';
+import { Button } from '@/components/ui/button';
 
 export const ModulesInfographic: React.FC = () => {
   const { isAuthenticated } = useAuth();
@@ -15,6 +17,7 @@ export const ModulesInfographic: React.FC = () => {
 
   const modules = [
     {
+      id: 1,
       number: "1.",
       title: "Ալգորիթմների տարրերի նկարագում",
       description: "Սեղմեք թեմաները տեսնելու համար",
@@ -24,6 +27,7 @@ export const ModulesInfographic: React.FC = () => {
       icon: Code
     },
     {
+      id: 2,
       number: "2.",
       title: "Ծրագրավորման հիմունքներ",
       description: "Սեղմեք թեմաները տեսնելու համար",
@@ -33,6 +37,7 @@ export const ModulesInfographic: React.FC = () => {
       icon: FileText
     },
     {
+      id: 3,
       number: "3.",
       title: "Օբյեկտ կողմնորոշված ծրագրավորում",
       description: "Սեղմեք թեմաները տեսնելու համար",
@@ -42,6 +47,7 @@ export const ModulesInfographic: React.FC = () => {
       icon: Layers
     },
     {
+      id: 4,
       number: "4.",
       title: "Համակարգչային ցանցեր",
       description: "Սեղմեք թեմաները տեսնելու համար",
@@ -49,6 +55,46 @@ export const ModulesInfographic: React.FC = () => {
       borderColor: "border-orange-200 dark:border-orange-700",
       textColor: "text-orange-600 dark:text-orange-300",
       icon: Globe
+    },
+    {
+      id: 5,
+      number: "5.",
+      title: "Արհեստական բանականություն",
+      description: "Սեղմեք թեմաները տեսնելու համար",
+      color: "bg-indigo-50 dark:bg-indigo-900/20",
+      borderColor: "border-indigo-200 dark:border-indigo-700",
+      textColor: "text-indigo-600 dark:text-indigo-300",
+      icon: Brain
+    },
+    {
+      id: 6,
+      number: "6.",
+      title: "Տվյալների բազաներ",
+      description: "Սեղմեք թեմաները տեսնելու համար",
+      color: "bg-cyan-50 dark:bg-cyan-900/20",
+      borderColor: "border-cyan-200 dark:border-cyan-700",
+      textColor: "text-cyan-600 dark:text-cyan-300",
+      icon: Database
+    },
+    {
+      id: 7,
+      number: "7.",
+      title: "Կիբեռանվտանգություն",
+      description: "Սեղմեք թեմաները տեսնելու համար",
+      color: "bg-red-50 dark:bg-red-900/20",
+      borderColor: "border-red-200 dark:border-red-700",
+      textColor: "text-red-600 dark:text-red-300",
+      icon: Lock
+    },
+    {
+      id: 8,
+      number: "8.",
+      title: "Օգտագործողի ինտերֆեյսի դիզայն",
+      description: "Սեղմեք թեմաները տեսնելու համար",
+      color: "bg-pink-50 dark:bg-pink-900/20",
+      borderColor: "border-pink-200 dark:border-pink-700",
+      textColor: "text-pink-600 dark:text-pink-300",
+      icon: Palette
     }
   ];
 
@@ -85,9 +131,22 @@ export const ModulesInfographic: React.FC = () => {
                   {module.title}
                 </h4>
                 
-                <p className="text-sm text-muted-foreground dark:text-gray-400">
+                <p className="text-sm text-muted-foreground dark:text-gray-400 mb-6">
                   {module.description}
                 </p>
+                
+                <div className="mt-auto">
+                  <Button 
+                    asChild
+                    size="sm" 
+                    variant="outline"
+                    className={`${module.textColor} border-current hover:bg-opacity-10 hover:bg-current dark:hover:bg-opacity-10 dark:hover:bg-current`}
+                  >
+                    <Link to={`/module/${module.id}`}>
+                      Սկսել ուսուցումը
+                    </Link>
+                  </Button>
+                </div>
               </div>
             </FadeIn>
           ))}
