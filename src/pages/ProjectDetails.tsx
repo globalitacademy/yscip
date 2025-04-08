@@ -125,11 +125,7 @@ const ProjectDetails: React.FC = () => {
   
   return (
     <ProjectManagementProvider>
-      <ProjectProvider 
-        projectId={projectId} 
-        initialProject={project}
-        canEdit={canEditProject}
-      >
+      <ProjectProvider projectId={projectId} initialProject={project} canEdit={canEditProject}>
         {pendingApprovalAlert}
         <ProjectDetailsContent />
       </ProjectProvider>

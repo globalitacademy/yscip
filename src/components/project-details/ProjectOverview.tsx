@@ -1,18 +1,13 @@
 
-import React, { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
+import React from 'react';
+import { ExternalLink, Info, Star, Target, Book } from 'lucide-react';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { ProjectTheme } from '@/data/projectThemes';
-import { Separator } from '@/components/ui/separator';
-import { CheckCircle, ArrowRight, BookOpen, Save, X, Loader2 } from 'lucide-react';
-import { SlideUp } from '@/components/LocalTransitions';
-import ProjectMembers from '@/components/projects/ProjectMembers';
-import { getProjectImage } from '@/lib/getProjectImage';
-import EditableField from '@/components/common/EditableField';
-import EditableList from '@/components/common/EditableList';
-import { useProject } from '@/contexts/ProjectContext';
 import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
-import { toast } from 'sonner';
+import { AspectRatio } from '@/components/ui/aspect-ratio';
+import { getProjectImage } from '@/lib/getProjectImage';
+import { useProject } from '@/contexts/ProjectContext';
+import EditableField from '@/components/common/EditableField';
 
 interface ProjectOverviewProps {
   project: ProjectTheme;
@@ -30,225 +25,315 @@ const ProjectOverview: React.FC<ProjectOverviewProps> = ({
   project,
   projectMembers,
   organization,
-  similarProjects,
+  similarProjects
 }) => {
-  const { canEdit, isEditing, setIsEditing, updateProject } = useProject();
-  const [editedProject, setEditedProject] = useState<Partial<ProjectTheme>>({
-    detailedDescription: project.detailedDescription || project.description,
-    steps: project.steps || [],
-    learningOutcomes: project.learningOutcomes || [],
-    prerequisites: project.prerequisites || []
-  });
-  const [isSaving, setIsSaving] = useState(false);
+  const { isEditing, updateProject } = useProject();
 
-  // Update local state when project changes
-  useEffect(() => {
-    setEditedProject({
-      detailedDescription: project.detailedDescription || project.description,
-      steps: project.steps || [],
-      learningOutcomes: project.learningOutcomes || [],
-      prerequisites: project.prerequisites || []
-    });
-  }, [project]);
-
-  const handleSaveChanges = async () => {
-    setIsSaving(true);
-    try {
-      const success = await updateProject(editedProject);
-      if (success) {
-        setIsEditing(false);
-      }
-    } finally {
-      setIsSaving(false);
-    }
+  const handleUpdateField = (field: string, value: string | string[]) => {
+    updateProject({ [field]: value });
   };
 
-  const handleCancelEdit = () => {
-    setEditedProject({
-      detailedDescription: project.detailedDescription || project.description,
-      steps: project.steps || [],
-      learningOutcomes: project.learningOutcomes || [],
-      prerequisites: project.prerequisites || []
-    });
-    setIsEditing(false);
+  const handleUpdateArrayItem = (field: string, value: string, index: number) => {
+    const currentArray = project[field as keyof ProjectTheme] as string[] || [];
+    const updatedArray = [...currentArray];
+    updatedArray[index] = value;
+    updateProject({ [field]: updatedArray });
+  };
+
+  const handleAddArrayItem = (field: string) => {
+    const currentArray = project[field as keyof ProjectTheme] as string[] || [];
+    const updatedArray = [...currentArray, 'Նոր կետ'];
+    updateProject({ [field]: updatedArray });
+  };
+
+  const handleRemoveArrayItem = (field: string, index: number) => {
+    const currentArray = project[field as keyof ProjectTheme] as string[] || [];
+    const updatedArray = [...currentArray];
+    updatedArray.splice(index, 1);
+    updateProject({ [field]: updatedArray });
   };
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-      <div className="md:col-span-2">
-        <SlideUp className="space-y-8">
-          {isEditing && canEdit && (
-            <div className="flex justify-end gap-2 mb-4">
-              <Button 
-                variant="outline" 
-                className="border-green-200 bg-green-100 text-green-700 hover:bg-green-200"
-                onClick={handleSaveChanges}
-                disabled={isSaving}
-              >
-                {isSaving ? (
-                  <><Loader2 className="h-4 w-4 mr-2 animate-spin" /> Պահպանվում է...</>
-                ) : (
-                  <><Save className="h-4 w-4 mr-2" /> Պահպանել</>
-                )}
-              </Button>
-              <Button 
-                variant="outline" 
-                className="border-red-200 bg-red-100 text-red-700 hover:bg-red-200"
-                onClick={handleCancelEdit}
-                disabled={isSaving}
-              >
-                <X className="h-4 w-4 mr-2" />
-                Չեղարկել
-              </Button>
-            </div>
-          )}
-
-          <section>
-            <h2 className="text-2xl font-bold mb-4">Նախագծի նկարագրություն</h2>
-            <div className="prose prose-slate max-w-none">
-              {isEditing ? (
-                <EditableField 
-                  value={editedProject.detailedDescription || ''}
-                  onChange={(value) => setEditedProject({...editedProject, detailedDescription: value})}
-                  multiline={true}
-                  placeholder="Մուտքագրեք նախագծի մանրամասն նկարագրությունը"
-                  showEditButton={false}
-                />
-              ) : (
-                <p>{project.detailedDescription || project.description}</p>
-              )}
-            </div>
-          </section>
-          
-          <section>
-            <h2 className="text-2xl font-bold mb-4">Իրականացման քայլեր</h2>
-            {isEditing ? (
-              <EditableList 
-                items={editedProject.steps || []}
-                onChange={(steps) => setEditedProject({...editedProject, steps})}
-                placeholder="Մուտքագրեք նոր քայլը..."
-                listType="steps"
-                disabled={!isEditing}
-              />
-            ) : (
-              <div className="space-y-3 relative">
-                <div className="absolute left-4 top-0 bottom-0 w-px bg-border"></div>
-                {project.steps?.map((step, index) => (
-                  <div key={index} className="flex items-start gap-4 pl-4 relative">
-                    <div className="absolute left-0 w-8 h-8 rounded-full bg-background border-2 border-primary flex items-center justify-center text-primary z-10">
-                      {index + 1}
-                    </div>
-                    <div className="bg-accent/40 rounded-lg p-4 w-full">
-                      <p>{step}</p>
-                    </div>
-                  </div>
-                ))}
-                {(!project.steps || project.steps.length === 0) && (
-                  <p className="text-muted-foreground italic pl-4">Քայլեր չեն նշված</p>
-                )}
-              </div>
-            )}
-          </section>
-          
-          <section>
-            <h2 className="text-2xl font-bold mb-4">Ինչ կսովորեք</h2>
-            {isEditing ? (
-              <EditableList 
-                items={editedProject.learningOutcomes || []}
-                onChange={(learningOutcomes) => setEditedProject({...editedProject, learningOutcomes})}
-                placeholder="Մուտքագրեք նոր ուսումնական արդյունք..."
-                listType="bulleted"
-                disabled={!isEditing}
-              />
-            ) : (
-              project.learningOutcomes && project.learningOutcomes.length > 0 ? (
-                <ul className="space-y-2">
-                  {project.learningOutcomes.map((outcome, index) => (
-                    <li key={index} className="flex items-start gap-2">
-                      <CheckCircle size={20} className="text-primary flex-shrink-0 mt-0.5" />
-                      <span>{outcome}</span>
-                    </li>
-                  ))}
-                </ul>
-              ) : (
-                <p className="text-muted-foreground italic">Ուսումնական արդյունքներ չեն նշված</p>
-              )
-            )}
-          </section>
-        </SlideUp>
-      </div>
-      
-      <div>
-        <SlideUp className="space-y-8">
-          <ProjectMembers members={projectMembers} organization={organization} />
-          
-          <div className="border border-border rounded-lg p-6">
-            <h3 className="text-lg font-medium mb-3 flex items-center">
-              <BookOpen size={18} className="mr-2 text-primary" />
-              Նախապայմաններ
-            </h3>
-            <Separator className="mb-4" />
-            
-            {isEditing ? (
-              <EditableList 
-                items={editedProject.prerequisites || []}
-                onChange={(prerequisites) => setEditedProject({...editedProject, prerequisites})}
-                placeholder="Մուտքագրեք նոր նախապայման..."
-                listType="bulleted"
-                disabled={!isEditing}
-              />
-            ) : (
-              project.prerequisites && project.prerequisites.length > 0 ? (
-                <ul className="space-y-2">
-                  {project.prerequisites.map((prereq, index) => (
-                    <li key={index} className="flex items-start gap-2 text-sm">
-                      <CheckCircle size={16} className="text-primary flex-shrink-0 mt-0.5" />
-                      <span>{prereq}</span>
-                    </li>
-                  ))}
-                </ul>
-              ) : (
-                <p className="text-muted-foreground italic text-sm">Նախապայմաններ չեն նշված</p>
-              )
-            )}
+    <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+      <div className="lg:col-span-2 space-y-8">
+        <section>
+          <h2 className="text-2xl font-bold mb-4">Նախագծի մանրամասն նկարագրություն</h2>
+          <div className="prose prose-slate max-w-none dark:prose-invert">
+            <EditableField
+              value={project.detailedDescription || project.description}
+              onChange={(value) => handleUpdateField('detailedDescription', value)}
+              isEditing={isEditing}
+              multiline
+              placeholder="Մուտքագրեք նախագծի մանրամասն նկարագրությունը..."
+              className="min-h-[200px]"
+            />
           </div>
-          
-          {similarProjects.length > 0 && (
-            <div className="border border-border rounded-lg p-6">
-              <h3 className="text-lg font-medium mb-3">Նմանատիպ պրոեկտներ</h3>
-              <Separator className="mb-4" />
-              <div className="space-y-4">
-                {similarProjects.map(relatedProject => (
-                  <Link 
-                    key={relatedProject.id} 
-                    to={`/project/${relatedProject.id}`}
-                    className="flex items-start gap-3 group"
-                  >
-                    <div className="w-16 h-16 rounded overflow-hidden flex-shrink-0">
-                      <img 
-                        src={getProjectImage(relatedProject)} 
-                        alt={relatedProject.title}
-                        className="w-full h-full object-cover"
+        </section>
+
+        <section>
+          <h2 className="text-2xl font-bold mb-4 flex items-center">
+            <Target className="mr-2 h-5 w-5 text-primary" />
+            Նախապահանջներ
+          </h2>
+          <ul className="space-y-2 list-disc pl-5">
+            {isEditing ? (
+              <>
+                {project.prerequisites.map((prerequisite, index) => (
+                  <li key={index} className="flex items-start gap-2">
+                    <div className="flex-1">
+                      <EditableField
+                        value={prerequisite}
+                        onChange={(value) => handleUpdateArrayItem('prerequisites', value, index)}
+                        isEditing={true}
+                        placeholder="Նախապահանջ"
                       />
                     </div>
-                    <div>
-                      <h4 className="font-medium group-hover:text-primary transition-colors">
-                        {relatedProject.title}
-                      </h4>
-                      <Badge variant="outline" className="mt-1 text-xs">
-                        {relatedProject.category}
-                      </Badge>
-                    </div>
-                  </Link>
+                    <Button 
+                      type="button" 
+                      variant="ghost" 
+                      size="icon"
+                      className="h-6 w-6 rounded-full bg-red-100 hover:bg-red-200 text-red-700 flex-shrink-0" 
+                      onClick={() => handleRemoveArrayItem('prerequisites', index)}
+                    >
+                      <span className="sr-only">Remove</span>
+                      <span aria-hidden="true">×</span>
+                    </Button>
+                  </li>
                 ))}
-                
-                <Link to="/" className="text-sm text-primary font-medium inline-flex items-center gap-1 hover:gap-2 transition-all mt-2">
-                  Տեսնել բոլոր պրոեկտները <ArrowRight size={14} />
-                </Link>
+                <li>
+                  <Button 
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={() => handleAddArrayItem('prerequisites')}
+                    className="mt-2"
+                  >
+                    + Ավելացնել նախապահանջ
+                  </Button>
+                </li>
+              </>
+            ) : (
+              project.prerequisites.map((prerequisite, index) => (
+                <li key={index}>{prerequisite}</li>
+              ))
+            )}
+            {!isEditing && project.prerequisites.length === 0 && (
+              <li className="text-muted-foreground italic">Նախապահանջներ չկան</li>
+            )}
+          </ul>
+        </section>
+
+        <section>
+          <h2 className="text-2xl font-bold mb-4 flex items-center">
+            <Star className="mr-2 h-5 w-5 text-primary" />
+            Ուսումնական արդյունքներ
+          </h2>
+          <ul className="space-y-2 list-disc pl-5">
+            {isEditing ? (
+              <>
+                {project.learningOutcomes.map((outcome, index) => (
+                  <li key={index} className="flex items-start gap-2">
+                    <div className="flex-1">
+                      <EditableField
+                        value={outcome}
+                        onChange={(value) => handleUpdateArrayItem('learningOutcomes', value, index)}
+                        isEditing={true}
+                        placeholder="Ուսումնական արդյունք"
+                      />
+                    </div>
+                    <Button 
+                      type="button" 
+                      variant="ghost" 
+                      size="icon"
+                      className="h-6 w-6 rounded-full bg-red-100 hover:bg-red-200 text-red-700 flex-shrink-0" 
+                      onClick={() => handleRemoveArrayItem('learningOutcomes', index)}
+                    >
+                      <span className="sr-only">Remove</span>
+                      <span aria-hidden="true">×</span>
+                    </Button>
+                  </li>
+                ))}
+                <li>
+                  <Button 
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={() => handleAddArrayItem('learningOutcomes')}
+                    className="mt-2"
+                  >
+                    + Ավելացնել ուսումնական արդյունք
+                  </Button>
+                </li>
+              </>
+            ) : (
+              project.learningOutcomes.map((outcome, index) => (
+                <li key={index}>{outcome}</li>
+              ))
+            )}
+            {!isEditing && project.learningOutcomes.length === 0 && (
+              <li className="text-muted-foreground italic">Ուսումնական արդյունքներ չկան</li>
+            )}
+          </ul>
+        </section>
+
+        <section>
+          <h2 className="text-2xl font-bold mb-4 flex items-center">
+            <Book className="mr-2 h-5 w-5 text-primary" />
+            Քայլեր
+          </h2>
+          <ol className="space-y-2 list-decimal pl-5">
+            {isEditing ? (
+              <>
+                {project.steps.map((step, index) => (
+                  <li key={index} className="flex items-start gap-2">
+                    <div className="flex-1">
+                      <EditableField
+                        value={step}
+                        onChange={(value) => handleUpdateArrayItem('steps', value, index)}
+                        isEditing={true}
+                        placeholder="Քայլ"
+                      />
+                    </div>
+                    <Button 
+                      type="button" 
+                      variant="ghost" 
+                      size="icon"
+                      className="h-6 w-6 rounded-full bg-red-100 hover:bg-red-200 text-red-700 flex-shrink-0" 
+                      onClick={() => handleRemoveArrayItem('steps', index)}
+                    >
+                      <span className="sr-only">Remove</span>
+                      <span aria-hidden="true">×</span>
+                    </Button>
+                  </li>
+                ))}
+                <li>
+                  <Button 
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={() => handleAddArrayItem('steps')}
+                    className="mt-2"
+                  >
+                    + Ավելացնել քայլ
+                  </Button>
+                </li>
+              </>
+            ) : (
+              project.steps.map((step, index) => (
+                <li key={index}>{step}</li>
+              ))
+            )}
+            {!isEditing && project.steps.length === 0 && (
+              <li className="text-muted-foreground italic">Քայլեր չկան</li>
+            )}
+          </ol>
+        </section>
+      </div>
+
+      <div className="space-y-6">
+        {projectMembers.length > 0 && (
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-lg">Նախագծի անդամներ</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              {projectMembers.map((member) => (
+                <div key={member.id} className="flex items-center gap-3">
+                  <img
+                    src={member.avatar}
+                    alt={member.name}
+                    className="rounded-full h-10 w-10"
+                  />
+                  <div>
+                    <div className="font-medium">{member.name}</div>
+                    <div className="text-sm text-muted-foreground">{member.role}</div>
+                  </div>
+                </div>
+              ))}
+            </CardContent>
+          </Card>
+        )}
+
+        {organization && (
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-lg">Կազմակերպություն</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="flex items-center gap-3">
+                <img
+                  src={organization.logo}
+                  alt={organization.name}
+                  className="h-12 w-12"
+                />
+                <div>
+                  <div className="font-medium">{organization.name}</div>
+                  {organization.website && (
+                    <a
+                      href={organization.website}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-sm text-primary flex items-center hover:underline"
+                    >
+                      Կայք <ExternalLink className="ml-1 h-3 w-3" />
+                    </a>
+                  )}
+                </div>
               </div>
-            </div>
-          )}
-        </SlideUp>
+            </CardContent>
+          </Card>
+        )}
+
+        {similarProjects.length > 0 && (
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-lg">Նման նախագծեր</CardTitle>
+              <CardDescription>Նույն կատեգորիայի և տեխնոլոգիաների այլ նախագծեր</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              {similarProjects.map((similarProject) => (
+                <div key={similarProject.id} className="group">
+                  <a href={`/project/${similarProject.id}`} className="block space-y-2">
+                    <div className="w-full h-24 rounded-md overflow-hidden">
+                      <AspectRatio ratio={16 / 9}>
+                        <img
+                          src={getProjectImage(similarProject)}
+                          alt={similarProject.title}
+                          className="object-cover w-full h-full group-hover:scale-105 transition-transform duration-300"
+                        />
+                      </AspectRatio>
+                    </div>
+                    <div>
+                      <h3 className="font-medium group-hover:text-primary transition-colors">
+                        {similarProject.title}
+                      </h3>
+                      <p className="text-sm text-muted-foreground line-clamp-2">
+                        {similarProject.description}
+                      </p>
+                    </div>
+                  </a>
+                </div>
+              ))}
+            </CardContent>
+          </Card>
+        )}
+
+        <Card className="bg-primary/5 border-primary/20">
+          <CardHeader>
+            <CardTitle className="text-lg flex items-center">
+              <Info className="mr-2 h-5 w-5 text-primary" />
+              Օգնություն
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <p className="text-sm">
+              Նախագծեր էջում դուք կարող եք գտնել կամ ստեղծել նոր նախագծեր, որոնք կօգնեն ձեզ զարգացնել ձեր հմտությունները: Ընտրեք նախագիծը, գրանցվեք և սկսեք աշխատանքը:
+            </p>
+            <Button variant="outline" size="sm" className="mt-4 w-full">
+              Օգնության կենտրոն
+            </Button>
+          </CardContent>
+        </Card>
       </div>
     </div>
   );

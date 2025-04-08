@@ -1,36 +1,22 @@
 
 import React from 'react';
-import { BrowserRouter as Router, Routes as RouterRoutes, Route } from 'react-router-dom';
-import ProjectsPage from './pages/ProjectsPage';
+import { BrowserRouter, Route, Routes as RouterRoutes } from 'react-router-dom';
 import ProjectDetails from './pages/ProjectDetails';
-import ProjectEditPage from './pages/ProjectEditPage';
-import AdminProjectsPage from './pages/AdminProjectsPage';
-import ProjectManagementPage from './pages/ProjectManagementPage';
-import LoginPage from './pages/LoginPage';
-import RegisterPage from './pages/RegisterPage';
-import NotFoundPage from './pages/NotFoundPage';
+import CourseDetails from './pages/CourseDetails';
+import CourseDetailPage from './pages/CourseDetailPage';
+import NotFound from './pages/NotFound';
+import Index from './pages/Index';
 
-// For now, we'll create basic routes until all pages are ready
-export const Routes = () => {
+export const Routes: React.FC = () => {
   return (
-    <RouterRoutes>
-      <Route path="/" element={<ProjectsPage />} />
-      <Route path="/projects" element={<ProjectsPage />} />
-      <Route path="/project/:id" element={<ProjectDetails />} />
-      <Route path="/projects/edit/:id" element={<ProjectEditPage />} />
-      
-      <Route path="/login" element={<LoginPage />} />
-      <Route path="/register" element={<RegisterPage />} />
-      
-      {/* Admin routes */}
-      <Route path="/admin/projects" element={<AdminProjectsPage />} />
-      <Route path="/admin/project-management" element={<ProjectManagementPage />} />
-      <Route path="/admin/projects/edit/:id" element={<ProjectEditPage />} />
-      
-      {/* 404 Not Found */}
-      <Route path="*" element={<NotFoundPage />} />
-    </RouterRoutes>
+    <BrowserRouter>
+      <RouterRoutes>
+        <Route path="/" element={<Index />} />
+        <Route path="/project/:id" element={<ProjectDetails />} />
+        <Route path="/course/:slug" element={<CourseDetails />} />
+        <Route path="/course-detail/:id" element={<CourseDetailPage />} /> 
+        <Route path="*" element={<NotFound />} />
+      </RouterRoutes>
+    </BrowserRouter>
   );
 };
-
-export default Routes;

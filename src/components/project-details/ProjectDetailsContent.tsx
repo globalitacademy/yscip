@@ -1,193 +1,128 @@
 
 import React from 'react';
-import { Card, CardContent } from '@/components/ui/card';
+import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
+import Header from '@/components/Header';
+import Footer from '@/components/Footer';
 import { useProject } from '@/contexts/ProjectContext';
-import { Badge } from '@/components/ui/badge';
-import { Calendar, Clock, Briefcase, FileStack, Edit } from 'lucide-react';
-import { format } from 'date-fns';
-import ProjectTimelineSection from './ProjectTimelineSection';
-import ProjectTaskSection from './ProjectTaskSection';
-import ProjectTeamSection from './ProjectTeamSection';
-import ProjectEditableDetail from './ProjectEditableDetail';
-import EditableTechStack from './EditableTechStack';
-import ProjectEditorToolbar from './ProjectEditorToolbar';
-import ProjectReservationSection from './ProjectReservationSection';
+import { projectThemes } from '@/data/projectThemes';
+import { getProjectImage } from '@/lib/getProjectImage';
+import { toast } from 'sonner';  
+import ProjectHeader from './ProjectHeader';
+import ProjectTabs from './ProjectTabs';
+import { cn } from '@/lib/utils';
+import { AlertCircle } from 'lucide-react';
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
+import { useAuth } from '@/contexts/AuthContext';
+import EditorToolbar from './EditorToolbar';
 
 const ProjectDetailsContent: React.FC = () => {
-  const {
-    project,
+  const { 
+    project, 
+    timeline, 
+    tasks, 
+    projectStatus, 
+    addTimelineEvent, 
+    completeTimelineEvent, 
+    addTask, 
+    updateTaskStatus, 
+    submitProject, 
+    approveProject, 
+    rejectProject,
     isReserved,
+    projectProgress,
     canEdit,
-    startEditing,
     isEditing,
-    cancelEditing,
-    saveProject,
-    updateProjectField,
-    isSaving,
-    unsavedChanges
+    setIsEditing
   } = useProject();
-
+  const navigate = useNavigate();
+  const { user } = useAuth();
+  
   if (!project) {
-    return <div>Նախագիծը չի գտնվել</div>;
+    return (
+      <div className="min-h-screen flex flex-col items-center justify-center">
+        <h1 className="text-2xl font-bold mb-4">Պրոեկտը չի գտնվել</h1>
+        <Button onClick={() => navigate('/projects')}>Վերադառնալ նախագծերի էջ</Button>
+      </div>
+    );
   }
+  
+  const similarProjects = projectThemes
+    .filter(p => p.id !== project?.id && 
+      (p.category === project?.category || 
+       p.techStack.some(tech => project?.techStack.includes(tech))))
+    .slice(0, 3);
+  
+  const imageUrl = getProjectImage(project);
+
+  // Mock data for the project members
+  const projectMembers = [
+    { id: 'supervisor1', name: 'Արամ Հակոբյան', role: 'ղեկավար', avatar: '/placeholder.svg' },
+    { id: 'student1', name: 'Գագիկ Պետրոսյան', role: 'ուսանող', avatar: '/placeholder.svg' }
+  ];
+
+  // Mock data for organization
+  const organization = {
+    id: 'org1',
+    name: 'Պլեքկոդ',
+    website: 'https://plexcode.am',
+    logo: '/placeholder.svg'
+  };
 
   return (
-    <div className="space-y-8 pb-16">
-      {/* Project Details */}
-      <Card>
-        <CardContent className="pt-6">
-          <div className="flex flex-col md:flex-row justify-between gap-6">
-            {/* Left Column - Main Details */}
-            <div className="flex-1 space-y-6">
-              <div className="space-y-4">
-                {project.detailedDescription ? (
-                  <ProjectEditableDetail
-                    label="Մանրամասն նկարագրություն"
-                    value={project.detailedDescription}
-                    onChange={(value) => updateProjectField('detailedDescription', value)}
-                    isEditing={isEditing}
-                    size="md"
-                    multiline
-                  />
-                ) : (
-                  <ProjectEditableDetail
-                    label="Նկարագրություն"
-                    value={project.description}
-                    onChange={(value) => updateProjectField('description', value)}
-                    isEditing={isEditing}
-                    size="md"
-                    multiline
-                  />
-                )}
-              </div>
-              
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <ProjectEditableDetail
-                  label="Կատեգորիա"
-                  value={project.category}
-                  onChange={(value) => updateProjectField('category', value)}
-                  isEditing={isEditing}
-                  size="sm"
-                />
-                
-                <ProjectEditableDetail
-                  label="Բարդություն"
-                  value={project.complexity || 'Միջին'}
-                  onChange={(value) => updateProjectField('complexity', value)}
-                  isEditing={isEditing}
-                  size="sm"
-                />
-              </div>
-              
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <ProjectEditableDetail
-                  label="Կազմակերպություն"
-                  value={project.organizationName || ''}
-                  onChange={(value) => updateProjectField('organizationName', value)}
-                  isEditing={isEditing}
-                  size="sm"
-                />
-                
-                <ProjectEditableDetail
-                  label="Տևողություն"
-                  value={project.duration || 'Չսահմանված'}
-                  onChange={(value) => updateProjectField('duration', value)}
-                  isEditing={isEditing}
-                  size="sm"
-                />
-              </div>
-              
-              <EditableTechStack
-                techStack={project.techStack || []}
-                onChange={(techStack) => updateProjectField('techStack', techStack)}
-                isEditing={isEditing}
-              />
-              
-              <div className="flex items-center justify-between text-sm text-muted-foreground">
-                <div className="flex items-center gap-1">
-                  <Calendar className="h-4 w-4" /> 
-                  Ստեղծվել է: {format(new Date(project.createdAt), 'dd.MM.yyyy')}
-                </div>
-                
-                {project.updatedAt && project.updatedAt !== project.createdAt && (
-                  <div className="flex items-center gap-1">
-                    <Clock className="h-4 w-4" /> 
-                    Թարմացվել է: {format(new Date(project.updatedAt), 'dd.MM.yyyy')}
-                  </div>
-                )}
-              </div>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
+    <div className="min-h-screen flex flex-col">
+      <Header />
       
-      {/* Project Implementation Steps */}
-      {project.steps && project.steps.length > 0 && (
-        <Card>
-          <CardContent className="pt-6">
-            <h3 className="text-lg font-semibold mb-4">Իրականացման քայլեր</h3>
-            <ol className="list-decimal list-inside space-y-2 ml-4">
-              {project.steps.map((step, index) => (
-                <li key={index} className="text-gray-700">{step}</li>
-              ))}
-            </ol>
-          </CardContent>
-        </Card>
-      )}
-      
-      {/* Project Prerequisites and Learning Outcomes */}
-      {(project.prerequisites?.length > 0 || project.learningOutcomes?.length > 0) && (
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          {project.prerequisites && project.prerequisites.length > 0 && (
-            <Card>
-              <CardContent className="pt-6">
-                <h3 className="text-lg font-semibold mb-4">Նախապայմաններ</h3>
-                <ul className="list-disc list-inside space-y-2 ml-4">
-                  {project.prerequisites.map((prerequisite, index) => (
-                    <li key={index} className="text-gray-700">{prerequisite}</li>
-                  ))}
-                </ul>
-              </CardContent>
-            </Card>
+      <main className="flex-grow">
+        <div className="container mx-auto px-4 py-2">
+          <EditorToolbar />
+        </div>
+        
+        <div className="container px-4 mx-auto py-8 max-w-6xl">
+          {projectStatus === 'rejected' && (
+            <Alert variant="destructive" className="mb-6">
+              <AlertCircle className="h-4 w-4" />
+              <AlertTitle>Նախագիծը մերժված է</AlertTitle>
+              <AlertDescription>
+                Ձեր նախագիծը մերժվել է ղեկավարի կողմից։ Խնդրում ենք վերանայել մերժման պատճառները և կապ հաստատել ղեկավարի հետ։
+              </AlertDescription>
+            </Alert>
           )}
           
-          {project.learningOutcomes && project.learningOutcomes.length > 0 && (
-            <Card>
-              <CardContent className="pt-6">
-                <h3 className="text-lg font-semibold mb-4">Ուսումնառության արդյունքներ</h3>
-                <ul className="list-disc list-inside space-y-2 ml-4">
-                  {project.learningOutcomes.map((outcome, index) => (
-                    <li key={index} className="text-gray-700">{outcome}</li>
-                  ))}
-                </ul>
-              </CardContent>
-            </Card>
+          {isEditing && (
+            <Alert className="mb-6 border-amber-200 bg-amber-50">
+              <AlertCircle className="h-4 w-4 text-amber-500" />
+              <AlertTitle>Խմբագրման ռեժիմ</AlertTitle>
+              <AlertDescription>
+                Դուք կարող եք խմբագրել նախագծի տեքստերն ու նկարները: Պարզապես սեղմեք համապատասխան դաշտերի վրա և կատարեք փոփոխությունները: 
+                Ավարտելուց հետո անպայման սեղմեք պահպանել կոճակը:
+              </AlertDescription>
+            </Alert>
           )}
+          
+          <ProjectHeader />
+          
+          <ProjectTabs 
+            project={project}
+            timeline={timeline}
+            tasks={tasks}
+            projectStatus={projectStatus}
+            isReserved={isReserved}
+            projectMembers={projectMembers}
+            organization={organization}
+            similarProjects={similarProjects}
+            addTimelineEvent={addTimelineEvent}
+            completeTimelineEvent={completeTimelineEvent}
+            addTask={addTask}
+            updateTaskStatus={updateTaskStatus}
+            submitProject={submitProject}
+            approveProject={approveProject}
+            rejectProject={rejectProject}
+          />
         </div>
-      )}
+      </main>
       
-      {/* Timeline */}
-      <ProjectTimelineSection />
-      
-      {/* Tasks */}
-      <ProjectTaskSection />
-      
-      {/* Project Team */}
-      <ProjectTeamSection />
-      
-      {/* Project Reservation */}
-      {!isReserved && <ProjectReservationSection />}
-      
-      {/* Editor Toolbar */}
-      {isEditing && (
-        <ProjectEditorToolbar
-          onSave={saveProject}
-          onCancel={cancelEditing}
-          isSaving={isSaving}
-          hasUnsavedChanges={unsavedChanges}
-        />
-      )}
+      <Footer />
     </div>
   );
 };

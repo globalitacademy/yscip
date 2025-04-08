@@ -1,157 +1,184 @@
 
-import React, { createContext, useContext, ReactNode, useState, useCallback } from 'react';
-import { ProjectTheme, Task, TimelineEvent } from '@/data/projectThemes';
+import React, { createContext, useContext, useState } from 'react';
 import { useProjectState } from '@/hooks/useProjectState';
-import { useAuth } from './AuthContext';
-import * as projectService from '@/services/projectService';
+import { useProjectActions } from '@/hooks/useProjectActions';
+import { useAuth } from '@/contexts/AuthContext';
+import { Task, TimelineEvent } from '@/data/projectThemes';
 import { ProjectReservation } from '@/types/project';
+import { calculateProjectProgress } from '@/utils/projectProgressUtils';
+import { toast } from 'sonner';
+import * as projectService from '@/services/projectService';
 
-interface ProjectContextProps {
-  project: ProjectTheme | null;
-  tasks: Task[];
-  timeline: TimelineEvent[];
-  projectProgress: number;
-  canEdit: boolean;
-  isReserved: boolean;
-  projectStatus: 'not_submitted' | 'pending' | 'approved' | 'rejected';
-  updateProject: (updates: Partial<ProjectTheme>) => Promise<boolean>;
+interface ProjectContextType {
+  projectId: number;
+  project: any;
   isEditing: boolean;
-  startEditing: () => void;
-  cancelEditing: () => void;
-  saveProject: () => Promise<boolean>;
-  updateProjectField: (field: keyof ProjectTheme, value: any) => void;
-  isSaving: boolean;
-  unsavedChanges: boolean;
-  // Add reservation-related properties and methods
+  setIsEditing: (isEditing: boolean) => void;
+  canEdit: boolean;
+  timeline: TimelineEvent[];
+  tasks: Task[];
+  projectStatus: 'not_submitted' | 'pending' | 'approved' | 'rejected';
+  addTimelineEvent: (event: Omit<TimelineEvent, 'id'>) => void;
+  completeTimelineEvent: (eventId: string) => void;
+  addTask: (task: Omit<Task, 'id'>) => void;
+  updateTaskStatus: (taskId: string, status: Task['status']) => void;
+  submitProject: (feedback: string) => void;
+  approveProject: (feedback: string) => void;
+  rejectProject: (feedback: string) => void;
+  reserveProject: () => void;
+  isReserved: boolean;
   projectReservations: ProjectReservation[];
   approveReservation: (reservationId: string) => void;
   rejectReservation: (reservationId: string, feedback: string) => void;
-  reserveProject: () => void;
+  projectProgress: number;
   openSupervisorDialog: () => void;
+  closeSupervisorDialog: () => void;
+  showSupervisorDialog: boolean;
+  selectedSupervisor: string | null;
+  selectSupervisor: (supervisorId: string) => void;
   getReservationStatus: () => 'pending' | 'approved' | 'rejected' | null;
+  updateProject: (updates: Partial<any>) => Promise<boolean>;
 }
 
+const ProjectContext = createContext<ProjectContextType | undefined>(undefined);
+
 interface ProjectProviderProps {
-  projectId: number | null;
-  initialProject: ProjectTheme | null;
-  children: ReactNode;
+  children: React.ReactNode;
+  projectId: number;
+  initialProject: any;
   canEdit?: boolean;
 }
 
-const ProjectContext = createContext<ProjectContextProps | null>(null);
-
-export const ProjectProvider: React.FC<ProjectProviderProps> = ({
-  projectId,
+export const ProjectProvider: React.FC<ProjectProviderProps> = ({ 
+  children, 
+  projectId, 
   initialProject,
-  children,
-  canEdit: canEditProp = false,
+  canEdit = false 
 }) => {
   const { user } = useAuth();
-  
+  const [isEditing, setIsEditing] = useState(false);
+  const [selectedSupervisor, setSelectedSupervisor] = useState<string | null>(null);
+  const [isUpdating, setIsUpdating] = useState(false);
+
   const {
     project,
     setProject,
-    tasks,
     timeline,
-    isReserved,
+    setTimeline,
+    tasks,
+    setTasks,
     projectStatus,
-    isEditing,
-    startEditing,
-    cancelEditing,
-    updateProjectField,
-    saveProject,
-    isSaving,
-    unsavedChanges,
+    setProjectStatus,
+    isReserved,
+    setIsReserved,
     projectReservationsState,
+    setProjectReservationsState,
+    showSupervisorDialog,
     setShowSupervisorDialog
   } = useProjectState(projectId, initialProject, user);
 
-  // Calculate project progress (e.g. based on completed tasks)
-  const projectProgress = Math.round(
-    tasks.filter((task) => task.status === 'completed' || task.status === 'done').length / Math.max(tasks.length, 1) * 100
-  ) || 0;
+  const {
+    addTimelineEvent,
+    completeTimelineEvent,
+    addTask,
+    updateTaskStatus,
+    submitProject,
+    approveProject,
+    rejectProject,
+    openSupervisorDialog,
+    closeSupervisorDialog,
+    reserveProject,
+    approveReservation,
+    rejectReservation,
+    getReservationStatus
+  } = useProjectActions(
+    project,
+    user,
+    timeline,
+    setTimeline,
+    tasks,
+    setTasks,
+    setProjectStatus,
+    setIsReserved,
+    setProjectReservationsState,
+    setShowSupervisorDialog,
+    selectedSupervisor
+  );
 
-  // Determine if the current user can edit the project
-  const canEdit = canEditProp || (!!user && (
-    user.role === 'admin' || 
-    user.role === 'lecturer' || 
-    user.role === 'employer' || 
-    (project && project.createdBy === user.id)
-  ));
+  const projectProgress = calculateProjectProgress(tasks, timeline);
 
-  // Function to update project
-  const updateProject = useCallback(async (updates: Partial<ProjectTheme>) => {
-    if (!project || !projectId) return false;
+  const selectSupervisor = (supervisorId: string) => {
+    setSelectedSupervisor(supervisorId);
+  };
+
+  const updateProject = async (updates: Partial<any>): Promise<boolean> => {
     try {
-      const success = await projectService.updateProject(projectId, updates);
-      if (success && project) {
-        // Update local state
-        setProject({
-          ...project,
-          ...updates,
-          updatedAt: new Date().toISOString()
-        });
+      if (!project || !projectId) {
+        toast.error('Նախագիծը չի գտնվել');
+        return false;
       }
-      return success;
+
+      setIsUpdating(true);
+
+      // Combine current project data with updates
+      const updatedProject = {
+        ...project,
+        ...updates,
+        updatedAt: new Date().toISOString()
+      };
+
+      // Call the projectService to update the project in the database
+      const success = await projectService.updateProject(projectId, updatedProject);
+      
+      if (success) {
+        // Update local state after successful API call
+        setProject(updatedProject);
+        toast.success('Նախագիծը հաջողությամբ թարմացվել է');
+        return true;
+      } else {
+        toast.error('Նախագծի թարմացման ժամանակ սխալ է տեղի ունեցել');
+        return false;
+      }
     } catch (error) {
       console.error('Error updating project:', error);
+      toast.error('Նախագծի թարմացման ժամանակ սխալ է տեղի ունեցել');
       return false;
+    } finally {
+      setIsUpdating(false);
     }
-  }, [project, projectId, setProject]);
-  
-  // Mock functions for reservation functionality
-  const projectReservations: ProjectReservation[] = projectReservationsState;
-  
-  const approveReservation = (reservationId: string) => {
-    console.log('Approving reservation', reservationId);
-    // Implementation would be in useProjectState
-  };
-  
-  const rejectReservation = (reservationId: string, feedback: string) => {
-    console.log('Rejecting reservation', reservationId, feedback);
-    // Implementation would be in useProjectState
-  };
-  
-  const reserveProject = () => {
-    console.log('Reserving project');
-    // Implementation would be in useProjectState
-  };
-  
-  const openSupervisorDialog = () => {
-    setShowSupervisorDialog(true);
-  };
-  
-  const getReservationStatus = (): 'pending' | 'approved' | 'rejected' | null => {
-    // Stub implementation
-    return null;
   };
 
   return (
-    <ProjectContext.Provider
-      value={{
-        project,
-        tasks,
-        timeline,
-        projectProgress,
-        canEdit,
-        isReserved,
-        projectStatus,
-        updateProject,
-        isEditing,
-        startEditing,
-        cancelEditing,
-        saveProject,
-        updateProjectField,
-        isSaving,
-        unsavedChanges,
-        projectReservations,
-        approveReservation,
-        rejectReservation,
-        reserveProject,
-        openSupervisorDialog,
-        getReservationStatus
-      }}
-    >
+    <ProjectContext.Provider value={{ 
+      projectId, 
+      project, 
+      isEditing, 
+      setIsEditing,
+      canEdit,
+      timeline,
+      tasks,
+      projectStatus,
+      addTimelineEvent,
+      completeTimelineEvent,
+      addTask,
+      updateTaskStatus,
+      submitProject,
+      approveProject,
+      rejectProject,
+      reserveProject,
+      isReserved,
+      projectReservations: projectReservationsState,
+      approveReservation,
+      rejectReservation,
+      projectProgress,
+      openSupervisorDialog,
+      closeSupervisorDialog,
+      showSupervisorDialog,
+      selectedSupervisor,
+      selectSupervisor,
+      getReservationStatus,
+      updateProject
+    }}>
       {children}
     </ProjectContext.Provider>
   );
@@ -159,7 +186,7 @@ export const ProjectProvider: React.FC<ProjectProviderProps> = ({
 
 export const useProject = () => {
   const context = useContext(ProjectContext);
-  if (!context) {
+  if (context === undefined) {
     throw new Error('useProject must be used within a ProjectProvider');
   }
   return context;
