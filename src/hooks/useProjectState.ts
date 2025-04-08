@@ -23,8 +23,8 @@ export const useProjectState = (
   useEffect(() => {
     // Initialize with some default timeline events
     const defaultTimeline: TimelineEvent[] = [
-      { id: '1', title: 'Նախագծի մեկնարկ', description: 'Նախագծի պահանջների ուսումնասիրություն', date: new Date().toISOString().split('T')[0], isCompleted: true },
-      { id: '2', title: 'Նախնական նախագիծ', description: 'Նախնական պլանի ստեղծում', date: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString().split('T')[0], isCompleted: false }
+      { id: '1', title: 'Նախագծի մեկնարկ', description: 'Նախագծի պահանջների ուսումնասիրություն', date: new Date().toISOString().split('T')[0], completed: true },
+      { id: '2', title: 'Նախնական նախագիծ', description: 'Նախնական պլանի ստեղծում', date: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString().split('T')[0], completed: false }
     ];
     
     // Initialize with some default tasks
