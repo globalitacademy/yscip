@@ -7,6 +7,7 @@ import { toast } from 'sonner';
 import { useAuth } from '@/contexts/AuthContext';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useTheme } from '@/hooks/use-theme';
+import { ScrollArea } from '@/components/ui/scroll-area';
 
 // Import refactored components
 import CourseDetailSkeleton from './details/CourseDetailSkeleton';
@@ -163,17 +164,19 @@ const CourseDetail: React.FC = () => {
               </TabsTrigger>
             </TabsList>
 
-            <TabsContent value="description" className="space-y-6 focus:outline-none">
-              <CourseDescription course={course} />
-            </TabsContent>
+            <ScrollArea className="h-[calc(100vh-400px)]">
+              <TabsContent value="description" className="space-y-6 focus:outline-none">
+                <CourseDescription course={course} />
+              </TabsContent>
 
-            <TabsContent value="curriculum" className="focus:outline-none">
-              <CourseCurriculumTab course={course} />
-            </TabsContent>
+              <TabsContent value="curriculum" className="focus:outline-none">
+                <CourseCurriculumTab course={course} />
+              </TabsContent>
 
-            <TabsContent value="outcomes" className="focus:outline-none">
-              <CourseOutcomesTab course={course} />
-            </TabsContent>
+              <TabsContent value="outcomes" className="focus:outline-none">
+                <CourseOutcomesTab course={course} />
+              </TabsContent>
+            </ScrollArea>
           </Tabs>
         </div>
 

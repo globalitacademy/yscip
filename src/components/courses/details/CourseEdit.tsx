@@ -8,6 +8,7 @@ import { saveCourseChanges } from '../utils/course-operations/saveCourseChanges'
 import { toast } from 'sonner';
 import { Save, X } from 'lucide-react';
 import { ScrollArea } from '@/components/ui/scroll-area';
+import { useTheme } from '@/hooks/use-theme';
 
 // Import existing tab components that we'll use
 import { 
@@ -33,6 +34,7 @@ const CourseEdit: React.FC<CourseEditProps> = ({
 }) => {
   const [loading, setLoading] = useState(false);
   const [editedCourse, setEditedCourse] = useState<Partial<ProfessionalCourse>>({});
+  const { theme } = useTheme();
 
   // Initialize editedCourse with the current course data
   useEffect(() => {
@@ -72,10 +74,10 @@ const CourseEdit: React.FC<CourseEditProps> = ({
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-6xl p-0 h-[90vh] bg-white">
+      <DialogContent className={`max-w-6xl p-0 h-[90vh] ${theme === 'dark' ? 'bg-gray-900 border-gray-700 text-gray-100' : 'bg-white'}`}>
         <div className="h-full flex flex-col">
           {/* Edit controls */}
-          <div className="flex justify-between items-center p-4 border-b">
+          <div className={`flex justify-between items-center p-4 ${theme === 'dark' ? 'border-gray-700' : 'border-gray-200'} border-b`}>
             <h2 className="text-xl font-bold">Դասընթացի խմբագրում</h2>
             <div className="flex gap-2">
               <Button 
@@ -87,9 +89,9 @@ const CourseEdit: React.FC<CourseEditProps> = ({
                 Պահպանել փոփոխությունները
               </Button>
               <Button 
-                variant="outline" 
+                variant={theme === 'dark' ? 'outline' : 'outline'}
                 onClick={onClose}
-                className="flex items-center gap-2"
+                className={`flex items-center gap-2 ${theme === 'dark' ? 'border-gray-600 hover:bg-gray-800' : ''}`}
               >
                 <X size={16} />
                 Չեղարկել
@@ -98,34 +100,34 @@ const CourseEdit: React.FC<CourseEditProps> = ({
           </div>
           
           {/* Tabs content */}
-          <ScrollArea className="flex-grow">
+          <ScrollArea className="flex-grow overflow-y-auto">
             <div className="p-6">
               <Tabs defaultValue="basic-info" className="w-full">
-                <TabsList className="mb-6">
-                  <TabsTrigger value="basic-info">Հիմնական տվյալներ</TabsTrigger>
-                  <TabsTrigger value="lessons">Դասընթացի պլան</TabsTrigger>
-                  <TabsTrigger value="requirements">Պահանջներ</TabsTrigger>
-                  <TabsTrigger value="outcomes">Արդյունքներ</TabsTrigger>
-                  <TabsTrigger value="author">Հեղինակի մասին</TabsTrigger>
+                <TabsList className={`mb-6 ${theme === 'dark' ? 'bg-gray-800' : ''}`}>
+                  <TabsTrigger value="basic-info" className={theme === 'dark' ? 'data-[state=active]:bg-gray-700' : ''}>Հիմնական տվյալներ</TabsTrigger>
+                  <TabsTrigger value="lessons" className={theme === 'dark' ? 'data-[state=active]:bg-gray-700' : ''}>Դասընթացի պլան</TabsTrigger>
+                  <TabsTrigger value="requirements" className={theme === 'dark' ? 'data-[state=active]:bg-gray-700' : ''}>Պահանջներ</TabsTrigger>
+                  <TabsTrigger value="outcomes" className={theme === 'dark' ? 'data-[state=active]:bg-gray-700' : ''}>Արդյունքներ</TabsTrigger>
+                  <TabsTrigger value="author" className={theme === 'dark' ? 'data-[state=active]:bg-gray-700' : ''}>Հեղինակի մասին</TabsTrigger>
                 </TabsList>
                 
-                <TabsContent value="basic-info">
+                <TabsContent value="basic-info" className="focus-visible:outline-none">
                   <BasicInfoTab editedCourse={editedCourse} setEditedCourse={setEditedCourse} />
                 </TabsContent>
                 
-                <TabsContent value="lessons">
+                <TabsContent value="lessons" className="focus-visible:outline-none">
                   <LessonsTab editedCourse={editedCourse} setEditedCourse={setEditedCourse} />
                 </TabsContent>
                 
-                <TabsContent value="requirements">
+                <TabsContent value="requirements" className="focus-visible:outline-none">
                   <RequirementsTab editedCourse={editedCourse} setEditedCourse={setEditedCourse} />
                 </TabsContent>
                 
-                <TabsContent value="outcomes">
+                <TabsContent value="outcomes" className="focus-visible:outline-none">
                   <OutcomesTab editedCourse={editedCourse} setEditedCourse={setEditedCourse} />
                 </TabsContent>
                 
-                <TabsContent value="author">
+                <TabsContent value="author" className="focus-visible:outline-none">
                   <AuthorTab editedCourse={editedCourse} setEditedCourse={setEditedCourse} />
                 </TabsContent>
               </Tabs>
