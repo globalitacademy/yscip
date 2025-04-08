@@ -148,7 +148,7 @@ const EditableField: React.FC<EditableFieldProps> = ({
         disabled && "opacity-70 cursor-not-allowed", 
         className
       )}
-      onClick={disabled || !isEditingProp ? undefined : handleStartEditing}
+      onClick={handleStartEditing}
     >
       <div className={cn(
         value ? sizeClasses[size] : "text-muted-foreground italic",
@@ -159,13 +159,12 @@ const EditableField: React.FC<EditableFieldProps> = ({
         {value || placeholder}
       </div>
       
-      {showEditButton && !disabled && isEditingProp && (
+      {showEditButton && !disabled && (
         <span className="absolute right-1 top-1 opacity-0 group-hover:opacity-100 transition-opacity">
           <Button 
             variant="ghost" 
             size="icon" 
             className="h-6 w-6"
-            onClick={handleStartEditing}
           >
             <Edit className="h-3.5 w-3.5" />
           </Button>
