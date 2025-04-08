@@ -7,36 +7,6 @@ import {
 } from 'lucide-react';
 import { FadeIn, SlideUp } from '@/components/LocalTransitions';
 
-const ICON_BACKGROUNDS = {
-  student: "bg-blue-100",
-  instructor: "bg-green-100",
-  employer: "bg-purple-100",
-  manager: "bg-yellow-100",
-  internship: "bg-orange-100",
-  course: "bg-blue-100",
-  grading: "bg-green-100",
-  communication: "bg-red-100",
-  admissions: "bg-pink-100",
-  exams: "bg-indigo-100",
-  code: "bg-cyan-100",
-  analytics: "bg-teal-100"
-};
-
-const ICON_COLORS = {
-  student: "text-blue-500",
-  instructor: "text-green-500",
-  employer: "text-purple-500", 
-  manager: "text-yellow-600",
-  internship: "text-orange-500",
-  course: "text-blue-500",
-  grading: "text-green-500",
-  communication: "text-red-500",
-  admissions: "text-pink-500",
-  exams: "text-indigo-500",
-  code: "text-cyan-500",
-  analytics: "text-teal-500"
-};
-
 const FeatureCard = ({ 
   icon: Icon, 
   title, 
@@ -47,12 +17,12 @@ const FeatureCard = ({
   icon: React.ElementType; 
   title: string; 
   description: string;
-  type: keyof typeof ICON_BACKGROUNDS;
+  type: string;
   delay?: string;
 }) => (
   <SlideUp delay={delay}>
-    <div className="bg-white rounded-lg p-6 shadow-sm h-full flex flex-col items-center text-center transition-all duration-300 hover:shadow-md hover:-translate-y-2 hover:bg-gray-50 group">
-      <div className={`p-3 rounded-lg ${ICON_BACKGROUNDS[type]} ${ICON_COLORS[type]} mb-4 transition-all duration-300 group-hover:scale-110`}>
+    <div className="bg-card dark:bg-gray-800/70 rounded-lg p-6 shadow-sm h-full flex flex-col items-center text-center transition-all duration-300 hover:shadow-md hover:-translate-y-2 hover:bg-accent/50 dark:hover:bg-gray-700/70 group border border-border">
+      <div className={`p-3 rounded-lg bg-primary/10 dark:bg-primary/20 text-primary mb-4 transition-all duration-300 group-hover:scale-110`}>
         <Icon size={24} />
       </div>
       <h3 className="text-lg font-medium mb-2 transition-colors duration-300 group-hover:text-primary">{title}</h3>
@@ -68,21 +38,21 @@ const FeaturesSection = () => {
       icon: GraduationCap,
       title: "Ուսանողներ",
       description: "Մասնակցեք դասընթացներին, կատարեք առաջադրանքներ և ստացեք գնահատականներ։",
-      type: "student" as const,
+      type: "student",
       delay: "delay-100"
     },
     {
       icon: Users,
       title: "Դասախոսներ",
       description: "Ստեղծեք և խմբագրեք դասընթացներ, ավելացրեք նյութեր և գնահատեք ուսանողներին։",
-      type: "instructor" as const,
+      type: "instructor",
       delay: "delay-200"
     },
     {
       icon: Briefcase,
       title: "Գործատուներ",
       description: "Գտեք հմուտ ուսանողներ, կազմակերպեք հարցազրույցներ և առաջարկեք աշխատանք։",
-      type: "employer" as const,
+      type: "employer",
       delay: "delay-300"
     },
     
@@ -91,21 +61,21 @@ const FeaturesSection = () => {
       icon: UserCog,
       title: "Ծրագրի ղեկավարներ",
       description: "Վերահսկեք դասընթացների որակը և ուսանողների առաջընթացը։",
-      type: "manager" as const,
+      type: "manager",
       delay: "delay-400"
     },
     {
       icon: ClipboardCheck,
       title: "Պրակտիկայի ղեկավարներ",
       description: "Ստեղծեք և ղեկավարեք պրակտիկայի ծրագրերը, կապ պահպանեք բոլոր կողմերի հետ։",
-      type: "internship" as const,
+      type: "internship",
       delay: "delay-500"
     },
     {
       icon: BookOpen,
       title: "Դասընթացների կառավարում",
       description: "Ստեղծեք, կազմակերպեք և ժամանակացույց կազմեք ուսումնական ծրագրերի համար։",
-      type: "course" as const,
+      type: "course",
       delay: "delay-600"
     },
 
@@ -114,21 +84,21 @@ const FeaturesSection = () => {
       icon: GaugeCircle,
       title: "Գնահատման համակարգ",
       description: "Գնահատեք աշխատանքները, թեստերը և ստեղծեք քննություններ։",
-      type: "grading" as const,
+      type: "grading",
       delay: "delay-700"
     },
     {
       icon: MessageSquare,
       title: "Հաղորդակցման գործիքներ",
       description: "Արդյունավետ հաղորդակցություն ուսանողների, դասախոսների և ղեկավարների միջև։",
-      type: "communication" as const,
+      type: "communication",
       delay: "delay-800"
     },
     {
       icon: UserPlus,
       title: "Ընդունելության կազմակերպում",
       description: "Կառավարեք դիմումների ընդունումը, փաստաթղթերի ստուգումն և ընդունելության գործընթացը։",
-      type: "admissions" as const,
+      type: "admissions",
       delay: "delay-900"
     },
 
@@ -137,30 +107,30 @@ const FeaturesSection = () => {
       icon: FileSpreadsheet,
       title: "Քննությունների կազմակերպում",
       description: "Պլանավորեք, կազմակերպեք և անցկացրեք առցանց և լսարանային քննություններ։",
-      type: "exams" as const,
+      type: "exams",
       delay: "delay-1000"
     },
     {
       icon: FileCode,
       title: "Դիպլոմային նախագծեր",
       description: "Ստեղծեք, կառավարեք և հետևեք ուսանողների նախագծերի առաջընթացին։",
-      type: "code" as const,
+      type: "code",
       delay: "delay-1100"
     },
     {
       icon: Server,
       title: "Տվյալների վերլուծություն",
       description: "Վերլուծեք ուսանողների առաջադիմությունը և ծրագրերի արդյունավետությունը։",
-      type: "analytics" as const,
+      type: "analytics",
       delay: "delay-1200"
     }
   ];
 
   return (
-    <section id="features-section" className="py-10 sm:py-12 md:py-16 lg:py-20 bg-gray-50">
+    <section id="features-section" className="py-10 sm:py-12 md:py-16 lg:py-20 bg-secondary dark:bg-gray-900/50">
       <div className="container mx-auto px-4 sm:px-6">
         <FadeIn delay="delay-100">
-          <h2 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold mb-3 sm:mb-4 text-center leading-tight">
+          <h2 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold mb-3 sm:mb-4 text-center leading-tight text-foreground">
             Համակարգի հիմնական առանձնահատկությունները
           </h2>
         </FadeIn>
