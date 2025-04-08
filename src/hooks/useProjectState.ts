@@ -1,75 +1,65 @@
 
 import { useState, useEffect } from 'react';
-import { ProjectTheme } from '@/data/projectThemes';
-import { Task, TimelineEvent } from '@/data/projectThemes';
-import { loadProjectReservations } from '@/utils/projectUtils';
-import { ProjectReservation } from '@/types/project';
+import { v4 as uuidv4 } from 'uuid';
+import { ProjectTheme, Task, TimelineEvent } from '@/data/projectThemes';
+import { 
+  generateSampleTimeline, 
+  generateSampleTasks, 
+  loadProjectReservations,
+  isProjectReservedByUser
+} from '@/utils/projectUtils';
+import { User } from '@/types/user';
 
 export const useProjectState = (
-  projectId: number,
-  initialProject: ProjectTheme,
-  user: any
+  projectId: number | null,
+  initialProject: ProjectTheme | null,
+  user: User | null
 ) => {
-  // Basic project state
-  const [project, setProject] = useState<ProjectTheme>(initialProject);
+  const [project, setProject] = useState<ProjectTheme | null>(initialProject);
   const [timeline, setTimeline] = useState<TimelineEvent[]>([]);
   const [tasks, setTasks] = useState<Task[]>([]);
   const [projectStatus, setProjectStatus] = useState<'not_submitted' | 'pending' | 'approved' | 'rejected'>('not_submitted');
-  const [isReserved, setIsReserved] = useState<boolean>(false);
-  const [projectReservationsState, setProjectReservationsState] = useState<ProjectReservation[]>([]);
-  const [showSupervisorDialog, setShowSupervisorDialog] = useState<boolean>(false);
+  const [isReserved, setIsReserved] = useState(false);
+  const [projectReservationsState, setProjectReservationsState] = useState<any[]>([]);
+  const [selectedSupervisor, setSelectedSupervisor] = useState<string | null>(null);
+  const [showSupervisorDialog, setShowSupervisorDialog] = useState(false);
 
-  // Default timeline and tasks
+  // Load project reservations from localStorage
   useEffect(() => {
-    // Initialize with some default timeline events
-    const defaultTimeline: TimelineEvent[] = [
-      { id: '1', title: 'Նախագծի մեկնարկ', description: 'Նախագծի պահանջների ուսումնասիրություն', date: new Date().toISOString().split('T')[0], isCompleted: true },
-      { id: '2', title: 'Նախնական նախագիծ', description: 'Նախնական պլանի ստեղծում', date: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString().split('T')[0], isCompleted: false }
-    ];
+    const loadedReservations = loadProjectReservations();
+    setProjectReservationsState(loadedReservations);
     
-    // Initialize with some default tasks
-    const defaultTasks: Task[] = [
-      { id: '1', title: 'Պահանջների վերլուծություն', description: 'Վերլուծել և նշել բոլոր պահանջները', status: 'completed' },
-      { id: '2', title: 'UI/UX դիզայն', description: 'Ստեղծել բոլոր էջերի դիզայնը', status: 'in-progress' },
-      { id: '3', title: 'Ծրագրավորում', description: 'Frontend և Backend իրականացում', status: 'todo' }
-    ];
-    
-    setTimeline(defaultTimeline);
-    setTasks(defaultTasks);
-    
-    // Check if project is reserved by current user
-    const reservations = loadProjectReservations();
-    setProjectReservationsState(reservations);
-    
-    const isProjectReserved = reservations.some(
-      res => res.projectId === projectId && 
-      res.studentId === user?.id && 
-      res.status === 'approved'
-    );
-    
-    setIsReserved(isProjectReserved);
-    
-    // Set project status based on reservations
-    const userReservation = reservations.find(
-      res => res.projectId === projectId && res.studentId === user?.id
-    );
-    
-    if (userReservation) {
-      switch (userReservation.status) {
-        case 'pending':
-          setProjectStatus('pending');
-          break;
-        case 'approved':
-          setProjectStatus('approved');
-          break;
-        case 'rejected':
-          setProjectStatus('rejected');
-          break;
-        default:
-          setProjectStatus('not_submitted');
-      }
+    // Check if current project is reserved by current user
+    if (projectId && user) {
+      const userReserved = isProjectReservedByUser(projectId, user.id, loadedReservations);
+      setIsReserved(userReserved);
     }
-  }, [projectId, user?.id]);
+  }, [projectId, user]);
+
+  // Initialize project from props
+  useEffect(() => {
+    if (initialProject) {
+      setProject(initialProject);
+      setTimeline(initialProject.timeline || []);
+      setTasks(initialProject.tasks || []);
+    }
+  }, [initialProject]);
+
+  // Generate sample timeline if empty
+  useEffect(() => {
+    if (timeline.length === 0 && project) {
+      const demoTimeline = generateSampleTimeline();
+      setTimeline(demoTimeline);
+    }
+  }, [timeline.length, project]);
+
+  // Generate sample tasks if empty
+  useEffect(() => {
+    if (tasks.length === 0 && project && user) {
+      const demoTasks = generateSampleTasks(user.id);
+      setTasks(demoTasks);
+    }
+  }, [tasks.length, project, user]);
 
   return {
     project,
@@ -84,6 +74,8 @@ export const useProjectState = (
     setIsReserved,
     projectReservationsState,
     setProjectReservationsState,
+    selectedSupervisor,
+    setSelectedSupervisor,
     showSupervisorDialog,
     setShowSupervisorDialog
   };
