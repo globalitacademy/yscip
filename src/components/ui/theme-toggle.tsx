@@ -13,7 +13,7 @@ export const ThemeToggle: React.FC = () => {
         pressed={theme === 'dark'}
         onPressedChange={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
         aria-label="Toggle theme"
-        className="p-2 bg-secondary dark:bg-gray-800 hover:bg-secondary/80 dark:hover:bg-gray-700 transition-colors rounded-md"
+        className="p-2 bg-secondary dark:bg-gray-800 hover:bg-secondary/80 dark:hover:bg-gray-700/90 transition-colors rounded-md border border-transparent dark:border-gray-700"
       >
         {theme === 'dark' ? (
           <Moon className="h-5 w-5 text-blue-300" />
