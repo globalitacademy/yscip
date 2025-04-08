@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import Header from '@/components/Header';
@@ -11,9 +11,10 @@ import { toast } from 'sonner';
 import ProjectHeader from './ProjectHeader';
 import ProjectTabs from './ProjectTabs';
 import { cn } from '@/lib/utils';
-import { AlertCircle, Edit, Save, X } from 'lucide-react';
+import { AlertCircle } from 'lucide-react';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { useAuth } from '@/contexts/AuthContext';
+import EditorToolbar from './EditorToolbar';
 
 const ProjectDetailsContent: React.FC = () => {
   const { 
@@ -67,44 +68,15 @@ const ProjectDetailsContent: React.FC = () => {
     website: 'https://plexcode.am',
     logo: '/placeholder.svg'
   };
-  
-  const handleToggleEditing = () => {
-    if (isEditing) {
-      setIsEditing(false);
-      toast.success('Խմբագրման ռեժիմը անջատված է');
-    } else {
-      setIsEditing(true);
-      toast.success('Խմբագրման ռեժիմը միացված է');
-    }
-  };
 
   return (
     <div className="min-h-screen flex flex-col">
       <Header />
       
       <main className="flex-grow">
-        {canEdit && (
-          <div className="container mx-auto px-4 py-2 flex justify-end">
-            <Button 
-              variant={isEditing ? "destructive" : "default"}
-              size="sm" 
-              onClick={handleToggleEditing}
-              className="mb-2"
-            >
-              {isEditing ? (
-                <>
-                  <X className="h-4 w-4 mr-1.5" />
-                  Դուրս գալ խմբագրման ռեժիմից
-                </>
-              ) : (
-                <>
-                  <Edit className="h-4 w-4 mr-1.5" />
-                  Խմբագրել նախագիծը
-                </>
-              )}
-            </Button>
-          </div>
-        )}
+        <div className="container mx-auto px-4 py-2">
+          <EditorToolbar />
+        </div>
         
         <div className="container px-4 mx-auto py-8 max-w-6xl">
           {projectStatus === 'rejected' && (
@@ -128,7 +100,6 @@ const ProjectDetailsContent: React.FC = () => {
             </Alert>
           )}
           
-          {/* Removing extra props that ProjectHeader doesn't accept */}
           <ProjectHeader />
           
           <ProjectTabs 
