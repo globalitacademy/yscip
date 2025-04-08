@@ -1,37 +1,30 @@
-
 import React, { useState } from 'react';
 import { ProfessionalCourse } from '../types/ProfessionalCourse';
 import { Button } from '@/components/ui/button';
 import { CheckCircle, ExternalLink, Calendar, Book, Users, Award, Download } from 'lucide-react';
 import CourseApplicationForm from './CourseApplicationForm';
-
 interface CourseSidebarProps {
   course: ProfessionalCourse;
   handleApply: () => void;
 }
-
-const CourseSidebar: React.FC<CourseSidebarProps> = ({ course, handleApply }) => {
+const CourseSidebar: React.FC<CourseSidebarProps> = ({
+  course,
+  handleApply
+}) => {
   const [isApplicationFormOpen, setIsApplicationFormOpen] = useState(false);
-
   const openApplicationForm = () => {
     setIsApplicationFormOpen(true);
   };
-
-  return (
-    <div className="bg-white border rounded-xl shadow-lg overflow-hidden sticky top-8">
-      {course.imageUrl && (
-        <div className="h-48 w-full">
+  return <div className="bg-white border rounded-xl shadow-lg overflow-hidden sticky top-8">
+      {course.imageUrl && <div className="h-48 w-full">
           <img src={course.imageUrl} alt={course.title} className="w-full h-full object-cover" />
-        </div>
-      )}
+        </div>}
       
-      <div className="p-6">
-        {course.price && (
-          <div className="mb-6 text-center">
+      <div className="p-6 bg-slate-800">
+        {course.price && <div className="mb-6 text-center">
             <p className="text-3xl font-bold text-indigo-700">{course.price}</p>
             <p className="text-sm text-gray-500">Միայն սահմանափակ ժամանակով</p>
-          </div>
-        )}
+          </div>}
         
         <div className="space-y-4 mb-6 bg-gray-50 p-4 rounded-lg">
           <div className="flex justify-between items-center">
@@ -55,21 +48,16 @@ const CourseSidebar: React.FC<CourseSidebarProps> = ({ course, handleApply }) =>
             </span>
             <span className="font-medium">{course.createdBy || 'Անանուն'}</span>
           </div>
-          {course.institution && (
-            <div className="flex justify-between items-center">
+          {course.institution && <div className="flex justify-between items-center">
               <span className="flex items-center text-gray-600">
                 <Award className="h-4 w-4 mr-2 text-indigo-600" />
                 Հաստատություն
               </span>
               <span className="font-medium">{course.institution}</span>
-            </div>
-          )}
+            </div>}
         </div>
         
-        <Button 
-          onClick={openApplicationForm} 
-          className="w-full mb-3 bg-indigo-600 hover:bg-indigo-700 rounded-full py-6 shadow-md transition-all transform hover:translate-y-[-2px]"
-        >
+        <Button onClick={openApplicationForm} className="w-full mb-3 bg-indigo-600 hover:bg-indigo-700 rounded-full py-6 shadow-md transition-all transform hover:translate-y-[-2px]">
           Դիմել դասընթացին
         </Button>
         
@@ -111,13 +99,7 @@ const CourseSidebar: React.FC<CourseSidebarProps> = ({ course, handleApply }) =>
       </div>
 
       {/* Course Application Form Dialog */}
-      <CourseApplicationForm 
-        course={course}
-        isOpen={isApplicationFormOpen}
-        onClose={() => setIsApplicationFormOpen(false)}
-      />
-    </div>
-  );
+      <CourseApplicationForm course={course} isOpen={isApplicationFormOpen} onClose={() => setIsApplicationFormOpen(false)} />
+    </div>;
 };
-
 export default CourseSidebar;
