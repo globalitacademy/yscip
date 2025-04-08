@@ -9,5 +9,8 @@ export default EducationalCycleInfographic;
 // Also export other components and types from this directory
 export { default as HomePageModules } from './HomePageModules';
 export { default as ModuleCard } from './ModuleCard';
+export { default as CycleTimeline } from './CycleTimeline';
+export { default as CycleStage } from './CycleStage';
+export { default as CourseSection } from './CourseSection';
 export { educationalModules } from './moduleData';
 export type { EducationalModule } from './types';
