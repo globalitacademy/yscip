@@ -73,16 +73,7 @@ const CycleTimeline: React.FC = () => {
         ))}
       </div>
       
-      {/* Mobile timeline visualization */}
-      <div className="md:hidden mt-4 space-y-0">
-        {stages.slice(0, -1).map((stage, index) => (
-          <div 
-            key={index} 
-            className={`h-12 w-1 ${stage.colorScheme.line} mx-auto`}
-            aria-hidden="true"
-          />
-        ))}
-      </div>
+      {/* Completely removed mobile timeline visualization */}
     </section>
   );
 };
