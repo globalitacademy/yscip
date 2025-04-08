@@ -1,13 +1,10 @@
-
 import React, { useEffect, useState } from 'react';
 import { Course } from '@/components/courses/types';
 import ModulesInfographic from './ModulesInfographic';
 import CycleTimeline from './CycleTimeline';
 import CourseSection from './CourseSection';
-
 const EducationalCycleInfographic: React.FC = () => {
   const [courses, setCourses] = useState<Course[]>([]);
-  
   useEffect(() => {
     // Load courses from localStorage
     const storedCourses = localStorage.getItem('courses');
@@ -20,9 +17,7 @@ const EducationalCycleInfographic: React.FC = () => {
       }
     }
   }, []);
-
-  return (
-    <div className="dark:bg-gray-900">
+  return <div className="dark:bg-gray-900">
       {/* Educational Cycle Timeline */}
       <section className="py-12 md:py-16 bg-white dark:bg-gray-900/80 transition-colors duration-300">
         <div className="container mx-auto px-4">
@@ -34,13 +29,7 @@ const EducationalCycleInfographic: React.FC = () => {
       <ModulesInfographic />
       
       {/* Courses Section */}
-      <section className="py-12 md:py-16 bg-white dark:bg-gray-900/80 transition-colors duration-300">
-        <div className="container mx-auto px-4">
-          <CourseSection courses={courses} />
-        </div>
-      </section>
-    </div>
-  );
+      
+    </div>;
 };
-
 export default EducationalCycleInfographic;
