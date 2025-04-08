@@ -1,9 +1,9 @@
+
 import React from 'react';
-import { BrowserRouter as Router, Route, Routes, useLocation } from 'react-router-dom';
+import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
 import { Toaster } from 'sonner';
 import AuthProvider from './contexts/AuthContext';
 import { ThemeProvider } from './hooks/use-theme';
-import { CollaborativePointers } from './components/collaborative';
 
 // Import Pages
 import Index from './pages/Index';
@@ -11,6 +11,7 @@ import LoginPage from './pages/LoginPage';
 import RegisterPage from './pages/RegisterPage';
 import VerifyEmail from './pages/VerifyEmail';
 import NotFound from './pages/NotFound';
+import ModuleDetailPage from './pages/ModuleDetailPage'; // Add import for the new page
 
 // Admin Pages
 import UserManagementPage from './pages/UserManagementPage';
@@ -43,16 +44,6 @@ import CourseDetails from './pages/CourseDetails';
 import AdminDashboard from './pages/AdminDashboard';
 import AdminRedirectPage from './pages/AdminRedirectPage';
 
-// Custom cursor for homepage only
-const CursorManager = () => {
-  const location = useLocation();
-  const isHomepage = location.pathname === '/';
-  
-  return isHomepage ? (
-    <CollaborativePointers virtualUsersCount={4} />
-  ) : null;
-};
-
 function App() {
   return (
     <AuthProvider>
@@ -63,6 +54,9 @@ function App() {
             <Route path="/login" element={<LoginPage />} />
             <Route path="/register" element={<RegisterPage />} />
             <Route path="/verify-email" element={<VerifyEmail />} />
+            
+            {/* Module Detail Route */}
+            <Route path="/module/:id" element={<ModuleDetailPage />} />
             
             {/* Admin Routes */}
             <Route path="/admin" element={<AdminRedirectPage />} />

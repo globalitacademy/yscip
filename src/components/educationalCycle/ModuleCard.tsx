@@ -4,8 +4,10 @@ import { FadeIn } from '@/components/LocalTransitions';
 import { EducationalModule } from './types';
 import { Progress } from '@/components/ui/progress';
 import { Card, CardContent } from '@/components/ui/card';
-import { ChevronDown, ChevronUp } from 'lucide-react';
+import { ChevronDown, ChevronUp, BookOpen } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { Link } from 'react-router-dom';
+import { Button } from '@/components/ui/button';
 
 interface ModuleCardProps {
   module: EducationalModule;
@@ -14,7 +16,7 @@ interface ModuleCardProps {
 }
 
 const ModuleCard: React.FC<ModuleCardProps> = ({ module, delay, showProgress = false }) => {
-  const { title, icon: Icon, description, status = 'not-started', progress = 0, topics = [] } = module;
+  const { id, title, icon: Icon, description, status = 'not-started', progress = 0, topics = [] } = module;
   const [isFlipped, setIsFlipped] = useState(false);
   const cardRef = useRef<HTMLDivElement>(null);
   
@@ -65,7 +67,7 @@ const ModuleCard: React.FC<ModuleCardProps> = ({ module, delay, showProgress = f
     }
   };
 
-  const visibleTopics = topics?.length > 8 ? topics.slice(0, 8) : topics;
+  const visibleTopics = topics?.length > 6 ? topics.slice(0, 6) : topics;
   
   return (
     <FadeIn delay={delay}>
@@ -82,9 +84,9 @@ const ModuleCard: React.FC<ModuleCardProps> = ({ module, delay, showProgress = f
           <div className="flip-card-front absolute w-full h-full">
             <Card className={`card-hover border ${styles.accent} transition-all h-full shadow-sm hover:shadow-md dark:shadow-gray-900/30`}>
               <CardContent className="p-4 sm:p-5 flex flex-col h-full">
-                <div className="flex items-center mb-3">
+                <div className="flex items-start gap-3 mb-3">
                   {Icon && (
-                    <div className={`mr-3 ${styles.icon}`} aria-hidden="true">
+                    <div className={`mt-1 ${styles.icon}`} aria-hidden="true">
                       <Icon size={20} />
                     </div>
                   )}
@@ -92,36 +94,50 @@ const ModuleCard: React.FC<ModuleCardProps> = ({ module, delay, showProgress = f
                 </div>
                 
                 {description && (
-                  <p className="text-sm text-muted-foreground mb-3 line-clamp-3">{description}</p>
+                  <p className="text-sm text-muted-foreground mb-4 line-clamp-3">{description}</p>
                 )}
                 
-                {showProgress && (
-                  <div className="mt-auto pt-4">
-                    <div className="flex justify-between text-xs text-muted-foreground mb-1">
-                      <span>{getStatusText()}</span>
-                      <span>{progress}%</span>
+                <div className="mt-auto space-y-4">
+                  {showProgress && (
+                    <div>
+                      <div className="flex justify-between text-xs text-muted-foreground mb-1">
+                        <span>{getStatusText()}</span>
+                        <span>{progress}%</span>
+                      </div>
+                      <Progress 
+                        value={progress} 
+                        className="h-1.5" 
+                        aria-label={`${progress}% completed`}
+                      />
                     </div>
-                    <Progress 
-                      value={progress} 
-                      className="h-1.5" 
-                      aria-label={`${progress}% completed`}
-                    />
-                  </div>
-                )}
-
-                {topics && topics.length > 0 && (
-                  <div className="mt-auto pt-2 flex justify-center">
-                    <button 
-                      onClick={handleFlip} 
-                      onKeyDown={handleKeyDown}
-                      className="flex items-center text-xs text-muted-foreground hover:text-foreground transition-colors p-1 rounded-md focus:outline-none focus:ring-2 focus:ring-primary/30"
-                      aria-label={`Show topics for ${title}`}
+                  )}
+                  
+                  <div className="flex justify-between items-center">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      asChild
+                      className="text-xs flex gap-1.5 items-center"
                     >
-                      <span className="mr-1">Տեսնել թեմաները</span>
-                      <ChevronDown className="h-3 w-3" aria-hidden="true" />
-                    </button>
+                      <Link to={`/module/${id}`}>
+                        <BookOpen className="h-3.5 w-3.5" />
+                        <span>Սովորել</span>
+                      </Link>
+                    </Button>
+                    
+                    {topics && topics.length > 0 && (
+                      <button 
+                        onClick={handleFlip} 
+                        onKeyDown={handleKeyDown}
+                        className="flex items-center text-xs text-muted-foreground hover:text-foreground transition-colors p-1 rounded-md focus:outline-none focus:ring-2 focus:ring-primary/30"
+                        aria-label={`Show topics for ${title}`}
+                      >
+                        <span className="mr-1">Թեմաներ</span>
+                        <ChevronDown className="h-3 w-3" aria-hidden="true" />
+                      </button>
+                    )}
                   </div>
-                )}
+                </div>
               </CardContent>
             </Card>
           </div>
@@ -150,15 +166,28 @@ const ModuleCard: React.FC<ModuleCardProps> = ({ module, delay, showProgress = f
                           • {topic}
                         </li>
                       ))}
-                      {topics.length > 8 && (
-                        <li className="text-muted-foreground font-medium pt-1">
-                          ... և ևս {topics.length - 8} թեմաներ
+                      {topics.length > 6 && (
+                        <li className="text-muted-foreground font-medium pt-2">
+                          ... և ևս {topics.length - 6} թեմաներ
                         </li>
                       )}
                     </ul>
                   ) : (
                     <p className="text-sm text-muted-foreground">Թեմաների ցանկը դատարկ է</p>
                   )}
+                </div>
+                
+                <div className="mt-4 pt-2 border-t dark:border-gray-700">
+                  <Button
+                    variant="default"
+                    size="sm"
+                    asChild
+                    className="w-full text-xs"
+                  >
+                    <Link to={`/module/${id}`}>
+                      Անցնել դեպի ամբողջական թեմաներ
+                    </Link>
+                  </Button>
                 </div>
               </CardContent>
             </Card>

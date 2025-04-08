@@ -22,18 +22,24 @@ const EducationalCycleInfographic: React.FC = () => {
   }, []);
 
   return (
-    <section className="py-8 md:py-16 bg-white dark:bg-gray-900/50 transition-colors duration-300">
-      <div className="container mx-auto px-4 space-y-12 md:space-y-16">
-        {/* Educational Cycle Timeline */}
-        <CycleTimeline />
-        
-        {/* Educational Modules */}
-        <ModulesInfographic />
-        
-        {/* Courses Section */}
-        <CourseSection courses={courses} />
-      </div>
-    </section>
+    <div>
+      {/* Educational Cycle Timeline */}
+      <section className="py-12 md:py-16 bg-white dark:bg-gray-900/50 transition-colors duration-300">
+        <div className="container mx-auto px-4">
+          <CycleTimeline />
+        </div>
+      </section>
+      
+      {/* Educational Modules */}
+      <ModulesInfographic />
+      
+      {/* Courses Section */}
+      <section className="py-12 md:py-16 bg-white dark:bg-gray-900/50 transition-colors duration-300">
+        <div className="container mx-auto px-4">
+          <CourseSection courses={courses} />
+        </div>
+      </section>
+    </div>
   );
 };
 
