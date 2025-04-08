@@ -51,4 +51,5 @@ export interface ProjectProviderProps {
   projectId: number | null;
   initialProject: ProjectTheme | null;
   children: React.ReactNode;
+  canEdit?: boolean;
 }

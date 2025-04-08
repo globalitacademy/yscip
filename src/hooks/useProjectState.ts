@@ -134,6 +134,7 @@ export const useProjectState = (
     showSupervisorDialog,
     setShowSupervisorDialog,
     isEditing,
+    setIsEditing,
     startEditing,
     cancelEditing,
     updateProjectField,
