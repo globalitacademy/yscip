@@ -1,8 +1,10 @@
+
 import React from 'react';
 import { BrowserRouter as Router, Route, Routes, useLocation } from 'react-router-dom';
 import { Toaster } from 'sonner';
 import AuthProvider from './contexts/AuthContext';
 import { ThemeProvider } from './hooks/use-theme';
+import { CollaborativePointers } from './components/collaborative';
 
 // Import Pages
 import Index from './pages/Index';
