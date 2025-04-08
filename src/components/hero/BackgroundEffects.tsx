@@ -63,10 +63,10 @@ const BackgroundEffects: React.FC = () => {
         // Draw node with appropriate opacity based on theme
         ctx.beginPath();
         ctx.arc(node.x, node.y, node.radius, 0, Math.PI * 2);
-        // Use higher opacity in dark mode for better visibility
+        // Use higher opacity in both modes for better visibility
         ctx.fillStyle = theme === 'dark' 
-          ? 'rgba(255, 255, 255, 0.25)' 
-          : 'rgba(var(--foreground), 0.1)';
+          ? 'rgba(255, 255, 255, 0.3)' 
+          : 'rgba(0, 0, 0, 0.25)';
         ctx.fill();
         
         // Connect nearby nodes
@@ -80,11 +80,11 @@ const BackgroundEffects: React.FC = () => {
             ctx.beginPath();
             ctx.moveTo(node.x, node.y);
             ctx.lineTo(node2.x, node2.y);
-            // Use higher opacity in dark mode for connections too
+            // Use higher opacity in both modes for connections too
             ctx.strokeStyle = theme === 'dark'
-              ? `rgba(255, 255, 255, ${0.2 - distance2 / 1000})`
-              : `rgba(var(--foreground), ${0.1 - distance2 / 1000})`;
-            ctx.lineWidth = theme === 'dark' ? 0.5 : 0.3;
+              ? `rgba(255, 255, 255, ${0.25 - distance2 / 1000})`
+              : `rgba(0, 0, 0, ${0.2 - distance2 / 1000})`;
+            ctx.lineWidth = theme === 'dark' ? 0.5 : 0.6;
             ctx.stroke();
           }
         }
