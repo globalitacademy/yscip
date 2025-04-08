@@ -15,7 +15,8 @@ const Header: React.FC = () => {
   
   const isAdmin = user?.role === 'admin';
   
-  return <header className="bg-white shadow-md dark:bg-gray-800 dark:text-white">
+  return (
+    <header className="fixed top-0 left-0 right-0 z-50 bg-white shadow-md dark:bg-gray-800 dark:text-white">
       <div className="container mx-auto px-4 py-4">
         <div className="flex justify-between items-center">
           <Link to="/" className="flex items-center gap-2">
@@ -25,8 +26,6 @@ const Header: React.FC = () => {
             </div>
             <span className="text-xl font-bold text-blue-600 dark:text-blue-400">ԿԿՀ</span>
           </Link>
-          
-          
           
           <div className="flex items-center space-x-4">
             {isAuthenticated && <DatabaseSyncButton />}
@@ -54,6 +53,8 @@ const Header: React.FC = () => {
           </div>
         </div>
       </div>
-    </header>;
+    </header>
+  );
 };
+
 export default Header;

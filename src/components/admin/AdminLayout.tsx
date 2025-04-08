@@ -30,21 +30,21 @@ const AdminLayout: React.FC<AdminLayoutProps> = ({ children, pageTitle }) => {
   };
   
   return (
-    <div className="min-h-screen flex flex-col">
+    <div className="min-h-screen flex flex-col pt-16"> {/* Added pt-16 for header height */}
       <Header />
       <div className="flex-grow flex relative">
         {/* Mobile sidebar toggle */}
         <Button 
           variant="outline" 
           size="icon" 
-          className="md:hidden absolute top-4 left-4 z-50" 
+          className="md:hidden absolute top-4 left-4 z-40" 
           onClick={toggleSidebar}
         >
           <Menu className="h-4 w-4" />
         </Button>
         
         {/* Sidebar - hidden on mobile unless toggled */}
-        <div className={`${isSidebarOpen ? 'block' : 'hidden'} md:block md:static absolute inset-0 z-40 ${theme === 'dark' ? 'bg-gray-900/80' : 'bg-background/80'} backdrop-blur-sm md:bg-transparent md:backdrop-blur-none`}>
+        <div className={`${isSidebarOpen ? 'block' : 'hidden'} md:block md:static absolute inset-0 z-30 ${theme === 'dark' ? 'bg-gray-900/80' : 'bg-background/80'} backdrop-blur-sm md:bg-transparent md:backdrop-blur-none`}>
           <div className="h-full overflow-auto">
             <AdminSidebar onCloseMenu={() => setIsSidebarOpen(false)} />
           </div>

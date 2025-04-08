@@ -57,7 +57,7 @@ const Index = () => {
   }, []);
 
   return (
-    <div className="flex flex-col min-h-screen">
+    <div className="flex flex-col min-h-screen pt-16"> {/* Added pt-16 for header height */}
       {/* Header */}
       <Header />
       

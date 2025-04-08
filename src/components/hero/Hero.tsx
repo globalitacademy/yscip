@@ -1,6 +1,5 @@
 
 import React, { useRef, useState, useEffect } from 'react';
-import CustomCursor from './CustomCursor';
 import BackgroundEffects from './BackgroundEffects';
 import HeroContent from './HeroContent';
 
@@ -68,8 +67,7 @@ const Hero: React.FC = () => {
   };
 
   return (
-    <section ref={heroRef} className="relative min-h-[90vh] flex items-center justify-center overflow-hidden pt-16 bg-gradient-to-b from-background/20 to-background">
-      <CustomCursor mousePosition={mousePosition} cursorVisible={cursorVisible} />
+    <section ref={heroRef} className="relative min-h-[90vh] flex items-center justify-center overflow-hidden bg-gradient-to-b from-background/20 to-background">
       <BackgroundEffects />
       <HeroContent scrollToThemes={scrollToThemes} />
     </section>
