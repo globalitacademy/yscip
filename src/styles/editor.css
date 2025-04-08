@@ -1,0 +1,71 @@
+
+/* Editor specific styles */
+.editing-active {
+  position: relative;
+  transition: all 0.2s ease;
+}
+
+.editing-active:hover {
+  background-color: rgba(0, 0, 0, 0.05);
+  border-radius: 4px;
+}
+
+.editing-active:hover::after {
+  content: '✏️';
+  position: absolute;
+  right: 8px;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 14px;
+}
+
+/* Editing toolbar animation */
+.editing-toolbar-enter {
+  transform: translateY(100%);
+  opacity: 0;
+}
+
+.editing-toolbar-enter-active {
+  transform: translateY(0);
+  opacity: 1;
+  transition: all 0.3s ease;
+}
+
+.editing-toolbar-exit {
+  transform: translateY(0);
+  opacity: 1;
+}
+
+.editing-toolbar-exit-active {
+  transform: translateY(100%);
+  opacity: 0;
+  transition: all 0.3s ease;
+}
+
+/* Editing field styles */
+.editable-field {
+  border: 1px dashed transparent;
+  transition: all 0.2s ease;
+}
+
+.editable-field.is-editing {
+  border-color: var(--primary-300);
+  background-color: var(--primary-50);
+  border-radius: 4px;
+}
+
+/* Editable badge styles */
+.editable-badge {
+  cursor: pointer;
+  transition: all 0.2s ease;
+  border: 1px solid transparent;
+}
+
+.editable-badge:hover {
+  border-color: var(--primary-300);
+}
+
+.editable-badge.is-editing {
+  background-color: var(--background);
+  border-color: var(--border);
+}

@@ -7,9 +7,21 @@ import { useNavigate } from 'react-router-dom';
 import ImageUploader from '@/components/common/image-uploader';
 import ProjectImageDialog from '@/components/projects/ProjectImageDialog';
 import { getProjectImage } from '@/lib/getProjectImage';
+import EditableField from '@/components/common/EditableField';
 
 const ProjectHeader = () => {
-  const { project, canEdit, updateProject, projectStatus, isReserved, projectProgress } = useProject();
+  const { 
+    project, 
+    canEdit, 
+    updateProject, 
+    projectStatus, 
+    isReserved, 
+    projectProgress,
+    isEditing,
+    startEditing,
+    updateProjectField
+  } = useProject();
+  
   const navigate = useNavigate();
   const [isEditingImage, setIsEditingImage] = useState(false);
   const [imageDialogOpen, setImageDialogOpen] = useState(false);
@@ -99,17 +111,31 @@ const ProjectHeader = () => {
                 variant="ghost"
                 size="sm"
                 className="text-white hover:bg-white/20"
-                onClick={toggleImageEditing}
+                onClick={isEditing ? toggleImageEditing : startEditing}
               >
                 <Edit className="mr-2 h-4 w-4" />
-                Փոխել նկարը
+                {isEditing ? 'Փոխել նկարը' : 'Խմբագրել նախագիծը'}
               </Button>
             </div>
           )}
 
           <div className="absolute bottom-4 left-4 text-white">
-            <h1 className="text-2xl font-bold">{project.title}</h1>
-            <p className="text-sm opacity-90">{project.description}</p>
+            <EditableField 
+              value={project.title}
+              onChange={(value) => updateProjectField('title', value)}
+              className="text-white"
+              size="xl"
+              isEditing={isEditing}
+              showEditButton={false}
+            />
+            <EditableField 
+              value={project.description}
+              onChange={(value) => updateProjectField('description', value)}
+              className="text-white opacity-90"
+              size="sm"
+              isEditing={isEditing}
+              showEditButton={false}
+            />
           </div>
         </>
       )}

@@ -1,5 +1,5 @@
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { v4 as uuidv4 } from 'uuid';
 import { ProjectTheme, Task, TimelineEvent } from '@/data/projectThemes';
 import { 
@@ -9,6 +9,8 @@ import {
   isProjectReservedByUser
 } from '@/utils/projectUtils';
 import { User } from '@/types/user';
+import { toast } from 'sonner';
+import * as projectService from '@/services/projectService';
 
 export const useProjectState = (
   projectId: number | null,
@@ -23,6 +25,9 @@ export const useProjectState = (
   const [projectReservationsState, setProjectReservationsState] = useState<any[]>([]);
   const [selectedSupervisor, setSelectedSupervisor] = useState<string | null>(null);
   const [showSupervisorDialog, setShowSupervisorDialog] = useState(false);
+  const [isEditing, setIsEditing] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
+  const [unsavedChanges, setUnsavedChanges] = useState(false);
 
   // Load project reservations from localStorage
   useEffect(() => {
@@ -61,6 +66,56 @@ export const useProjectState = (
     }
   }, [tasks.length, project, user]);
 
+  // Function to start editing mode
+  const startEditing = useCallback(() => {
+    setIsEditing(true);
+  }, []);
+
+  // Function to cancel editing mode
+  const cancelEditing = useCallback(() => {
+    if (initialProject) {
+      setProject(initialProject);
+      setTimeline(initialProject.timeline || []);
+      setTasks(initialProject.tasks || []);
+    }
+    setIsEditing(false);
+    setUnsavedChanges(false);
+  }, [initialProject]);
+
+  // Function to update a specific project field
+  const updateProjectField = useCallback((field: keyof ProjectTheme, value: any) => {
+    setProject(prev => {
+      if (!prev) return prev;
+      return { ...prev, [field]: value };
+    });
+    setUnsavedChanges(true);
+  }, []);
+
+  // Function to save project changes
+  const saveProject = useCallback(async () => {
+    if (!project || !projectId) return false;
+    
+    setIsSaving(true);
+    try {
+      const success = await projectService.updateProject(projectId, project);
+      if (success) {
+        toast.success("Նախագծի փոփոխությունները հաջողությամբ պահպանվել են");
+        setIsEditing(false);
+        setUnsavedChanges(false);
+        return true;
+      } else {
+        toast.error("Նախագծի պահպանման ժամանակ սխալ է տեղի ունեցել");
+        return false;
+      }
+    } catch (error) {
+      console.error("Error saving project:", error);
+      toast.error("Նախագծի պահպանման ժամանակ սխալ է տեղի ունեցել");
+      return false;
+    } finally {
+      setIsSaving(false);
+    }
+  }, [project, projectId]);
+
   return {
     project,
     setProject,
@@ -77,6 +132,13 @@ export const useProjectState = (
     selectedSupervisor,
     setSelectedSupervisor,
     showSupervisorDialog,
-    setShowSupervisorDialog
+    setShowSupervisorDialog,
+    isEditing,
+    startEditing,
+    cancelEditing,
+    updateProjectField,
+    saveProject,
+    isSaving,
+    unsavedChanges
   };
 };
