@@ -12,5 +12,7 @@ export { default as ModuleCard } from './ModuleCard';
 export { default as CycleTimeline } from './CycleTimeline';
 export { default as CycleStage } from './CycleStage';
 export { default as CourseSection } from './CourseSection';
-export { educationalModules } from './moduleData';
+
+// Export modules data from the new structure
+export { educationalModules } from './modules';
 export type { EducationalModule } from './types';

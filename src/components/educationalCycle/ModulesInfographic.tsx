@@ -3,7 +3,7 @@ import React from 'react';
 import { FadeIn } from '@/components/LocalTransitions';
 import { useAuth } from '@/contexts/AuthContext';
 import ModuleCard from './ModuleCard';
-import { educationalModules } from './moduleData';
+import { educationalModules } from './modules';
 
 export const ModulesInfographic: React.FC = () => {
   const { isAuthenticated } = useAuth();
