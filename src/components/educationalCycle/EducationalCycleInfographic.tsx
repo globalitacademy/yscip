@@ -22,9 +22,9 @@ const EducationalCycleInfographic: React.FC = () => {
   }, []);
 
   return (
-    <div>
+    <div className="dark:bg-gray-900">
       {/* Educational Cycle Timeline */}
-      <section className="py-12 md:py-16 bg-white dark:bg-gray-900/50 transition-colors duration-300">
+      <section className="py-12 md:py-16 bg-white dark:bg-gray-900/80 transition-colors duration-300">
         <div className="container mx-auto px-4">
           <CycleTimeline />
         </div>
@@ -34,7 +34,7 @@ const EducationalCycleInfographic: React.FC = () => {
       <ModulesInfographic />
       
       {/* Courses Section */}
-      <section className="py-12 md:py-16 bg-white dark:bg-gray-900/50 transition-colors duration-300">
+      <section className="py-12 md:py-16 bg-white dark:bg-gray-900/80 transition-colors duration-300">
         <div className="container mx-auto px-4">
           <CourseSection courses={courses} />
         </div>

@@ -71,10 +71,10 @@ export const HomePageModules: React.FC = () => {
 
   if (loading) {
     return (
-      <div className="py-16 bg-gray-50">
+      <div className="py-16 bg-gray-50 dark:bg-gray-900/40">
         <div className="container mx-auto px-4 text-center">
-          <Loader2 className="h-8 w-8 animate-spin mx-auto mb-4" />
-          <p>Դասընթացների բեռնում...</p>
+          <Loader2 className="h-8 w-8 animate-spin mx-auto mb-4 dark:text-gray-300" />
+          <p className="dark:text-gray-300">Դասընթացների բեռնում...</p>
         </div>
       </div>
     );
@@ -82,25 +82,25 @@ export const HomePageModules: React.FC = () => {
 
   if (courses.length === 0) {
     return (
-      <div className="py-16 bg-gray-50">
+      <div className="py-16 bg-gray-50 dark:bg-gray-900/40">
         <div className="container mx-auto px-4 text-center">
-          <p className="text-muted-foreground">Դասընթացներ չեն գտնվել</p>
+          <p className="text-muted-foreground dark:text-gray-400">Դասընթացներ չեն գտնվել</p>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="py-16 bg-gray-50">
+    <div className="py-16 bg-gray-50 dark:bg-gray-900/40">
       <div className="container mx-auto px-4">
         <FadeIn delay="delay-100">
-          <h2 className="text-3xl font-bold mb-4 text-center">
+          <h2 className="text-3xl font-bold mb-4 text-center dark:text-gray-100">
             Մասնագիտական դասընթացներ
           </h2>
         </FadeIn>
         
         <FadeIn delay="delay-200">
-          <p className="text-muted-foreground text-center max-w-2xl mx-auto mb-8">
+          <p className="text-muted-foreground dark:text-gray-300 text-center max-w-2xl mx-auto mb-8">
             Մեր առաջարկվող դասընթացները, որոնք օգնում են ձեռք բերել մասնագիտական հմտություններ
           </p>
         </FadeIn>
@@ -120,7 +120,7 @@ export const HomePageModules: React.FC = () => {
         
         <FadeIn delay="delay-400">
           <div className="flex justify-center mt-8">
-            <Button asChild variant="outline">
+            <Button asChild variant="outline" className="dark:bg-gray-800 dark:text-gray-200 dark:border-gray-700 dark:hover:bg-gray-700">
               <Link to="/courses">
                 Դիտել բոլոր դասընթացները <ArrowRight className="ml-2 h-4 w-4" />
               </Link>

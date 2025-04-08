@@ -48,13 +48,13 @@ const CycleTimeline: React.FC = () => {
   return (
     <section aria-labelledby="educational-cycle-title">
       <FadeIn delay="delay-100">
-        <h2 id="educational-cycle-title" className="text-2xl md:text-3xl lg:text-4xl font-bold mb-3 md:mb-4 text-center text-foreground">
+        <h2 id="educational-cycle-title" className="text-2xl md:text-3xl lg:text-4xl font-bold mb-3 md:mb-4 text-center text-foreground dark:text-gray-100">
           Ուսումնական ցիկլ
         </h2>
       </FadeIn>
       
       <FadeIn delay="delay-200">
-        <p className="text-muted-foreground text-center max-w-2xl mx-auto mb-8 md:mb-12 lg:mb-16">
+        <p className="text-muted-foreground dark:text-gray-300 text-center max-w-2xl mx-auto mb-8 md:mb-12 lg:mb-16">
           Ծանոթացեք ուսման ամբողջ ընթացքին՝ ընդունելությունից մինչև ավարտական դիպլոմի ստացում
         </p>
       </FadeIn>

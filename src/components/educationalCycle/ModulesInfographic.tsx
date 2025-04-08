@@ -15,16 +15,16 @@ export const ModulesInfographic: React.FC = () => {
   };
 
   return (
-    <section className="py-12 md:py-16 bg-gray-50 dark:bg-gray-900/20" id="modules">
+    <section className="py-12 md:py-16 bg-gray-50 dark:bg-gray-900/40" id="modules">
       <div className="container mx-auto px-4">
         <FadeIn delay="delay-100">
-          <h2 className="text-2xl md:text-3xl font-bold mb-3 md:mb-4 text-center text-foreground">
+          <h2 className="text-2xl md:text-3xl font-bold mb-3 md:mb-4 text-center text-foreground dark:text-gray-100">
             Ուսումնական մոդուլներ
           </h2>
         </FadeIn>
         
         <FadeIn delay="delay-200">
-          <p className="text-muted-foreground text-center max-w-2xl mx-auto mb-8 md:mb-12">
+          <p className="text-muted-foreground dark:text-gray-300 text-center max-w-2xl mx-auto mb-8 md:mb-12">
             {getIntroDescription()}
           </p>
         </FadeIn>
@@ -43,7 +43,7 @@ export const ModulesInfographic: React.FC = () => {
         {!isAuthenticated && (
           <FadeIn delay="delay-300">
             <div className="text-center mt-10">
-              <p className="text-muted-foreground">
+              <p className="text-muted-foreground dark:text-gray-400">
                 Մուտք գործեք համակարգ՝ ուսումնական առաջընթացը տեսնելու համար
               </p>
             </div>

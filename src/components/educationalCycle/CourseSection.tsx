@@ -14,13 +14,13 @@ const CourseSection: React.FC<CourseSectionProps> = ({ courses }) => {
   return (
     <div className="mt-24">
       <FadeIn delay="delay-100">
-        <h2 className="text-3xl font-bold mb-4 text-center text-foreground">
+        <h2 className="text-3xl font-bold mb-4 text-center text-foreground dark:text-gray-100">
           Մեր կուրսերը
         </h2>
       </FadeIn>
       
       <FadeIn delay="delay-200">
-        <p className="text-muted-foreground text-center max-w-2xl mx-auto mb-12">
+        <p className="text-muted-foreground dark:text-gray-300 text-center max-w-2xl mx-auto mb-12">
           Տեսեք մեր առաջարկած կրթական ծրագրերը ուսումնական ցիկլի շրջանակներում
         </p>
       </FadeIn>
@@ -28,9 +28,9 @@ const CourseSection: React.FC<CourseSectionProps> = ({ courses }) => {
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         {courses.map((course) => (
           <div key={course.id} className="bg-white dark:bg-gray-800 border dark:border-gray-700 rounded-lg shadow-sm p-6 hover:shadow-md transition-shadow">
-            <h3 className="text-xl font-semibold mb-2 text-foreground">{course.name}</h3>
-            <p className="text-sm text-muted-foreground mb-4">{course.description}</p>
-            <div className="flex items-center text-sm text-muted-foreground">
+            <h3 className="text-xl font-semibold mb-2 text-foreground dark:text-gray-100">{course.name}</h3>
+            <p className="text-sm text-muted-foreground dark:text-gray-300 mb-4">{course.description}</p>
+            <div className="flex items-center text-sm text-muted-foreground dark:text-gray-400">
               <ClipboardCheck className="w-4 h-4 mr-1" />
               <span>{course.modules.length} մոդուլ</span>
               <span className="mx-2">•</span>
