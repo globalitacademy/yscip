@@ -24,12 +24,14 @@ interface TimelineProps {
   events: TimelineEvent[];
   onAddEvent?: (event: Omit<TimelineEvent, 'id'>) => void;
   onCompleteEvent?: (eventId: string) => void;
+  isEditing?: boolean; // Add isEditing prop
 }
 
 const Timeline: React.FC<TimelineProps> = ({ 
   events = [],
   onAddEvent,
-  onCompleteEvent 
+  onCompleteEvent,
+  isEditing = false // Set default value to false
 }) => {
   const currentUser = getCurrentUser();
   const permissions = rolePermissions[currentUser.role];
@@ -74,7 +76,7 @@ const Timeline: React.FC<TimelineProps> = ({
     <div className="space-y-6">
       <div className="flex justify-between items-center">
         <h3 className="text-xl font-semibold">Ծրագրի ժամանակացույց</h3>
-        {permissions.canAddTimeline && (
+        {(permissions.canAddTimeline || isEditing) && (
           <Dialog open={open} onOpenChange={setOpen}>
             <DialogTrigger asChild>
               <Button size="sm" className="gap-1">
@@ -159,7 +161,7 @@ const Timeline: React.FC<TimelineProps> = ({
                   {event.description}
                 </p>
                 
-                {!event.isCompleted && permissions.canApproveTimelineEvents && (
+                {!event.isCompleted && (permissions.canApproveTimelineEvents || isEditing) && (
                   <div className="mt-4 flex justify-end">
                     <Button 
                       variant="ghost" 

@@ -14,12 +14,14 @@ interface TaskManagerProps {
   tasks: Task[];
   onAddTask?: (task: Omit<Task, 'id'>) => void;
   onUpdateTaskStatus?: (taskId: string, status: Task['status']) => void;
+  isEditing?: boolean; // Add isEditing prop
 }
 
 const TaskManager: React.FC<TaskManagerProps> = ({ 
   tasks = [],
   onAddTask,
-  onUpdateTaskStatus
+  onUpdateTaskStatus,
+  isEditing = false  // Set default value to false
 }) => {
   const currentUser = getCurrentUser();
   const permissions = rolePermissions[currentUser.role];
@@ -52,7 +54,7 @@ const TaskManager: React.FC<TaskManagerProps> = ({
     <div className="space-y-6">
       <div className="flex justify-between items-center">
         <h3 className="text-xl font-semibold">Առաջադրանքներ</h3>
-        {permissions.canAddTasks && (
+        {(permissions.canAddTasks || isEditing) && (
           <Dialog open={open} onOpenChange={setOpen}>
             <DialogTrigger asChild>
               <Button size="sm" className="gap-1">
@@ -79,6 +81,7 @@ const TaskManager: React.FC<TaskManagerProps> = ({
             statusColor={getTaskStatusColor(status)}
             onUpdateStatus={updateStatus}
             students={students}
+            isEditing={isEditing}
           />
         ))}
       </div>

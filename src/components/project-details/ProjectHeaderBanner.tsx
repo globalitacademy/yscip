@@ -1,18 +1,14 @@
 
-import React, { useState, useEffect } from 'react';
+import React from 'react';
+import { ArrowLeft, Calendar, Clock, Tag, Users } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
-import { useProjectManagement } from '@/contexts/ProjectManagementContext';
-import { useAuth } from '@/contexts/AuthContext';
 import { useProject } from '@/contexts/ProjectContext';
 import { ProjectTheme } from '@/data/projectThemes';
-import { ArrowLeft } from 'lucide-react';
-import EditableField from '@/components/common/EditableField';
-import { toast } from 'sonner';
-import ProjectBadges from './ProjectBadges';
-import ProjectTechStack from './ProjectTechStack';
+import { getProjectImage } from '@/lib/getProjectImage';
 import ProjectHeaderActions from './ProjectHeaderActions';
 import ProjectBannerBackground from './ProjectBannerBackground';
+import ProjectTechStack from './ProjectTechStack';
 
 interface ProjectHeaderBannerProps {
   project: ProjectTheme;
@@ -20,54 +16,29 @@ interface ProjectHeaderBannerProps {
 
 const ProjectHeaderBanner: React.FC<ProjectHeaderBannerProps> = ({ project }) => {
   const navigate = useNavigate();
-  const { user } = useAuth();
-  const { handleEditInit } = useProjectManagement();
-  const { canEdit, isEditing, setIsEditing, updateProject } = useProject();
-  const [isSaving, setIsSaving] = useState(false);
-  
-  const [editedProject, setEditedProject] = useState<Partial<ProjectTheme>>({
-    title: project.title,
-    description: project.description,
-    category: project.category,
-    is_public: project.is_public,
-    image: project.image
-  });
-  
-  // Update local state when project changes
-  useEffect(() => {
-    setEditedProject({
-      title: project.title,
-      description: project.description,
-      category: project.category,
-      is_public: project.is_public,
-      image: project.image
-    });
-  }, [project]);
-  
-  // Safety check to prevent errors if project is undefined
-  if (!project) {
-    return (
-      <div className="bg-gray-100 p-4 rounded-lg shadow mb-4">
-        <p className="text-gray-500">Project information unavailable</p>
-      </div>
-    );
-  }
-  
+  const { isEditing, setIsEditing, canEdit, updateProject } = useProject();
+  const [isSaving, setIsSaving] = React.useState(false);
+  const [bannerImage, setBannerImage] = React.useState(project.image || '');
+  const [title, setTitle] = React.useState(project.title || '');
+  const [description, setDescription] = React.useState(project.description || '');
+
   const handleEditClick = async () => {
     if (isEditing) {
       // Save changes
       setIsSaving(true);
       try {
-        const success = await updateProject(editedProject);
+        // Update project with new values
+        const success = await updateProject({ 
+          title, 
+          description,
+          image: bannerImage
+        });
+        
         if (success) {
           setIsEditing(false);
-          toast.success('Փոփոխությունները հաջողությամբ պահպանվել են');
-        } else {
-          toast.error('Փոփոխությունների պահպանման ժամանակ սխալ է տեղի ունեցել');
         }
       } catch (error) {
-        console.error('Error updating project:', error);
-        toast.error('Փոփոխությունների պահպանման ժամանակ սխալ է տեղի ունեցել');
+        console.error('Failed to update project:', error);
       } finally {
         setIsSaving(false);
       }
@@ -76,133 +47,82 @@ const ProjectHeaderBanner: React.FC<ProjectHeaderBannerProps> = ({ project }) =>
       setIsEditing(true);
     }
   };
-  
+
   const handleCancelEdit = () => {
-    setEditedProject({
-      title: project.title,
-      description: project.description,
-      category: project.category,
-      is_public: project.is_public,
-      image: project.image
-    });
+    // Reset values to original
+    setTitle(project.title || '');
+    setDescription(project.description || '');
+    setBannerImage(project.image || '');
     setIsEditing(false);
-    toast.info('Խմբագրումը չեղարկվել է');
   };
-  
-  const goBack = () => {
-    navigate('/projects');
+
+  const handleImageChange = (url: string) => {
+    setBannerImage(url);
   };
-  
-  const handleFullEdit = () => {
-    // Navigate to the edit page
-    navigate(`/project/edit/${project.id}`);
-  };
-  
-  const handleImageChange = async (imageUrl: string) => {
-    setEditedProject(prev => {
-      const updated = {...prev, image: imageUrl};
-      
-      // If we're not in full editing mode, immediately save the image change
-      if (!isEditing) {
-        updateProject({ image: imageUrl })
-          .then(success => {
-            if (!success) {
-              toast.error('Նկարի պահպանման ժամանակ սխալ է տեղի ունեցել');
-            }
-          })
-          .catch(error => {
-            console.error('Error saving image:', error);
-            toast.error('Նկարի պահպանման ժամանակ սխալ է տեղի ունեցել');
-          });
-      }
-      
-      return updated;
-    });
-  };
-  
-  const handleCategoryChange = (value: string) => {
-    setEditedProject({...editedProject, category: value});
-  };
-  
-  const handleIsPublicChange = (value: boolean) => {
-    setEditedProject({...editedProject, is_public: value});
-  };
-  
+
   return (
-    <div className="relative mb-8">
-      {/* Background image with overlay */}
+    <div className="relative pb-6 mb-6">
+      {/* Banner background */}
       <ProjectBannerBackground 
-        image={editedProject.image}
+        image={bannerImage}
         isEditing={isEditing}
         canEdit={canEdit}
         onImageChange={handleImageChange}
-        onEditClick={() => setIsEditing(true)}
+        onEditClick={handleEditClick}
       />
       
-      {/* Content */}
-      <div className="relative container mx-auto px-4 pt-16 pb-6">
-        {/* Back button */}
+      {/* Content overlaid on the banner */}
+      <div className="container mx-auto px-4 relative pt-72 md:pt-96">
         <Button 
-          variant="ghost" 
-          className="mb-4 text-white hover:bg-white/20 transition-colors"
-          onClick={goBack}
+          variant="outline" 
+          size="sm"
+          className="mb-4 bg-white/10 hover:bg-white/20 text-white border-white/30"
+          onClick={() => navigate('/projects')}
         >
-          <ArrowLeft className="h-4 w-4 mr-2" />
-          Նախագծերի ցանկ
+          <ArrowLeft className="h-4 w-4 mr-2" /> Վերադառնալ նախագծերին
         </Button>
         
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-2">
-          {isEditing ? (
-            <EditableField 
-              value={editedProject.title || ''}
-              onChange={(value) => setEditedProject({...editedProject, title: value})}
-              size="xl"
-              className="text-3xl font-bold text-white bg-black/40 rounded"
-              placeholder="Մուտքագրեք նախագծի անվանումը"
-              showEditButton={false}
+        <div className="flex flex-col md:flex-row justify-between gap-4 items-start md:items-end">
+          <div className="space-y-2 max-w-3xl">
+            {isEditing ? (
+              <input
+                type="text"
+                value={title}
+                onChange={(e) => setTitle(e.target.value)}
+                className="text-3xl md:text-4xl font-bold text-white bg-transparent border-b border-white/30 focus:border-white outline-none pb-1 w-full"
+                placeholder="Նախագծի վերնագիր"
+              />
+            ) : (
+              <h1 className="text-3xl md:text-4xl font-bold text-white">{title}</h1>
+            )}
+            
+            {isEditing ? (
+              <textarea
+                value={description}
+                onChange={(e) => setDescription(e.target.value)}
+                className="text-sm md:text-base text-white/80 bg-transparent border border-white/30 focus:border-white outline-none p-2 w-full rounded-md resize-none"
+                rows={3}
+                placeholder="Նախագծի համառոտ նկարագրություն"
+              />
+            ) : (
+              <p className="text-sm md:text-base text-white/80">{description}</p>
+            )}
+            
+            <ProjectTechStack 
+              duration={project.duration}
+              techStackCount={project.techStack?.length || 0}
+              organizationName={project.organization?.name}
             />
-          ) : (
-            <h1 className="text-3xl font-bold text-white">{project.title}</h1>
-          )}
+          </div>
           
           <ProjectHeaderActions 
-            canEdit={canEdit}
+            canEdit={canEdit} 
             isEditing={isEditing}
             isSaving={isSaving}
             onEditClick={handleEditClick}
             onCancelEdit={handleCancelEdit}
           />
         </div>
-        
-        <div className="flex flex-wrap gap-3 mb-4">
-          <ProjectBadges 
-            category={editedProject.category}
-            complexity={project.complexity}
-            isPublic={editedProject.is_public}
-            isEditing={isEditing}
-            onCategoryChange={handleCategoryChange}
-            onIsPublicChange={handleIsPublicChange}
-          />
-        </div>
-        
-        {isEditing ? (
-          <EditableField 
-            value={editedProject.description || ''}
-            onChange={(value) => setEditedProject({...editedProject, description: value})}
-            multiline={true}
-            className="text-white text-lg mb-4 max-w-3xl bg-black/40 rounded"
-            placeholder="Մուտքագրեք նախագծի նկարագրությունը"
-            showEditButton={false}
-          />
-        ) : (
-          <p className="text-white text-lg mb-4 max-w-3xl">{project.description}</p>
-        )}
-        
-        <ProjectTechStack 
-          duration={project.duration}
-          techStackCount={project.techStack?.length}
-          organizationName={project.organizationName}
-        />
       </div>
     </div>
   );
