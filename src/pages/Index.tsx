@@ -1,8 +1,7 @@
-
 import React, { useEffect, lazy, Suspense } from 'react';
 import { Button } from '@/components/ui/button';
 import { ArrowRight } from 'lucide-react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { useInView } from '@/hooks/useInView';
 import Footer from '@/components/Footer';
 import { ProjectManagementProvider } from '@/contexts/ProjectManagementContext';
@@ -42,6 +41,7 @@ const Index = () => {
   const [modulesRef, modulesInView] = useInView<HTMLDivElement>();
   const [projectsRef, projectsInView] = useInView<HTMLDivElement>();
   const { user } = useAuth();
+  const navigate = useNavigate();
 
   // Scroll to module on load if URL contains module hash
   useEffect(() => {
@@ -56,6 +56,10 @@ const Index = () => {
       }, 500); // Small timeout to ensure components are rendered
     }
   }, []);
+
+  const handleProjectsViewAll = () => {
+    navigate('/projects');
+  };
 
   return (
     <div className="flex flex-col min-h-screen pt-16"> {/* Added pt-16 for header height */}
@@ -145,8 +149,8 @@ const Index = () => {
             </ProjectManagementProvider>
           </Suspense>
           <div className="flex justify-center mt-8">
-            <Button asChild variant="outline">
-              <Link to="/projects">Դիտել բոլոր նախագծերը <ArrowRight className="ml-2 h-4 w-4" /></Link>
+            <Button variant="outline" onClick={handleProjectsViewAll}>
+              Դիտել բոլոր նախագծերը <ArrowRight className="ml-2 h-4 w-4" />
             </Button>
           </div>
         </div>
