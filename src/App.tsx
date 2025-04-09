@@ -11,7 +11,8 @@ import LoginPage from './pages/LoginPage';
 import RegisterPage from './pages/RegisterPage';
 import VerifyEmail from './pages/VerifyEmail';
 import NotFound from './pages/NotFound';
-import ModuleDetailPage from './pages/ModuleDetailPage'; // Add import for the new page
+import ModuleDetailPage from './pages/ModuleDetailPage';
+import ProjectsPage from './pages/ProjectsPage'; // Import the new page
 
 // Admin Pages
 import UserManagementPage from './pages/UserManagementPage';
@@ -57,6 +58,9 @@ function App() {
             
             {/* Module Detail Route */}
             <Route path="/module/:id" element={<ModuleDetailPage />} />
+            
+            {/* Projects Page Route */}
+            <Route path="/projects" element={<ProjectsPage />} />
             
             {/* Admin Routes */}
             <Route path="/admin" element={<AdminRedirectPage />} />
