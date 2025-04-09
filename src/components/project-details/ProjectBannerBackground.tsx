@@ -1,16 +1,16 @@
 
-import React, { useState } from 'react';
-import { Edit } from 'lucide-react';
-import ImageUploader from '@/components/common/image-uploader';
+import React from 'react';
 import { cn } from '@/lib/utils';
-import { toast } from 'sonner';
+import { Edit } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import ImageUploader from '@/components/common/image-uploader/ImageUploader';
 
 interface ProjectBannerBackgroundProps {
   image?: string;
   isEditing: boolean;
   canEdit: boolean;
-  onImageChange: (imageUrl: string) => void;
-  onEditClick?: () => void;
+  onImageChange: (url: string) => void;
+  onEditClick: () => void;
 }
 
 const ProjectBannerBackground: React.FC<ProjectBannerBackgroundProps> = ({
@@ -20,60 +20,43 @@ const ProjectBannerBackground: React.FC<ProjectBannerBackgroundProps> = ({
   onImageChange,
   onEditClick
 }) => {
-  const [isUploading, setIsUploading] = useState(false);
-  
-  // Default image if none is provided
-  const backgroundImage = image 
-    ? `url(${image})` 
-    : 'url(https://images.unsplash.com/photo-1629904853716-f0bc54eea481?q=80&w=2070)';
-
-  const handleImageChange = async (newImageUrl: string) => {
-    setIsUploading(true);
-    try {
-      onImageChange(newImageUrl);
-      toast.success('Նկարը հաջողությամբ պահպանվել է');
-    } catch (error) {
-      console.error('Error saving image:', error);
-      toast.error('Նկարի պահպանման ժամանակ սխալ է տեղի ունեցել');
-    } finally {
-      setIsUploading(false);
-    }
-  };
-
-  if (isEditing) {
-    return (
-      <ImageUploader
-        currentImage={image || backgroundImage.replace(/^url\(["']?|["']?\)$/g, '')}
-        onImageChange={handleImageChange}
-        previewHeight="h-64"
-        overlayMode={true}
-        className="w-full"
-        disabled={isUploading}
-      />
-    );
-  }
+  // Default image if none provided
+  const imageUrl = image || 'https://source.unsplash.com/random/1600x900/?code';
 
   return (
-    <div className="relative">
-      <div 
-        className="absolute inset-0 h-64 bg-cover bg-center"
-        style={{ backgroundImage }}
-      >
-        <div className="absolute inset-0 bg-gradient-to-b from-black/70 to-black/30"></div>
-      </div>
-      
-      {/* Add image edit button when not in editing mode but user can edit */}
-      {canEdit && !isEditing && (
-        <button 
-          onClick={(e) => {
-            e.stopPropagation();
-            if (onEditClick) onEditClick();
-          }}
-          className="absolute top-4 right-20 z-10 bg-white/80 hover:bg-white/100 p-2 rounded-full shadow-md transition-colors"
-          title="Փոխել նկարը"
-        >
-          <Edit size={16} />
-        </button>
+    <div className="absolute inset-0 h-64 md:h-80">
+      {isEditing ? (
+        <ImageUploader
+          currentImage={imageUrl}
+          onImageChange={onImageChange}
+          previewHeight="h-64 md:h-80"
+          overlayMode={true}
+        />
+      ) : (
+        <>
+          <div className="h-full w-full bg-gradient-to-r from-primary/20 to-secondary/20">
+            <img 
+              src={imageUrl}
+              alt="Project banner" 
+              className="h-full w-full object-cover object-center opacity-60"
+            />
+          </div>
+          <div 
+            className="absolute inset-0 bg-gradient-to-b from-transparent via-black/60 to-black/80"
+            aria-hidden="true"
+          ></div>
+          
+          {canEdit && (
+            <Button 
+              variant="outline" 
+              size="sm"
+              className="absolute right-4 top-4 bg-white/20 hover:bg-white/30 text-white border-white/30"
+              onClick={onEditClick}
+            >
+              <Edit className="h-4 w-4 mr-1.5" /> Խմբագրել նկարը
+            </Button>
+          )}
+        </>
       )}
     </div>
   );

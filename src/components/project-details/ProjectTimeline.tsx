@@ -1,20 +1,7 @@
-import React from 'react';
-import { format, addDays, isBefore, isAfter, parseISO } from 'date-fns';
-import { Task, TimelineEvent } from '@/data/projectThemes';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { cn } from '@/lib/utils';
-import { Badge } from '@/components/ui/badge';
-import { CalendarRange, Clock, AlertCircle } from 'lucide-react';
-import { normalizeStatus } from '@/utils/taskUtils';
 
-interface TimelineItem {
-  id: string;
-  title: string;
-  startDate: Date;
-  endDate: Date;
-  status: 'todo' | 'in-progress' | 'review' | 'done' | 'completed';
-  type: 'task' | 'event';
-}
+import React from 'react';
+import { Task, TimelineEvent } from '@/data/projectThemes';
+import { Chart } from 'react-google-charts';
 
 interface ProjectTimelineProps {
   timeline: TimelineEvent[];
@@ -22,178 +9,104 @@ interface ProjectTimelineProps {
 }
 
 const ProjectTimeline: React.FC<ProjectTimelineProps> = ({ timeline, tasks }) => {
-  const today = new Date();
-  
-  const timelineItems: TimelineItem[] = [
-    ...timeline.map(event => ({
-      id: event.id,
-      title: event.title,
-      startDate: parseISO(event.date),
-      endDate: addDays(parseISO(event.date), 1), // End date is 1 day after for events
-      status: event.isCompleted ? 'completed' as const : 'todo' as const,
-      type: 'event' as const
-    })),
-    ...tasks.map(task => {
-      const normalizedStatus = normalizeStatus(task.status);
-      
-      return {
-        id: task.id,
-        title: task.title,
-        startDate: task.dueDate ? addDays(parseISO(task.dueDate), -7) : addDays(today, -7), // Assume 7 days for tasks without dates
-        endDate: task.dueDate ? parseISO(task.dueDate) : today,
-        status: normalizedStatus === 'done' ? 'completed' as const : normalizedStatus,
-        type: 'task' as const
-      };
-    })
-  ].sort((a, b) => a.startDate.getTime() - b.startDate.getTime());
-  
-  const startDate = timelineItems.length > 0 
-    ? new Date(Math.min(...timelineItems.map(item => item.startDate.getTime()))) 
-    : addDays(today, -15);
-  const endDate = timelineItems.length > 0 
-    ? new Date(Math.max(...timelineItems.map(item => item.endDate.getTime()))) 
-    : addDays(today, 15);
-  
-  const days = Math.max(30, Math.ceil((endDate.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24)));
-  const dateRange = Array.from({ length: days + 1 }, (_, i) => addDays(startDate, i));
-  
-  const getStatusColor = (status: TimelineItem['status'], isLate: boolean) => {
-    if (isLate) return 'bg-red-500/20 border-red-500';
+  // Prepare data for Gantt chart
+  const prepareGanttData = () => {
+    const columns = [
+      { type: 'string', label: 'Task ID' },
+      { type: 'string', label: 'Task Name' },
+      { type: 'date', label: 'Start Date' },
+      { type: 'date', label: 'End Date' },
+      { type: 'number', label: 'Duration' },
+      { type: 'number', label: 'Percent Complete' },
+      { type: 'string', label: 'Dependencies' },
+    ];
     
-    switch (status) {
-      case 'todo': return 'bg-slate-200/50 border-slate-400';
-      case 'in-progress': return 'bg-blue-200/50 border-blue-400';
-      case 'review': return 'bg-amber-200/50 border-amber-400';
-      case 'done':
-      case 'completed': return 'bg-green-200/50 border-green-400';
-      default: return 'bg-slate-200/50 border-slate-400';
-    }
+    // Add timeline events as tasks
+    const rows = timeline.map((event, index) => {
+      const date = new Date(event.date);
+      const endDate = new Date(date);
+      endDate.setDate(date.getDate() + 1); // 1-day duration for timeline events
+      
+      return [
+        `timeline-${index}`,
+        event.title,
+        date,
+        endDate,
+        null,
+        event.isCompleted ? 100 : 0,
+        null
+      ];
+    });
+    
+    // Add tasks with estimated durations
+    tasks.forEach((task, index) => {
+      const today = new Date();
+      const startDate = new Date(today);
+      startDate.setDate(today.getDate() - 5 + index); // Just for visualization
+      
+      const endDate = new Date(startDate);
+      endDate.setDate(startDate.getDate() + 3); // 3-day duration for tasks
+      
+      let percentComplete = 0;
+      if (task.status === 'completed' || task.status === 'done') {
+        percentComplete = 100;
+      } else if (task.status === 'inProgress' || task.status === 'in-progress' || task.status === 'review') {
+        percentComplete = 50;
+      }
+      
+      rows.push([
+        `task-${index}`,
+        task.title,
+        startDate,
+        endDate,
+        null,
+        percentComplete,
+        null
+      ]);
+    });
+    
+    return [columns, ...rows];
   };
   
-  const getItemWidth = (item: TimelineItem) => {
-    const duration = Math.max(1, Math.ceil((item.endDate.getTime() - item.startDate.getTime()) / (1000 * 60 * 60 * 24)));
-    return `${duration * 40}px`; // 40px per day
+  const data = prepareGanttData();
+  
+  const options = {
+    height: 400,
+    gantt: {
+      trackHeight: 30,
+      barHeight: 20,
+      labelStyle: {
+        fontName: 'Inter',
+        fontSize: 12,
+      },
+    },
   };
   
-  const getItemPosition = (item: TimelineItem) => {
-    const daysDiff = Math.ceil((item.startDate.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24));
-    return `${daysDiff * 40}px`; // 40px per day
-  };
+  if (timeline.length === 0 && tasks.length === 0) {
+    return (
+      <div className="p-8 text-center bg-accent/20 rounded-lg">
+        <h3 className="text-lg font-medium mb-2">Դեռևս ժամանակացույց չկա</h3>
+        <p className="text-muted-foreground">
+          Ժամանակացույցը և առաջադրանքները կցուցադրվեն այստեղ, երբ դրանք ավելացվեն։
+        </p>
+      </div>
+    );
+  }
   
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle className="flex items-center gap-2">
-          <CalendarRange className="h-5 w-5" /> Նախագծի թայմլայն
-        </CardTitle>
-      </CardHeader>
-      <CardContent>
-        <div className="overflow-x-auto pb-4">
-          <div className="min-w-[1200px]">
-            <div className="flex border-b mb-4">
-              <div className="w-[200px] flex-shrink-0 font-medium p-2">Անվանում</div>
-              <div className="flex-1 flex">
-                {dateRange.map((date, i) => (
-                  <div 
-                    key={i} 
-                    className={cn(
-                      "w-[40px] text-center text-xs p-1 flex-shrink-0",
-                      format(date, 'yyyy-MM-dd') === format(today, 'yyyy-MM-dd') 
-                        ? "bg-primary/10 font-bold" 
-                        : (date.getDay() === 0 || date.getDay() === 6) ? "bg-muted/50" : ""
-                    )}
-                  >
-                    {format(date, 'dd')}
-                  </div>
-                ))}
-              </div>
-            </div>
-            
-            <div className="flex mb-6">
-              <div className="w-[200px] flex-shrink-0"></div>
-              <div className="flex-1 flex">
-                {dateRange.map((date, i) => {
-                  if (i === 0 || format(date, 'MMM') !== format(dateRange[i-1], 'MMM')) {
-                    return (
-                      <div 
-                        key={i} 
-                        className="text-xs font-medium text-muted-foreground"
-                        style={{
-                          position: 'absolute',
-                          transform: 'translateX(-50%)',
-                          marginLeft: `${i * 40 + 20}px`
-                        }}
-                      >
-                        {format(date, 'MMM')}
-                      </div>
-                    );
-                  }
-                  return null;
-                })}
-              </div>
-            </div>
-            
-            <div className="space-y-2">
-              {timelineItems.map(item => {
-                const isLate = item.status !== 'done' && 
-                               item.status !== 'completed' && 
-                               isAfter(today, item.endDate);
-                
-                return (
-                  <div key={item.id} className="flex items-center">
-                    <div className="w-[200px] flex-shrink-0 p-2 text-sm">
-                      <div className="font-medium truncate">{item.title}</div>
-                      <div className="flex items-center gap-1 text-xs text-muted-foreground mt-1">
-                        <Clock size={12} />
-                        <span>{format(item.startDate, 'dd MMM')} - {format(item.endDate, 'dd MMM')}</span>
-                      </div>
-                    </div>
-                    <div className="flex-1 relative h-8">
-                      {isBefore(startDate, today) && isBefore(today, endDate) && (
-                        <div 
-                          className="absolute top-0 bottom-0 w-px bg-primary z-10"
-                          style={{ 
-                            left: `${Math.ceil((today.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24)) * 40}px` 
-                          }}
-                        />
-                      )}
-                      
-                      <div 
-                        className={cn(
-                          "absolute top-1 h-6 rounded px-2 text-xs flex items-center border",
-                          getStatusColor(item.status, isLate)
-                        )}
-                        style={{ 
-                          left: getItemPosition(item),
-                          width: getItemWidth(item)
-                        }}
-                      >
-                        <div className="truncate">
-                          {isLate && <AlertCircle size={12} className="inline mr-1 text-red-500" />}
-                          {item.title}
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-            
-            <div className="mt-8 flex flex-wrap gap-4">
-              <Badge variant="outline" className="bg-slate-200/50 border-slate-400">Սպասվող</Badge>
-              <Badge variant="outline" className="bg-blue-200/50 border-blue-400">Ընթացքում</Badge>
-              <Badge variant="outline" className="bg-amber-200/50 border-amber-400">Վերանայում</Badge>
-              <Badge variant="outline" className="bg-green-200/50 border-green-400">Ավարտված</Badge>
-              <Badge variant="outline" className="bg-red-500/20 border-red-500">Ուշացած</Badge>
-              <div className="ml-auto flex items-center gap-2">
-                <div className="w-px h-4 bg-primary"></div>
-                <span className="text-xs text-muted-foreground">Այսօր</span>
-              </div>
-            </div>
-          </div>
-        </div>
-      </CardContent>
-    </Card>
+    <div className="border border-border rounded-lg p-4 bg-card">
+      <h3 className="text-lg font-medium mb-4">Նախագծի ժամանակացույց</h3>
+      
+      <div className="h-[400px] w-full">
+        <Chart
+          chartType="Gantt"
+          width="100%"
+          height="100%"
+          data={data}
+          options={options}
+        />
+      </div>
+    </div>
   );
 };
 

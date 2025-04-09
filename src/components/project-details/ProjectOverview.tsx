@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { ProjectTheme } from '@/data/projectThemes';
@@ -24,6 +23,8 @@ interface ProjectOverviewProps {
     logo: string;
   } | null;
   similarProjects: ProjectTheme[];
+  isEditing?: boolean;
+  onSaveChanges?: (updates: Partial<ProjectTheme>) => void;
 }
 
 const ProjectOverview: React.FC<ProjectOverviewProps> = ({
@@ -31,53 +32,67 @@ const ProjectOverview: React.FC<ProjectOverviewProps> = ({
   projectMembers,
   organization,
   similarProjects,
+  isEditing = false,
+  onSaveChanges = () => {}
 }) => {
-  const { canEdit, isEditing, setIsEditing, updateProject } = useProject();
   const [editedProject, setEditedProject] = useState<Partial<ProjectTheme>>({
     detailedDescription: project.detailedDescription || project.description,
     steps: project.steps || [],
     learningOutcomes: project.learningOutcomes || [],
-    prerequisites: project.prerequisites || []
+    prerequisites: project.prerequisites || [],
+    organizationName: project.organizationName
   });
   const [isSaving, setIsSaving] = useState(false);
 
-  // Update local state when project changes
   useEffect(() => {
     setEditedProject({
       detailedDescription: project.detailedDescription || project.description,
       steps: project.steps || [],
       learningOutcomes: project.learningOutcomes || [],
-      prerequisites: project.prerequisites || []
+      prerequisites: project.prerequisites || [],
+      organizationName: project.organizationName
     });
-  }, [project]);
+  }, [project, isEditing]);
 
   const handleSaveChanges = async () => {
     setIsSaving(true);
     try {
-      const success = await updateProject(editedProject);
-      if (success) {
-        setIsEditing(false);
+      if (onSaveChanges) {
+        await onSaveChanges(editedProject);
       }
     } finally {
       setIsSaving(false);
     }
   };
 
-  const handleCancelEdit = () => {
-    setEditedProject({
-      detailedDescription: project.detailedDescription || project.description,
-      steps: project.steps || [],
-      learningOutcomes: project.learningOutcomes || [],
-      prerequisites: project.prerequisites || []
-    });
-    setIsEditing(false);
+  const handleOrganizationChange = (value: string) => {
+    setEditedProject(prev => ({...prev, organizationName: value}));
+    if (onSaveChanges) {
+      onSaveChanges({organizationName: value});
+    }
   };
+
+  useEffect(() => {
+    if (!isEditing && onSaveChanges) {
+      const hasChanges = JSON.stringify({
+        detailedDescription: project.detailedDescription,
+        steps: project.steps,
+        learningOutcomes: project.learningOutcomes,
+        prerequisites: project.prerequisites,
+        organizationName: project.organizationName
+      }) !== JSON.stringify(editedProject);
+      
+      if (hasChanges) {
+        handleSaveChanges();
+      }
+    }
+  }, [isEditing]);
 
   return (
     <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
       <div className="md:col-span-2">
         <SlideUp className="space-y-8">
-          {isEditing && canEdit && (
+          {isEditing && (
             <div className="flex justify-end gap-2 mb-4">
               <Button 
                 variant="outline" 
@@ -90,15 +105,6 @@ const ProjectOverview: React.FC<ProjectOverviewProps> = ({
                 ) : (
                   <><Save className="h-4 w-4 mr-2" /> Պահպանել</>
                 )}
-              </Button>
-              <Button 
-                variant="outline" 
-                className="border-red-200 bg-red-100 text-red-700 hover:bg-red-200"
-                onClick={handleCancelEdit}
-                disabled={isSaving}
-              >
-                <X className="h-4 w-4 mr-2" />
-                Չեղարկել
               </Button>
             </div>
           )}
@@ -180,7 +186,12 @@ const ProjectOverview: React.FC<ProjectOverviewProps> = ({
       
       <div>
         <SlideUp className="space-y-8">
-          <ProjectMembers members={projectMembers} organization={organization} />
+          <ProjectMembers 
+            members={projectMembers} 
+            organization={organization} 
+            isEditing={isEditing}
+            onOrganizationChange={handleOrganizationChange}
+          />
           
           <div className="border border-border rounded-lg p-6">
             <h3 className="text-lg font-medium mb-3 flex items-center">
@@ -242,7 +253,7 @@ const ProjectOverview: React.FC<ProjectOverviewProps> = ({
                   </Link>
                 ))}
                 
-                <Link to="/" className="text-sm text-primary font-medium inline-flex items-center gap-1 hover:gap-2 transition-all mt-2">
+                <Link to="/projects" className="text-sm text-primary font-medium inline-flex items-center gap-1 hover:gap-2 transition-all mt-2">
                   Տեսնել բոլոր պրոեկտները <ArrowRight size={14} />
                 </Link>
               </div>

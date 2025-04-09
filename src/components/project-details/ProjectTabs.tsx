@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { 
   BookOpen, 
@@ -43,6 +42,8 @@ interface ProjectTabsProps {
   submitProject: (feedback: string) => void;
   approveProject: (feedback: string) => void;
   rejectProject: (feedback: string) => void;
+  isEditing?: boolean;
+  onSaveChanges?: (updates: Partial<ProjectTheme>) => void;
 }
 
 const ProjectTabs: React.FC<ProjectTabsProps> = ({
@@ -61,6 +62,8 @@ const ProjectTabs: React.FC<ProjectTabsProps> = ({
   submitProject,
   approveProject,
   rejectProject,
+  isEditing = false,
+  onSaveChanges = () => {}
 }) => {
   return (
     <Tabs defaultValue="overview" className="w-full mb-16">
@@ -68,22 +71,22 @@ const ProjectTabs: React.FC<ProjectTabsProps> = ({
         <TabsTrigger value="overview" className="flex items-center gap-2">
           <BookOpen size={16} /> Նկարագիր
         </TabsTrigger>
-        <TabsTrigger value="timeline" className="flex items-center gap-2" disabled={!isReserved}>
+        <TabsTrigger value="timeline" className="flex items-center gap-2">
           <CalendarRange size={16} /> Ժամանակացույց
         </TabsTrigger>
-        <TabsTrigger value="tasks" className="flex items-center gap-2" disabled={!isReserved}>
+        <TabsTrigger value="tasks" className="flex items-center gap-2">
           <ListChecks size={16} /> Քայլեր
         </TabsTrigger>
-        <TabsTrigger value="discussions" className="flex items-center gap-2" disabled={!isReserved}>
+        <TabsTrigger value="discussions" className="flex items-center gap-2">
           <MessageSquare size={16} /> Քննարկումներ
         </TabsTrigger>
-        <TabsTrigger value="files" className="flex items-center gap-2" disabled={!isReserved}>
+        <TabsTrigger value="files" className="flex items-center gap-2">
           <FileText size={16} /> Ֆայլեր
         </TabsTrigger>
-        <TabsTrigger value="evaluation" className="flex items-center gap-2" disabled={!isReserved}>
+        <TabsTrigger value="evaluation" className="flex items-center gap-2">
           <Star size={16} /> Գնահատական
         </TabsTrigger>
-        <TabsTrigger value="gantt" className="flex items-center gap-2" disabled={!isReserved}>
+        <TabsTrigger value="gantt" className="flex items-center gap-2">
           <BarChart size={16} /> Թայմլայն
         </TabsTrigger>
       </TabsList>
@@ -94,6 +97,8 @@ const ProjectTabs: React.FC<ProjectTabsProps> = ({
           projectMembers={projectMembers}
           organization={organization}
           similarProjects={similarProjects}
+          isEditing={isEditing}
+          onSaveChanges={onSaveChanges}
         />
       </TabsContent>
       
@@ -105,6 +110,7 @@ const ProjectTabs: React.FC<ProjectTabsProps> = ({
                 events={timeline}
                 onAddEvent={addTimelineEvent}
                 onCompleteEvent={completeTimelineEvent}
+                isEditing={isEditing}
               />
             </SlideUp>
           </div>
@@ -128,25 +134,26 @@ const ProjectTabs: React.FC<ProjectTabsProps> = ({
             tasks={tasks}
             onAddTask={addTask}
             onUpdateTaskStatus={updateTaskStatus}
+            isEditing={isEditing}
           />
         </SlideUp>
       </TabsContent>
       
       <TabsContent value="discussions" className="mt-6">
         <SlideUp>
-          <ProjectDiscussions projectId={project.id} />
+          <ProjectDiscussions projectId={project.id} isEditing={isEditing} />
         </SlideUp>
       </TabsContent>
       
       <TabsContent value="files" className="mt-6">
         <SlideUp>
-          <ProjectFiles projectId={project.id} />
+          <ProjectFiles projectId={project.id} isEditing={isEditing} />
         </SlideUp>
       </TabsContent>
       
       <TabsContent value="evaluation" className="mt-6">
         <SlideUp>
-          <ProjectEvaluation projectId={project.id} />
+          <ProjectEvaluation projectId={project.id} isEditing={isEditing} />
         </SlideUp>
       </TabsContent>
       

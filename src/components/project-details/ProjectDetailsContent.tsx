@@ -32,10 +32,12 @@ const ProjectDetailsContent: React.FC = () => {
     projectProgress,
     canEdit,
     isEditing,
-    setIsEditing
+    setIsEditing,
+    updateProject
   } = useProject();
   const navigate = useNavigate();
   const { user } = useAuth();
+  const [isSaving, setIsSaving] = useState(false);
   
   if (!project) {
     return (
@@ -63,7 +65,7 @@ const ProjectDetailsContent: React.FC = () => {
   // Mock data for organization
   const organization = {
     id: 'org1',
-    name: 'Պլեքկոդ',
+    name: project.organizationName || 'Պլեքկոդ',
     website: 'https://plexcode.am',
     logo: '/placeholder.svg'
   };
@@ -75,6 +77,23 @@ const ProjectDetailsContent: React.FC = () => {
     } else {
       setIsEditing(true);
       toast.success('Խմբագրման ռեժիմը միացված է');
+    }
+  };
+
+  const handleSaveChanges = async (updates: Partial<any>) => {
+    setIsSaving(true);
+    try {
+      const success = await updateProject(updates);
+      if (success) {
+        toast.success('Փոփոխությունները հաջողությամբ պահպանվել են');
+      } else {
+        toast.error('Փոփոխությունների պահպանման ժամանակ սխալ է տեղի ունեցել');
+      }
+    } catch (error) {
+      console.error('Error saving changes:', error);
+      toast.error('Փոփոխությունների պահպանման ժամանակ սխալ է տեղի ունեցել');
+    } finally {
+      setIsSaving(false);
     }
   };
 
@@ -128,7 +147,6 @@ const ProjectDetailsContent: React.FC = () => {
             </Alert>
           )}
           
-          {/* Removing extra props that ProjectHeader doesn't accept */}
           <ProjectHeader />
           
           <ProjectTabs 
@@ -147,6 +165,8 @@ const ProjectDetailsContent: React.FC = () => {
             submitProject={submitProject}
             approveProject={approveProject}
             rejectProject={rejectProject}
+            isEditing={isEditing}
+            onSaveChanges={handleSaveChanges}
           />
         </div>
       </main>

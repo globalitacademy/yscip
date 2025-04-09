@@ -1,92 +1,106 @@
 
 import React from 'react';
 import { Separator } from '@/components/ui/separator';
-import { User, Building, ExternalLink } from 'lucide-react';
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Button } from '@/components/ui/button';
-
-interface Organization {
-  id: string;
-  name: string;
-  website?: string;
-  logo?: string;
-}
-
-interface Member {
-  id: string;
-  name: string;
-  role: string;
-  avatar?: string;
-  email?: string;
-}
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { Building, ExternalLink, Users } from 'lucide-react';
+import EditableField from '@/components/common/EditableField';
 
 interface ProjectMembersProps {
-  members: Member[];
-  organization?: Organization;
+  members: {
+    id: string;
+    name: string;
+    role: string;
+    avatar: string;
+  }[];
+  organization: {
+    id: string;
+    name: string;
+    website: string;
+    logo: string;
+  } | null;
+  isEditing?: boolean;
+  onOrganizationChange?: (value: string) => void;
 }
 
-const ProjectMembers: React.FC<ProjectMembersProps> = ({ members, organization }) => {
+const ProjectMembers: React.FC<ProjectMembersProps> = ({ 
+  members, 
+  organization,
+  isEditing = false,
+  onOrganizationChange = () => {}
+}) => {
   return (
     <div className="border border-border rounded-lg p-6">
-      <h3 className="text-lg font-medium mb-3 flex items-center">
-        <User size={18} className="mr-2 text-primary" />
-        Մասնակիցներ
-      </h3>
-      <Separator className="mb-4" />
-      
-      <div className="space-y-4">
-        {members.map(member => (
-          <div key={member.id} className="flex items-center gap-3">
-            <Avatar className="h-10 w-10">
-              <AvatarImage src={member.avatar} alt={member.name} />
-              <AvatarFallback>{member.name.substring(0, 2)}</AvatarFallback>
-            </Avatar>
-            <div>
-              <p className="font-medium">{member.name}</p>
-              <p className="text-xs text-muted-foreground">{member.role}</p>
-            </div>
-            {member.email && (
-              <Button variant="ghost" size="sm" className="ml-auto" asChild>
-                <a href={`mailto:${member.email}`}>Կապ հաստատել</a>
-              </Button>
-            )}
-          </div>
-        ))}
-      </div>
-      
+      {/* Organization section */}
       {organization && (
-        <div className="mt-6">
+        <>
           <h3 className="text-lg font-medium mb-3 flex items-center">
             <Building size={18} className="mr-2 text-primary" />
             Կազմակերպություն
           </h3>
           <Separator className="mb-4" />
-          
-          <div className="flex items-center gap-3">
-            <div className="h-12 w-12 rounded overflow-hidden bg-accent flex-shrink-0">
-              {organization.logo ? (
-                <img src={organization.logo} alt={organization.name} className="w-full h-full object-cover" />
-              ) : (
-                <div className="w-full h-full flex items-center justify-center bg-primary/10 text-primary font-bold">
-                  {organization.name.substring(0, 2)}
-                </div>
-              )}
+          <div className="flex items-center gap-3 mb-6">
+            <div className="h-12 w-12 rounded-full overflow-hidden bg-muted flex items-center justify-center">
+              <img 
+                src={organization.logo} 
+                alt={organization.name}
+                className="h-full w-full object-cover"
+                onError={(e) => {
+                  // Fallback if image fails to load
+                  (e.target as HTMLImageElement).src = 'https://via.placeholder.com/40?text=Org';
+                }}
+              />
             </div>
             <div>
-              <p className="font-medium">{organization.name}</p>
-              {organization.website && (
+              {isEditing ? (
+                <EditableField 
+                  value={organization.name}
+                  onChange={onOrganizationChange}
+                  placeholder="Մուտքագրեք կազմակերպության անունը"
+                  showEditButton={false}
+                />
+              ) : (
+                <div className="font-medium">{organization.name}</div>
+              )}
+              {organization.website && !isEditing && (
                 <a 
                   href={organization.website} 
                   target="_blank" 
                   rel="noopener noreferrer"
-                  className="text-xs text-primary flex items-center gap-1 hover:underline"
+                  className="text-sm text-muted-foreground hover:text-primary inline-flex items-center mt-1"
                 >
-                  {organization.website} <ExternalLink size={12} />
+                  {organization.website.replace(/^https?:\/\//, '')}
+                  <ExternalLink size={12} className="ml-1" />
                 </a>
               )}
             </div>
           </div>
+        </>
+      )}
+      
+      {/* Members section */}
+      <h3 className="text-lg font-medium mb-3 flex items-center">
+        <Users size={18} className="mr-2 text-primary" />
+        Մասնակիցներ
+      </h3>
+      <Separator className="mb-4" />
+      
+      {members.length > 0 ? (
+        <div className="space-y-4">
+          {members.map(member => (
+            <div key={member.id} className="flex items-center gap-3">
+              <Avatar>
+                <AvatarImage src={member.avatar} alt={member.name} />
+                <AvatarFallback>{member.name.charAt(0)}</AvatarFallback>
+              </Avatar>
+              <div>
+                <div className="font-medium">{member.name}</div>
+                <div className="text-sm text-muted-foreground">{member.role}</div>
+              </div>
+            </div>
+          ))}
         </div>
+      ) : (
+        <p className="text-muted-foreground italic text-sm">Մասնակիցներ չեն նշված</p>
       )}
     </div>
   );
