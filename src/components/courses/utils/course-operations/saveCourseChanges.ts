@@ -132,6 +132,39 @@ export const saveCourseChanges = async (course: ProfessionalCourse): Promise<boo
       }
     }
 
+    // Handle instructors
+    if (course.instructors && course.instructors.length > 0) {
+      // First delete existing instructors
+      const { error: deleteInstructorsError } = await supabase
+        .from('course_instructors')
+        .delete()
+        .eq('course_id', course.id);
+
+      if (deleteInstructorsError) {
+        console.error('Error deleting existing instructors:', deleteInstructorsError);
+        // Continue despite error
+      }
+
+      // Then insert the updated instructors
+      const { error: instructorsError } = await supabase
+        .from('course_instructors')
+        .insert(
+          course.instructors.map(instructor => ({
+            id: instructor.id,
+            course_id: course.id,
+            name: instructor.name,
+            title: instructor.title,
+            bio: instructor.bio,
+            avatar_url: instructor.avatar_url
+          }))
+        );
+
+      if (instructorsError) {
+        console.error('Error inserting instructors:', instructorsError);
+        // Continue despite error
+      }
+    }
+
     // For now, we'll store the resources in the course's JSON data in the 'courses' table
     // instead of a separate table since 'course_resources' doesn't exist in the database schema
     if (course.resources && course.resources.length > 0) {

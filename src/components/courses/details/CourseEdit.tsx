@@ -17,7 +17,8 @@ import {
   RequirementsTab,
   OutcomesTab,
   AuthorTab,
-  DisplaySettingsTab
+  DisplaySettingsTab,
+  InstructorsTab
 } from '@/components/admin/courses/course-detail/tabs';
 
 interface CourseEditProps {
@@ -56,6 +57,7 @@ const CourseEdit: React.FC<CourseEditProps> = ({
         lessons: editedCourse.lessons || course.lessons || [],
         requirements: editedCourse.requirements || course.requirements || [],
         outcomes: editedCourse.outcomes || course.outcomes || [],
+        instructors: editedCourse.instructors || course.instructors || [],
         is_public: editedCourse.is_public !== undefined ? editedCourse.is_public : course.is_public,
         show_on_homepage: editedCourse.show_on_homepage !== undefined ? editedCourse.show_on_homepage : course.show_on_homepage,
         display_order: editedCourse.display_order !== undefined ? editedCourse.display_order : (course.display_order || 0)
@@ -116,6 +118,9 @@ const CourseEdit: React.FC<CourseEditProps> = ({
                 <TabsTrigger value="display-settings" className={theme === 'dark' ? 'data-[state=active]:bg-gray-700' : 'data-[state=active]:bg-white'}>
                   Ցուցադրման կարգավորումներ
                 </TabsTrigger>
+                <TabsTrigger value="instructors" className={theme === 'dark' ? 'data-[state=active]:bg-gray-700' : 'data-[state=active]:bg-white'}>
+                  Դասախոսներ
+                </TabsTrigger>
                 <TabsTrigger value="lessons" className={theme === 'dark' ? 'data-[state=active]:bg-gray-700' : 'data-[state=active]:bg-white'}>
                   Դասընթացի պլան
                 </TabsTrigger>
@@ -140,6 +145,10 @@ const CourseEdit: React.FC<CourseEditProps> = ({
                     
                     <TabsContent value="display-settings" className="mt-0 focus-visible:outline-none">
                       <DisplaySettingsTab editedCourse={editedCourse} setEditedCourse={setEditedCourse} />
+                    </TabsContent>
+                    
+                    <TabsContent value="instructors" className="mt-0 focus-visible:outline-none">
+                      <InstructorsTab editedCourse={editedCourse} setEditedCourse={setEditedCourse} />
                     </TabsContent>
                     
                     <TabsContent value="lessons" className="mt-0 focus-visible:outline-none">

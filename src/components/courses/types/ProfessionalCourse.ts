@@ -19,6 +19,7 @@ export interface ProfessionalCourse {
   lessons?: LessonItem[];
   requirements?: string[];
   outcomes?: string[];
+  instructors?: CourseInstructor[]; // Added instructors array
   is_public?: boolean;
   createdAt?: string;
   updatedAt?: string;

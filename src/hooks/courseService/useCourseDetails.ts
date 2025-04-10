@@ -1,190 +1,136 @@
 
-import { useState, useEffect, useCallback } from 'react';
-import { ProfessionalCourse, CourseInstructor } from '@/components/courses/types/ProfessionalCourse';
+import { useState, useCallback } from 'react';
+import { useParams } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
-import { toast } from 'sonner';
+import { ProfessionalCourse, CourseInstructor } from '@/components/courses/types/ProfessionalCourse';
 import { convertIconNameToComponent } from '@/utils/iconUtils';
 
-export const useCourseDetails = (id: string | undefined) => {
+export const useCourseDetails = (initialId?: string) => {
+  const { id: routeId } = useParams<{ id: string }>();
+  const courseId = initialId || routeId;
+  
   const [course, setCourse] = useState<ProfessionalCourse | null>(null);
   const [loading, setLoading] = useState(true);
-  const [editedCourse, setEditedCourse] = useState<Partial<ProfessionalCourse>>({});
-  const [fetchError, setFetchError] = useState<string | null>(null);
-
-  // Reset editedCourse whenever course changes to ensure consistent state
-  useEffect(() => {
-    if (course) {
-      console.log('Course data changed, updating editedCourse with:', course);
-      setEditedCourse(JSON.parse(JSON.stringify(course))); // Deep copy to avoid reference issues
-    }
-  }, [course]);
-
-  // Function to fetch course details
+  const [error, setError] = useState<string | null>(null);
+  
   const fetchCourse = useCallback(async () => {
-    if (!id) {
-      console.log('No course ID provided, skipping fetch');
+    if (!courseId) {
+      setError('No course ID provided');
       setLoading(false);
       return;
     }
     
-    console.log('Fetching course with ID:', id);
     setLoading(true);
-    setFetchError(null);
+    setError(null);
     
     try {
-      // Fetch main course data
+      console.log(`Fetching course with ID: ${courseId}`);
       const { data, error } = await supabase
         .from('courses')
         .select('*')
-        .eq('id', id)
+        .eq('id', courseId)
         .single();
-        
+      
       if (error) {
         console.error('Error fetching course:', error);
-        setFetchError(error.message);
-        toast.error('Դասընթացի բեռնման ժամանակ սխալ է տեղի ունեցել');
+        setError(`Failed to fetch course: ${error.message}`);
+        setLoading(false);
         return;
       }
       
       if (!data) {
-        console.error('Course not found with ID:', id);
-        setFetchError('Course not found');
-        toast.error('Դասընթացը չի գտնվել');
+        setError('Course not found');
+        setLoading(false);
         return;
       }
       
-      console.log('Successfully fetched main course data:', data);
+      console.log('Fetched course data:', data);
       
-      // Fetch related data in parallel for better performance
-      const [lessonsResult, requirementsResult, outcomesResult] = await Promise.all([
-        supabase.from('course_lessons').select('*').eq('course_id', id),
-        supabase.from('course_requirements').select('*').eq('course_id', id),
-        supabase.from('course_outcomes').select('*').eq('course_id', id)
+      // Fetch related data in parallel
+      const [
+        lessonsResult, 
+        requirementsResult, 
+        outcomesResult,
+        instructorsResult
+      ] = await Promise.all([
+        supabase.from('course_lessons').select('*').eq('course_id', courseId),
+        supabase.from('course_requirements').select('*').eq('course_id', courseId),
+        supabase.from('course_outcomes').select('*').eq('course_id', courseId),
+        supabase.from('course_instructors').select('*').eq('course_id', courseId)
       ]);
       
-      // Fetch instructors separately 
-      let instructorsData: CourseInstructor[] = [];
-      try {
-        const { data: instructorsResult, error: instructorsError } = await supabase
-          .from('course_instructors')
-          .select('*')
-          .eq('course_id', id);
-          
-        if (instructorsError) {
-          console.error('Error fetching instructors:', instructorsError);
-        } else if (instructorsResult) {
-          // Convert the raw data to strongly typed CourseInstructor objects
-          instructorsData = instructorsResult.map(instructor => ({
-            id: instructor.id,
-            name: instructor.name,
-            title: instructor.title || '',
-            bio: instructor.bio || '',
-            avatar_url: instructor.avatar_url || '',
-            course_id: instructor.course_id
-          }));
-        }
-      } catch (e) {
-        console.error('Error in instructor data processing:', e);
-      }
+      // Parse lessons
+      const lessons = lessonsResult.data?.map(lesson => ({
+        title: lesson.title,
+        duration: lesson.duration
+      })) || [];
       
-      console.log('Fetched related data:', {
-        lessons: lessonsResult.data,
-        requirements: requirementsResult.data,
-        outcomes: outcomesResult.data,
-        instructors: instructorsData
-      });
+      // Parse requirements
+      const requirements = requirementsResult.data?.map(req => req.requirement) || [];
       
-      // Create icon component
-      const iconElement = convertIconNameToComponent(data.icon_name);
+      // Parse outcomes
+      const outcomes = outcomesResult.data?.map(outcome => outcome.outcome) || [];
       
-      // Get instructor IDs from fetched instructors
-      const instructorIds = instructorsData.map(instructor => instructor.id.toString());
+      // Parse instructors
+      const instructors = instructorsResult.data?.map(instructor => ({
+        id: instructor.id,
+        name: instructor.name,
+        title: instructor.title,
+        bio: instructor.bio,
+        avatar_url: instructor.avatar_url,
+        course_id: instructor.course_id,
+        created_at: instructor.created_at,
+        updated_at: instructor.updated_at
+      })) || [];
       
-      // Ensure author_type is either 'lecturer' or 'institution' to satisfy TypeScript
-      const authorType: 'lecturer' | 'institution' = 
-        data.author_type === 'institution' ? 'institution' : 'lecturer';
-      
-      // Construct complete course object with all related data
+      // Create the course object
       const professionalCourse: ProfessionalCourse = {
         id: data.id,
         title: data.title,
         subtitle: data.subtitle || 'ԴԱՍԸՆԹԱՑ',
-        icon: iconElement,
         iconName: data.icon_name,
+        icon: convertIconNameToComponent(data.icon_name),
         duration: data.duration,
         price: data.price,
         buttonText: data.button_text || 'Դիտել',
         color: data.color || 'text-amber-500',
-        createdBy: data.created_by || '',
-        institution: data.institution || 'ՀՊՏՀ',
+        institution: data.institution || '',
         imageUrl: data.image_url,
         organizationLogo: data.organization_logo,
         description: data.description || '',
-        is_public: data.is_public || false,
+        createdBy: data.created_by || '',
         instructor: data.instructor || '',
-        author_type: authorType,
-        instructor_ids: instructorIds,
-        lessons: lessonsResult.data?.map(lesson => ({
-          title: lesson.title,
-          duration: lesson.duration
-        })) || [],
-        requirements: requirementsResult.data?.map(req => req.requirement) || [],
-        outcomes: outcomesResult.data?.map(outcome => outcome.outcome) || [],
-        slug: data.slug || ''
+        lessons,
+        requirements,
+        outcomes,
+        instructors,
+        is_public: data.is_public,
+        show_on_homepage: data.show_on_homepage,
+        display_order: data.display_order,
+        category: data.category,
+        learning_formats: data.learning_formats,
+        languages: data.languages,
+        author_type: data.author_type,
+        instructor_ids: data.instructor_ids,
+        syllabus_file: data.syllabus_file,
+        resources: data.resources, // Resources are stored in the courses JSON column
+        createdAt: data.created_at,
+        updatedAt: data.updated_at,
       };
       
-      console.log('Created complete course object:', professionalCourse);
-      
-      // Update state with fetched data
       setCourse(professionalCourse);
-      setEditedCourse(JSON.parse(JSON.stringify(professionalCourse))); // Deep copy
-    } catch (e) {
-      console.error('Unexpected error fetching course details:', e);
-      setFetchError(e instanceof Error ? e.message : 'Unknown error');
-      toast.error('Դասընթացի բեռնման ժամանակ սխալ է տեղի ունեցել');
+    } catch (err) {
+      console.error('Error in fetchCourse:', err);
+      setError(`An unexpected error occurred: ${err}`);
     } finally {
       setLoading(false);
     }
-  }, [id]);
-
-  // Initialize data loading
-  useEffect(() => {
+  }, [courseId]);
+  
+  // Fetch course data on mount
+  if (!course && !loading && !error) {
     fetchCourse();
-    
-    if (id) {
-      // Setup realtime subscription to get updates to this course
-      console.log('Setting up realtime subscription for course ID:', id);
-      const channel = supabase
-        .channel(`course-${id}-changes`)
-        .on(
-          'postgres_changes',
-          {
-            event: '*',
-            schema: 'public',
-            table: 'courses',
-            filter: `id=eq.${id}`
-          },
-          (payload) => {
-            console.log('Received realtime update for course:', payload);
-            fetchCourse();
-          }
-        )
-        .subscribe();
-        
-      return () => {
-        console.log('Cleaning up realtime subscription for course ID:', id);
-        supabase.removeChannel(channel);
-      };
-    }
-  }, [id, fetchCourse]);
-
-  return {
-    course,
-    setCourse,
-    loading,
-    fetchCourse,
-    editedCourse,
-    setEditedCourse,
-    fetchError
-  };
+  }
+  
+  return { course, setCourse, loading, error, fetchCourse };
 };
