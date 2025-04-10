@@ -16,11 +16,9 @@ import {
   LessonsTab,
   RequirementsTab,
   OutcomesTab,
-  AuthorTab
+  AuthorTab,
+  DisplaySettingsTab
 } from '@/components/admin/courses/course-detail/tabs';
-
-// Import new display settings tab
-import { DisplaySettingsTab } from '@/components/admin/courses/course-detail/tabs/DisplaySettingsTab';
 
 interface CourseEditProps {
   isOpen: boolean;
@@ -50,16 +48,21 @@ const CourseEdit: React.FC<CourseEditProps> = ({
     if (!editedCourse) return;
     
     setLoading(true);
+    toast.loading('Դասընթացը պահպանվում է...');
     try {
       const completeEditedCourse = {
         ...course,
         ...editedCourse,
         lessons: editedCourse.lessons || course.lessons || [],
         requirements: editedCourse.requirements || course.requirements || [],
-        outcomes: editedCourse.outcomes || course.outcomes || []
+        outcomes: editedCourse.outcomes || course.outcomes || [],
+        is_public: editedCourse.is_public !== undefined ? editedCourse.is_public : course.is_public,
+        show_on_homepage: editedCourse.show_on_homepage !== undefined ? editedCourse.show_on_homepage : course.show_on_homepage,
+        display_order: editedCourse.display_order !== undefined ? editedCourse.display_order : (course.display_order || 0)
       };
       
       const success = await saveCourseChanges(completeEditedCourse as ProfessionalCourse);
+      toast.dismiss();
       if (success) {
         toast.success('Դասընթացը հաջողությամբ թարմացվել է');
         onCourseUpdate(completeEditedCourse as ProfessionalCourse);
@@ -68,6 +71,7 @@ const CourseEdit: React.FC<CourseEditProps> = ({
         toast.error('Սխալ է տեղի ունեցել դասընթացը թարմացնելիս։');
       }
     } catch (error) {
+      toast.dismiss();
       console.error('Error saving course:', error);
       toast.error('Սխալ է տեղի ունեցել դասընթացը թարմացնելիս։');
     } finally {

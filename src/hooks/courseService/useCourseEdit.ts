@@ -47,10 +47,21 @@ export const useCourseEdit = (
     
     console.log('Starting save process with editedCourse data:', editedCourse);
     setLoading(true);
+    
     try {
       // Make sure is_public status is properly set
       if (editedCourse.is_public === undefined && course.is_public !== undefined) {
         editedCourse.is_public = course.is_public;
+      }
+
+      // Ensure show_on_homepage is set
+      if (editedCourse.show_on_homepage === undefined && course.show_on_homepage !== undefined) {
+        editedCourse.show_on_homepage = course.show_on_homepage;
+      }
+
+      // Ensure display_order is set
+      if (editedCourse.display_order === undefined) {
+        editedCourse.display_order = course.display_order || 0;
       }
 
       // Ensure all important fields from course are preserved
@@ -67,9 +78,11 @@ export const useCourseEdit = (
 
       console.log('Updating course with complete data:', completeEditedCourse);
       
+      toast.loading('Դասընթացը պահպանվում է...');
       const success = await updateCourse(course.id, completeEditedCourse);
       
       if (success) {
+        toast.dismiss();
         toast.success('Դասընթացը հաջողությամբ թարմացվել է');
         
         // First update the local state with the edited values to reflect changes immediately
@@ -85,7 +98,7 @@ export const useCourseEdit = (
         // If in edit mode, close dialog and navigate back to view mode
         if (isEditMode) {
           setIsEditDialogOpen(false);
-          navigate(`/admin/course/${course.id}`);
+          navigate(`/course/${course.id}`);
         } else {
           setIsEditDialogOpen(false);
         }
@@ -130,6 +143,8 @@ export const useCourseEdit = (
               organizationLogo: data.organization_logo,
               description: data.description,
               is_public: data.is_public,
+              show_on_homepage: data.show_on_homepage,
+              display_order: data.display_order,
               instructor: data.instructor || '',
               lessons: lessonsData?.data?.map(lesson => ({
                 title: lesson.title,
@@ -150,9 +165,11 @@ export const useCourseEdit = (
           console.error('Error during course refetch:', refetchError);
         }
       } else {
+        toast.dismiss();
         toast.error('Դասընթացի թարմացման ժամանակ սխալ է տեղի ունեցել');
       }
     } catch (e) {
+      toast.dismiss();
       console.error('Error updating course:', e);
       toast.error('Դասընթացի թարմացման ժամանակ սխալ է տեղի ունեցել');
     } finally {

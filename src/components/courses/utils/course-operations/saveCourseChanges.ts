@@ -1,6 +1,7 @@
 
 import { ProfessionalCourse } from '../../types/ProfessionalCourse';
 import { supabase } from '@/integrations/supabase/client';
+import { toast } from 'sonner';
 
 /**
  * Saves changes to an existing course in the database
@@ -14,6 +15,7 @@ export const saveCourseChanges = async (course: ProfessionalCourse): Promise<boo
       return false;
     }
 
+    // Update the main course record with all available fields
     const { error: courseError } = await supabase
       .from('courses')
       .update({
@@ -31,6 +33,8 @@ export const saveCourseChanges = async (course: ProfessionalCourse): Promise<boo
         created_by: course.createdBy,
         instructor: course.instructor,
         is_public: course.is_public,
+        show_on_homepage: course.show_on_homepage,
+        display_order: course.display_order,
         author_type: course.author_type || 'lecturer',
         instructor_ids: course.instructor_ids || [],
         updated_at: new Date().toISOString()

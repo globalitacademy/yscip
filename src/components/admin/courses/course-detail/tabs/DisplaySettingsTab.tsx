@@ -94,5 +94,3 @@ export const DisplaySettingsTab: React.FC<DisplaySettingsTabProps> = ({
     </div>
   );
 };
-
-// Remove the redundant export statement that was causing the error

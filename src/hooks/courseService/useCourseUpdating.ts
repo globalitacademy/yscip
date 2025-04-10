@@ -32,6 +32,8 @@ export const useCourseUpdating = (setLoading: Dispatch<SetStateAction<boolean>>)
         description: updates.description,
         instructor: updates.instructor,
         is_public: updates.is_public,
+        show_on_homepage: updates.show_on_homepage,
+        display_order: updates.display_order,
         updated_at: new Date().toISOString()
       };
       
@@ -175,7 +177,6 @@ export const useCourseUpdating = (setLoading: Dispatch<SetStateAction<boolean>>)
         }
       }
       
-      console.log('Course update completed successfully for ID:', id);
       return true;
     } catch (error) {
       console.error('Error in updateCourse:', error);
@@ -184,7 +185,7 @@ export const useCourseUpdating = (setLoading: Dispatch<SetStateAction<boolean>>)
     } finally {
       setLoading(false);
     }
-  }, [setLoading]);
+  });
 
   return { updateCourse };
 };
