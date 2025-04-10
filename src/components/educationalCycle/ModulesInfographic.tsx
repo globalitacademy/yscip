@@ -5,9 +5,11 @@ import { useAuth } from '@/contexts/AuthContext';
 import { Code, FileText, Layers, Globe, Brain, Database, Lock, Palette } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
+import { useTheme } from '@/hooks/use-theme';
 
 export const ModulesInfographic: React.FC = () => {
   const { isAuthenticated } = useAuth();
+  const { theme } = useTheme();
   
   const getIntroDescription = () => {
     return isAuthenticated 
@@ -140,7 +142,7 @@ export const ModulesInfographic: React.FC = () => {
                     asChild
                     size="sm" 
                     variant="outline"
-                    className={`${module.textColor} border-current hover:bg-current hover:text-white dark:hover:text-white dark:hover:bg-current`}
+                    className={`${module.textColor} border-current hover:bg-current/10 dark:hover:bg-current/20 hover:text-current dark:hover:text-current transition-colors`}
                   >
                     <Link to={`/module/${module.id}`}>
                       Սկսել ուսուցումը
