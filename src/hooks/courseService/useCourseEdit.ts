@@ -16,9 +16,10 @@ export const useCourseEdit = (
 ) => {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   
-  const { updateCourse } = useCourseUpdating(setLoading);
+  const { updateCourse } = useCourseUpdating(setLoading, setError);
 
   // When isEditDialogOpen or course changes, reset editedCourse to ensure we have latest data
   useEffect(() => {
@@ -181,6 +182,7 @@ export const useCourseEdit = (
     isEditDialogOpen,
     setIsEditDialogOpen,
     handleSaveChanges,
-    loading
+    loading,
+    error
   };
 };

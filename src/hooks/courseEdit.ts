@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom'; 
 import { ProfessionalCourse } from '@/components/courses/types/ProfessionalCourse';
@@ -15,8 +16,8 @@ export const useCourseEdit = (
 ) => {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
-  const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   
   const { updateCourse } = useCourseUpdating(setLoading, setError);
 
