@@ -45,7 +45,10 @@ const CourseBanner: React.FC<CourseBannerProps> = ({
       <div className="relative z-10 p-6 md:p-10">
         <div className="flex flex-col md:flex-row justify-between items-start gap-6">
           <div className="flex-grow">
-            <CourseHeader course={course} />
+            <CourseHeader 
+              course={course}
+              canEdit={false} 
+            />
             
             <div className="mt-6 flex flex-wrap items-center gap-3">
               {course.duration && (

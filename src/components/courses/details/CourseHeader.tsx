@@ -3,19 +3,22 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import { ArrowLeft, Pencil, Save, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { ProfessionalCourse } from '../types/ProfessionalCourse';
 
 interface CourseHeaderProps {
-  canEdit: boolean;
-  isEditing: boolean;
-  toggleEditMode: () => void;
-  cancelEditing: () => void;
+  canEdit?: boolean;
+  isEditing?: boolean;
+  toggleEditMode?: () => void;
+  cancelEditing?: () => void;
+  course?: ProfessionalCourse;
 }
 
 const CourseHeader: React.FC<CourseHeaderProps> = ({
-  canEdit,
-  isEditing,
-  toggleEditMode,
-  cancelEditing
+  canEdit = false,
+  isEditing = false,
+  toggleEditMode = () => {},
+  cancelEditing = () => {},
+  course
 }) => {
   return (
     <div className="flex justify-between items-center mb-6">
