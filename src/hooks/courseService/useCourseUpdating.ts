@@ -4,7 +4,10 @@ import { ProfessionalCourse } from '@/components/courses/types/ProfessionalCours
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 
-export const useCourseUpdating = (setLoading: Dispatch<SetStateAction<boolean>>) => {
+export const useCourseUpdating = (
+  setLoading: Dispatch<SetStateAction<boolean>>, 
+  setError?: Dispatch<SetStateAction<string | null>>
+) => {
   const updateCourse = useCallback(async (id: string, updates: Partial<ProfessionalCourse>): Promise<boolean> => {
     console.log('Starting course update with ID:', id);
     console.log('Course update payload:', JSON.stringify(updates, null, 2));
@@ -56,6 +59,7 @@ export const useCourseUpdating = (setLoading: Dispatch<SetStateAction<boolean>>)
       if (courseError) {
         console.error('Error updating course:', courseError);
         toast.error('Սխալ է տեղի ունեցել դասընթացը թարմացնելիս։');
+        if (setError) setError(`Update error: ${courseError.message}`);
         return false;
       }
       
@@ -181,6 +185,7 @@ export const useCourseUpdating = (setLoading: Dispatch<SetStateAction<boolean>>)
     } catch (error) {
       console.error('Error in updateCourse:', error);
       toast.error('Սխալ է տեղի ունեցել դասընթացը թարմացնելիս։');
+      if (setError) setError(`Update error: ${String(error)}`);
       return false;
     } finally {
       setLoading(false);

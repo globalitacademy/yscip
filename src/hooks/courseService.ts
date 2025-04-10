@@ -1,4 +1,3 @@
-
 import { useState, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { ProfessionalCourse } from '@/components/courses/types/ProfessionalCourse';
@@ -11,7 +10,7 @@ export const useCourseService = () => {
   const [error, setError] = useState<string | null>(null);
   
   const { deleteCourse } = useCourseDeletion(setLoading);
-  const { updateCourse } = useCourseUpdating(setLoading);
+  const { updateCourse } = useCourseUpdating(setLoading, setError);
 
   // Fetch all courses from database with optimized queries
   const fetchAllCourses = useCallback(async (): Promise<ProfessionalCourse[]> => {

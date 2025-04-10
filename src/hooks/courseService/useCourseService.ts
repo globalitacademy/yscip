@@ -20,7 +20,7 @@ export const useCourseService = () => {
   
   const { fetchCourses } = useCourseFetching(setLoading);
   const { createCourse } = useCourseCreation(setLoading);
-  const { updateCourse } = useCourseUpdating(setLoading);
+  const { updateCourse } = useCourseUpdating(setLoading, setError);
   const { deleteCourse } = useCourseDeletion(setLoading);
   
   /**
