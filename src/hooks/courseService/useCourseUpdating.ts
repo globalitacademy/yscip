@@ -190,7 +190,7 @@ export const useCourseUpdating = (
     } finally {
       setLoading(false);
     }
-  });
+  }, [setLoading, setError]);
 
   return { updateCourse };
 };
