@@ -8,7 +8,7 @@ import { toast } from 'sonner';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import { useTheme } from '@/hooks/use-theme';
-import { getCategoryBadgeClass } from './utils/badgeUtils';
+import { getCategoryBadgeClass } from '@/components/project-details/utils/badgeUtils';
 
 interface ProfessionalCourseCardProps {
   course: ProfessionalCourse;
