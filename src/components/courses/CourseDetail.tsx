@@ -1,13 +1,14 @@
 
 import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { ProfessionalCourse } from './types/ProfessionalCourse';
+import { ProfessionalCourse, CourseInstructor } from './types/ProfessionalCourse';
 import { getCourseById, getCourseBySlug } from './utils/courseUtils';
 import { toast } from 'sonner';
 import { useAuth } from '@/contexts/AuthContext';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useTheme } from '@/hooks/use-theme';
 import { ScrollArea } from '@/components/ui/scroll-area';
+import { supabase } from '@/integrations/supabase/client';
 
 // Import refactored components
 import CourseDetailSkeleton from './details/CourseDetailSkeleton';
@@ -16,6 +17,8 @@ import CourseSidebar from './details/CourseSidebar';
 import CourseDescription from './details/CourseDescription';
 import CourseCurriculumTab from './details/CourseCurriculumTab';
 import CourseOutcomesTab from './details/CourseOutcomesTab';
+import CourseInstructorsTab from './details/CourseInstructorsTab';
+import CourseMetaInfo from './details/CourseMetaInfo';
 import CourseApplicationForm from './details/CourseApplicationForm';
 
 const CourseDetail: React.FC = () => {
@@ -24,10 +27,28 @@ const CourseDetail: React.FC = () => {
   const { user } = useAuth();
   const { theme } = useTheme();
   const [course, setCourse] = useState<ProfessionalCourse | null>(null);
+  const [instructors, setInstructors] = useState<CourseInstructor[]>([]);
   const [loading, setLoading] = useState(true);
   const [showApplicationForm, setShowApplicationForm] = useState(false);
   const [fetchError, setFetchError] = useState<string | null>(null);
   
+  // Fetch instructors separately
+  const fetchInstructors = async (courseId: string) => {
+    try {
+      const { data, error } = await supabase
+        .from('course_instructors')
+        .select('*')
+        .eq('course_id', courseId);
+
+      if (error) throw error;
+
+      console.log('Instructors data:', data);
+      setInstructors(data || []);
+    } catch (error) {
+      console.error('Error fetching instructors:', error);
+    }
+  };
+
   useEffect(() => {
     const fetchCourse = async () => {
       setLoading(true);
@@ -67,6 +88,11 @@ const CourseDetail: React.FC = () => {
         // Դասընթացը գտնվել է
         console.log("Դասընթացը հաջողությամբ բեռնվել է:", courseData.title);
         setCourse(courseData);
+
+        // Fetch instructors if course is found
+        if (courseData.id) {
+          fetchInstructors(courseData.id);
+        }
       } catch (error) {
         console.error('Error fetching course:', error);
         setFetchError('Դասընթացի բեռնման ժամանակ սխալ է տեղի ունեցել');
@@ -125,6 +151,7 @@ const CourseDetail: React.FC = () => {
         canEdit={canEdit} 
         handleApply={handleApply} 
         onCourseUpdate={handleCourseUpdate}
+        instructors={instructors}
       />
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
@@ -162,11 +189,28 @@ const CourseDetail: React.FC = () => {
               >
                 Արդյունքներ
               </TabsTrigger>
+              <TabsTrigger 
+                value="instructors" 
+                className={`flex-1 ${theme === 'dark' 
+                  ? 'data-[state=active]:bg-gray-700 data-[state=active]:text-indigo-400' 
+                  : 'data-[state=active]:bg-white data-[state=active]:text-indigo-700'} 
+                  data-[state=active]:shadow-sm rounded-md`}
+              >
+                Դասախոսներ
+              </TabsTrigger>
             </TabsList>
 
             <ScrollArea className="h-[calc(100vh-400px)]">
               <TabsContent value="description" className="space-y-6 focus:outline-none">
                 <CourseDescription course={course} />
+                
+                {/* Add meta information in description tab */}
+                <div className="mt-8">
+                  <h3 className={`text-lg font-semibold mb-4 ${theme === 'dark' ? 'text-gray-200' : 'text-gray-700'}`}>
+                    Դասընթացի մանրամասները
+                  </h3>
+                  <CourseMetaInfo course={course} />
+                </div>
               </TabsContent>
 
               <TabsContent value="curriculum" className="focus:outline-none">
@@ -175,6 +219,10 @@ const CourseDetail: React.FC = () => {
 
               <TabsContent value="outcomes" className="focus:outline-none">
                 <CourseOutcomesTab course={course} />
+              </TabsContent>
+
+              <TabsContent value="instructors" className="focus:outline-none">
+                <CourseInstructorsTab course={course} instructors={instructors} />
               </TabsContent>
             </ScrollArea>
           </Tabs>

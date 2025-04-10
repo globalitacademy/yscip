@@ -3,69 +3,33 @@ import React, { useState, useEffect } from 'react';
 import { ProfessionalCourse, CourseInstructor } from '../types/ProfessionalCourse';
 import { Button } from '@/components/ui/button';
 import { Link } from 'react-router-dom';
-import { ArrowLeft, User, Users, Clock, Pencil, Building } from 'lucide-react';
+import { ArrowLeft, User, Users, Clock, Pencil, Building, Globe, Tag, CalendarDays } from 'lucide-react';
 import CourseApplicationForm from './CourseApplicationForm';
 import CourseEdit from './CourseEdit';
 import { supabase } from '@/integrations/supabase/client';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 import { useTheme } from '@/hooks/use-theme';
+import { Badge } from '@/components/ui/badge';
 
 interface CourseBannerProps {
   course: ProfessionalCourse;
   canEdit?: boolean;
   handleApply: () => void;
   onCourseUpdate?: (updatedCourse: ProfessionalCourse) => void;
+  instructors?: CourseInstructor[];
 }
 
 const CourseBanner: React.FC<CourseBannerProps> = ({ 
   course, 
   canEdit = false,
   handleApply,
-  onCourseUpdate
+  onCourseUpdate,
+  instructors = []
 }) => {
   const [isApplicationFormOpen, setIsApplicationFormOpen] = useState(false);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
-  const [instructors, setInstructors] = useState<CourseInstructor[]>([]);
   const [loading, setLoading] = useState(false);
   const { theme } = useTheme();
-
-  // Fetch instructors when component mounts or when course changes
-  useEffect(() => {
-    if (course.id) {
-      fetchInstructors();
-    }
-  }, [course.id]);
-
-  const fetchInstructors = async () => {
-    setLoading(true);
-    try {
-      // Need to handle course_instructors table specially due to typing issues
-      const response = await supabase
-        .from('course_instructors')
-        .select('*')
-        .eq('course_id', course.id);
-        
-      if (response.error) throw response.error;
-      
-      // Convert the raw data to the CourseInstructor type
-      const instructorData = response.data?.map(item => ({
-        id: item.id,
-        name: item.name,
-        title: item.title,
-        bio: item.bio,
-        avatar_url: item.avatar_url,
-        course_id: item.course_id,
-        created_at: item.created_at,
-        updated_at: item.updated_at
-      })) as CourseInstructor[];
-      
-      setInstructors(instructorData || []);
-    } catch (error) {
-      console.error('Error fetching instructors:', error);
-    } finally {
-      setLoading(false);
-    }
-  };
 
   const openApplicationForm = () => {
     setIsApplicationFormOpen(true);
@@ -79,9 +43,22 @@ const CourseBanner: React.FC<CourseBannerProps> = ({
     if (onCourseUpdate) {
       onCourseUpdate(updatedCourse);
     }
+  };
+  
+  // Format course creation date
+  const formatDate = (dateString?: string) => {
+    if (!dateString) return '';
     
-    // Refetch instructors in case they were updated
-    fetchInstructors();
+    try {
+      const date = new Date(dateString);
+      return new Intl.DateTimeFormat('hy-AM', { 
+        year: 'numeric', 
+        month: 'long', 
+        day: 'numeric' 
+      }).format(date);
+    } catch (e) {
+      return '';
+    }
   };
 
   return (
@@ -112,10 +89,38 @@ const CourseBanner: React.FC<CourseBannerProps> = ({
         </Link>
         
         <div className="space-y-5">
+          {/* Status badges */}
+          {course.is_public !== undefined && (
+            <div className="flex flex-wrap gap-2">
+              <Badge variant={course.is_public ? "success" : "warning"}>
+                {course.is_public ? 'Հրապարակված' : 'Չհրապարակված'}
+              </Badge>
+              
+              {course.show_on_homepage && (
+                <Badge variant="info">
+                  Ցուցադրվում է գլխավոր էջում
+                </Badge>
+              )}
+              
+              {course.category && (
+                <Badge variant="secondary" className={theme === 'dark' ? 'bg-gray-700 text-gray-200' : ''}>
+                  {course.category}
+                </Badge>
+              )}
+            </div>
+          )}
+          
           {/* Course title */}
           <h1 className={`text-4xl md:text-5xl font-bold ${theme === 'dark' ? 'text-gray-100' : 'text-gray-900'}`}>
             {course.title}
           </h1>
+          
+          {/* Course subtitle */}
+          {course.subtitle && course.subtitle !== 'ԴԱՍԸՆԹԱՑ' && (
+            <p className={`text-xl ${theme === 'dark' ? 'text-gray-300' : 'text-gray-700'}`}>
+              {course.subtitle}
+            </p>
+          )}
           
           {/* Course metadata */}
           <div className="flex flex-wrap gap-5 items-center">
@@ -145,8 +150,24 @@ const CourseBanner: React.FC<CourseBannerProps> = ({
               <span className="text-sm md:text-base">Տևողություն՝ {course.duration}</span>
             </div>
             
+            {/* Show creation date if available */}
+            {course.createdAt && (
+              <div className={`flex items-center gap-2 ${theme === 'dark' ? 'text-gray-300' : 'text-gray-600'}`}>
+                <CalendarDays size={18} />
+                <span className="text-sm md:text-base">Ստեղծվել է՝ {formatDate(course.createdAt)}</span>
+              </div>
+            )}
+            
+            {/* Show URL/slug if available */}
+            {course.slug && (
+              <div className={`flex items-center gap-2 ${theme === 'dark' ? 'text-gray-300' : 'text-gray-600'}`}>
+                <Globe size={18} />
+                <span className="text-sm md:text-base">Հղում՝ {course.slug}</span>
+              </div>
+            )}
+            
             {/* Show instructors if available */}
-            {instructors.length > 0 && (
+            {instructors && instructors.length > 0 && (
               <div className={`flex items-start gap-2 ${theme === 'dark' ? 'text-gray-300' : 'text-gray-600'}`}>
                 <Users size={18} className="mt-1" />
                 <div>
@@ -170,7 +191,7 @@ const CourseBanner: React.FC<CourseBannerProps> = ({
             )}
             
             {/* Fallback to old instructor field if no instructors found and field exists */}
-            {instructors.length === 0 && course.instructor && (
+            {(!instructors || instructors.length === 0) && course.instructor && (
               <div className={`flex items-center gap-2 ${theme === 'dark' ? 'text-gray-300' : 'text-gray-600'}`}>
                 <User size={18} />
                 <span className="text-sm md:text-base">Դասախոս՝ {course.instructor}</span>
