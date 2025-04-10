@@ -4,6 +4,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Link, Upload } from 'lucide-react';
+import { useTheme } from '@/hooks/use-theme';
 
 interface MediaUploaderProps {
   mediaUrl?: string;
@@ -31,6 +32,7 @@ export const MediaUploader: React.FC<MediaUploaderProps> = ({
   const [mediaOption, setMediaOption] = React.useState<'icon' | 'upload' | 'url'>(
     mediaUrl ? 'url' : defaultTab
   );
+  const { theme } = useTheme();
   
   const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -63,9 +65,12 @@ export const MediaUploader: React.FC<MediaUploaderProps> = ({
         )}
         
         <TabsContent value="upload">
-          <div className="border rounded-md p-4 text-center bg-white">
+          <div className={`border rounded-md p-4 text-center ${theme === 'dark' 
+            ? 'bg-gray-800 border-gray-700 text-gray-200' 
+            : 'bg-white border-gray-200'}`}
+          >
             <label htmlFor={`${label}Upload`} className="cursor-pointer flex flex-col items-center">
-              <Upload className="h-8 w-8 mb-2 text-amber-700" />
+              <Upload className={`h-8 w-8 mb-2 ${theme === 'dark' ? 'text-amber-500' : 'text-amber-700'}`} />
               <span>{uploadLabel}</span>
               <input
                 id={`${label}Upload`}
@@ -88,14 +93,17 @@ export const MediaUploader: React.FC<MediaUploaderProps> = ({
         </TabsContent>
         
         <TabsContent value="url">
-          <div className="border rounded-md p-4 bg-white">
+          <div className={`border rounded-md p-4 ${theme === 'dark' 
+            ? 'bg-gray-800 border-gray-700' 
+            : 'bg-white border-gray-200'}`}
+          >
             <div className="flex items-center">
-              <Link className="h-5 w-5 mr-2 text-amber-700" />
+              <Link className={`h-5 w-5 mr-2 ${theme === 'dark' ? 'text-amber-500' : 'text-amber-700'}`} />
               <Input
                 value={mediaUrl || ''}
                 onChange={(e) => onMediaChange(e.target.value)}
                 placeholder={placeholder}
-                className="bg-white"
+                className={theme === 'dark' ? 'bg-gray-700 border-gray-600' : 'bg-white'}
               />
             </div>
             {mediaUrl && (
