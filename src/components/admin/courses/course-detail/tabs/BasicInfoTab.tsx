@@ -7,6 +7,7 @@ import { ProfessionalCourse } from '@/components/courses/types/ProfessionalCours
 import { IconSelector } from '@/components/courses/form-components/IconSelector';
 import { MediaUploader } from '@/components/courses/form-components/MediaUploader';
 import { Code, BookText, BrainCircuit, Database, FileCode, Globe } from 'lucide-react';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 
 interface BasicInfoTabProps {
   editedCourse: Partial<ProfessionalCourse>;
@@ -121,6 +122,52 @@ export const BasicInfoTab: React.FC<BasicInfoTabProps> = ({
             value={editedCourse.institution || ''} 
             onChange={(e) => handleInputChange('institution', e.target.value)}
           />
+        </div>
+      </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div className="space-y-2">
+          <Label htmlFor="buttonText">Կոճակի տեքստ</Label>
+          <Input 
+            id="buttonText" 
+            value={editedCourse.buttonText || ''} 
+            onChange={(e) => handleInputChange('buttonText', e.target.value)}
+            placeholder="Դիմել"
+          />
+          <p className="text-xs text-muted-foreground mt-1">Հեղինակային կոճակի տեքստ</p>
+        </div>
+        
+        <div className="space-y-2">
+          <Label htmlFor="slug">URL հղում</Label>
+          <Input 
+            id="slug" 
+            value={editedCourse.slug || ''} 
+            onChange={(e) => handleInputChange('slug', e.target.value)}
+            placeholder="course-name"
+          />
+          <p className="text-xs text-muted-foreground mt-1">URL-ի հղումը դասընթացի համար (օր.՝ course-name)</p>
+        </div>
+      </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div className="space-y-2">
+          <Label htmlFor="category">Կատեգորիա</Label>
+          <Select 
+            value={editedCourse.category || ''} 
+            onValueChange={(value) => handleInputChange('category', value)}
+          >
+            <SelectTrigger id="category">
+              <SelectValue placeholder="Ընտրել կատեգորիան" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="programming">Ծրագրավորում</SelectItem>
+              <SelectItem value="design">Դիզայն</SelectItem>
+              <SelectItem value="business">Բիզնես</SelectItem>
+              <SelectItem value="marketing">Մարքեթինգ</SelectItem>
+              <SelectItem value="softSkills">Փափուկ հմտություններ</SelectItem>
+              <SelectItem value="other">Այլ</SelectItem>
+            </SelectContent>
+          </Select>
         </div>
       </div>
       

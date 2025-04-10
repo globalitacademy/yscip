@@ -19,6 +19,9 @@ import {
   AuthorTab
 } from '@/components/admin/courses/course-detail/tabs';
 
+// Import new display settings tab
+import { DisplaySettingsTab } from '@/components/admin/courses/course-detail/tabs/DisplaySettingsTab';
+
 interface CourseEditProps {
   isOpen: boolean;
   onClose: () => void;
@@ -106,6 +109,9 @@ const CourseEdit: React.FC<CourseEditProps> = ({
                 <TabsTrigger value="basic-info" className={theme === 'dark' ? 'data-[state=active]:bg-gray-700' : 'data-[state=active]:bg-white'}>
                   Հիմնական տվյալներ
                 </TabsTrigger>
+                <TabsTrigger value="display-settings" className={theme === 'dark' ? 'data-[state=active]:bg-gray-700' : 'data-[state=active]:bg-white'}>
+                  Ցուցադրման կարգավորումներ
+                </TabsTrigger>
                 <TabsTrigger value="lessons" className={theme === 'dark' ? 'data-[state=active]:bg-gray-700' : 'data-[state=active]:bg-white'}>
                   Դասընթացի պլան
                 </TabsTrigger>
@@ -126,6 +132,10 @@ const CourseEdit: React.FC<CourseEditProps> = ({
                   <div className="pb-8">
                     <TabsContent value="basic-info" className="mt-0 focus-visible:outline-none">
                       <BasicInfoTab editedCourse={editedCourse} setEditedCourse={setEditedCourse} />
+                    </TabsContent>
+                    
+                    <TabsContent value="display-settings" className="mt-0 focus-visible:outline-none">
+                      <DisplaySettingsTab editedCourse={editedCourse} setEditedCourse={setEditedCourse} />
                     </TabsContent>
                     
                     <TabsContent value="lessons" className="mt-0 focus-visible:outline-none">
