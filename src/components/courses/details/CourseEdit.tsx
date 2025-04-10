@@ -51,6 +51,8 @@ const CourseEdit: React.FC<CourseEditProps> = ({
     setLoading(true);
     toast.loading('Դասընթացը պահպանվում է...');
     try {
+      console.log('Starting save process for course:', course.title);
+      
       const completeEditedCourse = {
         ...course,
         ...editedCourse,
@@ -65,11 +67,14 @@ const CourseEdit: React.FC<CourseEditProps> = ({
       
       const success = await saveCourseChanges(completeEditedCourse as ProfessionalCourse);
       toast.dismiss();
+      
       if (success) {
+        console.log('Course successfully saved:', course.title);
         toast.success('Դասընթացը հաջողությամբ թարմացվել է');
         onCourseUpdate(completeEditedCourse as ProfessionalCourse);
         onClose();
       } else {
+        console.error('Failed to update course:', course.title);
         toast.error('Սխալ է տեղի ունեցել դասընթացը թարմացնելիս։');
       }
     } catch (error) {
