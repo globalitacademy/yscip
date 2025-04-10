@@ -132,33 +132,11 @@ export const saveCourseChanges = async (course: ProfessionalCourse): Promise<boo
       }
     }
 
-    // Handle resources
-    const { error: deleteResourcesError } = await supabase
-      .from('course_resources')
-      .delete()
-      .eq('course_id', course.id);
-
-    if (deleteResourcesError) {
-      console.error('Error deleting existing resources:', deleteResourcesError);
-      // Continue despite error
-    }
-
+    // For now, we'll store the resources in the course's JSON data in the 'courses' table
+    // instead of a separate table since 'course_resources' doesn't exist in the database schema
     if (course.resources && course.resources.length > 0) {
-      const { error: resourcesError } = await supabase
-        .from('course_resources')
-        .insert(
-          course.resources.map(resource => ({
-            course_id: course.id,
-            title: resource.title,
-            url: resource.url,
-            type: resource.type
-          }))
-        );
-
-      if (resourcesError) {
-        console.error('Error inserting resources:', resourcesError);
-        // Continue despite error
-      }
+      console.log('Resources are being saved as part of the course main record');
+      // The resources are already saved in the main course record through the JSON column
     }
 
     return true;

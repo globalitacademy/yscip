@@ -302,7 +302,7 @@ export const DisplaySettingsTab: React.FC<DisplaySettingsTabProps> = ({
                 <div>
                   <Select 
                     value={resource.type} 
-                    onValueChange={(value) => updateResource(index, 'type', value)}
+                    onValueChange={(value) => updateResource(index, 'type', value as any)}
                   >
                     <SelectTrigger className="w-[120px]">
                       <SelectValue placeholder="Տեսակ" />
