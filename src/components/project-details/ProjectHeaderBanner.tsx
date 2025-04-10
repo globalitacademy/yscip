@@ -111,7 +111,7 @@ const ProjectHeaderBanner: React.FC<ProjectHeaderBannerProps> = ({ project }) =>
             <ProjectTechStack 
               duration={project.duration}
               techStackCount={project.techStack?.length || 0}
-              organizationName={project.organization?.name}
+              organizationName={project.organizationName}
             />
           </div>
           
