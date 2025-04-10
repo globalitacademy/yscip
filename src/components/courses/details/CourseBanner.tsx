@@ -195,7 +195,7 @@ const CourseBanner: React.FC<CourseBannerProps> = ({
                 : 'bg-gradient-to-r from-blue-600 to-indigo-500 hover:from-blue-700 hover:to-indigo-600'} 
                 text-white shadow-md hover:shadow-lg transition-all transform hover:-translate-y-0.5 rounded-full px-8`}
             >
-              {course.buttonText || "Դիմել դասընթացին"}
+              Դիմել
             </Button>
             
             {canEdit && (
