@@ -29,7 +29,7 @@ const ProjectBadges: React.FC<ProjectBadgesProps> = ({
     }
   };
   return <>
-      <div className="absolute top-4 left-4 flex items-center text-xs px-2 py-1 rounded-full z-10 bg-gray-800">
+      <div className="absolute top-4 left-4 flex items-center text-xs px-2 py-1 rounded-full z-10 bg-slate-200">
         <Building size={12} className="mr-1" />
         <span>{category}</span>
       </div>
