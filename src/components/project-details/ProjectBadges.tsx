@@ -6,6 +6,7 @@ import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
 import { ChevronDown } from 'lucide-react';
 import { categories } from '@/data/projectThemes';
+import { useTheme } from '@/hooks/use-theme';
 
 interface ProjectBadgesProps {
   category?: string;
@@ -24,6 +25,9 @@ const ProjectBadges: React.FC<ProjectBadgesProps> = ({
   onCategoryChange,
   onIsPublicChange
 }) => {
+  const { theme } = useTheme();
+  const isDarkMode = theme === 'dark';
+
   return (
     <div className="flex flex-wrap gap-2">
       {isEditing ? (
@@ -33,7 +37,9 @@ const ProjectBadges: React.FC<ProjectBadgesProps> = ({
               value={category} 
               onValueChange={onCategoryChange}
             >
-              <SelectTrigger className="text-white bg-black/40 border-white/20">
+              <SelectTrigger className={isDarkMode ? 
+                "text-white bg-black/40 border-white/20" : 
+                "text-foreground bg-background/90 border-input"}>
                 <SelectValue placeholder="Ընտրել կատեգորիա" />
               </SelectTrigger>
               <SelectContent>
@@ -53,24 +59,39 @@ const ProjectBadges: React.FC<ProjectBadgesProps> = ({
               onCheckedChange={onIsPublicChange} 
               className="data-[state=checked]:bg-green-500"
             />
-            <Label htmlFor="is-public" className="text-white">Հրապարակային</Label>
+            <Label htmlFor="is-public" className={isDarkMode ? "text-white" : "text-foreground"}>
+              Հրապարակային
+            </Label>
           </div>
         </div>
       ) : (
         <>
           {category && (
-            <Badge variant="outline" className="text-white border-white/30 bg-white/10">
+            <Badge 
+              variant="outline" 
+              className={isDarkMode ? 
+                "text-white border-white/30 bg-white/10" : 
+                "text-foreground border-border bg-background/80"}
+            >
               {category}
             </Badge>
           )}
           
           {complexity && (
-            <Badge variant="outline" className="text-white border-white/30 bg-white/10">
+            <Badge 
+              variant="outline" 
+              className={isDarkMode ? 
+                "text-white border-white/30 bg-white/10" : 
+                "text-foreground border-border bg-background/80"}
+            >
               Բարդություն: {complexity}
             </Badge>
           )}
           
-          <Badge variant={isPublic ? "success" : "secondary"} className="bg-opacity-80">
+          <Badge 
+            variant={isPublic ? "success" : "secondary"} 
+            className={isDarkMode ? "bg-opacity-80" : ""}
+          >
             {isPublic ? 'Հրապարակային' : 'Պրիվատ'}
           </Badge>
         </>

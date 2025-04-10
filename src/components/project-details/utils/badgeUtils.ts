@@ -1,46 +1,85 @@
 
-// Utility functions for badge styling
+import { useTheme } from '@/hooks/use-theme';
+
+type ThemeMode = 'light' | 'dark';
 
 /**
- * Get the appropriate color class for a project category badge
+ * Get the appropriate color class for a project category badge based on theme
  */
-export const getCategoryBadgeClass = (category: string = ''): string => {
-  let colorClass = "bg-gray-100 text-gray-800";
+export const getCategoryBadgeClass = (category: string = '', theme: ThemeMode = 'light'): string => {
+  const isDark = theme === 'dark';
   
+  // Base class for light/dark mode
+  let baseClass = isDark 
+    ? "bg-slate-800 text-slate-200" 
+    : "bg-gray-100 text-gray-800";
+  
+  // Category-specific colors
   switch (category.toLowerCase()) {
     case 'web development':
     case 'web':
-      colorClass = "bg-blue-100 text-blue-800";
-      break;
+      return isDark 
+        ? "bg-blue-900/60 text-blue-300" 
+        : "bg-blue-100 text-blue-800";
     case 'mobile':
     case 'mobile development':
-      colorClass = "bg-green-100 text-green-800";
-      break;
+      return isDark 
+        ? "bg-green-900/60 text-green-300" 
+        : "bg-green-100 text-green-800";
     case 'ai':
     case 'machine learning':
-      colorClass = "bg-purple-100 text-purple-800";
-      break;
+      return isDark 
+        ? "bg-purple-900/60 text-purple-300" 
+        : "bg-purple-100 text-purple-800";
     case 'data science':
-      colorClass = "bg-yellow-100 text-yellow-800";
-      break;
+      return isDark 
+        ? "bg-yellow-900/60 text-yellow-300" 
+        : "bg-yellow-100 text-yellow-800";
     default:
-      break;
+      return baseClass;
   }
-  
-  return colorClass;
 };
 
 /**
- * Get the appropriate color class for a complexity badge
+ * Get the appropriate color class for a complexity badge based on theme
  */
-export const getComplexityBadgeClass = (complexity: string = 'Միջին'): string => {
-  let colorClass = "bg-yellow-100 text-yellow-800"; // Default for Միջին
+export const getComplexityBadgeClass = (complexity: string = 'Միջին', theme: ThemeMode = 'light'): string => {
+  const isDark = theme === 'dark';
   
   if (complexity === 'Սկսնակ') {
-    colorClass = "bg-green-100 text-green-800";
+    return isDark 
+      ? "bg-green-900/60 text-green-300 border-green-800" 
+      : "bg-green-100 text-green-800 border-green-200";
   } else if (complexity === 'Առաջադեմ') {
-    colorClass = "bg-red-100 text-red-800";
+    return isDark 
+      ? "bg-red-900/60 text-red-300 border-red-800" 
+      : "bg-red-100 text-red-800 border-red-200";
   }
   
-  return colorClass;
+  // Default for Միջին
+  return isDark 
+    ? "bg-yellow-900/60 text-yellow-300 border-yellow-800" 
+    : "bg-yellow-100 text-yellow-800 border-yellow-200";
+};
+
+/**
+ * Hook for getting theme-specific badge classes
+ */
+export const useBadgeThemeClasses = () => {
+  const { theme } = useTheme();
+  
+  return {
+    getCategoryClass: (category: string) => getCategoryBadgeClass(category, theme),
+    getComplexityClass: (complexity: string) => getComplexityBadgeClass(complexity, theme),
+    getPublicBadgeClass: () => {
+      return theme === 'dark' 
+        ? "bg-green-900/60 text-green-300" 
+        : "bg-green-100 text-green-800";
+    },
+    getPrivateBadgeClass: () => {
+      return theme === 'dark' 
+        ? "bg-amber-900/60 text-amber-300" 
+        : "bg-amber-100 text-amber-800";
+    }
+  };
 };
