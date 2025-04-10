@@ -36,15 +36,17 @@ const CourseEditDialog: React.FC<CourseEditDialogProps> = ({
 }) => {
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen} modal={false}>
-      <DialogContent className="max-w-6xl p-0 h-[90vh] bg-white">
+      <DialogContent className="max-w-6xl p-0 h-[90vh] overflow-hidden bg-white">
         <div className="h-full flex flex-col">
           {/* Course Banner at the top */}
           {editedCourse && (
-            <CourseBanner course={editedCourse as ProfessionalCourse} isEditMode={true} />
+            <div className="shrink-0">
+              <CourseBanner course={editedCourse as ProfessionalCourse} isEditMode={true} />
+            </div>
           )}
           
           {/* Edit controls */}
-          <div className="flex justify-between items-center p-4 border-b">
+          <div className="flex justify-between items-center p-4 border-b shrink-0">
             <h2 className="text-xl font-bold">Դասընթացի խմբագրում</h2>
             <div className="flex gap-2">
               <Button 
@@ -66,10 +68,10 @@ const CourseEditDialog: React.FC<CourseEditDialogProps> = ({
             </div>
           </div>
           
-          {/* Tabs content */}
-          <ScrollArea className="flex-grow">
-            <div className="p-6">
-              <Tabs defaultValue="basic-info" className="w-full">
+          {/* Tabs content with ScrollArea for scrolling */}
+          <div className="flex-grow overflow-hidden">
+            <Tabs defaultValue="basic-info" className="w-full h-full flex flex-col">
+              <div className="px-6 pt-6 shrink-0">
                 <TabsList className="mb-6">
                   <TabsTrigger value="basic-info">Հիմնական տվյալներ</TabsTrigger>
                   <TabsTrigger value="lessons">Դասընթացի պլան</TabsTrigger>
@@ -77,29 +79,33 @@ const CourseEditDialog: React.FC<CourseEditDialogProps> = ({
                   <TabsTrigger value="outcomes">Արդյունքներ</TabsTrigger>
                   <TabsTrigger value="author">Հեղինակի մասին</TabsTrigger>
                 </TabsList>
-                
-                <TabsContent value="basic-info">
-                  <BasicInfoTab editedCourse={editedCourse} setEditedCourse={setEditedCourse} />
-                </TabsContent>
-                
-                <TabsContent value="lessons">
-                  <LessonsTab editedCourse={editedCourse} setEditedCourse={setEditedCourse} />
-                </TabsContent>
-                
-                <TabsContent value="requirements">
-                  <RequirementsTab editedCourse={editedCourse} setEditedCourse={setEditedCourse} />
-                </TabsContent>
-                
-                <TabsContent value="outcomes">
-                  <OutcomesTab editedCourse={editedCourse} setEditedCourse={setEditedCourse} />
-                </TabsContent>
-                
-                <TabsContent value="author">
-                  <AuthorTab editedCourse={editedCourse} setEditedCourse={setEditedCourse} />
-                </TabsContent>
-              </Tabs>
-            </div>
-          </ScrollArea>
+              </div>
+              
+              <ScrollArea className="px-6 flex-grow h-[calc(90vh-250px)]">
+                <div className="pb-8">
+                  <TabsContent value="basic-info" className="mt-0">
+                    <BasicInfoTab editedCourse={editedCourse} setEditedCourse={setEditedCourse} />
+                  </TabsContent>
+                  
+                  <TabsContent value="lessons" className="mt-0">
+                    <LessonsTab editedCourse={editedCourse} setEditedCourse={setEditedCourse} />
+                  </TabsContent>
+                  
+                  <TabsContent value="requirements" className="mt-0">
+                    <RequirementsTab editedCourse={editedCourse} setEditedCourse={setEditedCourse} />
+                  </TabsContent>
+                  
+                  <TabsContent value="outcomes" className="mt-0">
+                    <OutcomesTab editedCourse={editedCourse} setEditedCourse={setEditedCourse} />
+                  </TabsContent>
+                  
+                  <TabsContent value="author" className="mt-0">
+                    <AuthorTab editedCourse={editedCourse} setEditedCourse={setEditedCourse} />
+                  </TabsContent>
+                </div>
+              </ScrollArea>
+            </Tabs>
+          </div>
         </div>
       </DialogContent>
     </Dialog>

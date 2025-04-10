@@ -74,10 +74,10 @@ const CourseEdit: React.FC<CourseEditProps> = ({
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className={`max-w-6xl p-0 h-[90vh] ${theme === 'dark' ? 'bg-gray-900 border-gray-700 text-gray-100' : 'bg-white border-gray-200 text-gray-900'}`}>
-        <div className="h-full flex flex-col">
-          {/* Edit controls */}
-          <div className={`flex justify-between items-center p-4 ${theme === 'dark' ? 'border-gray-700' : 'border-gray-200'} border-b`}>
+      <DialogContent className={`max-w-6xl p-0 h-[90vh] overflow-hidden ${theme === 'dark' ? 'bg-gray-900 border-gray-700 text-gray-100' : 'bg-white border-gray-200 text-gray-900'}`}>
+        <div className="flex flex-col h-full">
+          {/* Edit controls - fixed at top */}
+          <div className={`flex justify-between items-center p-4 ${theme === 'dark' ? 'border-gray-700' : 'border-gray-200'} border-b shrink-0`}>
             <h2 className="text-xl font-bold">Դասընթացի խմբագրում</h2>
             <div className="flex gap-2">
               <Button 
@@ -99,40 +99,55 @@ const CourseEdit: React.FC<CourseEditProps> = ({
             </div>
           </div>
           
-          {/* Tabs content */}
-          <ScrollArea className="flex-grow overflow-y-auto">
-            <div className="p-6">
-              <Tabs defaultValue="basic-info" className="w-full">
-                <TabsList className={`mb-6 ${theme === 'dark' ? 'bg-gray-800' : 'bg-gray-100'}`}>
-                  <TabsTrigger value="basic-info" className={theme === 'dark' ? 'data-[state=active]:bg-gray-700' : 'data-[state=active]:bg-white'}>Հիմնական տվյալներ</TabsTrigger>
-                  <TabsTrigger value="lessons" className={theme === 'dark' ? 'data-[state=active]:bg-gray-700' : 'data-[state=active]:bg-white'}>Դասընթացի պլան</TabsTrigger>
-                  <TabsTrigger value="requirements" className={theme === 'dark' ? 'data-[state=active]:bg-gray-700' : 'data-[state=active]:bg-white'}>Պահանջներ</TabsTrigger>
-                  <TabsTrigger value="outcomes" className={theme === 'dark' ? 'data-[state=active]:bg-gray-700' : 'data-[state=active]:bg-white'}>Արդյունքներ</TabsTrigger>
-                  <TabsTrigger value="author" className={theme === 'dark' ? 'data-[state=active]:bg-gray-700' : 'data-[state=active]:bg-white'}>Հեղինակի մասին</TabsTrigger>
-                </TabsList>
-                
-                <TabsContent value="basic-info" className="focus-visible:outline-none">
-                  <BasicInfoTab editedCourse={editedCourse} setEditedCourse={setEditedCourse} />
-                </TabsContent>
-                
-                <TabsContent value="lessons" className="focus-visible:outline-none">
-                  <LessonsTab editedCourse={editedCourse} setEditedCourse={setEditedCourse} />
-                </TabsContent>
-                
-                <TabsContent value="requirements" className="focus-visible:outline-none">
-                  <RequirementsTab editedCourse={editedCourse} setEditedCourse={setEditedCourse} />
-                </TabsContent>
-                
-                <TabsContent value="outcomes" className="focus-visible:outline-none">
-                  <OutcomesTab editedCourse={editedCourse} setEditedCourse={setEditedCourse} />
-                </TabsContent>
-                
-                <TabsContent value="author" className="focus-visible:outline-none">
-                  <AuthorTab editedCourse={editedCourse} setEditedCourse={setEditedCourse} />
-                </TabsContent>
-              </Tabs>
-            </div>
-          </ScrollArea>
+          {/* Tabs navigation - also fixed */}
+          <div className="px-6 pt-4 shrink-0">
+            <Tabs defaultValue="basic-info" className="w-full">
+              <TabsList className={`mb-4 ${theme === 'dark' ? 'bg-gray-800' : 'bg-gray-100'}`}>
+                <TabsTrigger value="basic-info" className={theme === 'dark' ? 'data-[state=active]:bg-gray-700' : 'data-[state=active]:bg-white'}>
+                  Հիմնական տվյալներ
+                </TabsTrigger>
+                <TabsTrigger value="lessons" className={theme === 'dark' ? 'data-[state=active]:bg-gray-700' : 'data-[state=active]:bg-white'}>
+                  Դասընթացի պլան
+                </TabsTrigger>
+                <TabsTrigger value="requirements" className={theme === 'dark' ? 'data-[state=active]:bg-gray-700' : 'data-[state=active]:bg-white'}>
+                  Պահանջներ
+                </TabsTrigger>
+                <TabsTrigger value="outcomes" className={theme === 'dark' ? 'data-[state=active]:bg-gray-700' : 'data-[state=active]:bg-white'}>
+                  Արդյունքներ
+                </TabsTrigger>
+                <TabsTrigger value="author" className={theme === 'dark' ? 'data-[state=active]:bg-gray-700' : 'data-[state=active]:bg-white'}>
+                  Հեղինակի մասին
+                </TabsTrigger>
+              </TabsList>
+              
+              {/* Tab contents in ScrollArea for independent scrolling */}
+              <div className="overflow-hidden flex-grow h-[calc(90vh-160px)]">
+                <ScrollArea className="h-full pr-4">
+                  <div className="pb-8">
+                    <TabsContent value="basic-info" className="mt-0 focus-visible:outline-none">
+                      <BasicInfoTab editedCourse={editedCourse} setEditedCourse={setEditedCourse} />
+                    </TabsContent>
+                    
+                    <TabsContent value="lessons" className="mt-0 focus-visible:outline-none">
+                      <LessonsTab editedCourse={editedCourse} setEditedCourse={setEditedCourse} />
+                    </TabsContent>
+                    
+                    <TabsContent value="requirements" className="mt-0 focus-visible:outline-none">
+                      <RequirementsTab editedCourse={editedCourse} setEditedCourse={setEditedCourse} />
+                    </TabsContent>
+                    
+                    <TabsContent value="outcomes" className="mt-0 focus-visible:outline-none">
+                      <OutcomesTab editedCourse={editedCourse} setEditedCourse={setEditedCourse} />
+                    </TabsContent>
+                    
+                    <TabsContent value="author" className="mt-0 focus-visible:outline-none">
+                      <AuthorTab editedCourse={editedCourse} setEditedCourse={setEditedCourse} />
+                    </TabsContent>
+                  </div>
+                </ScrollArea>
+              </div>
+            </Tabs>
+          </div>
         </div>
       </DialogContent>
     </Dialog>

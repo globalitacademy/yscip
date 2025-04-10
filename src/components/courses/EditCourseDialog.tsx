@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React from 'react';
 import { 
   Dialog, 
   DialogContent, 
@@ -14,6 +14,7 @@ import ProfessionalCourseForm from './ProfessionalCourseForm';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Course } from './types';
 import { ProfessionalCourse } from './types/ProfessionalCourse';
+import { ScrollArea } from '@/components/ui/scroll-area';
 
 interface EditCourseDialogProps {
   isOpen: boolean;
@@ -61,46 +62,54 @@ const EditCourseDialog: React.FC<EditCourseDialogProps> = ({
 
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
-      <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
-        <DialogHeader>
+      <DialogContent className="max-w-4xl max-h-[90vh] p-0 overflow-hidden">
+        <DialogHeader className="p-6 border-b">
           <DialogTitle>Կուրսի խմբագրում</DialogTitle>
           <DialogDescription>
             Փոփոխեք կուրսի բոլոր տվյալները ստորև: Պատրաստ լինելուց հետո սեղմեք "Պահպանել" կոճակը:
           </DialogDescription>
         </DialogHeader>
         
-        <Tabs value={courseType} onValueChange={(value: 'standard' | 'professional') => setCourseType(value)}>
-          <TabsList className="grid grid-cols-2 w-full">
-            <TabsTrigger value="standard">Ստանդարտ դասընթաց</TabsTrigger>
-            <TabsTrigger value="professional">Մասնագիտական դասընթաց</TabsTrigger>
-          </TabsList>
-          
-          <TabsContent value="standard">
-            {selectedCourse && (
-              <CourseForm
-                course={selectedCourse}
-                setCourse={(updatedCourse) => setSelectedCourse(updatedCourse as Course)}
-                newModule={newModule}
-                setNewModule={setNewModule}
-                handleAddModule={handleAddModuleToEdit}
-                handleRemoveModule={handleRemoveModuleFromEdit}
-                isEdit={true}
-              />
-            )}
-          </TabsContent>
-          
-          <TabsContent value="professional">
-            {professionalCourse && setProfessionalCourse && (
-              <ProfessionalCourseForm
-                course={professionalCourse}
-                setCourse={setProfessionalCourse}
-                isEdit={true}
-              />
-            )}
-          </TabsContent>
-        </Tabs>
+        <div className="flex-grow overflow-hidden">
+          <Tabs value={courseType} onValueChange={(value: 'standard' | 'professional') => setCourseType(value)} className="h-full flex flex-col">
+            <div className="px-6 pt-4 shrink-0">
+              <TabsList className="grid grid-cols-2 w-full mb-4">
+                <TabsTrigger value="standard">Ստանդարտ դասընթաց</TabsTrigger>
+                <TabsTrigger value="professional">Մասնագիտական դասընթաց</TabsTrigger>
+              </TabsList>
+            </div>
+            
+            <ScrollArea className="px-6 flex-grow h-[calc(90vh-220px)]">
+              <div className="pb-6">
+                <TabsContent value="standard" className="mt-0">
+                  {selectedCourse && (
+                    <CourseForm
+                      course={selectedCourse}
+                      setCourse={(updatedCourse) => setSelectedCourse(updatedCourse as Course)}
+                      newModule={newModule}
+                      setNewModule={setNewModule}
+                      handleAddModule={handleAddModuleToEdit}
+                      handleRemoveModule={handleRemoveModuleFromEdit}
+                      isEdit={true}
+                    />
+                  )}
+                </TabsContent>
+                
+                <TabsContent value="professional" className="mt-0">
+                  {professionalCourse && setProfessionalCourse && (
+                    <ProfessionalCourseForm
+                      course={professionalCourse}
+                      setCourse={setProfessionalCourse}
+                      isEdit={true}
+                    />
+                  )}
+                </TabsContent>
+              </div>
+            </ScrollArea>
+          </Tabs>
+        </div>
         
-        <DialogFooter>
+        <DialogFooter className="p-4 border-t mt-0 shrink-0">
           <Button type="submit" onClick={handleSubmit}>
             Պահպանել
           </Button>
