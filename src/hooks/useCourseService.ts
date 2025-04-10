@@ -1,3 +1,4 @@
+
 import { useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { Course } from '@/components/courses/types';
@@ -11,6 +12,7 @@ import { useAuth } from '@/contexts/AuthContext';
  */
 export const useCourseService = () => {
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const { user } = useAuth();
 
   /**
@@ -325,6 +327,7 @@ export const useCourseService = () => {
     } catch (error) {
       console.error('Error in updateCourse:', error);
       toast.error('Սխալ է տեղի ունեցել դասընթացը թարմացնելիս։');
+      setError(`Update error: ${String(error)}`);
       return false;
     } finally {
       setLoading(false);
@@ -386,6 +389,7 @@ export const useCourseService = () => {
     createCourse,
     updateCourse,
     deleteCourse,
-    loading
+    loading,
+    error
   };
 };

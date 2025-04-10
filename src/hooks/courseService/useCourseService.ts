@@ -4,7 +4,7 @@ import { useCourseFetching } from './useCourseFetching';
 import { useCourseCreation } from './useCourseCreation';
 import { useCourseUpdating } from './useCourseUpdating';
 import { useCourseDeletion } from './useCourseDeletion';
-import { ProfessionalCourse } from '@/components/courses/types';
+import { ProfessionalCourse } from '@/components/courses/types/ProfessionalCourse';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { convertIconNameToComponent } from '@/utils/iconUtils';
