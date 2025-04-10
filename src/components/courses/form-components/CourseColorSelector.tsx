@@ -4,10 +4,11 @@ import { Button } from "@/components/ui/button";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { ChevronDown } from 'lucide-react';
 
-interface CourseColorSelectorProps {
+export interface CourseColorSelectorProps {
   isColorsOpen: boolean;
   setIsColorsOpen: (isOpen: boolean) => void;
   onColorSelect: (color: string) => void;
+  selectedColor: string;
 }
 
 const colorOptions = [
@@ -19,7 +20,12 @@ const colorOptions = [
   { label: 'Կանաչ', value: 'text-green-500' },
 ];
 
-export const CourseColorSelector: React.FC<CourseColorSelectorProps> = ({ isColorsOpen, setIsColorsOpen, onColorSelect }) => {
+export const CourseColorSelector: React.FC<CourseColorSelectorProps> = ({ 
+  isColorsOpen, 
+  setIsColorsOpen, 
+  onColorSelect,
+  selectedColor 
+}) => {
   return (
     <Collapsible
       open={isColorsOpen}
@@ -37,7 +43,7 @@ export const CourseColorSelector: React.FC<CourseColorSelectorProps> = ({ isColo
           {colorOptions.map((option) => (
             <Button
               key={option.value}
-              variant="outline"
+              variant={selectedColor === option.value ? "default" : "outline"}
               className={`p-2 ${option.value.replace('text-', 'bg-').replace('-500', '-100')}`}
               onClick={() => onColorSelect(option.value)}
             >

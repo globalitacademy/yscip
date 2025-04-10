@@ -1,5 +1,5 @@
 
-import React from 'react';
+import React, { useState } from 'react';
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
@@ -19,6 +19,9 @@ export const BasicInfoTab: React.FC<BasicInfoTabProps> = ({
   editedCourse,
   setEditedCourse
 }) => {
+  const [isIconsOpen, setIsIconsOpen] = useState(false);
+  const [isColorsOpen, setIsColorsOpen] = useState(false);
+  
   const handleInputChange = (field: string, value: string) => {
     setEditedCourse(prevState => ({ ...prevState, [field]: value }));
   };
@@ -105,17 +108,21 @@ export const BasicInfoTab: React.FC<BasicInfoTabProps> = ({
       <div className="space-y-4">
         <IconSelector 
           selectedIcon={editedCourse.iconName || ''}
-          onIconSelect={handleIconChange} 
+          onIconSelect={handleIconChange}
+          isIconsOpen={isIconsOpen}
+          setIsIconsOpen={setIsIconsOpen}
         />
         
         <CourseColorSelector 
           selectedColor={editedCourse.color || ''}
           onColorSelect={handleColorChange}
+          isColorsOpen={isColorsOpen}
+          setIsColorsOpen={setIsColorsOpen}
         />
         
         <CourseImageSelector 
-          imageUrl={editedCourse.imageUrl || ''}
-          onImageSelect={handleImageChange}
+          course={editedCourse}
+          setCourse={setEditedCourse as React.Dispatch<React.SetStateAction<Partial<ProfessionalCourse>>>}
           label="Դասընթացի նկար"
         />
       </div>

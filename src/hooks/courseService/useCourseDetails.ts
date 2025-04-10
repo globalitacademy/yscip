@@ -83,7 +83,7 @@ export const useCourseDetails = (initialId?: string) => {
         updated_at: instructor.updated_at
       })) || [];
       
-      // Create the course object
+      // Create the course object with careful handling of optional fields
       const professionalCourse: ProfessionalCourse = {
         id: data.id,
         title: data.title,
@@ -107,13 +107,13 @@ export const useCourseDetails = (initialId?: string) => {
         is_public: data.is_public,
         show_on_homepage: data.show_on_homepage,
         display_order: data.display_order,
-        category: data.category as string | undefined,
-        learning_formats: data.learning_formats as string[] | undefined,
-        languages: data.languages as string[] | undefined,
-        author_type: data.author_type as 'lecturer' | 'institution' | undefined,
-        instructor_ids: data.instructor_ids,
-        syllabus_file: data.syllabus_file as string | undefined,
-        resources: data.resources as any[] | undefined,
+        category: (data as any).category, // Use type assertion for optional fields
+        learning_formats: (data as any).learning_formats as string[] | undefined,
+        languages: (data as any).languages as string[] | undefined,
+        author_type: (data as any).author_type as 'lecturer' | 'institution' | undefined,
+        instructor_ids: (data as any).instructor_ids,
+        syllabus_file: (data as any).syllabus_file as string | undefined,
+        resources: (data as any).resources,
         createdAt: data.created_at,
         updatedAt: data.updated_at,
       };
