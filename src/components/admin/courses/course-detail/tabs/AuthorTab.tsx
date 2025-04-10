@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { ProfessionalCourse, CourseInstructor } from '@/components/courses/types/ProfessionalCourse';
 import { Label } from "@/components/ui/label";
@@ -9,6 +10,7 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Plus, Trash2, Upload } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
+import { useTheme } from "@/hooks/use-theme";
 
 interface AuthorTabProps {
   editedCourse: Partial<ProfessionalCourse>;
@@ -24,6 +26,7 @@ export const AuthorTab: React.FC<AuthorTabProps> = ({ editedCourse, setEditedCou
     bio: '',
     avatar_url: ''
   });
+  const { theme } = useTheme();
   
   useEffect(() => {
     if (editedCourse.id) {
@@ -166,49 +169,61 @@ export const AuthorTab: React.FC<AuthorTabProps> = ({ editedCourse, setEditedCou
 
   return (
     <div className="space-y-8">
-      <Card>
+      <Card className={theme === 'dark' ? 'bg-gray-800 border-gray-700' : ''}>
         <CardHeader>
-          <CardTitle className="text-xl">Դասընթացի հեղինակ</CardTitle>
+          <CardTitle className={`text-xl ${theme === 'dark' ? 'text-gray-100' : ''}`}>
+            Դասընթացի հեղինակ
+          </CardTitle>
         </CardHeader>
         <CardContent className="space-y-6">
           <div className="space-y-4">
-            <Label>Հեղինակի տեսակ</Label>
+            <Label className={theme === 'dark' ? 'text-gray-300' : ''}>Հեղինակի տեսակ</Label>
             <RadioGroup 
               value={editedCourse.author_type || 'lecturer'} 
               onValueChange={(value) => handleInputChange('author_type', value as 'lecturer' | 'institution')}
               className="flex space-x-4"
             >
               <div className="flex items-center space-x-2">
-                <RadioGroupItem value="lecturer" id="author-lecturer" />
-                <Label htmlFor="author-lecturer">Դասախոս</Label>
+                <RadioGroupItem value="lecturer" id="author-lecturer" 
+                  className={theme === 'dark' ? 'border-gray-600' : ''} />
+                <Label htmlFor="author-lecturer" className={theme === 'dark' ? 'text-gray-300' : ''}>
+                  Դասախոս
+                </Label>
               </div>
               <div className="flex items-center space-x-2">
-                <RadioGroupItem value="institution" id="author-institution" />
-                <Label htmlFor="author-institution">Հաստատություն</Label>
+                <RadioGroupItem value="institution" id="author-institution" 
+                  className={theme === 'dark' ? 'border-gray-600' : ''} />
+                <Label htmlFor="author-institution" className={theme === 'dark' ? 'text-gray-300' : ''}>
+                  Հաստատություն
+                </Label>
               </div>
             </RadioGroup>
           </div>
           
           {editedCourse.author_type === 'lecturer' || !editedCourse.author_type ? (
             <div className="space-y-2">
-              <Label htmlFor="createdBy" className="text-base">Հեղինակ (անուն, ազգանուն)</Label>
+              <Label htmlFor="createdBy" className={`text-base ${theme === 'dark' ? 'text-gray-300' : ''}`}>
+                Հեղինակ (անուն, ազգանուն)
+              </Label>
               <Input 
                 id="createdBy" 
                 value={editedCourse.createdBy || ''} 
                 onChange={(e) => handleInputChange('createdBy', e.target.value)}
                 placeholder="Մուտքագրեք հեղինակի անունը և ազգանունը"
-                className="focus:border-blue-500"
+                className={`focus:border-blue-500 ${theme === 'dark' ? 'bg-gray-700 border-gray-600 text-gray-200' : ''}`}
               />
             </div>
           ) : (
             <div className="space-y-2">
-              <Label htmlFor="institution" className="text-base">Հաստատության անվանումը</Label>
+              <Label htmlFor="institution" className={`text-base ${theme === 'dark' ? 'text-gray-300' : ''}`}>
+                Հաստատության անվանումը
+              </Label>
               <Input 
                 id="institution" 
                 value={editedCourse.institution || ''} 
                 onChange={(e) => handleInputChange('institution', e.target.value)}
                 placeholder="Մուտքագրեք հաստատության անվանումը"
-                className="focus:border-blue-500"
+                className={`focus:border-blue-500 ${theme === 'dark' ? 'bg-gray-700 border-gray-600 text-gray-200' : ''}`}
               />
               {editedCourse.organizationLogo && (
                 <div className="mt-2">
@@ -220,13 +235,15 @@ export const AuthorTab: React.FC<AuthorTabProps> = ({ editedCourse, setEditedCou
                 </div>
               )}
               <div className="pt-2">
-                <Label htmlFor="organizationLogo" className="text-sm">Հաստատության լոգո</Label>
+                <Label htmlFor="organizationLogo" className={`text-sm ${theme === 'dark' ? 'text-gray-300' : ''}`}>
+                  Հաստատության լոգո
+                </Label>
                 <Input 
                   id="organizationLogo" 
                   value={editedCourse.organizationLogo || ''} 
                   onChange={(e) => handleInputChange('organizationLogo', e.target.value)}
                   placeholder="Մուտքագրեք լոգոյի URL-ը"
-                  className="focus:border-blue-500 mt-1"
+                  className={`focus:border-blue-500 mt-1 ${theme === 'dark' ? 'bg-gray-700 border-gray-600 text-gray-200' : ''}`}
                 />
               </div>
             </div>
@@ -234,32 +251,49 @@ export const AuthorTab: React.FC<AuthorTabProps> = ({ editedCourse, setEditedCou
         </CardContent>
       </Card>
       
-      <Card>
+      <Card className={theme === 'dark' ? 'bg-gray-800 border-gray-700' : ''}>
         <CardHeader>
-          <CardTitle className="text-xl">Դասընթացի դասախոսները</CardTitle>
+          <CardTitle className={`text-xl ${theme === 'dark' ? 'text-gray-100' : ''}`}>
+            Դասընթացի դասախոսները
+          </CardTitle>
         </CardHeader>
         <CardContent className="space-y-6">
           {instructors.length > 0 ? (
             <div className="space-y-4">
               {instructors.map(instructor => (
-                <Card key={instructor.id} className="bg-gray-50">
+                <Card key={instructor.id} 
+                  className={theme === 'dark' ? 'bg-gray-700/50 border-gray-600' : 'bg-gray-50'}>
                   <CardContent className="pt-4 flex justify-between items-start">
                     <div className="flex gap-4 items-start">
                       <Avatar className="h-12 w-12">
                         <AvatarImage src={instructor.avatar_url || ''} alt={instructor.name} />
-                        <AvatarFallback>{instructor.name.substring(0, 2).toUpperCase()}</AvatarFallback>
+                        <AvatarFallback className={theme === 'dark' ? 'bg-gray-600 text-gray-200' : ''}>
+                          {instructor.name.substring(0, 2).toUpperCase()}
+                        </AvatarFallback>
                       </Avatar>
                       <div>
-                        <h4 className="font-medium">{instructor.name}</h4>
-                        {instructor.title && <p className="text-sm text-muted-foreground">{instructor.title}</p>}
-                        {instructor.bio && <p className="text-sm mt-1">{instructor.bio}</p>}
+                        <h4 className={`font-medium ${theme === 'dark' ? 'text-gray-100' : ''}`}>
+                          {instructor.name}
+                        </h4>
+                        {instructor.title && (
+                          <p className={`text-sm ${theme === 'dark' ? 'text-gray-400' : 'text-muted-foreground'}`}>
+                            {instructor.title}
+                          </p>
+                        )}
+                        {instructor.bio && (
+                          <p className={`text-sm mt-1 ${theme === 'dark' ? 'text-gray-300' : ''}`}>
+                            {instructor.bio}
+                          </p>
+                        )}
                       </div>
                     </div>
                     <Button 
                       variant="ghost" 
                       size="icon"
                       onClick={() => removeInstructor(instructor.id)}
-                      className="text-red-500 hover:text-red-700 hover:bg-red-50"
+                      className={`text-red-500 ${theme === 'dark' 
+                        ? 'hover:text-red-400 hover:bg-gray-600' 
+                        : 'hover:text-red-700 hover:bg-red-50'}`}
                     >
                       <Trash2 size={18} />
                     </Button>
@@ -268,52 +302,70 @@ export const AuthorTab: React.FC<AuthorTabProps> = ({ editedCourse, setEditedCou
               ))}
             </div>
           ) : (
-            <div className="text-center py-4 text-muted-foreground">
+            <div className={`text-center py-4 ${theme === 'dark' 
+              ? 'text-gray-400' 
+              : 'text-muted-foreground'}`}>
               Դեռ չկան դասախոսներ։ Ավելացրեք դասախոսների այս դասընթացի համար։
             </div>
           )}
           
-          <div className="border rounded-md p-4 bg-gray-50">
-            <h3 className="font-medium mb-4">Ավելացնել նոր դասախոս</h3>
+          <div className={`border rounded-md p-4 ${theme === 'dark' 
+            ? 'bg-gray-700/50 border-gray-600' 
+            : 'bg-gray-50'}`}>
+            <h3 className={`font-medium mb-4 ${theme === 'dark' ? 'text-gray-200' : ''}`}>
+              Ավելացնել նոր դասախոս
+            </h3>
             <div className="space-y-4">
               <div className="space-y-2">
-                <Label htmlFor="instructor-name">Անուն, Ազգանուն</Label>
+                <Label htmlFor="instructor-name" className={theme === 'dark' ? 'text-gray-300' : ''}>
+                  Անուն, Ազգանուն
+                </Label>
                 <Input 
                   id="instructor-name"
                   value={newInstructor.name}
                   onChange={(e) => handleNewInstructorChange('name', e.target.value)}
                   placeholder="Դասախոսի անուն ազգանունը"
+                  className={theme === 'dark' ? 'bg-gray-700 border-gray-600 text-gray-200' : ''}
                 />
               </div>
               
               <div className="space-y-2">
-                <Label htmlFor="instructor-title">Պաշտոն/Մասնագիտություն</Label>
+                <Label htmlFor="instructor-title" className={theme === 'dark' ? 'text-gray-300' : ''}>
+                  Պաշտոն/Մասնագիտություն
+                </Label>
                 <Input 
                   id="instructor-title"
                   value={newInstructor.title || ''}
                   onChange={(e) => handleNewInstructorChange('title', e.target.value)}
                   placeholder="Օր․՝ Տեխնիկական գիտությունների թեկնածու"
+                  className={theme === 'dark' ? 'bg-gray-700 border-gray-600 text-gray-200' : ''}
                 />
               </div>
               
               <div className="space-y-2">
-                <Label htmlFor="instructor-bio">Կենսագրություն</Label>
+                <Label htmlFor="instructor-bio" className={theme === 'dark' ? 'text-gray-300' : ''}>
+                  Կենսագրություն
+                </Label>
                 <Textarea 
                   id="instructor-bio"
                   value={newInstructor.bio || ''}
                   onChange={(e) => handleNewInstructorChange('bio', e.target.value)}
                   placeholder="Դասախոսի մասին կարճ տեղեկություն"
                   rows={3}
+                  className={theme === 'dark' ? 'bg-gray-700 border-gray-600 text-gray-200' : ''}
                 />
               </div>
               
               <div className="space-y-2">
-                <Label htmlFor="instructor-avatar">Լուսանկարի URL</Label>
+                <Label htmlFor="instructor-avatar" className={theme === 'dark' ? 'text-gray-300' : ''}>
+                  Լուսանկարի URL
+                </Label>
                 <Input 
                   id="instructor-avatar"
                   value={newInstructor.avatar_url || ''}
                   onChange={(e) => handleNewInstructorChange('avatar_url', e.target.value)}
                   placeholder="https://example.com/image.jpg"
+                  className={theme === 'dark' ? 'bg-gray-700 border-gray-600 text-gray-200' : ''}
                 />
               </div>
               
@@ -321,7 +373,7 @@ export const AuthorTab: React.FC<AuthorTabProps> = ({ editedCourse, setEditedCou
                 type="button" 
                 onClick={addInstructor}
                 disabled={loading || !newInstructor.name}
-                className="w-full"
+                className={`w-full ${theme === 'dark' ? 'bg-indigo-600 hover:bg-indigo-700' : ''}`}
               >
                 <Plus size={16} className="mr-2" /> Ավելացնել դասախոս
               </Button>
@@ -331,25 +383,31 @@ export const AuthorTab: React.FC<AuthorTabProps> = ({ editedCourse, setEditedCou
       </Card>
       
       <div className="space-y-2 hidden">
-        <Label htmlFor="instructor" className="text-base">Հին դասավանդող դաշտ (հին տվյալների համար)</Label>
+        <Label htmlFor="instructor" className={`text-base ${theme === 'dark' ? 'text-gray-300' : ''}`}>
+          Հին դասավանդող դաշտ (հին տվյալների համար)
+        </Label>
         <Input 
           id="instructor" 
           value={editedCourse.instructor || ''} 
           onChange={(e) => handleInputChange('instructor', e.target.value)}
           placeholder="Մուտքագրեք դասավանդողի անունը"
-          className="focus:border-blue-500"
+          className={`focus:border-blue-500 ${theme === 'dark' ? 'bg-gray-700 border-gray-600 text-gray-200' : ''}`}
         />
       </div>
       
       <div className="space-y-2 hidden">
-        <Label htmlFor="buttonText">Կոճակի տեքստ</Label>
+        <Label htmlFor="buttonText" className={theme === 'dark' ? 'text-gray-300' : ''}>
+          Կոճակի տեքստ
+        </Label>
         <Input 
           id="buttonText" 
           value={editedCourse.buttonText || 'Դիտել'} 
           onChange={(e) => handleInputChange('buttonText', e.target.value)}
           placeholder="Դիտել"
+          className={theme === 'dark' ? 'bg-gray-700 border-gray-600 text-gray-200' : ''}
         />
       </div>
     </div>
   );
 };
+

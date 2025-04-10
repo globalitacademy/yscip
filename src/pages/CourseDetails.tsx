@@ -15,9 +15,15 @@ const CourseDetails: React.FC = () => {
   console.log("CourseDetails էջ: Ստացված պարամետրեր:", { slug, id });
   
   return (
-    <div className={`flex min-h-screen flex-col ${theme === 'dark' ? 'bg-background text-foreground' : 'bg-white text-gray-900'}`}>
+    <div className={`flex min-h-screen flex-col ${theme === 'dark' 
+      ? 'bg-background text-foreground' 
+      : 'bg-white text-gray-900'}`}
+    >
       <Header />
-      <ScrollArea className={`flex-1 h-[calc(100vh-150px)] ${theme === 'dark' ? 'bg-gray-900/30' : 'bg-gray-50/80'}`}>
+      <ScrollArea className={`flex-1 h-[calc(100vh-150px)] ${theme === 'dark' 
+        ? 'bg-gray-900/30' 
+        : 'bg-gray-50/80'}`}
+      >
         <main className="flex-1 pt-24 pb-12"> {/* Increased bottom padding */}
           <CourseDetail />
         </main>

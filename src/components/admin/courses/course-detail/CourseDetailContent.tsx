@@ -27,7 +27,9 @@ const CourseDetailContent: React.FC<CourseDetailContentProps> = ({
   
   return (
     <>
-      <div className={`flex justify-between items-start mb-6 ${theme === 'dark' ? 'text-gray-100' : ''}`}>
+      <div className={`flex justify-between items-start mb-6 ${
+        theme === 'dark' ? 'text-gray-100' : ''
+      }`}>
         <CourseDetailHeader course={course} />
         
         <ActionButtons 
