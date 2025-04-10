@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { ProfessionalCourse, CourseInstructor } from './types/ProfessionalCourse';
@@ -7,6 +6,7 @@ import { toast } from 'sonner';
 import { useAuth } from '@/contexts/AuthContext';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useTheme } from '@/hooks/use-theme';
+import { ScrollArea } from '@/components/ui/scroll-area';
 import { supabase } from '@/integrations/supabase/client';
 
 // Import refactored components
@@ -19,7 +19,6 @@ import CourseOutcomesTab from './details/CourseOutcomesTab';
 import CourseInstructorsTab from './details/CourseInstructorsTab';
 import CourseMetaInfo from './details/CourseMetaInfo';
 import CourseApplicationForm from './details/CourseApplicationForm';
-import CourseEdit from './details/CourseEdit';
 
 const CourseDetail: React.FC = () => {
   const { id, slug } = useParams<{ id?: string; slug?: string }>();
@@ -30,7 +29,6 @@ const CourseDetail: React.FC = () => {
   const [instructors, setInstructors] = useState<CourseInstructor[]>([]);
   const [loading, setLoading] = useState(true);
   const [showApplicationForm, setShowApplicationForm] = useState(false);
-  const [showEditForm, setShowEditForm] = useState(false);
   const [fetchError, setFetchError] = useState<string | null>(null);
   
   const fetchInstructors = async (courseId: string) => {
@@ -102,10 +100,6 @@ const CourseDetail: React.FC = () => {
     setShowApplicationForm(true);
   };
 
-  const handleEdit = () => {
-    setShowEditForm(true);
-  };
-
   const handleCourseUpdate = (updatedCourse: ProfessionalCourse) => {
     setCourse(updatedCourse);
   };
@@ -126,29 +120,6 @@ const CourseDetail: React.FC = () => {
 
   const canEdit = user && (user.role === 'admin' || course.createdBy === user.name);
 
-  // Format the learning format in Armenian
-  const formatInArmenian = (format?: string) => {
-    if (!format) return 'Առցանց';
-    switch (format) {
-      case 'online': return 'Առցանց';
-      case 'classroom': return 'Լսարանային';
-      case 'hybrid': return 'Հիբրիդային';
-      case 'remote': return 'Հեռավար';
-      default: return format;
-    }
-  };
-
-  // Format the language in Armenian
-  const languageInArmenian = (language?: string) => {
-    if (!language) return 'Հայերեն';
-    switch (language) {
-      case 'armenian': return 'Հայերեն';
-      case 'english': return 'Անգլերեն';
-      case 'russian': return 'Ռուսերեն';
-      default: return language;
-    }
-  };
-
   return (
     <div className={`container mx-auto px-4 py-8 max-w-6xl ${theme === 'dark' ? 'text-gray-200' : 'text-gray-800'}`}>
       {!course.is_public && canViewUnpublished && (
@@ -165,8 +136,7 @@ const CourseDetail: React.FC = () => {
       <CourseBanner 
         course={course} 
         canEdit={canEdit} 
-        handleApply={handleApply}
-        handleEdit={handleEdit}
+        handleApply={handleApply} 
         onCourseUpdate={handleCourseUpdate}
         instructors={instructors}
       />
@@ -224,45 +194,6 @@ const CourseDetail: React.FC = () => {
                   Դասընթացի մանրամասները
                 </h3>
                 <CourseMetaInfo course={course} />
-                
-                {/* Display new fields */}
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-4">
-                  {course.category && (
-                    <div className={`p-4 rounded-lg ${theme === 'dark' ? 'bg-gray-800' : 'bg-gray-50'}`}>
-                      <p className="text-sm text-muted-foreground">Կատեգորիա</p>
-                      <p className="font-medium">{course.category}</p>
-                    </div>
-                  )}
-                  
-                  <div className={`p-4 rounded-lg ${theme === 'dark' ? 'bg-gray-800' : 'bg-gray-50'}`}>
-                    <p className="text-sm text-muted-foreground">Ուսուցման ձևաչափ</p>
-                    <p className="font-medium">{formatInArmenian(course.format)}</p>
-                  </div>
-                  
-                  <div className={`p-4 rounded-lg ${theme === 'dark' ? 'bg-gray-800' : 'bg-gray-50'}`}>
-                    <p className="text-sm text-muted-foreground">Դասավանդման լեզու</p>
-                    <p className="font-medium">{languageInArmenian(course.language)}</p>
-                  </div>
-                  
-                  <div className={`p-4 rounded-lg ${theme === 'dark' ? 'bg-gray-800' : 'bg-gray-50'}`}>
-                    <p className="text-sm text-muted-foreground">Դասերի քանակ</p>
-                    <p className="font-medium">{course.lessons?.length || 0}</p>
-                  </div>
-                  
-                  {course.createdAt && (
-                    <div className={`p-4 rounded-lg ${theme === 'dark' ? 'bg-gray-800' : 'bg-gray-50'}`}>
-                      <p className="text-sm text-muted-foreground">Ստեղծվել է</p>
-                      <p className="font-medium">{new Date(course.createdAt).toLocaleDateString('hy-AM')}</p>
-                    </div>
-                  )}
-                  
-                  {course.updatedAt && (
-                    <div className={`p-4 rounded-lg ${theme === 'dark' ? 'bg-gray-800' : 'bg-gray-50'}`}>
-                      <p className="text-sm text-muted-foreground">Թարմացվել է</p>
-                      <p className="font-medium">{new Date(course.updatedAt).toLocaleDateString('hy-AM')}</p>
-                    </div>
-                  )}
-                </div>
               </div>
             </TabsContent>
 
@@ -290,15 +221,6 @@ const CourseDetail: React.FC = () => {
           course={course} 
           isOpen={showApplicationForm} 
           onClose={() => setShowApplicationForm(false)} 
-        />
-      )}
-      
-      {showEditForm && (
-        <CourseEdit 
-          isOpen={showEditForm} 
-          onClose={() => setShowEditForm(false)} 
-          course={course} 
-          onCourseUpdate={handleCourseUpdate} 
         />
       )}
     </div>

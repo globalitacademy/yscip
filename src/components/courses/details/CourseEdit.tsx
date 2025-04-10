@@ -58,11 +58,7 @@ const CourseEdit: React.FC<CourseEditProps> = ({
         outcomes: editedCourse.outcomes || course.outcomes || [],
         is_public: editedCourse.is_public !== undefined ? editedCourse.is_public : course.is_public,
         show_on_homepage: editedCourse.show_on_homepage !== undefined ? editedCourse.show_on_homepage : course.show_on_homepage,
-        display_order: editedCourse.display_order !== undefined ? editedCourse.display_order : (course.display_order || 0),
-        // Include new fields
-        format: editedCourse.format || course.format,
-        language: editedCourse.language || course.language,
-        category: editedCourse.category || course.category
+        display_order: editedCourse.display_order !== undefined ? editedCourse.display_order : (course.display_order || 0)
       };
       
       const success = await saveCourseChanges(completeEditedCourse as ProfessionalCourse);
