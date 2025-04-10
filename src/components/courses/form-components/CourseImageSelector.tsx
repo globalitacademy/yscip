@@ -4,12 +4,13 @@ import { ProfessionalCourse } from '../types/ProfessionalCourse';
 import { MediaUploader } from './MediaUploader';
 import { IconSelector } from './IconSelector';
 
-interface CourseImageSelectorProps {
+export interface CourseImageSelectorProps {
   course: Partial<ProfessionalCourse>;
   setCourse: (course: Partial<ProfessionalCourse>) => void;
+  label?: string; // Added label prop as optional
 }
 
-export const CourseImageSelector: React.FC<CourseImageSelectorProps> = ({ course, setCourse }) => {
+export const CourseImageSelector: React.FC<CourseImageSelectorProps> = ({ course, setCourse, label = "Պատկեր" }) => {
   const [isIconsOpen, setIsIconsOpen] = React.useState(false);
   
   const handleIconSelect = (iconName: string) => {
@@ -48,7 +49,7 @@ export const CourseImageSelector: React.FC<CourseImageSelectorProps> = ({ course
     <MediaUploader 
       mediaUrl={course.imageUrl}
       onMediaChange={handleMediaChange}
-      label="Պատկեր"
+      label={label}
       uploadLabel="Ներբեռնել նկար"
       placeholder="https://example.com/image.jpg"
       showIconOption={true}

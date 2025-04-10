@@ -86,7 +86,8 @@ const ProfessionalCourseForm: React.FC<ProfessionalCourseFormProps> = ({
         <CourseColorSelector 
           isColorsOpen={isColorsOpen} 
           setIsColorsOpen={setIsColorsOpen} 
-          onColorSelect={handleColorSelect} 
+          onColorSelect={handleColorSelect}
+          selectedColor={course.color || 'text-amber-500'} // Added missing selectedColor prop
         />
         
         {/* Display Settings */}
