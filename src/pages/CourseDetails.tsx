@@ -18,7 +18,7 @@ const CourseDetails: React.FC = () => {
     <div className={`flex min-h-screen flex-col ${theme === 'dark' ? 'bg-background text-foreground' : 'bg-white text-gray-900'}`}>
       <Header />
       <ScrollArea className="flex-1 h-[calc(100vh-150px)]">
-        <main className="flex-1">
+        <main className="flex-1 pt-24 pb-8"> {/* Added pt-24 to create space for the fixed header */}
           <CourseDetail />
         </main>
       </ScrollArea>
