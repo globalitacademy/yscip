@@ -8,7 +8,7 @@ import { toast } from 'sonner';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import { useTheme } from '@/hooks/use-theme';
-import { getCategoryBadgeClass } from '@/components/project-details/utils/badgeUtils';
+import { getCategoryBadgeClass, getInstitutionBadgeClass } from './utils/badgeUtils';
 
 interface ProfessionalCourseCardProps {
   course: ProfessionalCourse;
@@ -49,7 +49,6 @@ const ProfessionalCourseCard: React.FC<ProfessionalCourseCardProps> = ({
     if (onClick) {
       onClick();
     } else {
-      // Navigate to course details page with consistent path
       navigate(`/course/${course.id}`);
     }
   };
@@ -58,12 +57,10 @@ const ProfessionalCourseCard: React.FC<ProfessionalCourseCardProps> = ({
     e.stopPropagation(); // Prevent event propagation
 
     try {
-      // First, check if course already exists in database
       const {
         data: existingCourse
       } = await supabase.from('courses').select('id').eq('id', course.id).maybeSingle();
       if (existingCourse) {
-        // Course exists, update it
         const {
           error: updateError
         } = await supabase.from('courses').update({
@@ -79,17 +76,14 @@ const ProfessionalCourseCard: React.FC<ProfessionalCourseCardProps> = ({
           organization_logo: course.organizationLogo || null,
           description: course.description || '',
           is_public: true,
-          // Admin created courses are public by default
           created_by: 'Administrator',
-          // Set as admin
-          updated_at: new Date().toISOString()
+          created_at: new Date().toISOString(),
+          slug: course.slug || course.title.toLowerCase().replace(/[^\w\s-]/g, '').replace(/\s+/g, '-').replace(/--+/g, '-').trim()
         }).eq('id', course.id);
         if (updateError) throw updateError;
 
-        // Clear related data before re-adding
         await Promise.all([supabase.from('course_lessons').delete().eq('course_id', course.id), supabase.from('course_requirements').delete().eq('course_id', course.id), supabase.from('course_outcomes').delete().eq('course_id', course.id)]);
       } else {
-        // Course doesn't exist, insert it
         const {
           error: insertError
         } = await supabase.from('courses').insert({
@@ -106,16 +100,13 @@ const ProfessionalCourseCard: React.FC<ProfessionalCourseCardProps> = ({
           organization_logo: course.organizationLogo || null,
           description: course.description || '',
           is_public: true,
-          // Admin created courses are public by default
           created_by: 'Administrator',
-          // Set as admin
           created_at: new Date().toISOString(),
           slug: course.slug || course.title.toLowerCase().replace(/[^\w\s-]/g, '').replace(/\s+/g, '-').replace(/--+/g, '-').trim()
         });
         if (insertError) throw insertError;
       }
 
-      // Insert lessons if available
       if (course.lessons && course.lessons.length > 0) {
         const {
           error: lessonsError
@@ -129,7 +120,6 @@ const ProfessionalCourseCard: React.FC<ProfessionalCourseCardProps> = ({
         }
       }
 
-      // Insert requirements if available
       if (course.requirements && course.requirements.length > 0) {
         const {
           error: requirementsError
@@ -142,7 +132,6 @@ const ProfessionalCourseCard: React.FC<ProfessionalCourseCardProps> = ({
         }
       }
 
-      // Insert outcomes if available
       if (course.outcomes && course.outcomes.length > 0) {
         const {
           error: outcomesError
@@ -170,7 +159,7 @@ const ProfessionalCourseCard: React.FC<ProfessionalCourseCardProps> = ({
   
   const isAdminUser = user?.role === 'admin';
   
-  return <Card className="flex flex-col w-full hover:shadow-md transition-shadow relative">
+  return <Card className={`flex flex-col w-full hover:shadow-md transition-shadow relative ${theme === 'dark' ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'}`}>
       {course.organizationLogo ? (
         <div className={`absolute top-4 left-4 flex items-center text-xs px-2 py-1 rounded-full z-10 ${getInstitutionBadgeClass()}`}>
           <img src={course.organizationLogo} alt={course.institution} className="w-6 h-6 mr-1 object-contain rounded-full" />
@@ -197,7 +186,7 @@ const ProfessionalCourseCard: React.FC<ProfessionalCourseCardProps> = ({
             </Button>}
         </div>}
 
-      <CardHeader className="pb-2 text-center pt-12 relative">
+      <CardHeader className={`pb-2 text-center pt-12 relative ${theme === 'dark' ? 'text-gray-100' : 'text-gray-900'}`}>
         {course.imageUrl ? <div className="w-full h-32 mb-4 overflow-hidden rounded-md">
             <img src={course.imageUrl} alt={course.title} className="w-full h-full object-cover" onError={e => {
           e.currentTarget.style.display = 'none';
@@ -208,23 +197,26 @@ const ProfessionalCourseCard: React.FC<ProfessionalCourseCardProps> = ({
             {course.icon}
           </div>}
         <h3 className="font-bold text-xl">{course.title}</h3>
-        <p className="text-sm text-muted-foreground">{course.subtitle}</p>
+        <p className={`text-sm ${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'}`}>{course.subtitle}</p>
       </CardHeader>
       
       <CardContent className="flex-grow pb-2">
-        <div className="flex items-center gap-2 text-sm text-muted-foreground mb-4">
+        <div className={`flex items-center gap-2 text-sm mb-4 ${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'}`}>
           <User size={16} />
           <span>Դասախոս՝ {course.createdBy}</span>
         </div>
         
-        <div className="flex justify-between w-full text-sm mt-auto">
+        <div className={`flex justify-between w-full text-sm mt-auto ${theme === 'dark' ? 'text-gray-300' : 'text-gray-700'}`}>
           <span>{course.duration}</span>
           <span className="font-semibold">{course.price}</span>
         </div>
       </CardContent>
       
       <CardFooter className="pt-4">
-        <Button variant="outline" className="w-full" onClick={handleViewClick}>
+        <Button 
+          variant="outline" 
+          className={`w-full ${theme === 'dark' ? 'bg-gray-700 hover:bg-gray-600 text-gray-200 border-gray-600' : 'bg-gray-50 hover:bg-gray-100'}`} 
+          onClick={handleViewClick}>
           <Eye className="h-4 w-4 mr-2" /> {course.buttonText || "Մանրամասն"}
         </Button>
       </CardFooter>
