@@ -14,7 +14,7 @@ import {
   CalendarDays,
   FileText,
   Languages,
-  Broadcast,
+  Cast, // Replaced Broadcast with Cast
   Laptop,
   Video,
   Building
@@ -114,7 +114,7 @@ const CourseSidebar: React.FC<CourseSidebarProps> = ({
                 <span className={`text-xs ${theme === 'dark' ? 'text-gray-300' : 'text-gray-600'}`}>Լսարանային</span>
               </div>
               <div className="flex items-center gap-1.5">
-                <Broadcast className={`h-3.5 w-3.5 ${theme === 'dark' ? 'text-indigo-300' : 'text-indigo-500'}`} />
+                <Cast className={`h-3.5 w-3.5 ${theme === 'dark' ? 'text-indigo-300' : 'text-indigo-500'}`} />
                 <span className={`text-xs ${theme === 'dark' ? 'text-gray-300' : 'text-gray-600'}`}>Հեռավար</span>
               </div>
               <div className="flex items-center gap-1.5">
