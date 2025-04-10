@@ -35,6 +35,10 @@ export const saveCourseChanges = async (course: ProfessionalCourse): Promise<boo
         is_public: course.is_public,
         show_on_homepage: course.show_on_homepage,
         display_order: course.display_order,
+        category: course.category,
+        learning_formats: course.learning_formats || [],
+        languages: course.languages || [],
+        syllabus_file: course.syllabus_file,
         author_type: course.author_type || 'lecturer',
         instructor_ids: course.instructor_ids || [],
         updated_at: new Date().toISOString()
@@ -124,6 +128,35 @@ export const saveCourseChanges = async (course: ProfessionalCourse): Promise<boo
 
       if (outcomesError) {
         console.error('Error inserting outcomes:', outcomesError);
+        // Continue despite error
+      }
+    }
+
+    // Handle resources
+    const { error: deleteResourcesError } = await supabase
+      .from('course_resources')
+      .delete()
+      .eq('course_id', course.id);
+
+    if (deleteResourcesError) {
+      console.error('Error deleting existing resources:', deleteResourcesError);
+      // Continue despite error
+    }
+
+    if (course.resources && course.resources.length > 0) {
+      const { error: resourcesError } = await supabase
+        .from('course_resources')
+        .insert(
+          course.resources.map(resource => ({
+            course_id: course.id,
+            title: resource.title,
+            url: resource.url,
+            type: resource.type
+          }))
+        );
+
+      if (resourcesError) {
+        console.error('Error inserting resources:', resourcesError);
         // Continue despite error
       }
     }

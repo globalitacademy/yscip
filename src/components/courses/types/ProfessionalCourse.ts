@@ -35,11 +35,25 @@ export interface ProfessionalCourse {
   show_on_homepage?: boolean;
   display_order?: number;
   slug?: string;  // For friendly URLs
+  
+  // New fields for learning format
+  learning_formats?: string[];  // Online, classroom, remote, etc.
+  languages?: string[];       // Armenian, Russian, English, etc.
+  
+  // New fields for resources
+  resources?: ResourceItem[];
+  syllabus_file?: string;  // URL to the downloadable syllabus
 }
 
 export interface LessonItem {
   title: string;
   duration: string;
+}
+
+export interface ResourceItem {
+  title: string;
+  url: string;
+  type: 'document' | 'link' | 'video' | 'other';
 }
 
 export interface CourseInstructor {

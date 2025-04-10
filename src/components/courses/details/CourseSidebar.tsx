@@ -8,19 +8,22 @@ import {
   Calendar, 
   Book, 
   Users, 
-  Award, 
   Download, 
   Clock,
   CalendarDays,
   FileText,
   Languages,
-  Cast, // Replaced Broadcast with Cast
+  Cast,
   Laptop,
   Video,
-  Building
+  Building,
+  Tv2,
+  GraduationCap,
+  School
 } from 'lucide-react';
 import CourseApplicationForm from './CourseApplicationForm';
 import { useTheme } from '@/hooks/use-theme';
+import { toast } from 'sonner';
 
 interface CourseSidebarProps {
   course: ProfessionalCourse;
@@ -38,18 +41,65 @@ const CourseSidebar: React.FC<CourseSidebarProps> = ({
     setIsApplicationFormOpen(true);
   };
 
-  // Generate a course syllabus PDF URL (this would normally be from the database)
-  const getSyllabusUrl = () => {
-    // This is a placeholder, in a real app you would use a stored URL
-    // or generate a PDF on the fly
-    return `#download-syllabus-${course.id}`;
-  };
-  
   const downloadSyllabus = (e: React.MouseEvent) => {
     e.preventDefault();
-    // In a real implementation, this would download the syllabus PDF
-    alert('Դասընթացի ծրագիրը կբեռնվի շուտով։ Սա դեմո տարբերակ է։');
+    
+    if (course.syllabus_file) {
+      // Open in a new tab or directly download based on browser behavior
+      window.open(course.syllabus_file, '_blank');
+    } else {
+      toast.info('Դասընթացի ծրագիրը դեռ հասանելի չէ։');
+    }
   };
+
+  // Format display helpers
+  const getLearningFormatIcon = (format: string) => {
+    switch (format) {
+      case 'online': return <Video className={`h-3.5 w-3.5 ${theme === 'dark' ? 'text-indigo-300' : 'text-indigo-500'}`} />;
+      case 'classroom': return <School className={`h-3.5 w-3.5 ${theme === 'dark' ? 'text-indigo-300' : 'text-indigo-500'}`} />;
+      case 'remote': return <Cast className={`h-3.5 w-3.5 ${theme === 'dark' ? 'text-indigo-300' : 'text-indigo-500'}`} />;
+      case 'hybrid': return <Laptop className={`h-3.5 w-3.5 ${theme === 'dark' ? 'text-indigo-300' : 'text-indigo-500'}`} />;
+      default: return <GraduationCap className={`h-3.5 w-3.5 ${theme === 'dark' ? 'text-indigo-300' : 'text-indigo-500'}`} />;
+    }
+  };
+  
+  const getLearningFormatLabel = (format: string) => {
+    switch (format) {
+      case 'online': return 'Առցանց';
+      case 'classroom': return 'Լսարանային';
+      case 'remote': return 'Հեռավար';
+      case 'hybrid': return 'Հիբրիդային';
+      default: return format;
+    }
+  };
+  
+  const getLanguageLabel = (language: string) => {
+    switch (language) {
+      case 'armenian': return 'Հայերեն';
+      case 'russian': return 'Ռուսերեն';
+      case 'english': return 'Անգլերեն';
+      default: return language;
+    }
+  };
+  
+  // Get resource icon based on type
+  const getResourceIcon = (type: string) => {
+    switch (type) {
+      case 'document': return <FileText className="h-4 w-4 mr-2" />;
+      case 'video': return <Video className="h-4 w-4 mr-2" />;
+      case 'link': return <ExternalLink className="h-4 w-4 mr-2" />;
+      default: return <FileText className="h-4 w-4 mr-2" />;
+    }
+  };
+
+  // Check if we have any learning formats or languages to display
+  const hasLearningFormats = course.learning_formats && course.learning_formats.length > 0;
+  const hasLanguages = course.languages && course.languages.length > 0;
+  const showFormatsSection = hasLearningFormats || hasLanguages;
+  
+  // Check if we have resources to display
+  const hasResources = course.resources && course.resources.length > 0;
+  const hasDownloadableSyllabus = !!course.syllabus_file;
 
   return (
     <div className={`${theme === 'dark' ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'} border rounded-xl shadow-lg overflow-hidden sticky top-8`}>
@@ -99,43 +149,56 @@ const CourseSidebar: React.FC<CourseSidebarProps> = ({
             </div>
           )}
           
-          {/* Additional info - Format options */}
-          <div className="pt-2 mt-2 border-t border-gray-200 dark:border-gray-600">
-            <h4 className={`text-sm font-medium mb-2 ${theme === 'dark' ? 'text-gray-300' : 'text-gray-700'}`}>
-              Ուսուցման ձևաչափ
-            </h4>
-            <div className="grid grid-cols-2 gap-2">
-              <div className="flex items-center gap-1.5">
-                <Video className={`h-3.5 w-3.5 ${theme === 'dark' ? 'text-indigo-300' : 'text-indigo-500'}`} />
-                <span className={`text-xs ${theme === 'dark' ? 'text-gray-300' : 'text-gray-600'}`}>Առցանց</span>
-              </div>
-              <div className="flex items-center gap-1.5">
-                <Laptop className={`h-3.5 w-3.5 ${theme === 'dark' ? 'text-indigo-300' : 'text-indigo-500'}`} />
-                <span className={`text-xs ${theme === 'dark' ? 'text-gray-300' : 'text-gray-600'}`}>Լսարանային</span>
-              </div>
-              <div className="flex items-center gap-1.5">
-                <Cast className={`h-3.5 w-3.5 ${theme === 'dark' ? 'text-indigo-300' : 'text-indigo-500'}`} />
-                <span className={`text-xs ${theme === 'dark' ? 'text-gray-300' : 'text-gray-600'}`}>Հեռավար</span>
-              </div>
-              <div className="flex items-center gap-1.5">
-                <Languages className={`h-3.5 w-3.5 ${theme === 'dark' ? 'text-indigo-300' : 'text-indigo-500'}`} />
-                <span className={`text-xs ${theme === 'dark' ? 'text-gray-300' : 'text-gray-600'}`}>Հայերեն</span>
+          {/* Learning format and language section */}
+          {showFormatsSection && (
+            <div className="pt-2 mt-2 border-t border-gray-200 dark:border-gray-600">
+              <h4 className={`text-sm font-medium mb-2 ${theme === 'dark' ? 'text-gray-300' : 'text-gray-700'}`}>
+                Ուսուցման ձևաչափ
+              </h4>
+              <div className="grid grid-cols-2 gap-2">
+                {hasLearningFormats && course.learning_formats.map(format => (
+                  <div key={format} className="flex items-center gap-1.5">
+                    {getLearningFormatIcon(format)}
+                    <span className={`text-xs ${theme === 'dark' ? 'text-gray-300' : 'text-gray-600'}`}>
+                      {getLearningFormatLabel(format)}
+                    </span>
+                  </div>
+                ))}
+                
+                {hasLanguages && course.languages.map(language => (
+                  <div key={language} className="flex items-center gap-1.5">
+                    <Languages className={`h-3.5 w-3.5 ${theme === 'dark' ? 'text-indigo-300' : 'text-indigo-500'}`} />
+                    <span className={`text-xs ${theme === 'dark' ? 'text-gray-300' : 'text-gray-600'}`}>
+                      {getLanguageLabel(language)}
+                    </span>
+                  </div>
+                ))}
+                
+                {/* If no formats or languages are set, show a default option */}
+                {!hasLearningFormats && !hasLanguages && (
+                  <div className="flex items-center gap-1.5">
+                    <GraduationCap className={`h-3.5 w-3.5 ${theme === 'dark' ? 'text-indigo-300' : 'text-indigo-500'}`} />
+                    <span className={`text-xs ${theme === 'dark' ? 'text-gray-300' : 'text-gray-600'}`}>Ստանդարտ</span>
+                  </div>
+                )}
               </div>
             </div>
-          </div>
+          )}
         </div>
         
         <Button onClick={openApplicationForm} className={`w-full mb-3 ${theme === 'dark' ? 'bg-indigo-600 hover:bg-indigo-700' : 'bg-indigo-600 hover:bg-indigo-700'} text-white rounded-full py-6 shadow-md transition-all transform hover:translate-y-[-2px]`}>
           {course.buttonText || "Դիմել դասընթացին"}
         </Button>
         
-        <Button 
-          variant="outline" 
-          className={`w-full rounded-full ${theme === 'dark' ? 'border-gray-600 text-gray-300 hover:bg-gray-700' : 'border-indigo-300 text-indigo-600 hover:bg-indigo-50'}`}
-          onClick={downloadSyllabus}
-        >
-          <Download className="mr-2 h-4 w-4" /> Ներբեռնել ծրագիրը
-        </Button>
+        {hasDownloadableSyllabus && (
+          <Button 
+            variant="outline" 
+            className={`w-full rounded-full ${theme === 'dark' ? 'border-gray-600 text-gray-300 hover:bg-gray-700' : 'border-indigo-300 text-indigo-600 hover:bg-indigo-50'}`}
+            onClick={downloadSyllabus}
+          >
+            <Download className="mr-2 h-4 w-4" /> Ներբեռնել ծրագիրը
+          </Button>
+        )}
         
         <div className={`mt-8 border-t ${theme === 'dark' ? 'border-gray-700' : 'border-indigo-100'} pt-6`}>
           <h3 className={`font-semibold mb-4 ${theme === 'dark' ? 'text-gray-200' : 'text-gray-700'}`}>Դասընթացի առավելությունները</h3>
@@ -167,33 +230,26 @@ const CourseSidebar: React.FC<CourseSidebarProps> = ({
           </div>
         </div>
         
-        {/* Additional resources section */}
-        <div className={`mt-8 border-t ${theme === 'dark' ? 'border-gray-700' : 'border-indigo-100'} pt-6`}>
-          <h3 className={`font-semibold mb-4 ${theme === 'dark' ? 'text-gray-200' : 'text-gray-700'}`}>Օգտակար ռեսուրսներ</h3>
-          <div className="space-y-3">
-            <a 
-              href="#resource1" 
-              className={`flex items-center ${theme === 'dark' ? 'text-indigo-300 hover:text-indigo-200' : 'text-indigo-600 hover:text-indigo-800'}`}
-            >
-              <FileText className="h-4 w-4 mr-2" />
-              <span>Դասընթացի ուղեցույց</span>
-            </a>
-            <a 
-              href="#resource2" 
-              className={`flex items-center ${theme === 'dark' ? 'text-indigo-300 hover:text-indigo-200' : 'text-indigo-600 hover:text-indigo-800'}`}
-            >
-              <FileText className="h-4 w-4 mr-2" />
-              <span>Անհրաժեշտ նյութեր</span>
-            </a>
-            <a 
-              href="#resource3" 
-              className={`flex items-center ${theme === 'dark' ? 'text-indigo-300 hover:text-indigo-200' : 'text-indigo-600 hover:text-indigo-800'}`}
-            >
-              <ExternalLink className="h-4 w-4 mr-2" />
-              <span>Օժանդակ ռեսուրսներ</span>
-            </a>
+        {/* Resources section */}
+        {hasResources && (
+          <div className={`mt-8 border-t ${theme === 'dark' ? 'border-gray-700' : 'border-indigo-100'} pt-6`}>
+            <h3 className={`font-semibold mb-4 ${theme === 'dark' ? 'text-gray-200' : 'text-gray-700'}`}>Օգտակար ռեսուրսներ</h3>
+            <div className="space-y-3">
+              {course.resources.map((resource, index) => (
+                <a 
+                  key={index}
+                  href={resource.url} 
+                  target="_blank" 
+                  rel="noopener noreferrer"
+                  className={`flex items-center ${theme === 'dark' ? 'text-indigo-300 hover:text-indigo-200' : 'text-indigo-600 hover:text-indigo-800'}`}
+                >
+                  {getResourceIcon(resource.type)}
+                  <span>{resource.title || 'Օգտակար ռեսուրս'}</span>
+                </a>
+              ))}
+            </div>
           </div>
-        </div>
+        )}
       </div>
 
       {/* Course Application Form Dialog */}
