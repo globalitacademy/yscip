@@ -15,7 +15,8 @@ import {
   LessonsTab,
   RequirementsTab,
   OutcomesTab,
-  AuthorTab
+  AuthorTab,
+  DisplaySettingsTab // Added DisplaySettingsTab import
 } from './tabs';
 
 interface CourseEditDialogProps {
@@ -79,6 +80,9 @@ const CourseEditDialog: React.FC<CourseEditDialogProps> = ({
                   <TabsTrigger value="basic-info" className={theme === 'dark' ? 'data-[state=active]:bg-gray-700 data-[state=active]:text-indigo-300' : ''}>
                     Հիմնական տվյալներ
                   </TabsTrigger>
+                  <TabsTrigger value="display-settings" className={theme === 'dark' ? 'data-[state=active]:bg-gray-700 data-[state=active]:text-indigo-300' : ''}>
+                    Ցուցադրման կարգավորումներ
+                  </TabsTrigger>
                   <TabsTrigger value="lessons" className={theme === 'dark' ? 'data-[state=active]:bg-gray-700 data-[state=active]:text-indigo-300' : ''}>
                     Դասընթացի պլան
                   </TabsTrigger>
@@ -98,6 +102,10 @@ const CourseEditDialog: React.FC<CourseEditDialogProps> = ({
                 <div className="pb-8">
                   <TabsContent value="basic-info" className="mt-0">
                     <BasicInfoTab editedCourse={editedCourse} setEditedCourse={setEditedCourse} />
+                  </TabsContent>
+                  
+                  <TabsContent value="display-settings" className="mt-0">
+                    <DisplaySettingsTab editedCourse={editedCourse} setEditedCourse={setEditedCourse} />
                   </TabsContent>
                   
                   <TabsContent value="lessons" className="mt-0">
