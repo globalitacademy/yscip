@@ -7,6 +7,7 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Save, X } from 'lucide-react';
 import CourseBanner from './CourseBanner';
+import { useTheme } from '@/hooks/use-theme';
 
 // Import tabs
 import { 
@@ -34,9 +35,11 @@ const CourseEditDialog: React.FC<CourseEditDialogProps> = ({
   handleSaveChanges,
   loading
 }) => {
+  const { theme } = useTheme();
+  
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen} modal={false}>
-      <DialogContent className="max-w-6xl p-0 h-[90vh] overflow-hidden bg-white">
+      <DialogContent className={`max-w-6xl p-0 h-[90vh] overflow-hidden ${theme === 'dark' ? 'bg-gray-900' : 'bg-white'}`}>
         <div className="h-full flex flex-col">
           {/* Course Banner at the top */}
           {editedCourse && (
@@ -46,13 +49,13 @@ const CourseEditDialog: React.FC<CourseEditDialogProps> = ({
           )}
           
           {/* Edit controls */}
-          <div className="flex justify-between items-center p-4 border-b shrink-0">
-            <h2 className="text-xl font-bold">Դասընթացի խմբագրում</h2>
+          <div className={`flex justify-between items-center p-4 ${theme === 'dark' ? 'border-gray-700' : 'border-gray-200'} border-b shrink-0`}>
+            <h2 className={`text-xl font-bold ${theme === 'dark' ? 'text-gray-100' : 'text-gray-800'}`}>Դասընթացի խմբագրում</h2>
             <div className="flex gap-2">
               <Button 
                 onClick={handleSaveChanges} 
                 disabled={loading}
-                className="flex items-center gap-2"
+                className={`flex items-center gap-2 ${theme === 'dark' ? 'bg-indigo-600 hover:bg-indigo-700' : 'bg-indigo-600 hover:bg-indigo-700'}`}
               >
                 <Save size={16} />
                 Պահպանել փոփոխությունները
@@ -60,7 +63,7 @@ const CourseEditDialog: React.FC<CourseEditDialogProps> = ({
               <Button 
                 variant="outline" 
                 onClick={() => setIsOpen(false)}
-                className="flex items-center gap-2"
+                className={`flex items-center gap-2 ${theme === 'dark' ? 'border-gray-600 text-gray-300 hover:bg-gray-800' : ''}`}
               >
                 <X size={16} />
                 Չեղարկել
@@ -72,12 +75,22 @@ const CourseEditDialog: React.FC<CourseEditDialogProps> = ({
           <div className="flex-grow overflow-hidden">
             <Tabs defaultValue="basic-info" className="w-full h-full flex flex-col">
               <div className="px-6 pt-6 shrink-0">
-                <TabsList className="mb-6">
-                  <TabsTrigger value="basic-info">Հիմնական տվյալներ</TabsTrigger>
-                  <TabsTrigger value="lessons">Դասընթացի պլան</TabsTrigger>
-                  <TabsTrigger value="requirements">Պահանջներ</TabsTrigger>
-                  <TabsTrigger value="outcomes">Արդյունքներ</TabsTrigger>
-                  <TabsTrigger value="author">Հեղինակի մասին</TabsTrigger>
+                <TabsList className={`mb-6 ${theme === 'dark' ? 'bg-gray-800' : ''}`}>
+                  <TabsTrigger value="basic-info" className={theme === 'dark' ? 'data-[state=active]:bg-gray-700 data-[state=active]:text-indigo-300' : ''}>
+                    Հիմնական տվյալներ
+                  </TabsTrigger>
+                  <TabsTrigger value="lessons" className={theme === 'dark' ? 'data-[state=active]:bg-gray-700 data-[state=active]:text-indigo-300' : ''}>
+                    Դասընթացի պլան
+                  </TabsTrigger>
+                  <TabsTrigger value="requirements" className={theme === 'dark' ? 'data-[state=active]:bg-gray-700 data-[state=active]:text-indigo-300' : ''}>
+                    Պահանջներ
+                  </TabsTrigger>
+                  <TabsTrigger value="outcomes" className={theme === 'dark' ? 'data-[state=active]:bg-gray-700 data-[state=active]:text-indigo-300' : ''}>
+                    Արդյունքներ
+                  </TabsTrigger>
+                  <TabsTrigger value="author" className={theme === 'dark' ? 'data-[state=active]:bg-gray-700 data-[state=active]:text-indigo-300' : ''}>
+                    Հեղինակի մասին
+                  </TabsTrigger>
                 </TabsList>
               </div>
               

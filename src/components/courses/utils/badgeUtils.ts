@@ -11,7 +11,7 @@ export const getCategoryBadgeClass = (category: string = '', theme: ThemeMode = 
   
   // Base class for light/dark mode
   let baseClass = isDark 
-    ? "bg-slate-800 text-slate-200" 
+    ? "bg-gray-800 text-gray-200" 
     : "bg-gray-100 text-gray-800";
   
   // Category-specific colors for courses
@@ -33,8 +33,8 @@ export const getCategoryBadgeClass = (category: string = '', theme: ThemeMode = 
         : "bg-purple-100 text-purple-800";
     case 'data science':
       return isDark 
-        ? "bg-yellow-900/60 text-yellow-300" 
-        : "bg-yellow-100 text-yellow-800";
+        ? "bg-amber-900/60 text-amber-300" 
+        : "bg-amber-100 text-amber-800";
     default:
       return baseClass;
   }
@@ -47,7 +47,7 @@ export const getInstitutionBadgeClass = (theme: ThemeMode = 'light'): string => 
   const isDark = theme === 'dark';
   
   return isDark 
-    ? "bg-slate-800/80 text-slate-200 border-slate-700" 
+    ? "bg-gray-800/80 text-gray-200 border-gray-700" 
     : "bg-gray-100 text-gray-800 border-gray-200";
 };
 

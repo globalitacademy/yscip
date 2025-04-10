@@ -15,6 +15,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Course } from './types';
 import { ProfessionalCourse } from './types/ProfessionalCourse';
 import { ScrollArea } from '@/components/ui/scroll-area';
+import { useTheme } from '@/hooks/use-theme';
 
 interface EditCourseDialogProps {
   isOpen: boolean;
@@ -49,6 +50,8 @@ const EditCourseDialog: React.FC<EditCourseDialogProps> = ({
   courseType,
   setCourseType
 }) => {
+  const { theme } = useTheme();
+  
   if (!selectedCourse && !professionalCourse) return null;
 
   const handleSubmit = () => {
@@ -62,10 +65,10 @@ const EditCourseDialog: React.FC<EditCourseDialogProps> = ({
 
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
-      <DialogContent className="max-w-4xl max-h-[90vh] p-0 overflow-hidden">
-        <DialogHeader className="p-6 border-b">
-          <DialogTitle>Կուրսի խմբագրում</DialogTitle>
-          <DialogDescription>
+      <DialogContent className={`max-w-4xl max-h-[90vh] p-0 overflow-hidden ${theme === 'dark' ? 'bg-gray-900' : 'bg-white'}`}>
+        <DialogHeader className={`p-6 ${theme === 'dark' ? 'border-gray-700' : 'border-gray-200'} border-b`}>
+          <DialogTitle className={theme === 'dark' ? 'text-gray-100' : ''}>Կուրսի խմբագրում</DialogTitle>
+          <DialogDescription className={theme === 'dark' ? 'text-gray-400' : ''}>
             Փոփոխեք կուրսի բոլոր տվյալները ստորև: Պատրաստ լինելուց հետո սեղմեք "Պահպանել" կոճակը:
           </DialogDescription>
         </DialogHeader>
@@ -73,9 +76,13 @@ const EditCourseDialog: React.FC<EditCourseDialogProps> = ({
         <div className="flex-grow overflow-hidden">
           <Tabs value={courseType} onValueChange={(value: 'standard' | 'professional') => setCourseType(value)} className="h-full flex flex-col">
             <div className="px-6 pt-4 shrink-0">
-              <TabsList className="grid grid-cols-2 w-full mb-4">
-                <TabsTrigger value="standard">Ստանդարտ դասընթաց</TabsTrigger>
-                <TabsTrigger value="professional">Մասնագիտական դասընթաց</TabsTrigger>
+              <TabsList className={`grid grid-cols-2 w-full mb-4 ${theme === 'dark' ? 'bg-gray-800' : ''}`}>
+                <TabsTrigger value="standard" className={theme === 'dark' ? 'data-[state=active]:bg-gray-700 data-[state=active]:text-indigo-300' : ''}>
+                  Ստանդարտ դասընթաց
+                </TabsTrigger>
+                <TabsTrigger value="professional" className={theme === 'dark' ? 'data-[state=active]:bg-gray-700 data-[state=active]:text-indigo-300' : ''}>
+                  Մասնագիտական դասընթաց
+                </TabsTrigger>
               </TabsList>
             </div>
             
@@ -109,8 +116,12 @@ const EditCourseDialog: React.FC<EditCourseDialogProps> = ({
           </Tabs>
         </div>
         
-        <DialogFooter className="p-4 border-t mt-0 shrink-0">
-          <Button type="submit" onClick={handleSubmit}>
+        <DialogFooter className={`p-4 ${theme === 'dark' ? 'border-gray-700' : 'border-gray-200'} border-t mt-0 shrink-0`}>
+          <Button 
+            type="submit" 
+            onClick={handleSubmit}
+            className={theme === 'dark' ? 'bg-indigo-600 hover:bg-indigo-700' : ''}
+          >
             Պահպանել
           </Button>
         </DialogFooter>

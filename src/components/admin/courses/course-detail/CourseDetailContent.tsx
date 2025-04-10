@@ -4,6 +4,7 @@ import { ProfessionalCourse } from '@/components/courses/types/ProfessionalCours
 import { ActionButtons } from '../actions/ActionButtons';
 import CourseDetailHeader from './CourseDetailHeader';
 import CourseTabContent from './CourseTabContent';
+import { useTheme } from '@/hooks/use-theme';
 
 interface CourseDetailContentProps {
   course: ProfessionalCourse;
@@ -22,9 +23,11 @@ const CourseDetailContent: React.FC<CourseDetailContentProps> = ({
   loading,
   actionType
 }) => {
+  const { theme } = useTheme();
+  
   return (
     <>
-      <div className="flex justify-between items-start mb-6">
+      <div className={`flex justify-between items-start mb-6 ${theme === 'dark' ? 'text-gray-100' : ''}`}>
         <CourseDetailHeader course={course} />
         
         <ActionButtons 
