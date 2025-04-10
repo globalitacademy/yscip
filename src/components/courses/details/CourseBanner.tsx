@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { ProfessionalCourse, CourseInstructor } from '../types/ProfessionalCourse';
 import { Button } from '@/components/ui/button';
@@ -45,7 +44,6 @@ const CourseBanner: React.FC<CourseBannerProps> = ({
     }
   };
   
-  // Format course creation date
   const formatDate = (dateString?: string) => {
     if (!dateString) return '';
     
@@ -63,7 +61,6 @@ const CourseBanner: React.FC<CourseBannerProps> = ({
 
   return (
     <div className="relative mb-8 overflow-hidden">
-      {/* Background */}
       <div className={`absolute inset-0 ${theme === 'dark' ? 'bg-gray-900' : 'bg-sky-50'}`}>
         {course.imageUrl && (
           <>
@@ -89,7 +86,6 @@ const CourseBanner: React.FC<CourseBannerProps> = ({
         </Link>
         
         <div className="space-y-5">
-          {/* Status badges */}
           {course.is_public !== undefined && (
             <div className="flex flex-wrap gap-2">
               <Badge variant={course.is_public ? "success" : "warning"}>
@@ -110,21 +106,17 @@ const CourseBanner: React.FC<CourseBannerProps> = ({
             </div>
           )}
           
-          {/* Course title */}
           <h1 className={`text-4xl md:text-5xl font-bold ${theme === 'dark' ? 'text-gray-100' : 'text-gray-900'}`}>
             {course.title}
           </h1>
           
-          {/* Course subtitle */}
           {course.subtitle && course.subtitle !== 'ԴԱՍԸՆԹԱՑ' && (
             <p className={`text-xl ${theme === 'dark' ? 'text-gray-300' : 'text-gray-700'}`}>
               {course.subtitle}
             </p>
           )}
           
-          {/* Course metadata */}
           <div className="flex flex-wrap gap-5 items-center">
-            {/* Show author based on author_type */}
             {course.author_type === 'institution' ? (
               <div className={`flex items-center gap-2 ${theme === 'dark' ? 'text-gray-300' : 'text-gray-600'}`}>
                 <Building size={18} />
@@ -144,13 +136,11 @@ const CourseBanner: React.FC<CourseBannerProps> = ({
               </div>
             )}
             
-            {/* Show course duration */}
             <div className={`flex items-center gap-2 ${theme === 'dark' ? 'text-gray-300' : 'text-gray-600'}`}>
               <Clock size={18} />
               <span className="text-sm md:text-base">Տևողություն՝ {course.duration}</span>
             </div>
             
-            {/* Show creation date if available */}
             {course.createdAt && (
               <div className={`flex items-center gap-2 ${theme === 'dark' ? 'text-gray-300' : 'text-gray-600'}`}>
                 <CalendarDays size={18} />
@@ -158,7 +148,6 @@ const CourseBanner: React.FC<CourseBannerProps> = ({
               </div>
             )}
             
-            {/* Show URL/slug if available */}
             {course.slug && (
               <div className={`flex items-center gap-2 ${theme === 'dark' ? 'text-gray-300' : 'text-gray-600'}`}>
                 <Globe size={18} />
@@ -166,7 +155,6 @@ const CourseBanner: React.FC<CourseBannerProps> = ({
               </div>
             )}
             
-            {/* Show instructors if available */}
             {instructors && instructors.length > 0 && (
               <div className={`flex items-start gap-2 ${theme === 'dark' ? 'text-gray-300' : 'text-gray-600'}`}>
                 <Users size={18} className="mt-1" />
@@ -190,8 +178,7 @@ const CourseBanner: React.FC<CourseBannerProps> = ({
               </div>
             )}
             
-            {/* Fallback to old instructor field if no instructors found and field exists */}
-            {(!instructors || instructors.length === 0) && course.instructor && (
+            {!instructors || instructors.length === 0 && course.instructor && (
               <div className={`flex items-center gap-2 ${theme === 'dark' ? 'text-gray-300' : 'text-gray-600'}`}>
                 <User size={18} />
                 <span className="text-sm md:text-base">Դասախոս՝ {course.instructor}</span>
@@ -199,14 +186,14 @@ const CourseBanner: React.FC<CourseBannerProps> = ({
             )}
           </div>
           
-          {/* Buttons */}
           <div className="pt-4 flex flex-wrap gap-3">
             <Button
               onClick={openApplicationForm}
               size="lg"
               className={`${theme === 'dark' 
-                ? 'bg-blue-500 hover:bg-blue-600' 
-                : 'bg-blue-600 hover:bg-blue-700'} text-white`}
+                ? 'bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700' 
+                : 'bg-gradient-to-r from-blue-600 to-indigo-500 hover:from-blue-700 hover:to-indigo-600'} 
+                text-white shadow-md hover:shadow-lg transition-all transform hover:-translate-y-0.5 rounded-full px-8`}
             >
               {course.buttonText || "Դիմել դասընթացին"}
             </Button>
@@ -228,14 +215,12 @@ const CourseBanner: React.FC<CourseBannerProps> = ({
         </div>
       </div>
 
-      {/* Course Application Form Dialog */}
       <CourseApplicationForm 
         course={course}
         isOpen={isApplicationFormOpen}
         onClose={() => setIsApplicationFormOpen(false)}
       />
 
-      {/* Course Edit Dialog */}
       {canEdit && (
         <CourseEdit
           isOpen={isEditDialogOpen}
