@@ -1,4 +1,3 @@
-
 import { ReactElement } from 'react';
 
 export interface ProfessionalCourse {
@@ -27,7 +26,11 @@ export interface ProfessionalCourse {
   modules?: string[];   // Added for compatibility with Course
   prerequisites?: string[];  // Added for compatibility with Course
   
-  // New fields for authors and instructors
+  // New fields for course delivery format and language
+  format?: 'online' | 'classroom' | 'hybrid' | 'remote';
+  language?: 'armenian' | 'english' | 'russian';
+  
+  // Existing fields for authors and instructors
   author_type?: 'lecturer' | 'institution';
   instructor_ids?: string[];  // Array of instructor IDs
   

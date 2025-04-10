@@ -37,7 +37,11 @@ export const useCourseUpdating = (
         is_public: updates.is_public,
         show_on_homepage: updates.show_on_homepage,
         display_order: updates.display_order,
-        updated_at: new Date().toISOString()
+        updated_at: new Date().toISOString(),
+        // Add new fields
+        category: updates.category,
+        format: updates.format,
+        language: updates.language
       };
       
       // Remove undefined values to avoid errors

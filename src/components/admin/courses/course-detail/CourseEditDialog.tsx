@@ -16,7 +16,7 @@ import {
   RequirementsTab,
   OutcomesTab,
   AuthorTab,
-  DisplaySettingsTab // Added DisplaySettingsTab import
+  DisplaySettingsTab
 } from './tabs';
 
 interface CourseEditDialogProps {
