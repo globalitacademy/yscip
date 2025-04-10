@@ -63,6 +63,17 @@ export const getComplexityBadgeClass = (complexity: string = 'Միջին', theme
 };
 
 /**
+ * Get the appropriate color class for an institution badge based on theme
+ */
+export const getInstitutionBadgeClass = (theme: ThemeMode = 'light'): string => {
+  const isDark = theme === 'dark';
+  
+  return isDark 
+    ? "bg-slate-800/80 text-slate-200 border-slate-700" 
+    : "bg-gray-100 text-gray-800 border-gray-200";
+};
+
+/**
  * Hook for getting theme-specific badge classes
  */
 export const useBadgeThemeClasses = () => {
@@ -71,6 +82,7 @@ export const useBadgeThemeClasses = () => {
   return {
     getCategoryClass: (category: string) => getCategoryBadgeClass(category, theme),
     getComplexityClass: (complexity: string) => getComplexityBadgeClass(complexity, theme),
+    getInstitutionClass: () => getInstitutionBadgeClass(theme),
     getPublicBadgeClass: () => {
       return theme === 'dark' 
         ? "bg-green-900/60 text-green-300" 

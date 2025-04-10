@@ -7,6 +7,9 @@ import { Link, useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
+import { useTheme } from '@/hooks/use-theme';
+import { getCategoryBadgeClass } from './utils/badgeUtils';
+
 interface ProfessionalCourseCardProps {
   course: ProfessionalCourse;
   onEdit?: (course: ProfessionalCourse) => void;
@@ -15,6 +18,7 @@ interface ProfessionalCourseCardProps {
   canEdit?: boolean;
   onClick?: () => void;
 }
+
 const ProfessionalCourseCard: React.FC<ProfessionalCourseCardProps> = ({
   course,
   onEdit,
@@ -24,21 +28,23 @@ const ProfessionalCourseCard: React.FC<ProfessionalCourseCardProps> = ({
   onClick
 }) => {
   const navigate = useNavigate();
-  const {
-    user
-  } = useAuth();
+  const { user } = useAuth();
+  const { theme } = useTheme();
+  
   const handleDelete = (e: React.MouseEvent) => {
     e.stopPropagation(); // Prevent event propagation
     if (onDelete && course.id) {
       onDelete(course.id);
     }
   };
+  
   const handleEdit = (e: React.MouseEvent) => {
     e.stopPropagation(); // Prevent event propagation
     if (onEdit) {
       onEdit(course);
     }
   };
+  
   const handleViewClick = () => {
     if (onClick) {
       onClick();
@@ -47,6 +53,7 @@ const ProfessionalCourseCard: React.FC<ProfessionalCourseCardProps> = ({
       navigate(`/course/${course.id}`);
     }
   };
+  
   const handleSyncToDatabase = async (e: React.MouseEvent) => {
     e.stopPropagation(); // Prevent event propagation
 
@@ -153,15 +160,28 @@ const ProfessionalCourseCard: React.FC<ProfessionalCourseCardProps> = ({
       toast.error('Դասընթացի համաժամացման ժամանակ սխալ է տեղի ունեցել');
     }
   };
+  
+  const getInstitutionBadgeClass = () => {
+    const isDark = theme === 'dark';
+    return isDark 
+      ? "bg-slate-800/80 text-slate-200 border-slate-700"
+      : "bg-gray-100 text-gray-800 border-gray-200";
+  };
+  
   const isAdminUser = user?.role === 'admin';
+  
   return <Card className="flex flex-col w-full hover:shadow-md transition-shadow relative">
-      {course.organizationLogo ? <div className="absolute top-4 left-4 flex items-center text-xs bg-gray-100 px-2 py-1 rounded-full z-10">
+      {course.organizationLogo ? (
+        <div className={`absolute top-4 left-4 flex items-center text-xs px-2 py-1 rounded-full z-10 ${getInstitutionBadgeClass()}`}>
           <img src={course.organizationLogo} alt={course.institution} className="w-6 h-6 mr-1 object-contain rounded-full" />
           <span>{course.institution}</span>
-        </div> : <div className="absolute top-4 left-4 flex items-center text-xs px-2 py-1 rounded-full z-10 bg-gray-800">
-          <Building size={12} className="mr-1 bg-gray-900" />
-          <span className="text-zinc-50">{course.institution}</span>
-        </div>}
+        </div>
+      ) : (
+        <div className={`absolute top-4 left-4 flex items-center text-xs px-2 py-1 rounded-full z-10 ${getInstitutionBadgeClass()}`}>
+          <Building size={12} className="mr-1" />
+          <span>{course.institution}</span>
+        </div>
+      )}
 
       {(isAdmin || canEdit || isAdminUser) && <div className="absolute top-4 right-4 z-10 flex gap-2">
           {(isAdmin || canEdit) && <>
@@ -210,4 +230,5 @@ const ProfessionalCourseCard: React.FC<ProfessionalCourseCardProps> = ({
       </CardFooter>
     </Card>;
 };
+
 export default ProfessionalCourseCard;

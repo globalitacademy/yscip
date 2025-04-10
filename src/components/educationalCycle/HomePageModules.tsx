@@ -9,10 +9,12 @@ import { toast } from 'sonner';
 import { ProfessionalCourse } from '@/components/courses/types';
 import ProfessionalCourseCard from '@/components/courses/ProfessionalCourseCard';
 import { convertIconNameToComponent } from '@/utils/iconUtils';
+import { useTheme } from '@/hooks/use-theme';
 
 export const HomePageModules: React.FC = () => {
   const [courses, setCourses] = useState<ProfessionalCourse[]>([]);
   const [loading, setLoading] = useState(true);
+  const { theme } = useTheme();
 
   useEffect(() => {
     const fetchCourses = async () => {
@@ -69,9 +71,15 @@ export const HomePageModules: React.FC = () => {
     fetchCourses();
   }, []);
 
+  const getSectionClass = () => {
+    return theme === 'dark' 
+      ? "py-16 bg-gray-900/40" 
+      : "py-16 bg-gray-50";
+  };
+
   if (loading) {
     return (
-      <div className="py-16 bg-gray-50 dark:bg-gray-900/40">
+      <div className={getSectionClass()}>
         <div className="container mx-auto px-4 text-center">
           <Loader2 className="h-8 w-8 animate-spin mx-auto mb-4 dark:text-gray-300" />
           <p className="dark:text-gray-300">Դասընթացների բեռնում...</p>
@@ -82,7 +90,7 @@ export const HomePageModules: React.FC = () => {
 
   if (courses.length === 0) {
     return (
-      <div className="py-16 bg-gray-50 dark:bg-gray-900/40">
+      <div className={getSectionClass()}>
         <div className="container mx-auto px-4 text-center">
           <p className="text-muted-foreground dark:text-gray-400">Դասընթացներ չեն գտնվել</p>
         </div>
@@ -91,7 +99,7 @@ export const HomePageModules: React.FC = () => {
   }
 
   return (
-    <div className="py-16 bg-gray-50 dark:bg-gray-900/40">
+    <div className={getSectionClass()}>
       <div className="container mx-auto px-4">
         <FadeIn delay="delay-100">
           <h2 className="text-3xl font-bold mb-4 text-center dark:text-gray-100">
