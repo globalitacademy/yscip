@@ -1,101 +1,85 @@
 
+import { v4 as uuidv4 } from 'uuid';
 import { Task, TimelineEvent } from '@/data/projectThemes';
 
 /**
- * Calculate the overall progress percentage of a project
- * @param tasks The project's tasks
- * @param timeline The project's timeline events
- * @returns A number between 0 and 100 representing the progress percentage
+ * Calculate the project progress based on tasks and timeline events
  */
 export const calculateProjectProgress = (tasks: Task[], timeline: TimelineEvent[]): number => {
   if (tasks.length === 0 && timeline.length === 0) {
     return 0;
   }
-  
-  // Calculate task progress
-  const taskProgress = tasks.length > 0
-    ? (tasks.filter(task => task.status === 'completed' || task.status === 'done').length / tasks.length) * 100
-    : 0;
-    
-  // Calculate timeline progress
-  const timelineProgress = timeline.length > 0
-    ? (timeline.filter(event => event.isCompleted).length / timeline.length) * 100
-    : 0;
-  
-  // Average the two progress metrics (weighted if needed)
-  const weightTasks = tasks.length > 0 ? 0.6 : 0;
-  const weightTimeline = timeline.length > 0 ? 0.4 : 0;
-  
-  if (weightTasks === 0 && weightTimeline === 0) {
-    return 0;
-  }
-  
-  const totalWeight = weightTasks + weightTimeline;
-  const weightedProgress = (
-    (taskProgress * weightTasks) + 
-    (timelineProgress * weightTimeline)
-  ) / totalWeight;
-  
-  return Math.round(weightedProgress);
+
+  let totalItems = tasks.length + timeline.length;
+  let completedItems = 0;
+
+  // Count completed tasks
+  completedItems += tasks.filter(task => 
+    ['done', 'completed'].includes(task.status)
+  ).length;
+
+  // Count completed timeline events
+  completedItems += timeline.filter(event => 
+    event.isCompleted
+  ).length;
+
+  const progress = Math.round((completedItems / totalItems) * 100);
+  return Math.min(100, Math.max(0, progress)); // Ensure between 0-100
 };
 
 /**
- * Generate sample timeline events for demonstration
+ * Generate sample timeline events for demo purposes
  */
 export const generateSampleTimeline = (): TimelineEvent[] => {
   return [
     {
-      id: '1',
-      title: 'Նախագիծը սկսված է',
-      date: '2023-09-01',
-      isCompleted: true
+      id: uuidv4(),
+      title: 'Նախագծի սկիզբ',
+      date: new Date().toISOString(),
+      isCompleted: true,
+      description: 'Նախագիծը սկսված է'
     },
     {
-      id: '2',
-      title: 'Պահանջների հավաքագրում',
-      date: '2023-09-15',
-      isCompleted: true
+      id: uuidv4(),
+      title: 'Նախագծի պահանջների հավաքում',
+      date: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(),
+      isCompleted: false,
+      description: 'Նախագծի պահանջների հավաքման փուլ'
     },
     {
-      id: '3',
-      title: 'Նախագծի նախատիպ',
-      date: '2023-10-01',
-      isCompleted: false
-    },
-    {
-      id: '4',
+      id: uuidv4(),
       title: 'Նախագծի ավարտ',
-      date: '2023-11-15',
-      isCompleted: false
+      date: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(),
+      isCompleted: false,
+      description: 'Նախագծի ավարտման վերջնաժամկետ'
     }
   ];
 };
 
 /**
- * Generate sample tasks for demonstration
+ * Generate sample tasks for demo purposes
  */
 export const generateSampleTasks = (userId: string): Task[] => {
   return [
     {
-      id: '1',
-      title: 'Պահանջների փաստաթուղթ',
-      description: 'Ստեղծել պահանջների փաստաթուղթ նախագծի համար',
+      id: uuidv4(),
+      title: 'Նախագծի պլանավորում',
+      description: 'Մշակել նախագծի ընդհանուր պլանը և ժամանակացույցը',
       assignedTo: userId,
-      status: 'completed',
-      completedAt: '2023-09-10'
+      status: 'done'
     },
     {
-      id: '2',
-      title: 'Նախագծի նախատիպ',
-      description: 'Ստեղծել նախագծի նախատիպ',
+      id: uuidv4(),
+      title: 'Ֆունկցիոնալ պահանջների նկարագրություն',
+      description: 'Կազմել ֆունկցիոնալ պահանջների նկարագրությունը',
       assignedTo: userId,
-      status: 'in-progress'
+      status: 'inProgress'
     },
     {
-      id: '3',
-      title: 'Փորձարկում և որակի ապահովում',
-      description: 'Կատարել փորձարկում և որակի ապահովում',
-      assignedTo: '',
+      id: uuidv4(),
+      title: 'Նախագծի իրականացում',
+      description: 'Նախագծի հիմնական մասի իրականացում',
+      assignedTo: userId,
       status: 'todo'
     }
   ];

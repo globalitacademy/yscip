@@ -2,6 +2,7 @@
 import React from 'react';
 import { useProject } from '@/contexts/ProjectContext';
 import ProjectOverview from '@/components/project-details/ProjectOverview';
+import { ProjectTheme } from '@/data/projectThemes';
 
 const ProjectOverviewTab: React.FC = () => {
   const { project, updateProject } = useProject();

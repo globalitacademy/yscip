@@ -71,11 +71,7 @@ const ProjectTabs: React.FC<ProjectTabsProps> = ({
       </TabsList>
       
       <TabsContent value="overview" className="focus-visible:outline-none">
-        <ProjectOverviewTab 
-          project={project} 
-          isEditing={isEditing} 
-          onSaveChanges={onSaveChanges} 
-        />
+        <ProjectOverviewTab />
       </TabsContent>
       
       <TabsContent value="implementation" className="focus-visible:outline-none">
@@ -96,7 +92,7 @@ const ProjectTabs: React.FC<ProjectTabsProps> = ({
       
       <TabsContent value="resources" className="focus-visible:outline-none">
         <ProjectResourcesTab 
-          project={project} 
+          project={project}
           isEditing={isEditing} 
           onSaveChanges={onSaveChanges} 
         />

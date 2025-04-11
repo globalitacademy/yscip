@@ -1,124 +1,87 @@
 
 import { ProjectTheme } from '@/data/projectThemes';
-import { projectThemes } from '@/data/projectThemes';
-import { toast } from 'sonner';
 
 /**
- * Fetch all projects (mock implementation)
- * @returns A promise that resolves to an array of projects
+ * Get all projects
  */
-export const fetchProjects = async (): Promise<ProjectTheme[]> => {
+export const getProjects = async (): Promise<ProjectTheme[]> => {
   try {
-    // Simulate network delay
-    await new Promise(resolve => setTimeout(resolve, 500));
-    
-    return projectThemes;
+    // Mocking API call for now
+    const response = await fetch('/api/projects');
+    const data = await response.json();
+    return data;
   } catch (error) {
     console.error('Error fetching projects:', error);
-    return [];
+    
+    // Fallback to local data import if API call fails
+    const { projectThemes } = await import('@/data/projectThemes');
+    return projectThemes;
   }
 };
 
 /**
- * Update a project in the database (currently mock implementation)
- * @param projectId The ID of the project to update
- * @param updates The updated project data
- * @returns A boolean indicating success or failure
+ * Create a new project
  */
-export const updateProject = async (
-  projectId: number, 
-  updates: Partial<ProjectTheme>
-): Promise<boolean> => {
+export const createProject = async (project: ProjectTheme): Promise<ProjectTheme> => {
   try {
-    console.log(`Updating project ${projectId} with:`, updates);
+    // Mocking API call for now
+    const response = await fetch('/api/projects', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(project),
+    });
+    const data = await response.json();
+    return data;
+  } catch (error) {
+    console.error('Error creating project:', error);
     
-    // This is a mock implementation - in a real app, this would be an API call
-    // For now, we'll update our in-memory array and simulate success
-    const projectIndex = projectThemes.findIndex(p => p.id === projectId);
-    
-    if (projectIndex === -1) {
-      console.error(`Project with ID ${projectId} not found`);
-      return false;
-    }
-    
-    // Update the project in memory
-    projectThemes[projectIndex] = {
-      ...projectThemes[projectIndex],
-      ...updates,
-      updatedAt: new Date().toISOString()
-    };
-    
-    // Simulate network delay
-    await new Promise(resolve => setTimeout(resolve, 500));
-    
-    return true;
+    // Fallback to local implementation
+    const { createProject } = await import('@/data/projectThemes');
+    return createProject(project);
+  }
+};
+
+/**
+ * Update an existing project
+ */
+export const updateProject = async (projectId: number, updates: Partial<ProjectTheme>): Promise<ProjectTheme> => {
+  try {
+    // Mocking API call for now
+    const response = await fetch(`/api/projects/${projectId}`, {
+      method: 'PATCH',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(updates),
+    });
+    const data = await response.json();
+    return data;
   } catch (error) {
     console.error('Error updating project:', error);
-    return false;
+    
+    // Fallback to local implementation
+    const { updateProject } = await import('@/data/projectThemes');
+    return updateProject(projectId, updates);
   }
 };
 
 /**
- * Delete a project from the database (currently mock implementation)
- * @param projectId The ID of the project to delete
- * @returns A boolean indicating success or failure
+ * Delete a project
  */
 export const deleteProject = async (projectId: number): Promise<boolean> => {
   try {
-    console.log(`Deleting project ${projectId}`);
-    
-    // This is a mock implementation - in a real app, this would be an API call
-    const projectIndex = projectThemes.findIndex(p => p.id === projectId);
-    
-    if (projectIndex === -1) {
-      console.error(`Project with ID ${projectId} not found`);
-      return false;
-    }
-    
-    // Remove the project from memory
-    projectThemes.splice(projectIndex, 1);
-    
-    // Simulate network delay
-    await new Promise(resolve => setTimeout(resolve, 500));
-    
-    return true;
+    // Mocking API call for now
+    const response = await fetch(`/api/projects/${projectId}`, {
+      method: 'DELETE',
+    });
+    return response.ok;
   } catch (error) {
     console.error('Error deleting project:', error);
-    return false;
-  }
-};
-
-/**
- * Create a new project in the database (currently mock implementation)
- * @param projectData The project data to create
- * @returns The created project or null if there was an error
- */
-export const createProject = async (
-  projectData: Omit<ProjectTheme, 'id'>
-): Promise<ProjectTheme | null> => {
-  try {
-    console.log('Creating new project:', projectData);
     
-    // Generate a new ID for the project
-    const newId = Math.max(...projectThemes.map(p => p.id)) + 1;
-    
-    // Create the new project
-    const newProject: ProjectTheme = {
-      ...projectData,
-      id: newId,
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString()
-    };
-    
-    // Add the project to memory
-    projectThemes.push(newProject);
-    
-    // Simulate network delay
-    await new Promise(resolve => setTimeout(resolve, 500));
-    
-    return newProject;
-  } catch (error) {
-    console.error('Error creating project:', error);
-    return null;
+    // Fallback to local implementation
+    const { deleteProject } = await import('@/data/projectThemes');
+    return deleteProject(projectId);
   }
 };

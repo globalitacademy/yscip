@@ -2,6 +2,7 @@
 import { v4 as uuidv4 } from 'uuid';
 import { ProjectTheme } from '@/data/projectThemes';
 import { getUsersByRole } from '@/data/userRoles';
+import { calculateProjectProgress, generateSampleTimeline, generateSampleTasks } from '@/utils/projectProgressUtils';
 
 // Re-export utilities from specialized modules
 export { 
