@@ -1,12 +1,17 @@
+
 import React, { useState } from 'react';
-import { useTheme } from '@/hooks/use-theme';
-import { Task, TimelineEvent } from '@/data/projectThemes';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
-import { Badge } from '@/components/ui/badge';
-import { Separator } from '@/components/ui/separator';
-import { CheckCircle, Circle, Clock, PlusCircle, User } from 'lucide-react';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
+import { Textarea } from '@/components/ui/textarea';
+import { Label } from '@/components/ui/label';
+import { TimelineEvent, Task } from '@/data/projectThemes';
+import { Check, XCircle, AlertCircle, Clock, Calendar } from 'lucide-react';
+import { Progress } from '@/components/ui/progress';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import ProjectTimeline from '../ProjectTimeline';
+import ProjectTaskList from '../ProjectTaskList';
+import { useProject } from '@/contexts/ProjectContext';
 
 interface ProjectImplementationTabProps {
   timeline: TimelineEvent[];
@@ -35,367 +40,323 @@ const ProjectImplementationTab: React.FC<ProjectImplementationTabProps> = ({
   approveProject,
   rejectProject
 }) => {
-  const { theme } = useTheme();
-  const [newEventTitle, setNewEventTitle] = useState('');
-  const [newEventDate, setNewEventDate] = useState('');
-  const [newTaskTitle, setNewTaskTitle] = useState('');
-  const [newTaskDescription, setNewTaskDescription] = useState('');
-  const [feedbackText, setFeedbackText] = useState('');
+  const { projectProgress, projectMembers } = useProject();
   
-  const handleAddTimelineEvent = () => {
-    if (newEventTitle && newEventDate) {
-      addTimelineEvent({
-        title: newEventTitle,
-        date: newEventDate,
-        isCompleted: false,
-      });
-      setNewEventTitle('');
-      setNewEventDate('');
-    }
-  };
-  
-  const handleAddTask = () => {
-    if (newTaskTitle) {
-      addTask({
-        title: newTaskTitle,
-        description: newTaskDescription,
-        assignedTo: '',
-        status: 'todo',
-      });
-      setNewTaskTitle('');
-      setNewTaskDescription('');
-    }
-  };
-  
-  const handleSubmitProject = () => {
-    submitProject(feedbackText);
-    setFeedbackText('');
-  };
-  
-  const handleApproveProject = () => {
-    approveProject(feedbackText);
-    setFeedbackText('');
-  };
-  
-  const handleRejectProject = () => {
-    rejectProject(feedbackText);
-    setFeedbackText('');
-  };
-  
-  const getStatusBadgeColor = (status: Task['status']) => {
-    switch (status) {
-      case 'completed':
-      case 'done':
-        return theme === 'dark' 
-          ? 'bg-green-700/40 text-green-300 hover:bg-green-700/60' 
-          : 'bg-green-100 text-green-800 hover:bg-green-200';
-      case 'inProgress':
-      case 'in-progress':
-        return theme === 'dark' 
-          ? 'bg-blue-700/40 text-blue-300 hover:bg-blue-700/60' 
-          : 'bg-blue-100 text-blue-800 hover:bg-blue-200';
-      default:
-        return theme === 'dark' 
-          ? 'bg-gray-700/40 text-gray-300 hover:bg-gray-700/60' 
-          : 'bg-gray-100 text-gray-800 hover:bg-gray-200';
-    }
-  };
-  
-  return (
-    <div className="space-y-8">
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-        <Card className={theme === 'dark' ? 'bg-gray-800 border-gray-700' : ''}>
-          <CardHeader>
-            <CardTitle className={theme === 'dark' ? 'text-gray-100' : ''}>
-              Նախագծի ժամանակացույց
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="relative pl-6 border-l border-dashed mb-6 space-y-6">
-              {timeline.map((event, index) => (
-                <div key={index} className="relative">
-                  {event.isCompleted ? (
-                    <CheckCircle 
-                      className={`absolute -left-[25px] h-5 w-5 ${
-                        theme === 'dark' ? 'text-green-400' : 'text-green-600'
-                      }`} 
-                    />
-                  ) : (
-                    <Circle 
-                      className={`absolute -left-[25px] h-5 w-5 ${
-                        theme === 'dark' ? 'text-gray-400' : 'text-gray-500'
-                      }`} 
-                      strokeWidth={1.5}
-                    />
-                  )}
-                  
-                  <div className={`mb-1 flex items-center gap-2 ${
-                    theme === 'dark' ? 'text-gray-200' : 'text-gray-800'
-                  }`}>
-                    <span className="font-medium">{event.title}</span>
-                    
-                    {!event.isCompleted && isEditing && (
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        className={`ml-2 py-0 h-7 text-xs ${
-                          theme === 'dark' 
-                            ? 'border-gray-600 hover:bg-gray-700' 
-                            : 'border-gray-300 hover:bg-gray-100'
-                        }`}
-                        onClick={() => completeTimelineEvent(event.id)}
-                      >
-                        Նշել որպես ավարտված
-                      </Button>
-                    )}
-                  </div>
-                  
-                  <div className="flex items-center gap-1.5 text-sm mb-1">
-                    <Clock className={`h-3.5 w-3.5 ${theme === 'dark' ? 'text-gray-400' : 'text-gray-500'}`} />
-                    <span className={theme === 'dark' ? 'text-gray-400' : 'text-gray-500'}>
-                      {event.date}
-                    </span>
-                  </div>
-                </div>
-              ))}
-            </div>
-            
-            {isEditing && (
-              <div className={`mt-8 p-4 rounded ${
-                theme === 'dark' ? 'bg-gray-750 border-gray-600' : 'bg-gray-50 border-gray-200'
-              } border`}>
-                <h4 className={`text-sm font-medium mb-3 ${
-                  theme === 'dark' ? 'text-gray-300' : 'text-gray-700'
-                }`}>
-                  Ավելացնել նոր իրադարձություն
-                </h4>
-                
-                <div className="space-y-3">
-                  <input
-                    type="text"
-                    value={newEventTitle}
-                    onChange={(e) => setNewEventTitle(e.target.value)}
-                    placeholder="Իրադարձության վերնագիր"
-                    className={`w-full px-3 py-2 text-sm rounded border ${
-                      theme === 'dark' 
-                        ? 'bg-gray-700 border-gray-600 text-gray-100' 
-                        : 'bg-white border-gray-300 text-gray-800'
-                    }`}
-                  />
-                  
-                  <input
-                    type="text"
-                    value={newEventDate}
-                    onChange={(e) => setNewEventDate(e.target.value)}
-                    placeholder="Ամսաթիվ (օր․՝ 2025թ․ հունվարի 15)"
-                    className={`w-full px-3 py-2 text-sm rounded border ${
-                      theme === 'dark' 
-                        ? 'bg-gray-700 border-gray-600 text-gray-100' 
-                        : 'bg-white border-gray-300 text-gray-800'
-                    }`}
-                  />
-                  
-                  <Button
-                    onClick={handleAddTimelineEvent}
-                    disabled={!newEventTitle || !newEventDate}
-                    size="sm"
-                    className="w-full"
-                  >
-                    <PlusCircle className="h-4 w-4 mr-2" /> 
-                    Ավելացնել իրադարձություն
-                  </Button>
-                </div>
-              </div>
-            )}
-          </CardContent>
-        </Card>
+  const [isSubmitDialogOpen, setIsSubmitDialogOpen] = useState(false);
+  const [isApproveDialogOpen, setIsApproveDialogOpen] = useState(false);
+  const [isRejectDialogOpen, setIsRejectDialogOpen] = useState(false);
+  const [feedback, setFeedback] = useState('');
+  const [activeTab, setActiveTab] = useState('timeline');
 
-        <Card className={theme === 'dark' ? 'bg-gray-800 border-gray-700' : ''}>
-          <CardHeader>
-            <CardTitle className={theme === 'dark' ? 'text-gray-100' : ''}>
-              Առաջադրանքներ
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <Accordion type="single" collapsible className="w-full">
-              {tasks.map((task, index) => (
-                <AccordionItem 
-                  key={index} 
-                  value={`task-${index}`}
-                  className={theme === 'dark' ? 'border-gray-700' : ''}
-                >
-                  <AccordionTrigger className={theme === 'dark' ? 'text-gray-200 hover:text-gray-100' : ''}>
-                    <div className="flex items-center gap-2 text-left">
-                      <span className="line-clamp-1">{task.title}</span>
-                      <Badge className={getStatusBadgeColor(task.status)}>
-                        {task.status === 'completed' || task.status === 'done' ? 'Ավարտված' : 
-                         task.status === 'inProgress' || task.status === 'in-progress' ? 'Ընթացքում' : 'Սպասում է'}
-                      </Badge>
-                    </div>
-                  </AccordionTrigger>
-                  <AccordionContent className={theme === 'dark' ? 'text-gray-300' : ''}>
-                    <div className="px-1 space-y-2">
-                      <p>{task.description}</p>
-                      
-                      <div className="flex items-center gap-1.5 text-sm">
-                        <User className={`h-3.5 w-3.5 ${theme === 'dark' ? 'text-gray-400' : 'text-gray-500'}`} />
-                        <span className={theme === 'dark' ? 'text-gray-400' : 'text-gray-500'}>
-                          {task.assignedTo || 'Չնշանակված'}
-                        </span>
-                      </div>
-                      
-                      {isEditing && (
-                        <div className="flex gap-2 mt-4">
-                          <Button
-                            size="sm"
-                            variant={task.status === 'todo' || task.status === 'open' ? 'default' : 'outline'}
-                            onClick={() => updateTaskStatus(task.id, 'todo')}
-                            className={`flex-1 ${task.status === 'todo' || task.status === 'open' ? '' : 'border-gray-300'}`}
-                          >
-                            Սպասում
-                          </Button>
-                          <Button
-                            size="sm"
-                            variant={task.status === 'inProgress' || task.status === 'in-progress' ? 'default' : 'outline'}
-                            onClick={() => updateTaskStatus(task.id, 'in-progress')}
-                            className={`flex-1 ${task.status === 'inProgress' || task.status === 'in-progress' ? '' : 'border-gray-300'}`}
-                          >
-                            Ընթացքում
-                          </Button>
-                          <Button
-                            size="sm"
-                            variant={task.status === 'completed' || task.status === 'done' ? 'default' : 'outline'}
-                            onClick={() => updateTaskStatus(task.id, 'completed')}
-                            className={`flex-1 ${task.status === 'completed' || task.status === 'done' ? '' : 'border-gray-300'}`}
-                          >
-                            Ավարտված
-                          </Button>
-                        </div>
-                      )}
-                    </div>
-                  </AccordionContent>
-                </AccordionItem>
-              ))}
-            </Accordion>
-            
-            {isEditing && (
-              <div className={`mt-8 p-4 rounded ${
-                theme === 'dark' ? 'bg-gray-750 border-gray-600' : 'bg-gray-50 border-gray-200'
-              } border`}>
-                <h4 className={`text-sm font-medium mb-3 ${
-                  theme === 'dark' ? 'text-gray-300' : 'text-gray-700'
-                }`}>
-                  Ավելացնել նոր առաջադրանք
-                </h4>
-                
-                <div className="space-y-3">
-                  <input
-                    type="text"
-                    value={newTaskTitle}
-                    onChange={(e) => setNewTaskTitle(e.target.value)}
-                    placeholder="Առաջադրանքի վերնագիր"
-                    className={`w-full px-3 py-2 text-sm rounded border ${
-                      theme === 'dark' 
-                        ? 'bg-gray-700 border-gray-600 text-gray-100' 
-                        : 'bg-white border-gray-300 text-gray-800'
-                    }`}
-                  />
-                  
-                  <textarea
-                    value={newTaskDescription}
-                    onChange={(e) => setNewTaskDescription(e.target.value)}
-                    placeholder="Առաջադրանքի նկարագրություն"
-                    className={`w-full px-3 py-2 text-sm rounded border ${
-                      theme === 'dark' 
-                        ? 'bg-gray-700 border-gray-600 text-gray-100' 
-                        : 'bg-white border-gray-300 text-gray-800'
-                    }`}
-                    rows={3}
-                  />
-                  
-                  <Button
-                    onClick={handleAddTask}
-                    disabled={!newTaskTitle}
-                    size="sm"
-                    className="w-full"
-                  >
-                    <PlusCircle className="h-4 w-4 mr-2" /> 
-                    Ավելացնել առաջադրանք
-                  </Button>
+  const handleSubmitProject = () => {
+    submitProject(feedback);
+    setIsSubmitDialogOpen(false);
+    setFeedback('');
+  };
+
+  const handleApproveProject = () => {
+    approveProject(feedback);
+    setIsApproveDialogOpen(false);
+    setFeedback('');
+  };
+
+  const handleRejectProject = () => {
+    rejectProject(feedback);
+    setIsRejectDialogOpen(false);
+    setFeedback('');
+  };
+
+  // Status components
+  const renderStatusComponent = () => {
+    switch (projectStatus) {
+      case 'approved':
+        return (
+          <Card className="bg-green-50 border-green-200 dark:bg-green-900/20 dark:border-green-800">
+            <CardHeader className="pb-2">
+              <div className="flex items-start justify-between">
+                <div>
+                  <CardTitle className="text-green-800 dark:text-green-400 flex items-center">
+                    <Check className="h-5 w-5 mr-2" />
+                    Նախագիծը հաստատված է
+                  </CardTitle>
+                  <CardDescription className="text-green-700 dark:text-green-300">
+                    Նախագիծը հաջողությամբ հաստատվել է ղեկավարի կողմից
+                  </CardDescription>
                 </div>
               </div>
+            </CardHeader>
+          </Card>
+        );
+        
+      case 'rejected':
+        return (
+          <Card className="bg-red-50 border-red-200 dark:bg-red-900/20 dark:border-red-800">
+            <CardHeader className="pb-2">
+              <div className="flex items-start justify-between">
+                <div>
+                  <CardTitle className="text-red-800 dark:text-red-400 flex items-center">
+                    <XCircle className="h-5 w-5 mr-2" />
+                    Նախագիծը մերժված է
+                  </CardTitle>
+                  <CardDescription className="text-red-700 dark:text-red-300">
+                    Նախագիծը մերժվել է ղեկավարի կողմից։ Խնդրում ենք վերանայել մերժման պատճառները։
+                  </CardDescription>
+                </div>
+              </div>
+            </CardHeader>
+          </Card>
+        );
+        
+      case 'pending':
+        return (
+          <Card className="bg-amber-50 border-amber-200 dark:bg-amber-900/20 dark:border-amber-800">
+            <CardHeader className="pb-2">
+              <div className="flex items-start justify-between">
+                <div>
+                  <CardTitle className="text-amber-800 dark:text-amber-400 flex items-center">
+                    <Clock className="h-5 w-5 mr-2" />
+                    Նախագիծը ստուգման փուլում է
+                  </CardTitle>
+                  <CardDescription className="text-amber-700 dark:text-amber-300">
+                    Նախագիծը ներկայացվել է և սպասում է ղեկավարի հաստատմանը
+                  </CardDescription>
+                </div>
+              </div>
+            </CardHeader>
+            
+            {isEditing && (
+              <CardContent>
+                <div className="flex gap-2">
+                  <Button
+                    variant="outline"
+                    className="bg-green-100 hover:bg-green-200 text-green-800 border-green-300"
+                    onClick={() => setIsApproveDialogOpen(true)}
+                  >
+                    <Check className="h-4 w-4 mr-2" />
+                    Հաստատել նախագիծը
+                  </Button>
+                  
+                  <Button
+                    variant="outline"
+                    className="bg-red-100 hover:bg-red-200 text-red-800 border-red-300"
+                    onClick={() => setIsRejectDialogOpen(true)}
+                  >
+                    <XCircle className="h-4 w-4 mr-2" />
+                    Մերժել նախագիծը
+                  </Button>
+                </div>
+              </CardContent>
             )}
-          </CardContent>
-        </Card>
-      </div>
-      
-      <Card className={theme === 'dark' ? 'bg-gray-800 border-gray-700' : ''}>
-        <CardHeader>
-          <CardTitle className={theme === 'dark' ? 'text-gray-100' : ''}>
-            Նախագծի կարգավիճակ
-          </CardTitle>
+          </Card>
+        );
+        
+      default:
+        return (
+          <Card className="bg-blue-50 border-blue-200 dark:bg-blue-900/20 dark:border-blue-800">
+            <CardHeader className="pb-2">
+              <div className="flex items-start justify-between">
+                <div>
+                  <CardTitle className="text-blue-800 dark:text-blue-400 flex items-center">
+                    <AlertCircle className="h-5 w-5 mr-2" />
+                    Նախագիծը դեռ չի ներկայացվել
+                  </CardTitle>
+                  <CardDescription className="text-blue-700 dark:text-blue-300">
+                    Նախագիծը դեռևս ներկայացված չէ ղեկավարի ստուգմանը
+                  </CardDescription>
+                </div>
+              </div>
+            </CardHeader>
+            
+            {isEditing && (
+              <CardContent>
+                <Button
+                  onClick={() => setIsSubmitDialogOpen(true)}
+                  className="bg-blue-600 hover:bg-blue-700 text-white"
+                >
+                  <Calendar className="h-4 w-4 mr-2" />
+                  Ներկայացնել նախագիծը ստուգման
+                </Button>
+              </CardContent>
+            )}
+          </Card>
+        );
+    }
+  };
+
+  return (
+    <div className="space-y-6">
+      {/* Project progress */}
+      <Card>
+        <CardHeader className="pb-2">
+          <CardTitle>Նախագծի առաջընթաց</CardTitle>
+          <CardDescription>
+            {projectProgress}% ավարտված
+          </CardDescription>
         </CardHeader>
         <CardContent>
-          <div className="flex flex-col gap-6">
-            <div className="flex items-center gap-4">
-              <div>
-                <h3 className={`text-lg font-medium ${theme === 'dark' ? 'text-gray-200' : 'text-gray-800'}`}>
-                  Ընթացիկ կարգավիճակ:
-                </h3>
-                <Badge 
-                  className={`mt-2 ${
-                    projectStatus === 'approved' ? 'bg-green-100 text-green-800' :
-                    projectStatus === 'rejected' ? 'bg-red-100 text-red-800' :
-                    projectStatus === 'pending' ? 'bg-yellow-100 text-yellow-800' :
-                    'bg-gray-100 text-gray-800'
-                  } ${theme === 'dark' ? 'bg-opacity-20 border' : ''}`}
-                >
-                  {projectStatus === 'approved' ? 'Հաստատված' :
-                   projectStatus === 'rejected' ? 'Մերժված' :
-                   projectStatus === 'pending' ? 'Սպասում է հաստատման' :
-                   'Չներկայացված'}
-                </Badge>
-              </div>
-            </div>
-            
-            {isEditing && (
-              <>
-                <Separator className={theme === 'dark' ? 'bg-gray-700' : ''} />
-                
-                <div>
-                  <h4 className={`mb-3 ${theme === 'dark' ? 'text-gray-300' : 'text-gray-700'}`}>
-                    Փոխել նախագծի կարգավիճակը
-                  </h4>
-                  
-                  <textarea
-                    value={feedbackText}
-                    onChange={(e) => setFeedbackText(e.target.value)}
-                    placeholder="Մեկնաբանություն (ոչ պարտադիր)..."
-                    className={`w-full mb-4 px-3 py-2 text-sm rounded border ${
-                      theme === 'dark' 
-                        ? 'bg-gray-700 border-gray-600 text-gray-100' 
-                        : 'bg-white border-gray-300 text-gray-800'
-                    }`}
-                    rows={3}
-                  />
-                  
-                  <div className="flex flex-wrap gap-3">
-                    <Button onClick={handleSubmitProject} variant="outline">
-                      Ներկայացնել հաստատման
-                    </Button>
-                    <Button onClick={handleApproveProject} variant="default" className="bg-green-600 hover:bg-green-700">
-                      Հաստատել նախագիծը
-                    </Button>
-                    <Button onClick={handleRejectProject} variant="destructive">
-                      Մերժել նախագիծը
-                    </Button>
-                  </div>
-                </div>
-              </>
-            )}
-          </div>
+          <Progress value={projectProgress} className="h-2" />
         </CardContent>
       </Card>
+      
+      {/* Project status */}
+      {renderStatusComponent()}
+      
+      {/* Implementation tabs */}
+      <Tabs 
+        value={activeTab}
+        onValueChange={setActiveTab}
+        className="w-full"
+      >
+        <TabsList>
+          <TabsTrigger value="timeline">Ժամանակացույց</TabsTrigger>
+          <TabsTrigger value="tasks">Առաջադրանքներ</TabsTrigger>
+        </TabsList>
+        
+        <TabsContent value="timeline" className="mt-6">
+          <ProjectTimeline
+            timeline={timeline}
+            addTimelineEvent={addTimelineEvent}
+            completeTimelineEvent={completeTimelineEvent}
+            isEditing={isEditing}
+          />
+        </TabsContent>
+        
+        <TabsContent value="tasks" className="mt-6">
+          <ProjectTaskList
+            tasks={tasks}
+            projectMembers={projectMembers}
+            addTask={addTask}
+            updateTaskStatus={updateTaskStatus}
+            isEditing={isEditing}
+          />
+        </TabsContent>
+      </Tabs>
+      
+      {/* Submit Project Dialog */}
+      <Dialog open={isSubmitDialogOpen} onOpenChange={setIsSubmitDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Ներկայացնել նախագիծը ստուգման</DialogTitle>
+          </DialogHeader>
+          
+          <div className="space-y-4 py-4">
+            <p>
+              Նախագիծը ներկայացնելուց հետո այն կուղարկվի ձեր ղեկավարին ստուգման։
+              Ցանկանու՞մ եք շարունակել։
+            </p>
+            
+            <div className="space-y-2">
+              <Label htmlFor="submit-feedback">Լրացուցիչ տեղեկություններ (ոչ պարտադիր)</Label>
+              <Textarea
+                id="submit-feedback"
+                value={feedback}
+                onChange={(e) => setFeedback(e.target.value)}
+                placeholder="Գրեք լրացուցիչ նշումներ ղեկավարի համար..."
+                rows={3}
+              />
+            </div>
+          </div>
+          
+          <DialogFooter>
+            <Button 
+              variant="outline" 
+              onClick={() => setIsSubmitDialogOpen(false)}
+            >
+              Չեղարկել
+            </Button>
+            <Button
+              onClick={handleSubmitProject}
+            >
+              Ներկայացնել
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+      
+      {/* Approve Project Dialog */}
+      <Dialog open={isApproveDialogOpen} onOpenChange={setIsApproveDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Հաստատել նախագիծը</DialogTitle>
+          </DialogHeader>
+          
+          <div className="space-y-4 py-4">
+            <p>
+              Դուք պատրաստվում եք հաստատել այս նախագիծը։
+              Ցանկանու՞մ եք շարունակել։
+            </p>
+            
+            <div className="space-y-2">
+              <Label htmlFor="approve-feedback">Հետադարձ կապ (ոչ պարտադիր)</Label>
+              <Textarea
+                id="approve-feedback"
+                value={feedback}
+                onChange={(e) => setFeedback(e.target.value)}
+                placeholder="Գրեք ձեր կարծիքը նախագծի վերաբերյալ..."
+                rows={3}
+              />
+            </div>
+          </div>
+          
+          <DialogFooter>
+            <Button 
+              variant="outline" 
+              onClick={() => setIsApproveDialogOpen(false)}
+            >
+              Չեղարկել
+            </Button>
+            <Button
+              onClick={handleApproveProject}
+              className="bg-green-600 hover:bg-green-700"
+            >
+              Հաստատել
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+      
+      {/* Reject Project Dialog */}
+      <Dialog open={isRejectDialogOpen} onOpenChange={setIsRejectDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Մերժել նախագիծը</DialogTitle>
+          </DialogHeader>
+          
+          <div className="space-y-4 py-4">
+            <p>
+              Դուք պատրաստվում եք մերժել այս նախագիծը։
+              Խնդրում ենք նշել մերժման պատճառները։
+            </p>
+            
+            <div className="space-y-2">
+              <Label htmlFor="reject-feedback">Մերժման պատճառ</Label>
+              <Textarea
+                id="reject-feedback"
+                value={feedback}
+                onChange={(e) => setFeedback(e.target.value)}
+                placeholder="Նշեք մերժման պատճառները..."
+                rows={3}
+              />
+            </div>
+          </div>
+          
+          <DialogFooter>
+            <Button 
+              variant="outline" 
+              onClick={() => setIsRejectDialogOpen(false)}
+            >
+              Չեղարկել
+            </Button>
+            <Button
+              onClick={handleRejectProject}
+              className="bg-red-600 hover:bg-red-700"
+              disabled={!feedback}
+            >
+              Մերժել
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
