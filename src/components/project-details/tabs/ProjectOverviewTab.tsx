@@ -29,8 +29,8 @@ const ProjectOverviewTab: React.FC = () => {
     // Update project with new data
     const updatedData = {
       ...updates,
-      // Include goal only if it exists in the project type
-      ...(project.goal !== undefined && { goal: updates.goal })
+      // Include goal only if it exists in the project
+      ...(project.goal !== undefined && { goal: project.goal })
     };
     
     return await updateProject(updatedData);

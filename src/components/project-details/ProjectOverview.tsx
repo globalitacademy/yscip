@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { ProjectTheme } from '@/data/projectThemes';
 
@@ -23,6 +24,13 @@ const ProjectOverview: React.FC<ProjectOverviewProps> = ({
       {/* Project overview content will go here */}
       <h2 className="text-2xl font-bold">{project.title}</h2>
       <p>{project.description}</p>
+      
+      {project.goal && (
+        <div className="mt-4">
+          <h3 className="text-xl font-semibold mb-2">Նպատակ</h3>
+          <p>{project.goal}</p>
+        </div>
+      )}
       
       {/* Additional sections can be added here */}
     </div>

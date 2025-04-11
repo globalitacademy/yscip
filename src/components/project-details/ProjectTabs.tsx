@@ -28,7 +28,7 @@ interface ProjectTabsProps {
   approveProject: (feedback: string) => void;
   rejectProject: (feedback: string) => void;
   isEditing: boolean;
-  onSaveChanges: (updates: Partial<any>) => Promise<void>;
+  onSaveChanges: (updates: Partial<ProjectTheme>) => Promise<void>;
 }
 
 const ProjectTabs: React.FC<ProjectTabsProps> = ({
