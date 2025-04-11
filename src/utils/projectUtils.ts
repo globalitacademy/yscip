@@ -1,3 +1,4 @@
+
 import { v4 as uuidv4 } from 'uuid';
 import { ProjectTheme } from '@/data/projectThemes';
 import { getUsersByRole } from '@/data/userRoles';
@@ -5,7 +6,8 @@ import { getUsersByRole } from '@/data/userRoles';
 // Re-export utilities from specialized modules
 export { 
   generateSampleTimeline,
-  generateSampleTasks 
+  generateSampleTasks,
+  calculateProjectProgress 
 } from './projectProgressUtils';
 
 export type { 
@@ -20,11 +22,6 @@ export {
   updateReservationStatus,
   getAvailableSupervisors
 } from './reservationUtils';
-
-// Import calculateProjectProgress for internal use but don't re-export
-import { calculateProjectProgress } from './projectProgressUtils';
-// Re-export for backward compatibility
-export { calculateProjectProgress };
 
 // Filter projects by search query
 export const filterProjects = (

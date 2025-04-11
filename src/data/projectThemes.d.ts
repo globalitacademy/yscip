@@ -30,7 +30,8 @@ export interface TimelineEvent {
   id: string;
   title: string;
   date: string;
-  completed: boolean;
+  isCompleted: boolean;
+  description?: string;
 }
 
 /**
@@ -41,7 +42,7 @@ export interface Task {
   title: string;
   description?: string;
   assignedTo: string;
-  status: 'pending' | 'in_progress' | 'completed';
+  status: 'todo' | 'inProgress' | 'in-progress' | 'review' | 'done' | 'completed' | 'open';
   createdAt: string;
   completedAt?: string;
 }

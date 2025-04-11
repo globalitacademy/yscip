@@ -48,7 +48,7 @@ const ProjectImplementationTab: React.FC<ProjectImplementationTabProps> = ({
       addTimelineEvent({
         title: newEventTitle,
         date: newEventDate,
-        completed: false,
+        isCompleted: false,
       });
       setNewEventTitle('');
       setNewEventDate('');
@@ -61,7 +61,7 @@ const ProjectImplementationTab: React.FC<ProjectImplementationTabProps> = ({
         title: newTaskTitle,
         description: newTaskDescription,
         assignedTo: '',
-        status: 'pending',
+        status: 'todo',
         createdAt: new Date().toISOString(),
       });
       setNewTaskTitle('');
@@ -87,10 +87,12 @@ const ProjectImplementationTab: React.FC<ProjectImplementationTabProps> = ({
   const getStatusBadgeColor = (status: Task['status']) => {
     switch (status) {
       case 'completed':
+      case 'done':
         return theme === 'dark' 
           ? 'bg-green-700/40 text-green-300 hover:bg-green-700/60' 
           : 'bg-green-100 text-green-800 hover:bg-green-200';
-      case 'in_progress':
+      case 'inProgress':
+      case 'in-progress':
         return theme === 'dark' 
           ? 'bg-blue-700/40 text-blue-300 hover:bg-blue-700/60' 
           : 'bg-blue-100 text-blue-800 hover:bg-blue-200';
@@ -115,7 +117,7 @@ const ProjectImplementationTab: React.FC<ProjectImplementationTabProps> = ({
             <div className="relative pl-6 border-l border-dashed mb-6 space-y-6">
               {timeline.map((event, index) => (
                 <div key={index} className="relative">
-                  {event.completed ? (
+                  {event.isCompleted ? (
                     <CheckCircle 
                       className={`absolute -left-[25px] h-5 w-5 ${
                         theme === 'dark' ? 'text-green-400' : 'text-green-600'
@@ -135,7 +137,7 @@ const ProjectImplementationTab: React.FC<ProjectImplementationTabProps> = ({
                   }`}>
                     <span className="font-medium">{event.title}</span>
                     
-                    {!event.completed && isEditing && (
+                    {!event.isCompleted && isEditing && (
                       <Button
                         size="sm"
                         variant="outline"
@@ -231,8 +233,8 @@ const ProjectImplementationTab: React.FC<ProjectImplementationTabProps> = ({
                     <div className="flex items-center gap-2 text-left">
                       <span className="line-clamp-1">{task.title}</span>
                       <Badge className={getStatusBadgeColor(task.status)}>
-                        {task.status === 'completed' ? 'Ավարտված' : 
-                         task.status === 'in_progress' ? 'Ընթացքում' : 'Սպասում է'}
+                        {task.status === 'completed' || task.status === 'done' ? 'Ավարտված' : 
+                         task.status === 'inProgress' || task.status === 'in-progress' ? 'Ընթացքում' : 'Սպասում է'}
                       </Badge>
                     </div>
                   </AccordionTrigger>
@@ -251,25 +253,25 @@ const ProjectImplementationTab: React.FC<ProjectImplementationTabProps> = ({
                         <div className="flex gap-2 mt-4">
                           <Button
                             size="sm"
-                            variant={task.status === 'pending' ? 'default' : 'outline'}
-                            onClick={() => updateTaskStatus(task.id, 'pending')}
-                            className={`flex-1 ${task.status === 'pending' ? '' : 'border-gray-300'}`}
+                            variant={task.status === 'todo' || task.status === 'open' ? 'default' : 'outline'}
+                            onClick={() => updateTaskStatus(task.id, 'todo')}
+                            className={`flex-1 ${task.status === 'todo' || task.status === 'open' ? '' : 'border-gray-300'}`}
                           >
                             Սպասում
                           </Button>
                           <Button
                             size="sm"
-                            variant={task.status === 'in_progress' ? 'default' : 'outline'}
-                            onClick={() => updateTaskStatus(task.id, 'in_progress')}
-                            className={`flex-1 ${task.status === 'in_progress' ? '' : 'border-gray-300'}`}
+                            variant={task.status === 'inProgress' || task.status === 'in-progress' ? 'default' : 'outline'}
+                            onClick={() => updateTaskStatus(task.id, 'in-progress')}
+                            className={`flex-1 ${task.status === 'inProgress' || task.status === 'in-progress' ? '' : 'border-gray-300'}`}
                           >
                             Ընթացքում
                           </Button>
                           <Button
                             size="sm"
-                            variant={task.status === 'completed' ? 'default' : 'outline'}
+                            variant={task.status === 'completed' || task.status === 'done' ? 'default' : 'outline'}
                             onClick={() => updateTaskStatus(task.id, 'completed')}
-                            className={`flex-1 ${task.status === 'completed' ? '' : 'border-gray-300'}`}
+                            className={`flex-1 ${task.status === 'completed' || task.status === 'done' ? '' : 'border-gray-300'}`}
                           >
                             Ավարտված
                           </Button>

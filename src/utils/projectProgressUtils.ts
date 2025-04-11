@@ -14,12 +14,12 @@ export const calculateProjectProgress = (tasks: Task[], timeline: TimelineEvent[
   
   // Calculate task progress
   const taskProgress = tasks.length > 0
-    ? (tasks.filter(task => task.status === 'completed').length / tasks.length) * 100
+    ? (tasks.filter(task => task.status === 'completed' || task.status === 'done').length / tasks.length) * 100
     : 0;
     
   // Calculate timeline progress
   const timelineProgress = timeline.length > 0
-    ? (timeline.filter(event => event.completed).length / timeline.length) * 100
+    ? (timeline.filter(event => event.isCompleted).length / timeline.length) * 100
     : 0;
   
   // Average the two progress metrics (weighted if needed)
@@ -37,4 +37,69 @@ export const calculateProjectProgress = (tasks: Task[], timeline: TimelineEvent[
   ) / totalWeight;
   
   return Math.round(weightedProgress);
+};
+
+/**
+ * Generate sample timeline events for demonstration
+ */
+export const generateSampleTimeline = (): TimelineEvent[] => {
+  return [
+    {
+      id: '1',
+      title: 'Նախագիծը սկսված է',
+      date: '2023-09-01',
+      isCompleted: true
+    },
+    {
+      id: '2',
+      title: 'Պահանջների հավաքագրում',
+      date: '2023-09-15',
+      isCompleted: true
+    },
+    {
+      id: '3',
+      title: 'Նախագծի նախատիպ',
+      date: '2023-10-01',
+      isCompleted: false
+    },
+    {
+      id: '4',
+      title: 'Նախագծի ավարտ',
+      date: '2023-11-15',
+      isCompleted: false
+    }
+  ];
+};
+
+/**
+ * Generate sample tasks for demonstration
+ */
+export const generateSampleTasks = (userId: string): Task[] => {
+  return [
+    {
+      id: '1',
+      title: 'Պահանջների փաստաթուղթ',
+      description: 'Ստեղծել պահանջների փաստաթուղթ նախագծի համար',
+      assignedTo: userId,
+      status: 'completed',
+      createdAt: '2023-09-01',
+      completedAt: '2023-09-10'
+    },
+    {
+      id: '2',
+      title: 'Նախագծի նախատիպ',
+      description: 'Ստեղծել նախագծի նախատիպ',
+      assignedTo: userId,
+      status: 'in-progress',
+      createdAt: '2023-09-15'
+    },
+    {
+      id: '3',
+      title: 'Փորձարկում և որակի ապահովում',
+      description: 'Կատարել փորձարկում և որակի ապահովում',
+      assignedTo: '',
+      status: 'todo',
+      createdAt: '2023-09-20'
+    }
+  ];
 };
