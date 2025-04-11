@@ -5,8 +5,6 @@ import { getUsersByRole } from '@/data/userRoles';
 
 // Re-export utilities from specialized modules
 export { 
-  generateSampleTimeline,
-  generateSampleTasks,
   calculateProjectProgress 
 } from './projectProgressUtils';
 

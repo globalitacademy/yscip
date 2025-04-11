@@ -10,7 +10,7 @@ import EditableField from '../EditableField';
 interface ProjectResourcesTabProps {
   project: ProjectTheme;
   isEditing: boolean;
-  onSaveChanges: (updates: Partial<any>) => Promise<void>;
+  onSaveChanges: (updates: Partial<ProjectTheme>) => Promise<void>;
 }
 
 const ProjectResourcesTab: React.FC<ProjectResourcesTabProps> = ({

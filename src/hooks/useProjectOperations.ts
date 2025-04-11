@@ -1,4 +1,3 @@
-
 import { useState, useEffect, useCallback } from 'react';
 import { ProjectTheme } from '@/data/projectThemes';
 import * as projectService from '@/services/projectService';
@@ -16,7 +15,7 @@ export const useProjectOperations = () => {
   // Use React Query for data fetching with caching
   const { isLoading, data: fetchedProjects } = useQuery({
     queryKey: ['projects'],
-    queryFn: projectService.fetchProjects,
+    queryFn: () => projectService.fetchProjects(),
     staleTime: 5 * 60 * 1000, // 5 minutes
     refetchOnWindowFocus: false,
   });

@@ -82,7 +82,6 @@ export const generateSampleTasks = (userId: string): Task[] => {
       description: 'Ստեղծել պահանջների փաստաթուղթ նախագծի համար',
       assignedTo: userId,
       status: 'completed',
-      createdAt: '2023-09-01',
       completedAt: '2023-09-10'
     },
     {
@@ -90,16 +89,14 @@ export const generateSampleTasks = (userId: string): Task[] => {
       title: 'Նախագծի նախատիպ',
       description: 'Ստեղծել նախագծի նախատիպ',
       assignedTo: userId,
-      status: 'in-progress',
-      createdAt: '2023-09-15'
+      status: 'in-progress'
     },
     {
       id: '3',
       title: 'Փորձարկում և որակի ապահովում',
       description: 'Կատարել փորձարկում և որակի ապահովում',
       assignedTo: '',
-      status: 'todo',
-      createdAt: '2023-09-20'
+      status: 'todo'
     }
   ];
 };

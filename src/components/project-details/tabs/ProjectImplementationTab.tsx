@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { useTheme } from '@/hooks/use-theme';
 import { Task, TimelineEvent } from '@/data/projectThemes';
@@ -62,7 +61,6 @@ const ProjectImplementationTab: React.FC<ProjectImplementationTabProps> = ({
         description: newTaskDescription,
         assignedTo: '',
         status: 'todo',
-        createdAt: new Date().toISOString(),
       });
       setNewTaskTitle('');
       setNewTaskDescription('');
@@ -106,7 +104,6 @@ const ProjectImplementationTab: React.FC<ProjectImplementationTabProps> = ({
   return (
     <div className="space-y-8">
       <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-        {/* Timeline Section */}
         <Card className={theme === 'dark' ? 'bg-gray-800 border-gray-700' : ''}>
           <CardHeader>
             <CardTitle className={theme === 'dark' ? 'text-gray-100' : ''}>
@@ -163,7 +160,6 @@ const ProjectImplementationTab: React.FC<ProjectImplementationTabProps> = ({
               ))}
             </div>
             
-            {/* Add new timeline event */}
             {isEditing && (
               <div className={`mt-8 p-4 rounded ${
                 theme === 'dark' ? 'bg-gray-750 border-gray-600' : 'bg-gray-50 border-gray-200'
@@ -214,7 +210,6 @@ const ProjectImplementationTab: React.FC<ProjectImplementationTabProps> = ({
           </CardContent>
         </Card>
 
-        {/* Tasks Section */}
         <Card className={theme === 'dark' ? 'bg-gray-800 border-gray-700' : ''}>
           <CardHeader>
             <CardTitle className={theme === 'dark' ? 'text-gray-100' : ''}>
@@ -283,7 +278,6 @@ const ProjectImplementationTab: React.FC<ProjectImplementationTabProps> = ({
               ))}
             </Accordion>
             
-            {/* Add new task */}
             {isEditing && (
               <div className={`mt-8 p-4 rounded ${
                 theme === 'dark' ? 'bg-gray-750 border-gray-600' : 'bg-gray-50 border-gray-200'
@@ -335,7 +329,6 @@ const ProjectImplementationTab: React.FC<ProjectImplementationTabProps> = ({
         </Card>
       </div>
       
-      {/* Project Status Management */}
       <Card className={theme === 'dark' ? 'bg-gray-800 border-gray-700' : ''}>
         <CardHeader>
           <CardTitle className={theme === 'dark' ? 'text-gray-100' : ''}>

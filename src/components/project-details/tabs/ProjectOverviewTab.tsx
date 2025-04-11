@@ -11,7 +11,7 @@ import EditableField from '../EditableField';
 interface ProjectOverviewTabProps {
   project: ProjectTheme;
   isEditing: boolean;
-  onSaveChanges: (updates: Partial<any>) => Promise<void>;
+  onSaveChanges: (updates: Partial<ProjectTheme>) => Promise<void>;
 }
 
 const ProjectOverviewTab: React.FC<ProjectOverviewTabProps> = ({

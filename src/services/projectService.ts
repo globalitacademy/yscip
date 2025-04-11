@@ -4,6 +4,22 @@ import { projectThemes } from '@/data/projectThemes';
 import { toast } from 'sonner';
 
 /**
+ * Fetch all projects (mock implementation)
+ * @returns A promise that resolves to an array of projects
+ */
+export const fetchProjects = async (): Promise<ProjectTheme[]> => {
+  try {
+    // Simulate network delay
+    await new Promise(resolve => setTimeout(resolve, 500));
+    
+    return projectThemes;
+  } catch (error) {
+    console.error('Error fetching projects:', error);
+    return [];
+  }
+};
+
+/**
  * Update a project in the database (currently mock implementation)
  * @param projectId The ID of the project to update
  * @param updates The updated project data

@@ -43,6 +43,6 @@ export interface Task {
   description?: string;
   assignedTo: string;
   status: 'todo' | 'inProgress' | 'in-progress' | 'review' | 'done' | 'completed' | 'open';
-  createdAt: string;
+  createdAt?: string;
   completedAt?: string;
 }
