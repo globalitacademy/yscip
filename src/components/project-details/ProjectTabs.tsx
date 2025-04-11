@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useTheme } from '@/hooks/use-theme';
@@ -87,6 +86,7 @@ const ProjectTabs: React.FC<ProjectTabsProps> = ({
           submitProject={submitProject}
           approveProject={approveProject}
           rejectProject={rejectProject}
+          onSaveChanges={onSaveChanges}
         />
       </TabsContent>
       

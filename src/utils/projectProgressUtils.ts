@@ -1,84 +1,114 @@
 
-import { v4 as uuidv4 } from 'uuid';
 import { Task, TimelineEvent } from '@/data/projectThemes';
+import { v4 as uuidv4 } from 'uuid';
 
 /**
- * Calculate the project progress based on tasks and timeline events
+ * Calculate the progress percentage of a project based on completed tasks and timeline events
+ * @param tasks Array of project tasks
+ * @param timeline Array of timeline events
+ * @returns Progress percentage (0-100)
  */
 export const calculateProjectProgress = (tasks: Task[], timeline: TimelineEvent[]): number => {
   if (tasks.length === 0 && timeline.length === 0) {
     return 0;
   }
 
-  let totalItems = tasks.length + timeline.length;
   let completedItems = 0;
+  let totalItems = 0;
 
   // Count completed tasks
-  completedItems += tasks.filter(task => 
-    ['done', 'completed'].includes(task.status)
-  ).length;
+  if (tasks.length > 0) {
+    totalItems += tasks.length;
+    completedItems += tasks.filter(task => 
+      task.status === 'done' || 
+      task.status === 'completed'
+    ).length;
+  }
 
   // Count completed timeline events
-  completedItems += timeline.filter(event => 
-    event.isCompleted
-  ).length;
+  if (timeline.length > 0) {
+    totalItems += timeline.length;
+    completedItems += timeline.filter(event => event.isCompleted).length;
+  }
 
-  const progress = Math.round((completedItems / totalItems) * 100);
-  return Math.min(100, Math.max(0, progress)); // Ensure between 0-100
+  // Calculate percentage
+  return Math.round((completedItems / totalItems) * 100);
 };
 
 /**
- * Generate sample timeline events for demo purposes
+ * Generate sample timeline events for demonstration purposes
  */
 export const generateSampleTimeline = (): TimelineEvent[] => {
   return [
     {
       id: uuidv4(),
       title: 'Նախագծի սկիզբ',
-      date: new Date().toISOString(),
-      isCompleted: true,
-      description: 'Նախագիծը սկսված է'
+      date: new Date(Date.now() - 14 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
+      description: 'Նախագծի պլանավորման սկիզբ',
+      isCompleted: true
     },
     {
       id: uuidv4(),
-      title: 'Նախագծի պահանջների հավաքում',
-      date: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(),
-      isCompleted: false,
-      description: 'Նախագծի պահանջների հավաքման փուլ'
+      title: 'Նախագծի պահանջների սահմանում',
+      date: new Date(Date.now() - 10 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
+      description: 'Պահանջների վերլուծություն և փաստաթղթավորում',
+      isCompleted: true
     },
     {
       id: uuidv4(),
-      title: 'Նախագծի ավարտ',
-      date: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(),
-      isCompleted: false,
-      description: 'Նախագծի ավարտման վերջնաժամկետ'
+      title: 'Դիզայնի փուլ',
+      date: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
+      description: 'Նախագծի դիզայնի մշակում',
+      isCompleted: false
+    },
+    {
+      id: uuidv4(),
+      title: 'Իրականացման սկիզբ',
+      date: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
+      description: 'Կոդավորման աշխատանքների սկիզբ',
+      isCompleted: false
+    },
+    {
+      id: uuidv4(),
+      title: 'Թեստավորում',
+      date: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
+      description: 'Նախագծի թեստավորում',
+      isCompleted: false
     }
   ];
 };
 
 /**
- * Generate sample tasks for demo purposes
+ * Generate sample tasks for demonstration purposes
+ * @param userId User ID to assign some tasks to
  */
 export const generateSampleTasks = (userId: string): Task[] => {
   return [
     {
       id: uuidv4(),
-      title: 'Նախագծի պլանավորում',
-      description: 'Մշակել նախագծի ընդհանուր պլանը և ժամանակացույցը',
+      title: 'Նախագծի պահանջների վերլուծություն',
+      description: 'Հավաքել և վերլուծել բոլոր պահանջները',
       assignedTo: userId,
-      status: 'done'
+      status: 'completed'
     },
     {
       id: uuidv4(),
-      title: 'Ֆունկցիոնալ պահանջների նկարագրություն',
-      description: 'Կազմել ֆունկցիոնալ պահանջների նկարագրությունը',
+      title: 'Դիզայնի նախագծում',
+      description: 'Մշակել նախագծի դիզայնը և նախատիպերը',
       assignedTo: userId,
-      status: 'inProgress'
+      status: 'in-progress'
     },
     {
       id: uuidv4(),
-      title: 'Նախագծի իրականացում',
-      description: 'Նախագծի հիմնական մասի իրականացում',
+      title: 'Տվյալների բազայի մոդելավորում',
+      description: 'Մշակել տվյալների բազայի սխեման',
+      assignedTo: 'user2',
+      status: 'review'
+    },
+    {
+      id: uuidv4(),
+      title: 'Օգտագործողի միջերեսի մշակում',
+      description: 'Իրականացնել նախագծի գլխավոր էջերը',
       assignedTo: userId,
       status: 'todo'
     }

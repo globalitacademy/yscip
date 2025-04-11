@@ -18,6 +18,7 @@ import { ProjectTheme } from '@/data/projectThemes';
 import { useProject } from '@/contexts/ProjectContext';
 import { useAuth } from '@/contexts/AuthContext';
 import { useTheme } from '@/hooks/use-theme';
+import { getFormattedImageUrl, handleImageError } from '@/utils/imageUtils';
 
 interface ProjectHeaderBannerProps {
   project: ProjectTheme;
@@ -30,8 +31,16 @@ const ProjectHeaderBanner: React.FC<ProjectHeaderBannerProps> = ({ project }) =>
   const { theme } = useTheme();
   const [copied, setCopied] = useState(false);
 
-  // Get placeholder image if project image is missing
-  const projectImage = project.bannerImage || project.image || `https://source.unsplash.com/random/1200x400/?${project.category.toLowerCase()}`;
+  // Get properly formatted image URLs
+  const bannerImage = getFormattedImageUrl(
+    project.bannerImage || project.image, 
+    project.category
+  );
+  
+  const projectImage = getFormattedImageUrl(
+    project.image, 
+    project.category
+  );
   
   const handleEditToggle = () => {
     setIsEditing(!isEditing);
@@ -62,7 +71,8 @@ const ProjectHeaderBanner: React.FC<ProjectHeaderBannerProps> = ({ project }) =>
       {/* Banner Image */}
       <div 
         className="h-64 md:h-96 w-full bg-cover bg-center relative" 
-        style={{ backgroundImage: `url('${projectImage}')` }}
+        style={{ backgroundImage: `url('${bannerImage}')` }}
+        onError={(e) => handleImageError(e, project.category)}
       >
         <div className="absolute inset-0 bg-gradient-to-b from-transparent to-black opacity-70"></div>
       </div>
@@ -117,7 +127,11 @@ const ProjectHeaderBanner: React.FC<ProjectHeaderBannerProps> = ({ project }) =>
             <div className="hidden md:block flex-shrink-0">
               <div 
                 className="w-32 h-32 rounded-lg overflow-hidden border-4 border-white dark:border-gray-800 shadow-md"
-                style={{ backgroundImage: `url('${project.image || `https://source.unsplash.com/random/150x150/?${project.category.toLowerCase()}`}')`, backgroundSize: 'cover', backgroundPosition: 'center' }}
+                style={{ 
+                  backgroundImage: `url('${projectImage}')`, 
+                  backgroundSize: 'cover', 
+                  backgroundPosition: 'center' 
+                }}
               />
             </div>
             

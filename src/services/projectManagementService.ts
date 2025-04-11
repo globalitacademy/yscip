@@ -35,7 +35,7 @@ export async function createProject(project: Partial<ProjectTheme>, userId?: str
     implementationSteps: project.implementationSteps || [],
     organizationName: project.organizationName || '',
     detailedDescription: project.detailedDescription || '',
-    isPublic: project.isPublic || project.is_public || false,
+    isPublic: project.is_public || false,
     createdAt: project.createdAt || new Date().toISOString(),
     updatedAt: new Date().toISOString()
   };
