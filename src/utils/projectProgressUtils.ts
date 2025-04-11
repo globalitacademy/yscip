@@ -1,94 +1,40 @@
 
-import { v4 as uuidv4 } from 'uuid';
 import { Task, TimelineEvent } from '@/data/projectThemes';
 
-// Calculate project progress based on tasks and timeline
+/**
+ * Calculate the overall progress percentage of a project
+ * @param tasks The project's tasks
+ * @param timeline The project's timeline events
+ * @returns A number between 0 and 100 representing the progress percentage
+ */
 export const calculateProjectProgress = (tasks: Task[], timeline: TimelineEvent[]): number => {
-  if (tasks.length === 0 && timeline.length === 0) return 0;
-  
-  let completedItems = 0;
-  let totalItems = 0;
-  
-  // Count completed tasks
-  if (tasks.length > 0) {
-    totalItems += tasks.length;
-    completedItems += tasks.filter(task => 
-      task.status === 'done' || task.status === 'completed'
-    ).length;
+  if (tasks.length === 0 && timeline.length === 0) {
+    return 0;
   }
   
-  // Count completed timeline events
-  if (timeline.length > 0) {
-    totalItems += timeline.length;
-    completedItems += timeline.filter(event => event.isCompleted).length;
+  // Calculate task progress
+  const taskProgress = tasks.length > 0
+    ? (tasks.filter(task => task.status === 'completed').length / tasks.length) * 100
+    : 0;
+    
+  // Calculate timeline progress
+  const timelineProgress = timeline.length > 0
+    ? (timeline.filter(event => event.completed).length / timeline.length) * 100
+    : 0;
+  
+  // Average the two progress metrics (weighted if needed)
+  const weightTasks = tasks.length > 0 ? 0.6 : 0;
+  const weightTimeline = timeline.length > 0 ? 0.4 : 0;
+  
+  if (weightTasks === 0 && weightTimeline === 0) {
+    return 0;
   }
   
-  return Math.round((completedItems / totalItems) * 100);
-};
-
-// Generate sample timeline events for demo
-export const generateSampleTimeline = (): TimelineEvent[] => {
-  const now = new Date();
-  const oneWeekLater = new Date(now);
-  oneWeekLater.setDate(now.getDate() + 7);
+  const totalWeight = weightTasks + weightTimeline;
+  const weightedProgress = (
+    (taskProgress * weightTasks) + 
+    (timelineProgress * weightTimeline)
+  ) / totalWeight;
   
-  const twoWeeksLater = new Date(now);
-  twoWeeksLater.setDate(now.getDate() + 14);
-  
-  return [
-    {
-      id: uuidv4(),
-      title: 'Նախագծի մեկնարկ',
-      date: now.toISOString().split('T')[0],
-      description: 'Նախագծի պահանջների քննարկում և պլանավորում',
-      isCompleted: true
-    },
-    {
-      id: uuidv4(),
-      title: 'Ծրագրային պահանջների կազմում',
-      date: oneWeekLater.toISOString().split('T')[0],
-      description: 'Ծրագրային պահանջների վերլուծություն և փաստաթղթավորում',
-      isCompleted: false
-    },
-    {
-      id: uuidv4(),
-      title: 'Նախնական նախատիպի ստեղծում',
-      date: twoWeeksLater.toISOString().split('T')[0],
-      description: 'Նախագծի նախնական տարբերակի մշակում',
-      isCompleted: false
-    }
-  ];
-};
-
-// Generate sample tasks for demo
-export const generateSampleTasks = (userId: string): Task[] => {
-  return [
-    {
-      id: uuidv4(),
-      title: 'Տեխնիկական առաջադրանքի կազմում',
-      description: 'Նախագծի տեխնիկական առաջադրանքի մշակում և կազմում',
-      status: 'done',
-      assignee: userId,
-      assignedTo: userId,
-      dueDate: new Date().toISOString().split('T')[0]
-    },
-    {
-      id: uuidv4(),
-      title: 'Ճարտարապետության մշակում',
-      description: 'Նախագծի ճարտարապետության նախագծում և սխեմատիկ պատկերում',
-      status: 'inProgress',
-      assignee: userId,
-      assignedTo: userId,
-      dueDate: new Date().toISOString().split('T')[0]
-    },
-    {
-      id: uuidv4(),
-      title: 'UI/UX դիզայն',
-      description: 'Օգտագործողի միջերեսի նախատիպի մշակում',
-      status: 'todo',
-      assignee: userId,
-      assignedTo: userId,
-      dueDate: new Date().toISOString().split('T')[0]
-    }
-  ];
+  return Math.round(weightedProgress);
 };

@@ -1,157 +1,108 @@
 
-import { supabase } from '@/integrations/supabase/client';
 import { ProjectTheme } from '@/data/projectThemes';
+import { projectThemes } from '@/data/projectThemes';
 import { toast } from 'sonner';
 
-// Fetch all projects from Supabase
-export const fetchProjects = async (): Promise<ProjectTheme[]> => {
+/**
+ * Update a project in the database (currently mock implementation)
+ * @param projectId The ID of the project to update
+ * @param updates The updated project data
+ * @returns A boolean indicating success or failure
+ */
+export const updateProject = async (
+  projectId: number, 
+  updates: Partial<ProjectTheme>
+): Promise<boolean> => {
   try {
-    const { data, error } = await supabase
-      .from('projects')
-      .select('*')
-      .order('created_at', { ascending: false });
-
-    if (error) {
-      console.error('Error fetching projects:', error);
-      return [];
+    console.log(`Updating project ${projectId} with:`, updates);
+    
+    // This is a mock implementation - in a real app, this would be an API call
+    // For now, we'll update our in-memory array and simulate success
+    const projectIndex = projectThemes.findIndex(p => p.id === projectId);
+    
+    if (projectIndex === -1) {
+      console.error(`Project with ID ${projectId} not found`);
+      return false;
     }
-
-    // Map Supabase data to ProjectTheme format
-    return data.map(project => ({
-      id: project.id,
-      title: project.title,
-      description: project.description,
-      image: project.image || `https://source.unsplash.com/random/800x600/?${encodeURIComponent(project.category)}`,
-      category: project.category,
-      techStack: project.tech_stack || [],
-      complexity: project.complexity || 'Միջին', // Add a default value
-      duration: project.duration || 'Չսահմանված', // Provide a default
-      createdBy: project.created_by || 'system',
-      createdAt: project.created_at,
-      updatedAt: project.updated_at || project.created_at,
-      is_public: project.is_public,
-      steps: project.steps || [],
-      prerequisites: project.prerequisites || [],
-      learningOutcomes: project.learning_outcomes || [],
-      organizationName: project.organization_name,
-      detailedDescription: project.description // Use description as fallback
-    }));
-  } catch (error) {
-    console.error('Error in fetchProjects:', error);
-    return [];
-  }
-};
-
-// Create a new project in Supabase
-export const createProject = async (project: ProjectTheme): Promise<boolean> => {
-  try {
-    // Ensure all required fields are present
-    const projectToCreate = {
-      title: project.title,
-      description: project.detailedDescription || project.description, // Use detailed description for the description field
-      image: project.image,
-      category: project.category,
-      tech_stack: project.techStack || [],
-      created_by: project.createdBy || 'system',
-      created_at: project.createdAt || new Date().toISOString(),
-      updated_at: project.updatedAt || new Date().toISOString(),
-      duration: project.duration || 'Չսահմանված', // Provide a default
-      complexity: project.complexity || 'Միջին', // Provide a default
-      steps: project.steps || [],
-      prerequisites: project.prerequisites || [],
-      learning_outcomes: project.learningOutcomes || [],
-      is_public: project.is_public || false,
-      organization_name: project.organizationName || null
+    
+    // Update the project in memory
+    projectThemes[projectIndex] = {
+      ...projectThemes[projectIndex],
+      ...updates,
+      updatedAt: new Date().toISOString()
     };
-
-    const { error } = await supabase
-      .from('projects')
-      .insert(projectToCreate);
-
-    if (error) {
-      console.error('Error creating project:', error);
-      toast.error('Նախագծի ստեղծման ժամանակ սխալ է տեղի ունեցել');
-      return false;
-    }
-
-    toast.success('Նախագիծը հաջողությամբ ստեղծվել է');
+    
+    // Simulate network delay
+    await new Promise(resolve => setTimeout(resolve, 500));
+    
     return true;
   } catch (error) {
-    console.error('Error in createProject:', error);
-    toast.error('Նախագծի ստեղծման ժամանակ սխալ է տեղի ունեցել');
+    console.error('Error updating project:', error);
     return false;
   }
 };
 
-// Update an existing project
-export const updateProject = async (id: number, updatedData: Partial<ProjectTheme>): Promise<boolean> => {
+/**
+ * Delete a project from the database (currently mock implementation)
+ * @param projectId The ID of the project to delete
+ * @returns A boolean indicating success or failure
+ */
+export const deleteProject = async (projectId: number): Promise<boolean> => {
   try {
-    console.log('Updating project with data:', updatedData);
+    console.log(`Deleting project ${projectId}`);
     
-    // Map from ProjectTheme to Supabase column names
-    const dataToUpdate: any = {};
+    // This is a mock implementation - in a real app, this would be an API call
+    const projectIndex = projectThemes.findIndex(p => p.id === projectId);
     
-    if (updatedData.title !== undefined) dataToUpdate.title = updatedData.title;
-    if (updatedData.description !== undefined) dataToUpdate.description = updatedData.description;
-    // If detailedDescription is provided, update the description field
-    if (updatedData.detailedDescription !== undefined) dataToUpdate.description = updatedData.detailedDescription;
-    if (updatedData.image !== undefined) dataToUpdate.image = updatedData.image;
-    if (updatedData.category !== undefined) dataToUpdate.category = updatedData.category;
-    if (updatedData.techStack !== undefined) dataToUpdate.tech_stack = updatedData.techStack;
-    if (updatedData.duration !== undefined) dataToUpdate.duration = updatedData.duration;
-    if (updatedData.complexity !== undefined) dataToUpdate.complexity = updatedData.complexity;
-    if (updatedData.steps !== undefined) dataToUpdate.steps = updatedData.steps;
-    if (updatedData.prerequisites !== undefined) dataToUpdate.prerequisites = updatedData.prerequisites;
-    if (updatedData.learningOutcomes !== undefined) dataToUpdate.learning_outcomes = updatedData.learningOutcomes;
-    if (updatedData.is_public !== undefined) dataToUpdate.is_public = updatedData.is_public;
-    if (updatedData.organizationName !== undefined) dataToUpdate.organization_name = updatedData.organizationName;
-    
-    // Always update the 'updated_at' timestamp
-    dataToUpdate.updated_at = new Date().toISOString();
-
-    console.log('Mapped data to update:', dataToUpdate);
-
-    // UNCOMMENT AND USE REAL SUPABASE IMPLEMENTATION
-    const { error } = await supabase
-      .from('projects')
-      .update(dataToUpdate)
-      .eq('id', id);
-
-    if (error) {
-      console.error('Error updating project:', error);
-      toast.error('Նախագծի թարմացման ժամանակ սխալ է տեղի ունեցել');
+    if (projectIndex === -1) {
+      console.error(`Project with ID ${projectId} not found`);
       return false;
     }
     
-    console.log('Project updated successfully');
-    toast.success('Նախագիծը հաջողությամբ թարմացվել է');
+    // Remove the project from memory
+    projectThemes.splice(projectIndex, 1);
+    
+    // Simulate network delay
+    await new Promise(resolve => setTimeout(resolve, 500));
+    
     return true;
   } catch (error) {
-    console.error('Error in updateProject:', error);
-    toast.error('Նախագծի թարմացման ժամանակ սխալ է տեղի ունեցել');
+    console.error('Error deleting project:', error);
     return false;
   }
 };
 
-// Delete a project
-export const deleteProject = async (id: number): Promise<boolean> => {
+/**
+ * Create a new project in the database (currently mock implementation)
+ * @param projectData The project data to create
+ * @returns The created project or null if there was an error
+ */
+export const createProject = async (
+  projectData: Omit<ProjectTheme, 'id'>
+): Promise<ProjectTheme | null> => {
   try {
-    const { error } = await supabase
-      .from('projects')
-      .delete()
-      .eq('id', id);
-
-    if (error) {
-      console.error('Error deleting project:', error);
-      toast.error('Նախագծի ջնջման ժամանակ սխալ է տեղի ունեցել');
-      return false;
-    }
-
-    toast.success('Նախագիծը հաջողությամբ ջնջվել է');
-    return true;
+    console.log('Creating new project:', projectData);
+    
+    // Generate a new ID for the project
+    const newId = Math.max(...projectThemes.map(p => p.id)) + 1;
+    
+    // Create the new project
+    const newProject: ProjectTheme = {
+      ...projectData,
+      id: newId,
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString()
+    };
+    
+    // Add the project to memory
+    projectThemes.push(newProject);
+    
+    // Simulate network delay
+    await new Promise(resolve => setTimeout(resolve, 500));
+    
+    return newProject;
   } catch (error) {
-    console.error('Error in deleteProject:', error);
-    toast.error('Նախագծի ջնջման ժամանակ սխալ է տեղի ունեցել');
-    return false;
+    console.error('Error creating project:', error);
+    return null;
   }
 };
