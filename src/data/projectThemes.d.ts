@@ -1,56 +1,42 @@
 
-/**
- * Type definition for the project theme data
- */
+import { User } from "@/types/user";
+
 export interface ProjectTheme {
   id: number;
   title: string;
   description: string;
   category: string;
-  image?: string;
-  techStack: string[];
-  difficulty: 'easy' | 'medium' | 'hard' | 'expert';
-  duration: string;
+  image: string;
+  bannerImage?: string;
+  complexity: string;
+  technologies: string[];
+  duration: string; // e.g. "2-3 weeks"
   createdBy?: string;
-  is_public?: boolean;
+  organization?: string;
   organizationName?: string;
+  institution?: string;
+  isPublic?: boolean;
   similarProjects?: ProjectTheme[];
   goal?: string;
-  requirements?: string[];
   resources?: { name: string; url: string }[];
   links?: { name: string; url: string }[];
-  createdAt?: string;
-  updatedAt?: string;
-  // Additional properties needed
-  detailedDescription?: string;
-  steps?: string[];
-  prerequisites?: string[];
-  learningOutcomes?: string[];
-  timeline?: TimelineEvent[];
-  tasks?: Task[];
-  complexity?: string;
+  implementationSteps?: { step: string; description: string }[];
+  requirements?: string[];
+  difficulty?: string;
 }
 
-/**
- * Type definition for timeline events in the project
- */
-export interface TimelineEvent {
+export type TimelineEvent = {
   id: string;
   title: string;
   date: string;
-  isCompleted: boolean;
   description?: string;
-}
+  isCompleted?: boolean;
+};
 
-/**
- * Type definition for project tasks
- */
-export interface Task {
+export type Task = {
   id: string;
   title: string;
   description?: string;
   assignedTo: string;
   status: 'todo' | 'inProgress' | 'in-progress' | 'review' | 'done' | 'completed' | 'open';
-  createdAt?: string;
-  completedAt?: string;
-}
+};

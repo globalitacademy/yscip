@@ -1,532 +1,429 @@
-import { ProjectTheme, Task, TimelineEvent } from '@/data/projectThemes';
-import { projectThemes } from '@/data/projectThemes';
+
+import { Project, ProjectReservation } from '@/types/project';
+import { ProjectTheme, TimelineEvent, Task } from '@/data/projectThemes';
 import { toast } from 'sonner';
 import { v4 as uuidv4 } from 'uuid';
-import { supabase } from '@/integrations/supabase/client';
+import { loadProjectReservations, saveProjectReservations } from '@/utils/projectUtils';
 
-// Helper function to simulate API delay
-const delay = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
-
-// Helper function to map database project to ProjectTheme
-const mapDbProjectToProjectTheme = (dbProject: any): ProjectTheme => {
-  return {
-    id: dbProject.id,
-    title: dbProject.title,
-    description: dbProject.description,
-    category: dbProject.category,
-    image: dbProject.image,
-    techStack: dbProject.tech_stack || [],
-    difficulty: dbProject.difficulty || 'medium',
-    duration: dbProject.duration || '',
-    createdBy: dbProject.created_by,
-    is_public: dbProject.is_public,
-    organizationName: dbProject.organization_name,
-    goal: dbProject.goal,
-    resources: dbProject.resources || [],
-    links: dbProject.links || [],
-    detailedDescription: dbProject.detailed_description,
-    requirements: dbProject.requirements || [],
-    steps: dbProject.steps || [],
-    prerequisites: dbProject.prerequisites || [],
-    learningOutcomes: dbProject.learning_outcomes || [],
-    createdAt: dbProject.created_at,
-    updatedAt: dbProject.updated_at,
-    complexity: dbProject.complexity || 'Միջին'
+/**
+ * Mock function to simulate saving a project to the database
+ */
+export async function saveProject(project: Partial<ProjectTheme>): Promise<ProjectTheme> {
+  // Simulate API delay
+  await new Promise(resolve => setTimeout(resolve, 500));
+  
+  // Get existing projects from localStorage or create empty array
+  const projectsJson = localStorage.getItem('projects');
+  const projects: ProjectTheme[] = projectsJson ? JSON.parse(projectsJson) : [];
+  
+  // Create new project with default values
+  const newProject: ProjectTheme = {
+    id: projects.length + 1,
+    title: project.title || 'New Project',
+    description: project.description || '',
+    category: project.category || 'Web Development',
+    image: project.image || '/placeholder.svg',
+    complexity: project.complexity || 'Միջին',
+    technologies: project.technologies || [],
+    duration: project.duration || '2-3 շաբաթ',
+    createdBy: project.createdBy || '',
+    goal: project.goal || '',
+    resources: project.resources || [],
+    links: project.links || [],
+    requirements: project.requirements || [],
+    difficulty: project.difficulty || 'Միջին'
   };
-};
-
-// Helper function to map timeline events
-const mapDbTimelineEventsToTimelineEvents = (dbEvents: any[]): TimelineEvent[] => {
-  return dbEvents.map(event => ({
-    id: String(event.id),
-    title: event.title,
-    date: event.date,
-    isCompleted: event.completed,
-    description: event.description
-  }));
-};
-
-// Helper function to map tasks
-const mapDbTasksToTasks = (dbTasks: any[]): Task[] => {
-  return dbTasks.map(task => ({
-    id: String(task.id),
-    title: task.title,
-    description: task.description,
-    assignedTo: task.assigned_to,
-    status: task.status as Task['status'],
-    createdAt: task.created_at,
-    completedAt: task.completed_at
-  }));
-};
+  
+  // Add new project to array
+  projects.push(newProject);
+  
+  // Save updated array to localStorage
+  localStorage.setItem('projects', JSON.stringify(projects));
+  
+  return newProject;
+}
 
 /**
- * Get all projects
+ * Mock function to simulate getting a project from the database by ID
  */
-export const getAllProjects = async (): Promise<ProjectTheme[]> => {
-  try {
-    // If Supabase is available, try to get projects from the database
-    if (supabase) {
-      const { data, error } = await supabase
-        .from('projects')
-        .select('*')
-        .order('created_at', { ascending: false });
-      
-      if (error) throw error;
-      
-      // Map database results to ProjectTheme objects
-      if (data) {
-        return data.map(dbProject => mapDbProjectToProjectTheme(dbProject));
-      }
-    }
-    
-    // Fallback to local data
-    return projectThemes;
-  } catch (error) {
-    console.error('Error fetching projects:', error);
-    // Fallback to local data
-    return projectThemes;
+export async function getProjectById(projectId: number): Promise<ProjectTheme | null> {
+  // Simulate API delay
+  await new Promise(resolve => setTimeout(resolve, 300));
+  
+  // Get projects from localStorage
+  const projectsJson = localStorage.getItem('projects');
+  
+  if (!projectsJson) {
+    return null;
   }
-};
+  
+  const projects: ProjectTheme[] = JSON.parse(projectsJson);
+  const project = projects.find(p => p.id === projectId);
+  
+  return project || null;
+}
 
 /**
- * Get a project by ID
+ * Adds a new timeline event to a project
  */
-export const getProjectById = async (id: number): Promise<ProjectTheme | null> => {
-  try {
-    // If Supabase is available, try to get the project from the database
-    if (supabase) {
-      const { data, error } = await supabase
-        .from('projects')
-        .select('*, timeline_events(*), tasks(*)')
-        .eq('id', id)
-        .single();
-      
-      if (error) {
-        // If not found in database, try to find in local data
-        const localProject = projectThemes.find(p => p.id === id);
-        if (localProject) return localProject;
-        throw error;
-      }
-      
-      if (data) {
-        const project = mapDbProjectToProjectTheme(data);
-        
-        // Add timeline events and tasks if available
-        if (data.timeline_events) {
-          project.timeline = mapDbTimelineEventsToTimelineEvents(data.timeline_events);
-        }
-        
-        if (data.tasks) {
-          project.tasks = mapDbTasksToTasks(data.tasks);
-        }
-        
-        return project;
-      }
-    }
-    
-    // Fallback to local data
-    return projectThemes.find(p => p.id === id) || null;
-  } catch (error) {
-    console.error(`Error fetching project with ID ${id}:`, error);
-    // Fallback to local data
-    return projectThemes.find(p => p.id === id) || null;
+export async function addTimelineEvent(
+  projectId: number,
+  event: Omit<TimelineEvent, 'id'>
+): Promise<TimelineEvent> {
+  // Simulate API delay
+  await new Promise(resolve => setTimeout(resolve, 300));
+  
+  // Create new event with UUID
+  const newEvent: TimelineEvent = {
+    id: uuidv4(),
+    ...event,
+    isCompleted: false
+  };
+  
+  // Get existing timeline from localStorage or create empty array
+  const timelineJson = localStorage.getItem(`project-${projectId}-timeline`);
+  const timeline: TimelineEvent[] = timelineJson ? JSON.parse(timelineJson) : [];
+  
+  // Add new event to array
+  timeline.push(newEvent);
+  
+  // Save updated array to localStorage
+  localStorage.setItem(`project-${projectId}-timeline`, JSON.stringify(timeline));
+  
+  return newEvent;
+}
+
+/**
+ * Marks a timeline event as completed
+ */
+export async function completeTimelineEvent(
+  projectId: number,
+  eventId: string
+): Promise<void> {
+  // Simulate API delay
+  await new Promise(resolve => setTimeout(resolve, 300));
+  
+  // Get existing timeline from localStorage
+  const timelineJson = localStorage.getItem(`project-${projectId}-timeline`);
+  
+  if (!timelineJson) {
+    throw new Error('Timeline not found');
   }
-};
+  
+  const timeline: TimelineEvent[] = JSON.parse(timelineJson);
+  const updatedTimeline = timeline.map(event => {
+    if (event.id === eventId) {
+      return { ...event, isCompleted: true };
+    }
+    return event;
+  });
+  
+  // Save updated array to localStorage
+  localStorage.setItem(`project-${projectId}-timeline`, JSON.stringify(updatedTimeline));
+}
 
 /**
- * Create a new project
+ * Retrieves the timeline for a project
  */
-export const createProject = async (project: Partial<ProjectTheme>, userId?: string): Promise<ProjectTheme> => {
-  try {
-    const newProject = {
-      ...project,
-      id: Math.max(0, ...projectThemes.map(p => p.id)) + 1,
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
-      createdBy: userId || 'user_id',
-      techStack: project.techStack || [],
-      is_public: project.is_public || false,
-      difficulty: project.difficulty || 'medium'
-    } as ProjectTheme;
-    
-    if (supabase) {
-      const { data, error } = await supabase
-        .from('projects')
-        .insert({
-          title: newProject.title,
-          description: newProject.description,
-          category: newProject.category,
-          image: newProject.image,
-          tech_stack: newProject.techStack,
-          difficulty: newProject.difficulty,
-          created_by: newProject.createdBy,
-          is_public: newProject.is_public,
-          organization_name: newProject.organizationName,
-          goal: newProject.goal,
-          resources: newProject.resources,
-          links: newProject.links,
-          detailed_description: newProject.detailedDescription,
-          requirements: newProject.requirements,
-          steps: newProject.steps,
-          prerequisites: newProject.prerequisites,
-          learning_outcomes: newProject.learningOutcomes,
-          complexity: newProject.complexity,
-          duration: newProject.duration
-        })
-        .select()
-        .single();
-      
-      if (error) throw error;
-      
-      if (data) {
-        toast.success('Նախագիծը հաջողությամբ ստեղծվել է');
-        return {
-          ...newProject,
-          id: data.id
-        };
-      }
-    }
-    
-    // Fallback to local implementation
-    projectThemes.push(newProject);
-    toast.success('Նախագիծը հաջողությամբ ստեղծվել է');
-    return newProject;
-  } catch (error) {
-    console.error('Error creating project:', error);
-    toast.error('Սխալ նախագծի ստեղծման ժամանակ');
-    throw error;
+export async function getProjectTimeline(projectId: number): Promise<TimelineEvent[]> {
+  // Simulate API delay
+  await new Promise(resolve => setTimeout(resolve, 300));
+  
+  // Get existing timeline from localStorage or return empty array
+  const timelineJson = localStorage.getItem(`project-${projectId}-timeline`);
+  return timelineJson ? JSON.parse(timelineJson) : [];
+}
+
+/**
+ * Adds a new task to a project
+ */
+export async function addTask(
+  projectId: number,
+  task: Omit<Task, 'id'>
+): Promise<Task> {
+  // Simulate API delay
+  await new Promise(resolve => setTimeout(resolve, 300));
+  
+  // Create new task with UUID
+  const newTask: Task = {
+    id: uuidv4(),
+    ...task
+  };
+  
+  // Get existing tasks from localStorage or create empty array
+  const tasksJson = localStorage.getItem(`project-${projectId}-tasks`);
+  const tasks: Task[] = tasksJson ? JSON.parse(tasksJson) : [];
+  
+  // Add new task to array
+  tasks.push(newTask);
+  
+  // Save updated array to localStorage
+  localStorage.setItem(`project-${projectId}-tasks`, JSON.stringify(tasks));
+  
+  return newTask;
+}
+
+/**
+ * Updates the status of a task
+ */
+export async function updateTaskStatus(
+  projectId: number,
+  taskId: string,
+  status: Task['status']
+): Promise<void> {
+  // Simulate API delay
+  await new Promise(resolve => setTimeout(resolve, 300));
+  
+  // Get existing tasks from localStorage
+  const tasksJson = localStorage.getItem(`project-${projectId}-tasks`);
+  
+  if (!tasksJson) {
+    throw new Error('Tasks not found');
   }
-};
+  
+  const tasks: Task[] = JSON.parse(tasksJson);
+  const updatedTasks = tasks.map(task => {
+    if (task.id === taskId) {
+      return { ...task, status };
+    }
+    return task;
+  });
+  
+  // Save updated array to localStorage
+  localStorage.setItem(`project-${projectId}-tasks`, JSON.stringify(updatedTasks));
+}
 
 /**
- * Update an existing project
+ * Retrieves the tasks for a project
  */
-export const updateProject = async (projectId: number, updates: Partial<ProjectTheme>): Promise<ProjectTheme> => {
-  try {
-    // Find the project in local data first
-    const projectIndex = projectThemes.findIndex(p => p.id === projectId);
-    if (projectIndex === -1) {
-      throw new Error(`Project with ID ${projectId} not found`);
-    }
-    
-    // Update the project in local data
-    const updatedProject = {
-      ...projectThemes[projectIndex],
-      ...updates,
-      updatedAt: new Date().toISOString()
-    };
-    
-    if (supabase) {
-      // Create a database-friendly object with snake_case keys
-      const dbUpdates: any = {
-        title: updates.title,
-        description: updates.description,
-        category: updates.category,
-        image: updates.image,
-        tech_stack: updates.techStack,
-        difficulty: updates.difficulty,
-        is_public: updates.is_public,
-        organization_name: updates.organizationName,
-        goal: updates.goal,
-        resources: updates.resources,
-        links: updates.links,
-        detailed_description: updates.detailedDescription,
-        requirements: updates.requirements,
-        steps: updates.steps,
-        prerequisites: updates.prerequisites,
-        learning_outcomes: updates.learningOutcomes,
-        complexity: updates.complexity,
-        duration: updates.duration,
-        updated_at: new Date().toISOString()
-      };
-      
-      // Remove undefined values
-      Object.keys(dbUpdates).forEach(key => {
-        if (dbUpdates[key] === undefined) {
-          delete dbUpdates[key];
-        }
-      });
-      
-      const { error } = await supabase
-        .from('projects')
-        .update(dbUpdates)
-        .eq('id', projectId);
-      
-      if (error) throw error;
-    }
-    
-    // Update local data
-    projectThemes[projectIndex] = updatedProject;
-    toast.success('Նախագիծը հաջողությամբ թարմացվել է');
-    return updatedProject;
-  } catch (error) {
-    console.error(`Error updating project with ID ${projectId}:`, error);
-    toast.error('Սխալ նախագծի թարմացման ժամանակ');
-    throw error;
-  }
-};
+export async function getProjectTasks(projectId: number): Promise<Task[]> {
+  // Simulate API delay
+  await new Promise(resolve => setTimeout(resolve, 300));
+  
+  // Get existing tasks from localStorage or return empty array
+  const tasksJson = localStorage.getItem(`project-${projectId}-tasks`);
+  return tasksJson ? JSON.parse(tasksJson) : [];
+}
 
 /**
- * Delete a project
+ * Updates a project's status
  */
-export const deleteProject = async (projectId: number): Promise<boolean> => {
-  try {
-    if (supabase) {
-      const { error } = await supabase
-        .from('projects')
-        .delete()
-        .eq('id', projectId);
-      
-      if (error) throw error;
-    }
-    
-    // Always update local data
-    const projectIndex = projectThemes.findIndex(p => p.id === projectId);
-    if (projectIndex !== -1) {
-      projectThemes.splice(projectIndex, 1);
-    }
-    
-    toast.success('Նախագիծը հաջողությամբ ջնջվել է');
-    return true;
-  } catch (error) {
-    console.error(`Error deleting project with ID ${projectId}:`, error);
-    toast.error('Սխալ նախագծի ջնջման ժամանակ');
-    return false;
-  }
-};
-
-/**
- * Add a timeline event to a project
- */
-export const addTimelineEvent = async (projectId: number, event: Omit<TimelineEvent, 'id'>): Promise<TimelineEvent> => {
-  try {
-    const newEvent = {
-      ...event,
-      id: uuidv4()
-    };
-    
-    if (supabase) {
-      const { data, error } = await supabase
-        .from('timeline_events')
-        .insert({
-          project_id: projectId,
-          title: newEvent.title,
-          description: newEvent.description,
-          date: newEvent.date,
-          completed: newEvent.isCompleted
-        })
-        .select()
-        .single();
-      
-      if (error) throw error;
-      
-      if (data) {
-        return {
-          id: String(data.id),
-          title: data.title,
-          description: data.description,
-          date: data.date,
-          isCompleted: data.completed
-        };
-      }
-    }
-    
-    // Fallback to local implementation
-    const projectIndex = projectThemes.findIndex(p => p.id === projectId);
-    if (projectIndex === -1) {
-      throw new Error(`Project with ID ${projectId} not found`);
-    }
-    
-    if (!projectThemes[projectIndex].timeline) {
-      projectThemes[projectIndex].timeline = [];
-    }
-    
-    projectThemes[projectIndex].timeline!.push(newEvent);
-    return newEvent;
-  } catch (error) {
-    console.error(`Error adding timeline event to project ${projectId}:`, error);
-    throw error;
-  }
-};
-
-/**
- * Complete a timeline event
- */
-export const completeTimelineEvent = async (projectId: number, eventId: string): Promise<TimelineEvent> => {
-  try {
-    if (supabase) {
-      const { data, error } = await supabase
-        .from('timeline_events')
-        .update({ completed: true })
-        .eq('id', eventId)
-        .select()
-        .single();
-      
-      if (error) throw error;
-      
-      if (data) {
-        return {
-          id: String(data.id),
-          title: data.title,
-          description: data.description,
-          date: data.date,
-          isCompleted: data.completed
-        };
-      }
-    }
-    
-    // Fallback to local implementation
-    const projectIndex = projectThemes.findIndex(p => p.id === projectId);
-    if (projectIndex === -1) {
-      throw new Error(`Project with ID ${projectId} not found`);
-    }
-    
-    if (!projectThemes[projectIndex].timeline) {
-      throw new Error(`Project with ID ${projectId} has no timeline`);
-    }
-    
-    const eventIndex = projectThemes[projectIndex].timeline!.findIndex(e => e.id === eventId);
-    if (eventIndex === -1) {
-      throw new Error(`Event with ID ${eventId} not found in project ${projectId}`);
-    }
-    
-    projectThemes[projectIndex].timeline![eventIndex].isCompleted = true;
-    return projectThemes[projectIndex].timeline![eventIndex];
-  } catch (error) {
-    console.error(`Error completing timeline event ${eventId} in project ${projectId}:`, error);
-    throw error;
-  }
-};
-
-/**
- * Add a task to a project
- */
-export const addTask = async (projectId: number, task: Omit<Task, 'id'>): Promise<Task> => {
-  try {
-    const newTask = {
-      ...task,
-      id: uuidv4()
-    };
-    
-    if (supabase) {
-      const { data, error } = await supabase
-        .from('tasks')
-        .insert({
-          project_id: projectId,
-          title: newTask.title,
-          description: newTask.description,
-          assigned_to: newTask.assignedTo,
-          status: newTask.status
-        })
-        .select()
-        .single();
-      
-      if (error) throw error;
-      
-      if (data) {
-        return {
-          id: String(data.id),
-          title: data.title,
-          description: data.description,
-          assignedTo: data.assigned_to,
-          status: data.status as Task['status']
-        };
-      }
-    }
-    
-    // Fallback to local implementation
-    const projectIndex = projectThemes.findIndex(p => p.id === projectId);
-    if (projectIndex === -1) {
-      throw new Error(`Project with ID ${projectId} not found`);
-    }
-    
-    if (!projectThemes[projectIndex].tasks) {
-      projectThemes[projectIndex].tasks = [];
-    }
-    
-    projectThemes[projectIndex].tasks!.push(newTask);
-    return newTask;
-  } catch (error) {
-    console.error(`Error adding task to project ${projectId}:`, error);
-    throw error;
-  }
-};
-
-/**
- * Update a task status
- */
-export const updateTaskStatus = async (projectId: number, taskId: string, status: Task['status']): Promise<Task> => {
-  try {
-    if (supabase) {
-      const { data, error } = await supabase
-        .from('tasks')
-        .update({ status })
-        .eq('id', taskId)
-        .select()
-        .single();
-      
-      if (error) throw error;
-      
-      if (data) {
-        return {
-          id: String(data.id),
-          title: data.title,
-          description: data.description,
-          assignedTo: data.assigned_to,
-          status: data.status as Task['status']
-        };
-      }
-    }
-    
-    // Fallback to local implementation
-    const projectIndex = projectThemes.findIndex(p => p.id === projectId);
-    if (projectIndex === -1) {
-      throw new Error(`Project with ID ${projectId} not found`);
-    }
-    
-    if (!projectThemes[projectIndex].tasks) {
-      throw new Error(`Project with ID ${projectId} has no tasks`);
-    }
-    
-    const taskIndex = projectThemes[projectIndex].tasks!.findIndex(t => t.id === taskId);
-    if (taskIndex === -1) {
-      throw new Error(`Task with ID ${taskId} not found in project ${projectId}`);
-    }
-    
-    projectThemes[projectIndex].tasks![taskIndex].status = status;
-    return projectThemes[projectIndex].tasks![taskIndex];
-  } catch (error) {
-    console.error(`Error updating task ${taskId} status in project ${projectId}:`, error);
-    throw error;
-  }
-};
-
-/**
- * Change project status
- */
-export const changeProjectStatus = async (
+export async function changeProjectStatus(
   projectId: number,
   status: 'not_submitted' | 'pending' | 'approved' | 'rejected',
-  feedback?: string
-): Promise<boolean> => {
+  feedback: string
+): Promise<void> {
+  // Simulate API delay
+  await new Promise(resolve => setTimeout(resolve, 300));
+  
+  // Get projects from localStorage
+  const projectsJson = localStorage.getItem('projects');
+  
+  if (!projectsJson) {
+    throw new Error('Projects not found');
+  }
+  
+  const projects: ProjectTheme[] = JSON.parse(projectsJson);
+  const projectIndex = projects.findIndex(p => p.id === projectId);
+  
+  if (projectIndex === -1) {
+    throw new Error('Project not found');
+  }
+  
+  // Save status separately to avoid cluttering the project object
+  localStorage.setItem(`project-${projectId}-status`, status);
+  localStorage.setItem(`project-${projectId}-feedback`, feedback);
+}
+
+/**
+ * Gets a project's status
+ */
+export async function getProjectStatus(
+  projectId: number
+): Promise<'not_submitted' | 'pending' | 'approved' | 'rejected'> {
+  // Simulate API delay
+  await new Promise(resolve => setTimeout(resolve, 300));
+  
+  // Get status from localStorage or return default
+  const status = localStorage.getItem(`project-${projectId}-status`);
+  return (status as 'not_submitted' | 'pending' | 'approved' | 'rejected') || 'not_submitted';
+}
+
+/**
+ * Update project details
+ */
+export async function updateProject(
+  projectId: number,
+  updates: Partial<ProjectTheme>
+): Promise<ProjectTheme> {
+  // Simulate API delay
+  await new Promise(resolve => setTimeout(resolve, 500));
+  
+  // Get existing projects
+  const projectsJson = localStorage.getItem('projects');
+  
+  if (!projectsJson) {
+    throw new Error('Projects not found');
+  }
+  
+  const projects: ProjectTheme[] = JSON.parse(projectsJson);
+  const projectIndex = projects.findIndex(p => p.id === projectId);
+  
+  if (projectIndex === -1) {
+    throw new Error('Project not found');
+  }
+  
+  // Create updated project
+  const currentProject = projects[projectIndex];
+  const updatedProject = {
+    ...currentProject,
+    ...updates,
+    // Handle nested properties
+    difficulty: updates.difficulty !== undefined ? updates.difficulty : currentProject.difficulty,
+    createdBy: updates.createdBy !== undefined ? updates.createdBy : currentProject.createdBy,
+    goal: updates.goal !== undefined ? updates.goal : currentProject.goal,
+    resources: updates.resources !== undefined ? updates.resources : currentProject.resources,
+    links: updates.links !== undefined ? updates.links : currentProject.links,
+    implementationSteps: updates.implementationSteps !== undefined ? updates.implementationSteps : currentProject.implementationSteps,
+    requirements: updates.requirements !== undefined ? updates.requirements : currentProject.requirements
+  };
+  
+  // Update project in array
+  projects[projectIndex] = updatedProject;
+  
+  // Save updated array to localStorage
+  localStorage.setItem('projects', JSON.stringify(projects));
+  
+  return updatedProject;
+}
+
+/**
+ * Reserve a project
+ */
+export async function reserveProject(reservation: ProjectReservation): Promise<{ success: boolean; message: string }> {
+  // Simulate API delay
+  await new Promise(resolve => setTimeout(resolve, 500));
+  
   try {
-    if (supabase) {
-      const { error } = await supabase
-        .from('project_assignments')
-        .update({ 
-          status,
-          updated_at: new Date().toISOString()
-        })
-        .eq('project_id', projectId);
-      
-      if (error) throw error;
+    // Get existing reservations
+    const reservations = loadProjectReservations();
+    
+    // Check if project is already reserved by this user
+    const existingReservation = reservations.find(
+      r => r.projectId === reservation.projectId && r.studentId === reservation.studentId
+    );
+    
+    if (existingReservation) {
+      return {
+        success: false,
+        message: 'Դուք արդեն պահել եք այս նախագիծը'
+      };
     }
     
-    // No local implementation for project status yet
-    await delay(500); // Simulate API delay
+    // Add new reservation with ID
+    const newReservation = {
+      ...reservation,
+      id: uuidv4(),
+      reservedAt: new Date().toISOString()
+    };
+    
+    reservations.push(newReservation);
+    
+    // Save updated reservations
+    saveProjectReservations(reservations);
+    
+    return {
+      success: true,
+      message: 'Նախագիծը հաջողությամբ պահպանվել է'
+    };
+  } catch (error) {
+    console.error('Error reserving project:', error);
+    return {
+      success: false,
+      message: 'Սխալ նախագիծը պահելիս'
+    };
+  }
+}
+
+/**
+ * Get projects reserved for a specific supervisor
+ */
+export async function getSupervisorReservations(supervisorId: string): Promise<ProjectReservation[]> {
+  // Simulate API delay
+  await new Promise(resolve => setTimeout(resolve, 300));
+  
+  try {
+    // Get all reservations
+    const reservations = loadProjectReservations();
+    
+    // Filter for this supervisor
+    return reservations.filter(r => r.supervisorId === supervisorId);
+  } catch (error) {
+    console.error('Error getting supervisor reservations:', error);
+    return [];
+  }
+}
+
+/**
+ * Approve or reject a project reservation
+ */
+export async function updateReservationStatus(
+  reservationId: string,
+  status: 'approved' | 'rejected',
+  feedback?: string
+): Promise<boolean> {
+  // Simulate API delay
+  await new Promise(resolve => setTimeout(resolve, 500));
+  
+  try {
+    // Get existing reservations
+    const reservations = loadProjectReservations();
+    
+    // Find and update the reservation
+    const updatedReservations = reservations.map(r => {
+      if (r.id === reservationId) {
+        return {
+          ...r,
+          status,
+          feedback: feedback || r.feedback,
+          updatedAt: new Date().toISOString()
+        };
+      }
+      return r;
+    });
+    
+    // Save updated reservations
+    saveProjectReservations(updatedReservations);
+    
     return true;
   } catch (error) {
-    console.error(`Error changing project ${projectId} status to ${status}:`, error);
+    console.error('Error updating reservation status:', error);
     return false;
   }
-};
+}
+
+/**
+ * Get the reservation status for a project and user
+ */
+export async function getUserProjectReservation(
+  projectId: number,
+  userId: string
+): Promise<ProjectReservation | null> {
+  // Simulate API delay
+  await new Promise(resolve => setTimeout(resolve, 300));
+  
+  try {
+    // Get all reservations
+    const reservations = loadProjectReservations();
+    
+    // Find the reservation for this project and user
+    const reservation = reservations.find(
+      r => Number(r.projectId) === projectId && r.studentId === userId
+    );
+    
+    return reservation || null;
+  } catch (error) {
+    console.error('Error getting user project reservation:', error);
+    return null;
+  }
+}
