@@ -21,6 +21,14 @@ export interface ProjectTheme {
   links?: { name: string; url: string }[];
   createdAt?: string;
   updatedAt?: string;
+  // Additional properties needed
+  detailedDescription?: string;
+  steps?: string[];
+  prerequisites?: string[];
+  learningOutcomes?: string[];
+  timeline?: TimelineEvent[];
+  tasks?: Task[];
+  complexity?: string;
 }
 
 /**

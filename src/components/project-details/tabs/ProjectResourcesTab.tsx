@@ -1,285 +1,209 @@
 
 import React, { useState } from 'react';
-import { ProjectTheme } from '@/data/projectThemes';
-import { useTheme } from '@/hooks/use-theme';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { useProject } from '@/contexts/ProjectContext';
 import { Button } from '@/components/ui/button';
-import { Save, File, Link as LinkIcon, Plus, Trash } from 'lucide-react';
-import EditableField from '../EditableField';
+import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
+import { ExternalLink, Edit, Save, X, Plus, Trash2 } from 'lucide-react';
+import { SlideUp } from '@/components/LocalTransitions';
+import { Input } from '@/components/ui/input';
 
-interface ProjectResourcesTabProps {
-  project: ProjectTheme;
-  isEditing: boolean;
-  onSaveChanges: (updates: Partial<ProjectTheme>) => Promise<void>;
-}
-
-const ProjectResourcesTab: React.FC<ProjectResourcesTabProps> = ({
-  project,
-  isEditing,
-  onSaveChanges
-}) => {
-  const { theme } = useTheme();
-  const [resources, setResources] = useState(project.resources || []);
-  const [links, setLinks] = useState(project.links || []);
-  const [newResourceName, setNewResourceName] = useState('');
-  const [newResourceUrl, setNewResourceUrl] = useState('');
-  const [newLinkName, setNewLinkName] = useState('');
-  const [newLinkUrl, setNewLinkUrl] = useState('');
+const ProjectResourcesTab: React.FC = () => {
+  const { project, updateProject, isEditing } = useProject();
   
-  const handleAddResource = () => {
-    if (newResourceName && newResourceUrl) {
-      setResources([...resources, { name: newResourceName, url: newResourceUrl }]);
-      setNewResourceName('');
-      setNewResourceUrl('');
+  // Initialize resources and links with defaults to avoid null/undefined issues
+  const initialResources = project.resources || [];
+  const initialLinks = project.links || [];
+  
+  const [resources, setResources] = useState<{name: string, url: string}[]>(initialResources);
+  const [links, setLinks] = useState<{name: string, url: string}[]>(initialLinks);
+  const [newResource, setNewResource] = useState({ name: '', url: '' });
+  const [newLink, setNewLink] = useState({ name: '', url: '' });
+  const [isSaving, setIsSaving] = useState(false);
+
+  const handleSaveChanges = async () => {
+    setIsSaving(true);
+    try {
+      await updateProject({
+        // Only include the resources and links properties if they're part of the project type
+        resources: resources,
+        links: links
+      });
+    } finally {
+      setIsSaving(false);
     }
   };
-  
-  const handleRemoveResource = (index: number) => {
+
+  const addResource = () => {
+    if (newResource.name.trim() && newResource.url.trim()) {
+      setResources([...resources, { ...newResource }]);
+      setNewResource({ name: '', url: '' });
+    }
+  };
+
+  const removeResource = (index: number) => {
     setResources(resources.filter((_, i) => i !== index));
   };
-  
-  const handleAddLink = () => {
-    if (newLinkName && newLinkUrl) {
-      setLinks([...links, { name: newLinkName, url: newLinkUrl }]);
-      setNewLinkName('');
-      setNewLinkUrl('');
+
+  const addLink = () => {
+    if (newLink.name.trim() && newLink.url.trim()) {
+      setLinks([...links, { ...newLink }]);
+      setNewLink({ name: '', url: '' });
     }
   };
-  
-  const handleRemoveLink = (index: number) => {
+
+  const removeLink = (index: number) => {
     setLinks(links.filter((_, i) => i !== index));
   };
-  
-  const handleSaveResources = async () => {
-    await onSaveChanges({
-      resources,
-      links
-    });
-  };
-  
+
   return (
-    <div className="space-y-6">
-      {/* Files and Documents Card */}
-      <Card className={theme === 'dark' ? 'bg-gray-800 border-gray-700' : ''}>
+    <SlideUp className="space-y-8">
+      {isEditing && (
+        <div className="flex justify-end mb-4">
+          <Button 
+            variant="outline"
+            className="mr-2"
+            onClick={() => {
+              setResources(initialResources);
+              setLinks(initialLinks);
+            }}
+          >
+            <X className="h-4 w-4 mr-2" /> Չեղարկել
+          </Button>
+          <Button 
+            variant="outline" 
+            className="border-green-200 bg-green-100 text-green-700 hover:bg-green-200"
+            onClick={handleSaveChanges}
+            disabled={isSaving}
+          >
+            <Save className="h-4 w-4 mr-2" /> Պահպանել
+          </Button>
+        </div>
+      )}
+
+      <Card>
         <CardHeader>
-          <CardTitle className={theme === 'dark' ? 'text-gray-100' : ''}>
-            Նախագծի նյութեր
+          <CardTitle className="text-xl flex items-center">
+            Ռեսուրսներ
           </CardTitle>
         </CardHeader>
-        <CardContent>
-          {resources.length > 0 ? (
-            <ul className="space-y-3">
+        <CardContent className="space-y-6">
+          {resources && resources.length > 0 ? (
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               {resources.map((resource, index) => (
-                <li 
-                  key={index}
-                  className={`flex items-center justify-between p-3 rounded ${
-                    theme === 'dark' 
-                      ? 'bg-gray-750 hover:bg-gray-700' 
-                      : 'bg-gray-50 hover:bg-gray-100'
-                  } transition-colors`}
-                >
-                  <div className="flex items-center gap-3">
-                    <File className={theme === 'dark' ? 'text-gray-400' : 'text-gray-500'} size={18} />
-                    <div>
-                      <p className={theme === 'dark' ? 'text-gray-200' : 'text-gray-700'}>
-                        {resource.name}
-                      </p>
-                      <a 
-                        href={resource.url} 
-                        target="_blank" 
-                        rel="noopener noreferrer" 
-                        className="text-sm text-blue-500 hover:text-blue-600"
-                      >
-                        {resource.url}
-                      </a>
-                    </div>
+                <div key={index} className="flex items-center justify-between p-3 border rounded-md">
+                  <div>
+                    <p className="font-medium">{resource.name}</p>
+                    <a 
+                      href={resource.url} 
+                      target="_blank" 
+                      rel="noopener noreferrer" 
+                      className="text-sm text-primary flex items-center gap-1 hover:underline"
+                    >
+                      <ExternalLink size={14} /> Դիտել ռեսուրսը
+                    </a>
                   </div>
-                  
                   {isEditing && (
                     <Button 
                       variant="ghost" 
-                      size="sm" 
-                      onClick={() => handleRemoveResource(index)}
-                      className="text-red-500 hover:text-red-600 hover:bg-red-50"
+                      size="icon" 
+                      onClick={() => removeResource(index)}
+                      className="text-red-500"
                     >
-                      <Trash size={16} />
+                      <Trash2 size={16} />
                     </Button>
                   )}
-                </li>
+                </div>
               ))}
-            </ul>
+            </div>
           ) : (
-            <p className={`text-center my-8 ${theme === 'dark' ? 'text-gray-400' : 'text-gray-500'}`}>
-              Նյութեր չեն ավելացվել
-            </p>
+            <p className="text-muted-foreground">Ռեսուրսներ չեն ավելացված</p>
           )}
-          
-          {/* Add new resource */}
+
           {isEditing && (
-            <div className={`mt-6 p-4 rounded ${
-              theme === 'dark' ? 'bg-gray-750 border-gray-600' : 'bg-gray-50 border-gray-200'
-            } border`}>
-              <h4 className={`text-sm font-medium mb-3 ${
-                theme === 'dark' ? 'text-gray-300' : 'text-gray-700'
-              }`}>
-                Ավելացնել նոր նյութ
-              </h4>
-              
-              <div className="space-y-3">
-                <input
-                  type="text"
-                  value={newResourceName}
-                  onChange={(e) => setNewResourceName(e.target.value)}
-                  placeholder="Նյութի անվանում"
-                  className={`w-full px-3 py-2 text-sm rounded border ${
-                    theme === 'dark' 
-                      ? 'bg-gray-700 border-gray-600 text-gray-100' 
-                      : 'bg-white border-gray-300 text-gray-800'
-                  }`}
+            <div className="flex flex-col gap-3 p-4 border rounded-md bg-accent/20">
+              <h3 className="font-medium">Ավելացնել նոր ռեսուրս</h3>
+              <div className="flex flex-col sm:flex-row gap-3">
+                <Input 
+                  placeholder="Ռեսուրսի անվանումը" 
+                  value={newResource.name} 
+                  onChange={e => setNewResource({...newResource, name: e.target.value})}
                 />
-                
-                <input
-                  type="text"
-                  value={newResourceUrl}
-                  onChange={(e) => setNewResourceUrl(e.target.value)}
-                  placeholder="Հղում"
-                  className={`w-full px-3 py-2 text-sm rounded border ${
-                    theme === 'dark' 
-                      ? 'bg-gray-700 border-gray-600 text-gray-100' 
-                      : 'bg-white border-gray-300 text-gray-800'
-                  }`}
+                <Input 
+                  placeholder="Ռեսուրսի հղումը (URL)" 
+                  value={newResource.url} 
+                  onChange={e => setNewResource({...newResource, url: e.target.value})}
                 />
-                
-                <Button
-                  onClick={handleAddResource}
-                  disabled={!newResourceName || !newResourceUrl}
-                  size="sm"
-                  className="w-full"
-                >
-                  <Plus className="h-4 w-4 mr-2" /> 
-                  Ավելացնել նյութ
+                <Button onClick={addResource} className="mt-2 sm:mt-0">
+                  <Plus size={16} className="mr-2" /> Ավելացնել
                 </Button>
               </div>
             </div>
           )}
         </CardContent>
       </Card>
-      
-      {/* External Links Card */}
-      <Card className={theme === 'dark' ? 'bg-gray-800 border-gray-700' : ''}>
+
+      <Card>
         <CardHeader>
-          <CardTitle className={theme === 'dark' ? 'text-gray-100' : ''}>
+          <CardTitle className="text-xl flex items-center">
             Օգտակար հղումներ
           </CardTitle>
         </CardHeader>
-        <CardContent>
-          {links.length > 0 ? (
-            <ul className="space-y-3">
+        <CardContent className="space-y-6">
+          {links && links.length > 0 ? (
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               {links.map((link, index) => (
-                <li 
-                  key={index}
-                  className={`flex items-center justify-between p-3 rounded ${
-                    theme === 'dark' 
-                      ? 'bg-gray-750 hover:bg-gray-700' 
-                      : 'bg-gray-50 hover:bg-gray-100'
-                  } transition-colors`}
-                >
-                  <div className="flex items-center gap-3">
-                    <LinkIcon className={theme === 'dark' ? 'text-gray-400' : 'text-gray-500'} size={18} />
-                    <div>
-                      <p className={theme === 'dark' ? 'text-gray-200' : 'text-gray-700'}>
-                        {link.name}
-                      </p>
-                      <a 
-                        href={link.url} 
-                        target="_blank" 
-                        rel="noopener noreferrer" 
-                        className="text-sm text-blue-500 hover:text-blue-600"
-                      >
-                        {link.url}
-                      </a>
-                    </div>
+                <div key={index} className="flex items-center justify-between p-3 border rounded-md">
+                  <div>
+                    <p className="font-medium">{link.name}</p>
+                    <a 
+                      href={link.url} 
+                      target="_blank" 
+                      rel="noopener noreferrer" 
+                      className="text-sm text-primary flex items-center gap-1 hover:underline"
+                    >
+                      <ExternalLink size={14} /> Անցնել հղումով
+                    </a>
                   </div>
-                  
                   {isEditing && (
                     <Button 
                       variant="ghost" 
-                      size="sm" 
-                      onClick={() => handleRemoveLink(index)}
-                      className="text-red-500 hover:text-red-600 hover:bg-red-50"
+                      size="icon" 
+                      onClick={() => removeLink(index)}
+                      className="text-red-500"
                     >
-                      <Trash size={16} />
+                      <Trash2 size={16} />
                     </Button>
                   )}
-                </li>
+                </div>
               ))}
-            </ul>
+            </div>
           ) : (
-            <p className={`text-center my-8 ${theme === 'dark' ? 'text-gray-400' : 'text-gray-500'}`}>
-              Հղումներ չեն ավելացվել
-            </p>
+            <p className="text-muted-foreground">Հղումներ չեն ավելացված</p>
           )}
-          
-          {/* Add new link */}
+
           {isEditing && (
-            <div className={`mt-6 p-4 rounded ${
-              theme === 'dark' ? 'bg-gray-750 border-gray-600' : 'bg-gray-50 border-gray-200'
-            } border`}>
-              <h4 className={`text-sm font-medium mb-3 ${
-                theme === 'dark' ? 'text-gray-300' : 'text-gray-700'
-              }`}>
-                Ավելացնել նոր հղում
-              </h4>
-              
-              <div className="space-y-3">
-                <input
-                  type="text"
-                  value={newLinkName}
-                  onChange={(e) => setNewLinkName(e.target.value)}
-                  placeholder="Հղման անվանում"
-                  className={`w-full px-3 py-2 text-sm rounded border ${
-                    theme === 'dark' 
-                      ? 'bg-gray-700 border-gray-600 text-gray-100' 
-                      : 'bg-white border-gray-300 text-gray-800'
-                  }`}
+            <div className="flex flex-col gap-3 p-4 border rounded-md bg-accent/20">
+              <h3 className="font-medium">Ավելացնել նոր հղում</h3>
+              <div className="flex flex-col sm:flex-row gap-3">
+                <Input 
+                  placeholder="Հղման անվանումը" 
+                  value={newLink.name} 
+                  onChange={e => setNewLink({...newLink, name: e.target.value})}
                 />
-                
-                <input
-                  type="text"
-                  value={newLinkUrl}
-                  onChange={(e) => setNewLinkUrl(e.target.value)}
-                  placeholder="URL հղում"
-                  className={`w-full px-3 py-2 text-sm rounded border ${
-                    theme === 'dark' 
-                      ? 'bg-gray-700 border-gray-600 text-gray-100' 
-                      : 'bg-white border-gray-300 text-gray-800'
-                  }`}
+                <Input 
+                  placeholder="Հղման URL" 
+                  value={newLink.url} 
+                  onChange={e => setNewLink({...newLink, url: e.target.value})}
                 />
-                
-                <Button
-                  onClick={handleAddLink}
-                  disabled={!newLinkName || !newLinkUrl}
-                  size="sm"
-                  className="w-full"
-                >
-                  <Plus className="h-4 w-4 mr-2" /> 
-                  Ավելացնել հղում
+                <Button onClick={addLink} className="mt-2 sm:mt-0">
+                  <Plus size={16} className="mr-2" /> Ավելացնել
                 </Button>
               </div>
             </div>
           )}
-          
-          {isEditing && (
-            <div className="flex justify-end mt-6">
-              <Button onClick={handleSaveResources} className="gap-1.5">
-                <Save size={16} />
-                Պահպանել փոփոխությունները
-              </Button>
-            </div>
-          )}
         </CardContent>
       </Card>
-    </div>
+    </SlideUp>
   );
 };
 
