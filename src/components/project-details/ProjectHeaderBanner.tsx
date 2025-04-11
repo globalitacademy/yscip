@@ -1,196 +1,144 @@
 
 import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { 
-  Calendar, 
-  Clock, 
-  Edit2, 
-  ArrowLeft, 
-  Share2, 
-  BookOpen,
-  Users,
-  Tag,
-  GraduationCap
-} from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
+import { Edit, X } from 'lucide-react';
 import { ProjectTheme } from '@/data/projectThemes';
-import { useProject } from '@/contexts/ProjectContext';
-import { useAuth } from '@/contexts/AuthContext';
-import { useTheme } from '@/hooks/use-theme';
 import { getFormattedImageUrl, handleImageError } from '@/utils/imageUtils';
 
 interface ProjectHeaderBannerProps {
   project: ProjectTheme;
+  isEditing: boolean;
+  onSave?: (updatedBanner: string) => void;
+  onCancel?: () => void;
 }
 
-const ProjectHeaderBanner: React.FC<ProjectHeaderBannerProps> = ({ project }) => {
-  const navigate = useNavigate();
-  const { canEdit, setIsEditing, isEditing, projectProgress } = useProject();
-  const { user } = useAuth();
-  const { theme } = useTheme();
-  const [copied, setCopied] = useState(false);
+const ProjectHeaderBanner: React.FC<ProjectHeaderBannerProps> = ({
+  project,
+  isEditing,
+  onSave,
+  onCancel
+}) => {
+  const [bannerUrl, setBannerUrl] = useState(
+    project.bannerImage || project.image || '/placeholder-banner.jpg'
+  );
+  const [editMode, setEditMode] = useState(false);
+  const [tempBannerUrl, setTempBannerUrl] = useState('');
 
-  // Get properly formatted image URLs
-  const bannerImage = getFormattedImageUrl(
-    project.bannerImage || project.image, 
-    project.category
-  );
-  
-  const projectImage = getFormattedImageUrl(
-    project.image, 
-    project.category
-  );
-  
-  const handleEditToggle = () => {
-    setIsEditing(!isEditing);
-  };
-  
-  const handleShare = () => {
-    navigator.clipboard.writeText(window.location.href);
-    setCopied(true);
-    setTimeout(() => setCopied(false), 2000);
+  // Get formatted URL for banner image
+  const formattedBannerUrl = getFormattedImageUrl(bannerUrl, project.category);
+
+  // Handle start editing
+  const handleStartEdit = () => {
+    setTempBannerUrl(bannerUrl);
+    setEditMode(true);
   };
 
-  const getCategoryColor = (category: string) => {
-    const categoryColorMap: Record<string, string> = {
-      'Web Development': 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200',
-      'Mobile App Development': 'bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200',
-      'AI & Machine Learning': 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200',
-      'Data Science': 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200',
-      'Cybersecurity': 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200',
-      'DevOps': 'bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-200',
-      'UI/UX Design': 'bg-pink-100 text-pink-800 dark:bg-pink-900 dark:text-pink-200',
-    };
-    
-    return categoryColorMap[category] || 'bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-200';
+  // Handle cancel editing
+  const handleCancelEdit = () => {
+    setEditMode(false);
+    setBannerUrl(tempBannerUrl);
+    if (onCancel) {
+      onCancel();
+    }
   };
-  
+
+  // Handle save changes
+  const handleSaveChanges = () => {
+    setEditMode(false);
+    if (onSave) {
+      onSave(bannerUrl);
+    }
+  };
+
+  // Handle banner image error
+  const handleBannerError = (event: React.SyntheticEvent<HTMLImageElement>) => {
+    handleImageError(event, project.category);
+  };
+
+  // Handle URL input change
+  const handleUrlChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setBannerUrl(e.target.value);
+  };
+
   return (
-    <div className="relative">
-      {/* Banner Image */}
-      <div 
-        className="h-64 md:h-96 w-full bg-cover bg-center relative" 
-        style={{ backgroundImage: `url('${bannerImage}')` }}
-        onError={(e) => handleImageError(e, project.category)}
-      >
-        <div className="absolute inset-0 bg-gradient-to-b from-transparent to-black opacity-70"></div>
-      </div>
-      
-      {/* Back Button */}
-      <div className="absolute top-4 left-4">
-        <Button
-          variant="secondary"
-          size="sm"
-          onClick={() => navigate('/projects')}
-          className="flex items-center gap-1 bg-white/80 backdrop-blur-sm hover:bg-white/90 dark:bg-gray-900/80 dark:hover:bg-gray-900/90"
-        >
-          <ArrowLeft className="h-4 w-4" />
-          <span>Նախագծերի էջ</span>
-        </Button>
-      </div>
-      
-      {/* Edit/Share Buttons */}
-      <div className="absolute top-4 right-4 flex gap-2">
-        <Button
-          variant="secondary"
-          size="sm"
-          onClick={handleShare}
-          className="flex items-center gap-1 bg-white/80 backdrop-blur-sm hover:bg-white/90 dark:bg-gray-900/80 dark:hover:bg-gray-900/90"
-        >
-          <Share2 className="h-4 w-4" />
-          <span>{copied ? 'Պատճենված է' : 'Կիսվել'}</span>
-        </Button>
+    <div className="relative w-full">
+      <div className="w-full h-64 md:h-80 lg:h-96 overflow-hidden relative">
+        <img
+          src={formattedBannerUrl}
+          alt={`${project.title} banner`}
+          className="w-full h-full object-cover"
+          onError={handleBannerError}
+        />
         
-        {canEdit && (
-          <Button
-            variant={isEditing ? "destructive" : "secondary"}
-            size="sm"
-            onClick={handleEditToggle}
-            className={`flex items-center gap-1 ${
-              isEditing 
-                ? 'bg-red-500/80 hover:bg-red-500/90' 
-                : 'bg-white/80 backdrop-blur-sm hover:bg-white/90 dark:bg-gray-900/80 dark:hover:bg-gray-900/90'
-            }`}
-          >
-            <Edit2 className="h-4 w-4" />
-            <span>{isEditing ? 'Ավարտել խմբագրումը' : 'Խմբագրել'}</span>
-          </Button>
-        )}
-      </div>
-      
-      {/* Content Card */}
-      <div className="container mx-auto px-4">
-        <div className="relative -mt-20 md:-mt-28 bg-white dark:bg-gray-900 rounded-t-lg shadow-md p-6 mb-8">
-          <div className="flex flex-col md:flex-row gap-6 items-start">
-            {/* Project Image */}
-            <div className="hidden md:block flex-shrink-0">
-              <div 
-                className="w-32 h-32 rounded-lg overflow-hidden border-4 border-white dark:border-gray-800 shadow-md"
-                style={{ 
-                  backgroundImage: `url('${projectImage}')`, 
-                  backgroundSize: 'cover', 
-                  backgroundPosition: 'center' 
-                }}
-              />
-            </div>
+        <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/30 to-transparent"></div>
+        
+        <div className="absolute bottom-0 left-0 w-full p-6 text-white">
+          <h1 className="text-3xl md:text-4xl lg:text-5xl font-bold mb-2 drop-shadow-md">
+            {project.title}
+          </h1>
+          
+          <div className="flex flex-wrap gap-2 mb-4">
+            {project.technologies && project.technologies.length > 0 ? (
+              project.technologies.slice(0, 3).map((tech, index) => (
+                <span 
+                  key={index} 
+                  className="bg-primary/70 backdrop-blur-sm text-white px-2 py-1 text-xs rounded-full"
+                >
+                  {tech}
+                </span>
+              ))
+            ) : null}
             
-            {/* Project Info */}
-            <div className="flex-grow">
-              <div className="flex flex-wrap gap-2 mb-3">
-                <Badge className={`${getCategoryColor(project.category)}`}>
-                  {project.category}
-                </Badge>
-                <Badge variant="outline" className="flex items-center gap-1">
-                  <BookOpen className="h-3 w-3" />
-                  {project.complexity}
-                </Badge>
-                <Badge variant="outline" className="flex items-center gap-1">
-                  <Clock className="h-3 w-3" />
-                  {project.duration}
-                </Badge>
-                {project.organizationName && (
-                  <Badge variant="outline" className="flex items-center gap-1">
-                    <GraduationCap className="h-3 w-3" />
-                    {project.organizationName}
-                  </Badge>
-                )}
-              </div>
-              
-              <h1 className="text-2xl md:text-3xl font-bold mb-2">{project.title}</h1>
-              
-              <p className="text-gray-600 dark:text-gray-300 mb-4">{project.description}</p>
-              
-              {project.technologies && project.technologies.length > 0 && (
-                <div className="flex flex-wrap gap-2 mt-4">
-                  {project.technologies.map((tech, index) => (
-                    <Badge variant="secondary" key={index} className="flex items-center gap-1">
-                      <Tag className="h-3 w-3" />
-                      {tech}
-                    </Badge>
-                  ))}
-                </div>
-              )}
-              
-              {/* Progress Bar */}
-              {projectProgress > 0 && (
-                <div className="mt-6">
-                  <div className="flex justify-between mb-1 text-sm">
-                    <span>Առաջընթաց</span>
-                    <span>{projectProgress}%</span>
-                  </div>
-                  <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
-                    <div 
-                      className="bg-primary h-2 rounded-full transition-all" 
-                      style={{ width: `${projectProgress}%` }}
-                    ></div>
-                  </div>
-                </div>
-              )}
-            </div>
+            {project.technologies && project.technologies.length > 3 && (
+              <span className="bg-gray-700/70 backdrop-blur-sm text-white px-2 py-1 text-xs rounded-full">
+                +{project.technologies.length - 3}
+              </span>
+            )}
           </div>
         </div>
       </div>
+
+      {isEditing && (
+        <div className="absolute top-4 right-4 flex space-x-2">
+          {editMode ? (
+            <>
+              <div className="bg-white/90 backdrop-blur-sm p-3 rounded-lg shadow-lg">
+                <input
+                  type="text"
+                  value={bannerUrl}
+                  onChange={handleUrlChange}
+                  className="w-64 px-3 py-1 border border-gray-300 rounded text-sm text-gray-800"
+                  placeholder="Enter image URL"
+                />
+                <div className="flex justify-end mt-2 space-x-2">
+                  <Button 
+                    size="sm" 
+                    variant="outline" 
+                    onClick={handleCancelEdit}
+                    className="bg-white/80"
+                  >
+                    <X size={16} className="mr-1" /> Cancel
+                  </Button>
+                  <Button 
+                    size="sm"
+                    onClick={handleSaveChanges}
+                  >
+                    Save
+                  </Button>
+                </div>
+              </div>
+            </>
+          ) : (
+            <Button
+              onClick={handleStartEdit}
+              variant="outline"
+              className="bg-white/80 backdrop-blur-sm"
+            >
+              <Edit size={16} className="mr-1" /> Change Banner
+            </Button>
+          )}
+        </div>
+      )}
     </div>
   );
 };

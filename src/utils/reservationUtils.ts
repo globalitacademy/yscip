@@ -9,7 +9,7 @@ export type ProjectReservation = {
   projectTitle: string;
   timestamp: string;
   status: 'pending' | 'approved' | 'rejected';
-  supervisorId: string;
+  supervisorId?: string;
   instructorId?: string;
   feedback?: string;
   studentId: string;

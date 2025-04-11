@@ -4,6 +4,7 @@ import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import Hero from '@/components/Hero';
 import ThemeGrid from '@/components/ThemeGrid';
+import { ProjectManagementProvider } from '@/contexts/ProjectManagementContext';
 
 const HomePage: React.FC = () => {
   return (
@@ -13,7 +14,9 @@ const HomePage: React.FC = () => {
         <Hero />
         <div className="container mx-auto px-4 py-12">
           <h2 className="text-2xl font-bold mb-6">Նախագծերի թեմաներ</h2>
-          <ThemeGrid />
+          <ProjectManagementProvider>
+            <ThemeGrid />
+          </ProjectManagementProvider>
         </div>
       </main>
       <Footer />

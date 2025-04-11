@@ -45,10 +45,13 @@ export interface ProjectContextType {
   selectedSupervisor: string | null;
   selectSupervisor: (supervisorId: string) => void;
   getReservationStatus: () => 'pending' | 'approved' | 'rejected' | null;
+  updateProject?: (updates: Partial<ProjectTheme>) => Promise<void>;
+  isEditing?: boolean;
 }
 
 export interface ProjectProviderProps {
   projectId: number | null;
   initialProject: ProjectTheme | null;
   children: React.ReactNode;
+  canEdit?: boolean;
 }
