@@ -5,14 +5,15 @@ import { Button } from '@/components/ui/button';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import { useProject } from '@/contexts/ProjectContext';
-import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
-import { AlertCircle } from 'lucide-react';
-import { useAuth } from '@/contexts/AuthContext';
-import { useTheme } from '@/hooks/use-theme';
-
-// Import refactored components
+import { projectThemes } from '@/data/projectThemes';
+import { getProjectImage } from '@/lib/getProjectImage';
+import { toast } from 'sonner';  
 import ProjectHeader from './ProjectHeader';
 import ProjectTabs from './ProjectTabs';
+import { cn } from '@/lib/utils';
+import { AlertCircle, Edit, Save, X } from 'lucide-react';
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
+import { useAuth } from '@/contexts/AuthContext';
 
 const ProjectDetailsContent: React.FC = () => {
   const { 
@@ -36,7 +37,6 @@ const ProjectDetailsContent: React.FC = () => {
   } = useProject();
   const navigate = useNavigate();
   const { user } = useAuth();
-  const { theme } = useTheme();
   const [isSaving, setIsSaving] = useState(false);
   
   if (!project) {
@@ -48,9 +48,14 @@ const ProjectDetailsContent: React.FC = () => {
     );
   }
   
-  // Find similar projects (mock data)
-  const similarProjects = project.similarProjects || [];
+  const similarProjects = projectThemes
+    .filter(p => p.id !== project?.id && 
+      (p.category === project?.category || 
+       p.techStack.some(tech => project?.techStack.includes(tech))))
+    .slice(0, 3);
   
+  const imageUrl = getProjectImage(project);
+
   // Mock data for the project members
   const projectMembers = [
     { id: 'supervisor1', name: 'Արամ Հակոբյան', role: 'ղեկավար', avatar: '/placeholder.svg' },
@@ -65,56 +70,85 @@ const ProjectDetailsContent: React.FC = () => {
     logo: '/placeholder.svg'
   };
   
+  const handleToggleEditing = () => {
+    if (isEditing) {
+      setIsEditing(false);
+      toast.success('Խմբագրման ռեժիմը անջատված է');
+    } else {
+      setIsEditing(true);
+      toast.success('Խմբագրման ռեժիմը միացված է');
+    }
+  };
+
   const handleSaveChanges = async (updates: Partial<any>) => {
     setIsSaving(true);
     try {
       const success = await updateProject(updates);
-      if (!success) {
-        throw new Error('Failed to save changes');
+      if (success) {
+        toast.success('Փոփոխությունները հաջողությամբ պահպանվել են');
+      } else {
+        toast.error('Փոփոխությունների պահպանման ժամանակ սխալ է տեղի ունեցել');
       }
     } catch (error) {
       console.error('Error saving changes:', error);
+      toast.error('Փոփոխությունների պահպանման ժամանակ սխալ է տեղի ունեցել');
     } finally {
       setIsSaving(false);
     }
   };
 
   return (
-    <div className={`min-h-screen flex flex-col ${theme === 'dark' ? 'bg-gray-900 text-gray-100' : 'bg-white text-gray-900'}`}>
+    <div className="min-h-screen flex flex-col">
       <Header />
       
       <main className="flex-grow">
-        {projectStatus === 'rejected' && (
-          <div className="container mx-auto px-4 py-2 mt-4">
-            <Alert variant="destructive" className="mb-2">
+        {canEdit && (
+          <div className="container mx-auto px-4 py-2 flex justify-end">
+            <Button 
+              variant={isEditing ? "destructive" : "default"}
+              size="sm" 
+              onClick={handleToggleEditing}
+              className="mb-2"
+            >
+              {isEditing ? (
+                <>
+                  <X className="h-4 w-4 mr-1.5" />
+                  Դուրս գալ խմբագրման ռեժիմից
+                </>
+              ) : (
+                <>
+                  <Edit className="h-4 w-4 mr-1.5" />
+                  Խմբագրել նախագիծը
+                </>
+              )}
+            </Button>
+          </div>
+        )}
+        
+        <div className="container px-4 mx-auto py-8 max-w-6xl">
+          {projectStatus === 'rejected' && (
+            <Alert variant="destructive" className="mb-6">
               <AlertCircle className="h-4 w-4" />
               <AlertTitle>Նախագիծը մերժված է</AlertTitle>
               <AlertDescription>
                 Ձեր նախագիծը մերժվել է ղեկավարի կողմից։ Խնդրում ենք վերանայել մերժման պատճառները և կապ հաստատել ղեկավարի հետ։
               </AlertDescription>
             </Alert>
-          </div>
-        )}
+          )}
           
-        {isEditing && (
-          <div className="container mx-auto px-4 py-2 mt-4">
-            <Alert className={`mb-2 ${
-              theme === 'dark' 
-                ? 'bg-amber-900/20 border-amber-800/40 text-amber-200' 
-                : 'bg-amber-50 border-amber-200 text-amber-800'}`
-            }>
-              <AlertCircle className={`h-4 w-4 ${theme === 'dark' ? 'text-amber-200' : 'text-amber-500'}`} />
+          {isEditing && (
+            <Alert className="mb-6 border-amber-200 bg-amber-50">
+              <AlertCircle className="h-4 w-4 text-amber-500" />
               <AlertTitle>Խմբագրման ռեժիմ</AlertTitle>
               <AlertDescription>
-                Դուք կարող եք խմբագրել նախագծի տեքստերն ու նկարները: Բաժինների խմբագրումից հետո սեղմեք համապատասխան պահպանել կոճակները:
+                Դուք կարող եք խմբագրել նախագծի տեքստերն ու նկարները: Պարզապես սեղմեք համապատասխան դաշտերի վրա և կատարեք փոփոխությունները: 
+                Ավարտելուց հետո անպայման սեղմեք պահպանել կոճակը:
               </AlertDescription>
             </Alert>
-          </div>
-        )}
+          )}
           
-        <ProjectHeader />
+          <ProjectHeader />
           
-        <div className="container mx-auto px-4 py-6 max-w-6xl">
           <ProjectTabs 
             project={project}
             timeline={timeline}

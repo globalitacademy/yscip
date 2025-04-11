@@ -1,144 +1,129 @@
 
-import React, { useState } from 'react';
+import React from 'react';
+import { ArrowLeft, Calendar, Clock, Tag, Users } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
-import { Edit, X } from 'lucide-react';
+import { useProject } from '@/contexts/ProjectContext';
 import { ProjectTheme } from '@/data/projectThemes';
-import { getFormattedImageUrl, handleImageError } from '@/utils/imageUtils';
+import { getProjectImage } from '@/lib/getProjectImage';
+import ProjectHeaderActions from './ProjectHeaderActions';
+import ProjectBannerBackground from './ProjectBannerBackground';
+import ProjectTechStack from './ProjectTechStack';
 
 interface ProjectHeaderBannerProps {
   project: ProjectTheme;
-  isEditing: boolean;
-  onSave?: (updatedBanner: string) => void;
-  onCancel?: () => void;
 }
 
-const ProjectHeaderBanner: React.FC<ProjectHeaderBannerProps> = ({
-  project,
-  isEditing,
-  onSave,
-  onCancel
-}) => {
-  const [bannerUrl, setBannerUrl] = useState(
-    project.bannerImage || project.image || '/placeholder-banner.jpg'
-  );
-  const [editMode, setEditMode] = useState(false);
-  const [tempBannerUrl, setTempBannerUrl] = useState('');
+const ProjectHeaderBanner: React.FC<ProjectHeaderBannerProps> = ({ project }) => {
+  const navigate = useNavigate();
+  const { isEditing, setIsEditing, canEdit, updateProject } = useProject();
+  const [isSaving, setIsSaving] = React.useState(false);
+  const [bannerImage, setBannerImage] = React.useState(project.image || '');
+  const [title, setTitle] = React.useState(project.title || '');
+  const [description, setDescription] = React.useState(project.description || '');
 
-  // Get formatted URL for banner image
-  const formattedBannerUrl = getFormattedImageUrl(bannerUrl, project.category);
-
-  // Handle start editing
-  const handleStartEdit = () => {
-    setTempBannerUrl(bannerUrl);
-    setEditMode(true);
+  const handleEditClick = async () => {
+    if (isEditing) {
+      // Save changes
+      setIsSaving(true);
+      try {
+        // Update project with new values
+        const success = await updateProject({ 
+          title, 
+          description,
+          image: bannerImage
+        });
+        
+        if (success) {
+          setIsEditing(false);
+        }
+      } catch (error) {
+        console.error('Failed to update project:', error);
+      } finally {
+        setIsSaving(false);
+      }
+    } else {
+      // Start editing
+      setIsEditing(true);
+    }
   };
 
-  // Handle cancel editing
   const handleCancelEdit = () => {
-    setEditMode(false);
-    setBannerUrl(tempBannerUrl);
-    if (onCancel) {
-      onCancel();
-    }
+    // Reset values to original
+    setTitle(project.title || '');
+    setDescription(project.description || '');
+    setBannerImage(project.image || '');
+    setIsEditing(false);
   };
 
-  // Handle save changes
-  const handleSaveChanges = () => {
-    setEditMode(false);
-    if (onSave) {
-      onSave(bannerUrl);
-    }
-  };
-
-  // Handle banner image error
-  const handleBannerError = (event: React.SyntheticEvent<HTMLImageElement>) => {
-    handleImageError(event, project.category);
-  };
-
-  // Handle URL input change
-  const handleUrlChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setBannerUrl(e.target.value);
+  const handleImageChange = (url: string) => {
+    setBannerImage(url);
   };
 
   return (
-    <div className="relative w-full">
-      <div className="w-full h-64 md:h-80 lg:h-96 overflow-hidden relative">
-        <img
-          src={formattedBannerUrl}
-          alt={`${project.title} banner`}
-          className="w-full h-full object-cover"
-          onError={handleBannerError}
-        />
+    <div className="relative pb-6 mb-6">
+      {/* Banner background */}
+      <ProjectBannerBackground 
+        image={bannerImage}
+        isEditing={isEditing}
+        canEdit={canEdit}
+        onImageChange={handleImageChange}
+        onEditClick={handleEditClick}
+      />
+      
+      {/* Content overlaid on the banner */}
+      <div className="container mx-auto px-4 relative pt-72 md:pt-96">
+        <Button 
+          variant="outline" 
+          size="sm"
+          className="mb-4 bg-white/10 hover:bg-white/20 text-white border-white/30"
+          onClick={() => navigate('/projects')}
+        >
+          <ArrowLeft className="h-4 w-4 mr-2" /> Վերադառնալ նախագծերին
+        </Button>
         
-        <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/30 to-transparent"></div>
-        
-        <div className="absolute bottom-0 left-0 w-full p-6 text-white">
-          <h1 className="text-3xl md:text-4xl lg:text-5xl font-bold mb-2 drop-shadow-md">
-            {project.title}
-          </h1>
-          
-          <div className="flex flex-wrap gap-2 mb-4">
-            {project.technologies && project.technologies.length > 0 ? (
-              project.technologies.slice(0, 3).map((tech, index) => (
-                <span 
-                  key={index} 
-                  className="bg-primary/70 backdrop-blur-sm text-white px-2 py-1 text-xs rounded-full"
-                >
-                  {tech}
-                </span>
-              ))
-            ) : null}
-            
-            {project.technologies && project.technologies.length > 3 && (
-              <span className="bg-gray-700/70 backdrop-blur-sm text-white px-2 py-1 text-xs rounded-full">
-                +{project.technologies.length - 3}
-              </span>
+        <div className="flex flex-col md:flex-row justify-between gap-4 items-start md:items-end">
+          <div className="space-y-2 max-w-3xl">
+            {isEditing ? (
+              <input
+                type="text"
+                value={title}
+                onChange={(e) => setTitle(e.target.value)}
+                className="text-3xl md:text-4xl font-bold text-white bg-transparent border-b border-white/30 focus:border-white outline-none pb-1 w-full"
+                placeholder="Նախագծի վերնագիր"
+              />
+            ) : (
+              <h1 className="text-3xl md:text-4xl font-bold text-white">{title}</h1>
             )}
+            
+            {isEditing ? (
+              <textarea
+                value={description}
+                onChange={(e) => setDescription(e.target.value)}
+                className="text-sm md:text-base text-white/80 bg-transparent border border-white/30 focus:border-white outline-none p-2 w-full rounded-md resize-none"
+                rows={3}
+                placeholder="Նախագծի համառոտ նկարագրություն"
+              />
+            ) : (
+              <p className="text-sm md:text-base text-white/80">{description}</p>
+            )}
+            
+            <ProjectTechStack 
+              duration={project.duration}
+              techStackCount={project.techStack?.length || 0}
+              organizationName={project.organizationName}
+            />
           </div>
+          
+          <ProjectHeaderActions 
+            canEdit={canEdit} 
+            isEditing={isEditing}
+            isSaving={isSaving}
+            onEditClick={handleEditClick}
+            onCancelEdit={handleCancelEdit}
+          />
         </div>
       </div>
-
-      {isEditing && (
-        <div className="absolute top-4 right-4 flex space-x-2">
-          {editMode ? (
-            <>
-              <div className="bg-white/90 backdrop-blur-sm p-3 rounded-lg shadow-lg">
-                <input
-                  type="text"
-                  value={bannerUrl}
-                  onChange={handleUrlChange}
-                  className="w-64 px-3 py-1 border border-gray-300 rounded text-sm text-gray-800"
-                  placeholder="Enter image URL"
-                />
-                <div className="flex justify-end mt-2 space-x-2">
-                  <Button 
-                    size="sm" 
-                    variant="outline" 
-                    onClick={handleCancelEdit}
-                    className="bg-white/80"
-                  >
-                    <X size={16} className="mr-1" /> Cancel
-                  </Button>
-                  <Button 
-                    size="sm"
-                    onClick={handleSaveChanges}
-                  >
-                    Save
-                  </Button>
-                </div>
-              </div>
-            </>
-          ) : (
-            <Button
-              onClick={handleStartEdit}
-              variant="outline"
-              className="bg-white/80 backdrop-blur-sm"
-            >
-              <Edit size={16} className="mr-1" /> Change Banner
-            </Button>
-          )}
-        </div>
-      )}
     </div>
   );
 };

@@ -1,25 +1,35 @@
 
-import { useState, useEffect } from 'react';
+import { rolePermissions } from '@/data/rolePermissions';
+import { UserRole } from '@/types/user';
 
-/**
- * Custom hook to determine project-related permissions based on user role
- * @param role The user's role
- */
-export const useProjectPermissions = (role?: string | null) => {
-  // Define all possible permissions
+export interface UserPermissions {
+  canAddTimeline: boolean;
+  canApproveTimelineEvents: boolean;
+  canAddTasks: boolean;
+  canSubmitProject: boolean;
+  canApproveProject: boolean;
+  canCreateProjects: boolean;
+  canAssignProjects: boolean;
+  canViewAllProjects: boolean;
+}
+
+export const useProjectPermissions = (userRole?: string): UserPermissions => {
+  // Cast userRole to UserRole type
+  const role = userRole as UserRole | undefined;
+  
+  // Get permissions based on user role, default to student if no role provided
+  const permissions = role 
+    ? rolePermissions[role] 
+    : rolePermissions.student;
+  
   return {
-    canCreateProjects: role === 'admin' || role === 'lecturer' || role === 'employer',
-    canEditProjects: role === 'admin' || role === 'lecturer' || role === 'employer',
-    canDeleteProjects: role === 'admin',
-    canReserveProjects: role === 'student',
-    canSubmitProject: role === 'student',
-    canApproveProject: role === 'supervisor' || role === 'lecturer' || role === 'admin',
-    canAddTimeline: role === 'admin' || role === 'lecturer' || role === 'supervisor',
-    canApproveTimelineEvents: role === 'admin' || role === 'lecturer' || role === 'supervisor',
-    canAddTasks: role === 'admin' || role === 'lecturer' || role === 'supervisor', 
-    canAssignTasks: role === 'admin' || role === 'lecturer' || role === 'supervisor',
-    canManageInstructors: role === 'admin',
-    canViewStats: role === 'admin' || role === 'lecturer',
-    canViewReservations: role === 'admin' || role === 'lecturer' || role === 'supervisor'
+    canAddTimeline: permissions.canAddTimeline || false,
+    canApproveTimelineEvents: permissions.canApproveTimelineEvents || false,
+    canAddTasks: permissions.canAddTasks || false,
+    canSubmitProject: permissions.canSubmitProject || false,
+    canApproveProject: permissions.canApproveProject || false,
+    canCreateProjects: permissions.canCreateProjects || false,
+    canAssignProjects: 'canAssignProjects' in permissions ? permissions.canAssignProjects : false,
+    canViewAllProjects: 'canViewAllProjects' in permissions ? permissions.canViewAllProjects : false,
   };
 };

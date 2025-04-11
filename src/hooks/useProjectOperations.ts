@@ -1,122 +1,152 @@
 
-import { useCallback, useState } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { ProjectTheme } from '@/data/projectThemes';
-import { useQueryClient } from '@tanstack/react-query';
 import * as projectService from '@/services/projectService';
+import { useAuth } from '@/contexts/AuthContext';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 
 /**
- * Hook for handling project operations like initializing edit, image change, and delete
+ * Hook to handle project CRUD operations with React Query for caching
  */
 export const useProjectOperations = () => {
-  const queryClient = useQueryClient();
   const [projects, setProjects] = useState<ProjectTheme[]>([]);
-  const [isLoading, setIsLoading] = useState(false);
+  const { user } = useAuth();
+  const queryClient = useQueryClient();
 
+  // Use React Query for data fetching with caching
+  const { isLoading, data: fetchedProjects } = useQuery({
+    queryKey: ['projects'],
+    queryFn: projectService.fetchProjects,
+    staleTime: 5 * 60 * 1000, // 5 minutes
+    refetchOnWindowFocus: false,
+  });
+
+  // Update local state when query data changes
+  useEffect(() => {
+    if (fetchedProjects && Array.isArray(fetchedProjects) && fetchedProjects.length > 0) {
+      setProjects(fetchedProjects);
+    }
+  }, [fetchedProjects]);
+
+  // Add event listener for reloading projects from database
+  useEffect(() => {
+    const handleReloadFromDatabase = () => {
+      // Invalidate the query to trigger a refetch
+      queryClient.invalidateQueries({ queryKey: ['projects'] });
+    };
+
+    window.addEventListener('reload-projects-from-database', handleReloadFromDatabase);
+
+    return () => {
+      window.removeEventListener('reload-projects-from-database', handleReloadFromDatabase);
+    };
+  }, [queryClient]);
+
+  /**
+   * Load all projects from the database
+   */
   const loadProjects = useCallback(async () => {
-    setIsLoading(true);
-    try {
-      // Assuming there's a fetchProjects function in projectService
-      const data = await projectService.getProjects();
-      setProjects(data);
-    } catch (error) {
-      console.error('Error loading projects:', error);
-    } finally {
-      setIsLoading(false);
-    }
-  }, []);
+    // Refresh from the database by invalidating the query
+    queryClient.invalidateQueries({ queryKey: ['projects'] });
+  }, [queryClient]);
 
-  const updateProject = useCallback(async (project: ProjectTheme, updates: Partial<ProjectTheme>): Promise<boolean> => {
-    try {
-      const updated = await projectService.updateProject(project.id, updates);
-      if (updated) {
-        // Update local state
-        setProjects(prev => 
-          prev.map(p => p.id === project.id ? { ...p, ...updates } : p)
-        );
-        return true;
-      }
-      return false;
-    } catch (error) {
-      console.error('Error updating project:', error);
-      return false;
-    }
-  }, []);
-
-  const updateProjectImage = useCallback(async (project: ProjectTheme, imageUrl: string): Promise<boolean> => {
-    try {
-      const updated = await projectService.updateProject(project.id, { image: imageUrl });
-      if (updated) {
-        // Update local state
-        setProjects(prev => 
-          prev.map(p => p.id === project.id ? { ...p, image: imageUrl } : p)
-        );
-        return true;
-      }
-      return false;
-    } catch (error) {
-      console.error('Error updating project image:', error);
-      return false;
-    }
-  }, []);
-
-  const deleteProject = useCallback(async (project: ProjectTheme): Promise<boolean> => {
-    try {
-      const success = await projectService.deleteProject(project.id);
-      if (success) {
-        // Update local state
-        setProjects(prev => prev.filter(p => p.id !== project.id));
-        return true;
-      }
-      return false;
-    } catch (error) {
-      console.error('Error deleting project:', error);
-      return false;
-    }
-  }, []);
-
-  const createProject = useCallback(async (project: ProjectTheme): Promise<boolean> => {
-    try {
-      const newProject = await projectService.createProject(project);
-      if (newProject) {
-        // Update local state
-        setProjects(prev => [...prev, newProject]);
-        return true;
-      }
-      return false;
-    } catch (error) {
+  // Create mutation for project creation
+  const createProjectMutation = useMutation({
+    mutationFn: async (project: ProjectTheme) => 
+      projectService.createProject(project),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['projects'] });
+    },
+    onError: (error) => {
       console.error('Error creating project:', error);
+    }
+  });
+
+  // Create mutation for project updates
+  const updateProjectMutation = useMutation({
+    mutationFn: async ({ projectId, updates }: { projectId: number, updates: Partial<ProjectTheme> }) => 
+      projectService.updateProject(projectId, updates),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['projects'] });
+    },
+    onError: (error) => {
+      console.error('Error updating project:', error);
+    }
+  });
+
+  // Create mutation for project deletion
+  const deleteProjectMutation = useMutation({
+    mutationFn: async (projectId: number) => 
+      projectService.deleteProject(projectId),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['projects'] });
+    },
+    onError: (error) => {
+      console.error('Error deleting project:', error);
+    }
+  });
+
+  /**
+   * Create a new project
+   */
+  const createProject = useCallback(async (project: ProjectTheme) => {
+    // Attempt to create the project in the database
+    const success = await createProjectMutation.mutateAsync(project);
+    
+    if (success) {
+      // If successful, React Query will automatically refetch the projects
+      return true;
+    } else {
+      // If the database operation fails, inform the user
+      console.error('Failed to create project in the database');
       return false;
     }
-  }, []);
+  }, [createProjectMutation]);
 
-  const handleEditInit = useCallback((project: ProjectTheme) => {
-    // Implementation for handling edit initialization
-  }, []);
+  /**
+   * Update a project
+   */
+  const updateProject = useCallback(async (selectedProject: ProjectTheme, updatedData: Partial<ProjectTheme>) => {
+    // Attempt to update the project in the database
+    const success = await updateProjectMutation.mutateAsync({ 
+      projectId: selectedProject.id, 
+      updates: updatedData
+    });
+    
+    return success;
+  }, [updateProjectMutation]);
 
-  const handleImageChangeInit = useCallback((project: ProjectTheme) => {
-    // Implementation for handling image change initialization
-  }, []);
+  /**
+   * Update a project's image
+   */
+  const updateProjectImage = useCallback(async (selectedProject: ProjectTheme, newImageUrl: string) => {
+    // Attempt to update the project image in the database by calling updateProject
+    const success = await updateProjectMutation.mutateAsync({ 
+      projectId: selectedProject.id, 
+      updates: { image: newImageUrl }
+    });
+    
+    return success;
+  }, [updateProjectMutation]);
 
-  const handleDeleteInit = useCallback((project: ProjectTheme) => {
-    // Implementation for handling delete initialization
-  }, []);
-
-  const handleOpenCreateDialog = useCallback(() => {
-    // Implementation for handling create dialog opening
-  }, []);
+  /**
+   * Delete a project
+   */
+  const deleteProject = useCallback(async (selectedProject: ProjectTheme) => {
+    // Attempt to delete the project from the database
+    const success = await deleteProjectMutation.mutateAsync(selectedProject.id);
+    
+    return success;
+  }, [deleteProjectMutation]);
 
   return {
     projects,
     setProjects,
     isLoading,
     loadProjects,
+    createProject,
     updateProject,
     updateProjectImage,
-    deleteProject,
-    createProject,
-    handleEditInit,
-    handleImageChangeInit, 
-    handleDeleteInit,
-    handleOpenCreateDialog
+    deleteProject
   };
 };

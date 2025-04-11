@@ -1,5 +1,5 @@
 
-import React, { createContext, useContext, useState, useEffect } from 'react';
+import React, { createContext, useContext, useState } from 'react';
 import { useProjectState } from '@/hooks/useProjectState';
 import { useProjectActions } from '@/hooks/useProjectActions';
 import { useAuth } from '@/contexts/AuthContext';
@@ -7,7 +7,7 @@ import { Task, TimelineEvent } from '@/data/projectThemes';
 import { ProjectReservation } from '@/types/project';
 import { calculateProjectProgress } from '@/utils/projectProgressUtils';
 import { toast } from 'sonner';
-import * as projectManagementService from '@/services/projectManagementService';
+import * as projectService from '@/services/projectService';
 
 interface ProjectContextType {
   projectId: number;
@@ -27,7 +27,6 @@ interface ProjectContextType {
   rejectProject: (feedback: string) => void;
   reserveProject: () => void;
   isReserved: boolean;
-  projectMembers: any[];
   projectReservations: ProjectReservation[];
   approveReservation: (reservationId: string) => void;
   rejectReservation: (reservationId: string, feedback: string) => void;
@@ -60,10 +59,6 @@ export const ProjectProvider: React.FC<ProjectProviderProps> = ({
   const [isEditing, setIsEditing] = useState(false);
   const [selectedSupervisor, setSelectedSupervisor] = useState<string | null>(null);
   const [isUpdating, setIsUpdating] = useState(false);
-  const [projectMembers, setProjectMembers] = useState<any[]>([
-    { id: 'supervisor1', name: 'Արամ Հակոբյան', role: 'ղեկավար', avatar: '/placeholder.svg' },
-    { id: 'student1', name: 'Գագիկ Պետրոսյան', role: 'ուսանող', avatar: '/placeholder.svg' }
-  ]);
 
   const {
     project,
@@ -82,89 +77,14 @@ export const ProjectProvider: React.FC<ProjectProviderProps> = ({
     setShowSupervisorDialog
   } = useProjectState(projectId, initialProject, user);
 
-  // Implement project actions using our service
-  const handleAddTimelineEvent = async (event: Omit<TimelineEvent, 'id'>) => {
-    try {
-      const newEvent = await projectManagementService.addTimelineEvent(projectId, event);
-      setTimeline(prev => [...prev, newEvent]);
-      toast.success('Նոր իրադարձությունն ավելացվել է ժամանակացույցում');
-    } catch (error) {
-      console.error('Error adding timeline event:', error);
-      toast.error('Չհաջողվեց ավելացնել իրադարձությունը');
-    }
-  };
-
-  const handleCompleteTimelineEvent = async (eventId: string) => {
-    try {
-      await projectManagementService.completeTimelineEvent(projectId, eventId);
-      setTimeline(prev => 
-        prev.map(event => event.id === eventId ? { ...event, isCompleted: true } : event)
-      );
-      toast.success('Իրադարձությունը նշվել է որպես ավարտված');
-    } catch (error) {
-      console.error('Error completing timeline event:', error);
-      toast.error('Չհաջողվեց թարմացնել իրադարձության կարգավիճակը');
-    }
-  };
-
-  const handleAddTask = async (task: Omit<Task, 'id'>) => {
-    try {
-      const newTask = await projectManagementService.addTask(projectId, task);
-      setTasks(prev => [...prev, newTask]);
-      toast.success('Նոր առաջադրանքն ավելացվել է');
-    } catch (error) {
-      console.error('Error adding task:', error);
-      toast.error('Չհաջողվեց ավելացնել առաջադրանքը');
-    }
-  };
-
-  const handleUpdateTaskStatus = async (taskId: string, status: Task['status']) => {
-    try {
-      await projectManagementService.updateTaskStatus(projectId, taskId, status);
-      setTasks(prev => 
-        prev.map(task => task.id === taskId ? { ...task, status } : task)
-      );
-      toast.success('Առաջադրանքի կարգավիճակը թարմացվել է');
-    } catch (error) {
-      console.error('Error updating task status:', error);
-      toast.error('Չհաջողվեց թարմացնել առաջադրանքի կարգավիճակը');
-    }
-  };
-
-  const handleSubmitProject = async (feedback: string) => {
-    try {
-      await projectManagementService.changeProjectStatus(projectId, 'pending', feedback);
-      setProjectStatus('pending');
-      toast.success('Նախագիծը ուղարկվել է հաստատման');
-    } catch (error) {
-      console.error('Error submitting project:', error);
-      toast.error('Չհաջողվեց ուղարկել նախագիծը հաստատման');
-    }
-  };
-
-  const handleApproveProject = async (feedback: string) => {
-    try {
-      await projectManagementService.changeProjectStatus(projectId, 'approved', feedback);
-      setProjectStatus('approved');
-      toast.success('Նախագիծը հաստատվել է');
-    } catch (error) {
-      console.error('Error approving project:', error);
-      toast.error('Չհաջողվեց հաստատել նախագիծը');
-    }
-  };
-
-  const handleRejectProject = async (feedback: string) => {
-    try {
-      await projectManagementService.changeProjectStatus(projectId, 'rejected', feedback);
-      setProjectStatus('rejected');
-      toast.success('Նախագիծը մերժվել է');
-    } catch (error) {
-      console.error('Error rejecting project:', error);
-      toast.error('Չհաջողվեց մերժել նախագիծը');
-    }
-  };
-
   const {
+    addTimelineEvent,
+    completeTimelineEvent,
+    addTask,
+    updateTaskStatus,
+    submitProject,
+    approveProject,
+    rejectProject,
     openSupervisorDialog,
     closeSupervisorDialog,
     reserveProject,
@@ -200,13 +120,25 @@ export const ProjectProvider: React.FC<ProjectProviderProps> = ({
 
       setIsUpdating(true);
 
-      // Update project with new data
-      const updatedProject = await projectManagementService.updateProject(projectId, updates);
+      // Combine current project data with updates
+      const updatedProject = {
+        ...project,
+        ...updates,
+        updatedAt: new Date().toISOString()
+      };
+
+      // Call the projectService to update the project in the database
+      const success = await projectService.updateProject(projectId, updatedProject);
       
-      // Update local state
-      setProject(updatedProject);
-      toast.success('Նախագիծը հաջողությամբ թարմացվել է');
-      return true;
+      if (success) {
+        // Update local state after successful API call
+        setProject(updatedProject);
+        toast.success('Նախագիծը հաջողությամբ թարմացվել է');
+        return true;
+      } else {
+        toast.error('Նախագծի թարմացման ժամանակ սխալ է տեղի ունեցել');
+        return false;
+      }
     } catch (error) {
       console.error('Error updating project:', error);
       toast.error('Նախագծի թարմացման ժամանակ սխալ է տեղի ունեցել');
@@ -226,16 +158,15 @@ export const ProjectProvider: React.FC<ProjectProviderProps> = ({
       timeline,
       tasks,
       projectStatus,
-      addTimelineEvent: handleAddTimelineEvent,
-      completeTimelineEvent: handleCompleteTimelineEvent,
-      addTask: handleAddTask,
-      updateTaskStatus: handleUpdateTaskStatus,
-      submitProject: handleSubmitProject,
-      approveProject: handleApproveProject,
-      rejectProject: handleRejectProject,
+      addTimelineEvent,
+      completeTimelineEvent,
+      addTask,
+      updateTaskStatus,
+      submitProject,
+      approveProject,
+      rejectProject,
       reserveProject,
       isReserved,
-      projectMembers,
       projectReservations: projectReservationsState,
       approveReservation,
       rejectReservation,

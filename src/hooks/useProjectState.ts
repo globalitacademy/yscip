@@ -3,9 +3,8 @@ import { useState, useEffect } from 'react';
 import { v4 as uuidv4 } from 'uuid';
 import { ProjectTheme, Task, TimelineEvent } from '@/data/projectThemes';
 import { 
-  calculateProjectProgress,
-  generateSampleTimeline,
-  generateSampleTasks,
+  generateSampleTimeline, 
+  generateSampleTasks, 
   loadProjectReservations,
   isProjectReservedByUser
 } from '@/utils/projectUtils';

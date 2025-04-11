@@ -1,39 +1,38 @@
 
 import React from 'react';
-import { Calendar, Clock, Tag } from 'lucide-react';
-import { useTheme } from '@/hooks/use-theme';
+import { Badge } from '@/components/ui/badge';
+import { Building, Clock } from 'lucide-react';
 
 interface ProjectTechStackProps {
   duration?: string;
-  techStackCount: number;
+  techStackCount?: number;
   organizationName?: string;
 }
 
-const ProjectTechStack: React.FC<ProjectTechStackProps> = ({ 
-  duration, 
-  techStackCount, 
-  organizationName 
+const ProjectTechStack: React.FC<ProjectTechStackProps> = ({
+  duration,
+  techStackCount = 0,
+  organizationName
 }) => {
-  const { theme } = useTheme();
-  
   return (
-    <div className="flex flex-wrap gap-4 items-center mt-2">
+    <div className="flex flex-wrap items-center gap-4 text-white/90 text-sm">
       {duration && (
-        <div className="flex items-center gap-1 text-white/80">
-          <Clock className="h-4 w-4" />
-          <span className="text-sm">{duration}</span>
+        <div className="flex items-center gap-1.5">
+          <Clock className="h-3.5 w-3.5" />
+          <span>{duration}</span>
         </div>
       )}
       
-      <div className="flex items-center gap-1 text-white/80">
-        <Tag className="h-4 w-4" />
-        <span className="text-sm">{techStackCount} տեխնոլոգիաներ</span>
-      </div>
+      {techStackCount > 0 && (
+        <Badge variant="outline" className="text-white border-white/30 bg-white/10">
+          {techStackCount} տեխնոլոգիա
+        </Badge>
+      )}
       
       {organizationName && (
-        <div className="flex items-center gap-1 text-white/80">
-          <Calendar className="h-4 w-4" />
-          <span className="text-sm">{organizationName}</span>
+        <div className="flex items-center gap-1.5">
+          <Building className="h-3.5 w-3.5" />
+          <span>{organizationName}</span>
         </div>
       )}
     </div>

@@ -1,116 +1,94 @@
 
-import { Task, TimelineEvent } from '@/data/projectThemes';
 import { v4 as uuidv4 } from 'uuid';
+import { Task, TimelineEvent } from '@/data/projectThemes';
 
-/**
- * Calculate the progress percentage of a project based on completed tasks and timeline events
- * @param tasks Array of project tasks
- * @param timeline Array of timeline events
- * @returns Progress percentage (0-100)
- */
+// Calculate project progress based on tasks and timeline
 export const calculateProjectProgress = (tasks: Task[], timeline: TimelineEvent[]): number => {
-  if (tasks.length === 0 && timeline.length === 0) {
-    return 0;
-  }
-
+  if (tasks.length === 0 && timeline.length === 0) return 0;
+  
   let completedItems = 0;
   let totalItems = 0;
-
+  
   // Count completed tasks
   if (tasks.length > 0) {
     totalItems += tasks.length;
     completedItems += tasks.filter(task => 
-      task.status === 'done' || 
-      task.status === 'completed'
+      task.status === 'done' || task.status === 'completed'
     ).length;
   }
-
+  
   // Count completed timeline events
   if (timeline.length > 0) {
     totalItems += timeline.length;
     completedItems += timeline.filter(event => event.isCompleted).length;
   }
-
-  // Calculate percentage
+  
   return Math.round((completedItems / totalItems) * 100);
 };
 
-/**
- * Generate sample timeline events for demonstration purposes
- */
+// Generate sample timeline events for demo
 export const generateSampleTimeline = (): TimelineEvent[] => {
+  const now = new Date();
+  const oneWeekLater = new Date(now);
+  oneWeekLater.setDate(now.getDate() + 7);
+  
+  const twoWeeksLater = new Date(now);
+  twoWeeksLater.setDate(now.getDate() + 14);
+  
   return [
     {
       id: uuidv4(),
-      title: 'Նախագծի սկիզբ',
-      date: new Date(Date.now() - 14 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
-      description: 'Նախագծի պլանավորման սկիզբ',
+      title: 'Նախագծի մեկնարկ',
+      date: now.toISOString().split('T')[0],
+      description: 'Նախագծի պահանջների քննարկում և պլանավորում',
       isCompleted: true
     },
     {
       id: uuidv4(),
-      title: 'Նախագծի պահանջների սահմանում',
-      date: new Date(Date.now() - 10 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
-      description: 'Պահանջների վերլուծություն և փաստաթղթավորում',
-      isCompleted: true
-    },
-    {
-      id: uuidv4(),
-      title: 'Դիզայնի փուլ',
-      date: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
-      description: 'Նախագծի դիզայնի մշակում',
+      title: 'Ծրագրային պահանջների կազմում',
+      date: oneWeekLater.toISOString().split('T')[0],
+      description: 'Ծրագրային պահանջների վերլուծություն և փաստաթղթավորում',
       isCompleted: false
     },
     {
       id: uuidv4(),
-      title: 'Իրականացման սկիզբ',
-      date: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
-      description: 'Կոդավորման աշխատանքների սկիզբ',
-      isCompleted: false
-    },
-    {
-      id: uuidv4(),
-      title: 'Թեստավորում',
-      date: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
-      description: 'Նախագծի թեստավորում',
+      title: 'Նախնական նախատիպի ստեղծում',
+      date: twoWeeksLater.toISOString().split('T')[0],
+      description: 'Նախագծի նախնական տարբերակի մշակում',
       isCompleted: false
     }
   ];
 };
 
-/**
- * Generate sample tasks for demonstration purposes
- * @param userId User ID to assign some tasks to
- */
+// Generate sample tasks for demo
 export const generateSampleTasks = (userId: string): Task[] => {
   return [
     {
       id: uuidv4(),
-      title: 'Նախագծի պահանջների վերլուծություն',
-      description: 'Հավաքել և վերլուծել բոլոր պահանջները',
+      title: 'Տեխնիկական առաջադրանքի կազմում',
+      description: 'Նախագծի տեխնիկական առաջադրանքի մշակում և կազմում',
+      status: 'done',
+      assignee: userId,
       assignedTo: userId,
-      status: 'completed'
+      dueDate: new Date().toISOString().split('T')[0]
     },
     {
       id: uuidv4(),
-      title: 'Դիզայնի նախագծում',
-      description: 'Մշակել նախագծի դիզայնը և նախատիպերը',
+      title: 'Ճարտարապետության մշակում',
+      description: 'Նախագծի ճարտարապետության նախագծում և սխեմատիկ պատկերում',
+      status: 'inProgress',
+      assignee: userId,
       assignedTo: userId,
-      status: 'in-progress'
+      dueDate: new Date().toISOString().split('T')[0]
     },
     {
       id: uuidv4(),
-      title: 'Տվյալների բազայի մոդելավորում',
-      description: 'Մշակել տվյալների բազայի սխեման',
-      assignedTo: 'user2',
-      status: 'review'
-    },
-    {
-      id: uuidv4(),
-      title: 'Օգտագործողի միջերեսի մշակում',
-      description: 'Իրականացնել նախագծի գլխավոր էջերը',
+      title: 'UI/UX դիզայն',
+      description: 'Օգտագործողի միջերեսի նախատիպի մշակում',
+      status: 'todo',
+      assignee: userId,
       assignedTo: userId,
-      status: 'todo'
+      dueDate: new Date().toISOString().split('T')[0]
     }
   ];
 };

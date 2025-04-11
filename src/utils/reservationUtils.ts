@@ -1,106 +1,138 @@
 
 import { v4 as uuidv4 } from 'uuid';
 import { ProjectTheme } from '@/data/projectThemes';
+import { getUsersByRole } from '@/data/userRoles';
 
-export type ProjectReservation = {
+// Project reservation types
+export interface ProjectReservation {
   id: string;
   projectId: number;
-  userId: string;
-  projectTitle: string;
-  timestamp: string;
+  studentId: string;  // Required field
+  studentName: string;
+  supervisorId: string;
   status: 'pending' | 'approved' | 'rejected';
-  supervisorId?: string;
-  instructorId?: string;
-  feedback?: string;
-  studentId: string;
-  studentName?: string;
-  requestDate?: string;
+  requestDate: string;
   responseDate?: string;
+  userId: string;      // Required field
+  projectTitle: string; // Required field
+  timestamp: string;    // Required field
+  feedback?: string;
+  instructorId?: string;
+}
+
+// Load project reservations from localStorage
+export const loadProjectReservations = (): ProjectReservation[] => {
+  const reservations = localStorage.getItem('projectReservations');
+  if (reservations) {
+    try {
+      const parsed = JSON.parse(reservations);
+      // Add compatibility fields if they don't exist
+      return parsed.map((res: any) => ({
+        ...res,
+        userId: res.userId || res.studentId || '',
+        projectTitle: res.projectTitle || `Project #${res.projectId}`,
+        timestamp: res.timestamp || res.requestDate || '',
+        studentId: res.studentId || res.userId || '',
+        studentName: res.studentName || "Student",
+        requestDate: res.requestDate || res.timestamp || '',
+        id: res.id || uuidv4()
+      }));
+    } catch (e) {
+      console.error('Error parsing project reservations:', e);
+    }
+  }
+  return [];
 };
 
-export function loadProjectReservations(): ProjectReservation[] {
-  const reservationsJson = localStorage.getItem('projectReservations');
-  return reservationsJson ? JSON.parse(reservationsJson) : [];
-}
-
-export function saveProjectReservations(reservations: ProjectReservation[]): void {
+// Save project reservations to localStorage
+export const saveProjectReservations = (reservations: ProjectReservation[]) => {
   localStorage.setItem('projectReservations', JSON.stringify(reservations));
-}
+};
 
-export function isProjectReservedByUser(
+// Check if project is reserved by user
+export const isProjectReservedByUser = (
   projectId: number,
   userId: string,
-  reservations: ProjectReservation[] = loadProjectReservations()
-): boolean {
-  return reservations.some(reservation => 
-    reservation.projectId === projectId && 
-    (reservation.userId === userId || reservation.studentId === userId)
+  reservations: ProjectReservation[]
+): boolean => {
+  return reservations.some(
+    res => res.projectId === projectId && 
+           (res.studentId === userId || res.userId === userId) && 
+           (res.status === 'pending' || res.status === 'approved')
   );
-}
+};
 
-export function saveProjectReservation(
+// Save project reservation
+export const saveProjectReservation = (
   project: ProjectTheme,
-  userId: string,
+  studentId: string,
   supervisorId: string
-): boolean {
-  try {
-    const reservations = loadProjectReservations();
-    
-    // Check if already reserved by this user
-    if (isProjectReservedByUser(project.id, userId, reservations)) {
-      return false;
-    }
-    
-    // Add new reservation
-    const newReservation: ProjectReservation = {
-      id: uuidv4(),
-      projectId: project.id,
-      userId: userId,
-      studentId: userId, // Ensure studentId is always set
-      projectTitle: project.title,
-      timestamp: new Date().toISOString(),
-      status: 'pending',
-      supervisorId: supervisorId,
-      requestDate: new Date().toISOString()
-    };
-    
-    reservations.push(newReservation);
-    saveProjectReservations(reservations);
-    return true;
-  } catch (error) {
-    console.error('Error saving project reservation:', error);
-    return false;
-  }
-}
-
-export function updateReservationStatus(
-  reservationId: string,
-  status: 'approved' | 'rejected',
-  feedback: string = ''
-): ProjectReservation[] {
+): boolean => {
   const reservations = loadProjectReservations();
   
-  const updatedReservations = reservations.map(res => {
-    if (res.id === reservationId) {
-      return {
-        ...res,
-        status,
-        feedback,
-        responseDate: new Date().toISOString()
-      };
-    }
-    return res;
-  });
+  // Check if student already has a pending or approved reservation for this project
+  const existingReservation = reservations.find(
+    res => res.projectId === project.id && 
+           (res.studentId === studentId || res.userId === studentId) && 
+           (res.status === 'pending' || res.status === 'approved')
+  );
   
-  saveProjectReservations(updatedReservations);
-  return updatedReservations;
-}
+  if (existingReservation) {
+    return false;
+  }
+  
+  const now = new Date().toISOString();
+  
+  // Create new reservation
+  const newReservation: ProjectReservation = {
+    id: uuidv4(),
+    projectId: project.id,
+    studentId: studentId,
+    studentName: "Student", // In a real app, get name from user profile
+    supervisorId: supervisorId,
+    status: 'pending',
+    requestDate: now,
+    // Add compatibility fields
+    userId: studentId,
+    projectTitle: project.title,
+    timestamp: now
+  };
+  
+  reservations.push(newReservation);
+  saveProjectReservations(reservations);
+  
+  return true;
+};
 
-export function getAvailableSupervisors() {
-  // Mock data for supervisors
-  return [
-    { id: 'sup1', name: 'Տիգրան Պետրոսյան', role: 'supervisor' },
-    { id: 'sup2', name: 'Անահիտ Հակոբյան', role: 'supervisor' },
-    { id: 'sup3', name: 'Սարգիս Գևորգյան', role: 'supervisor' }
-  ];
-}
+// Update project reservation status
+export const updateReservationStatus = (
+  reservationId: string,
+  status: 'approved' | 'rejected',
+  feedback?: string
+): ProjectReservation[] => {
+  const reservations = loadProjectReservations();
+  const index = reservations.findIndex(res => res.id === reservationId);
+  
+  if (index === -1) {
+    return reservations;
+  }
+  
+  reservations[index].status = status;
+  reservations[index].responseDate = new Date().toISOString();
+  if (feedback) {
+    reservations[index].feedback = feedback;
+  }
+  
+  saveProjectReservations(reservations);
+  return reservations;
+};
+
+// Get available supervisors for selection
+export const getAvailableSupervisors = () => {
+  return getUsersByRole('supervisor').concat(getUsersByRole('project_manager')).map(supervisor => ({
+    id: supervisor.id,
+    name: supervisor.name,
+    avatar: supervisor.avatar || '',
+    role: supervisor.role
+  }));
+};
