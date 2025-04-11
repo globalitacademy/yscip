@@ -1,4 +1,3 @@
-
 import { ProjectTheme, Task, TimelineEvent } from '@/data/projectThemes';
 import { projectThemes } from '@/data/projectThemes';
 import { toast } from 'sonner';
@@ -7,6 +6,58 @@ import { supabase } from '@/integrations/supabase/client';
 
 // Helper function to simulate API delay
 const delay = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
+
+// Helper function to map database project to ProjectTheme
+const mapDbProjectToProjectTheme = (dbProject: any): ProjectTheme => {
+  return {
+    id: dbProject.id,
+    title: dbProject.title,
+    description: dbProject.description,
+    category: dbProject.category,
+    image: dbProject.image,
+    techStack: dbProject.tech_stack || [],
+    difficulty: dbProject.difficulty || 'medium',
+    duration: dbProject.duration || '',
+    createdBy: dbProject.created_by,
+    is_public: dbProject.is_public,
+    organizationName: dbProject.organization_name,
+    goal: dbProject.goal,
+    resources: dbProject.resources || [],
+    links: dbProject.links || [],
+    detailedDescription: dbProject.detailed_description,
+    requirements: dbProject.requirements || [],
+    steps: dbProject.steps || [],
+    prerequisites: dbProject.prerequisites || [],
+    learningOutcomes: dbProject.learning_outcomes || [],
+    createdAt: dbProject.created_at,
+    updatedAt: dbProject.updated_at,
+    complexity: dbProject.complexity || 'Միջին'
+  };
+};
+
+// Helper function to map timeline events
+const mapDbTimelineEventsToTimelineEvents = (dbEvents: any[]): TimelineEvent[] => {
+  return dbEvents.map(event => ({
+    id: String(event.id),
+    title: event.title,
+    date: event.date,
+    isCompleted: event.completed,
+    description: event.description
+  }));
+};
+
+// Helper function to map tasks
+const mapDbTasksToTasks = (dbTasks: any[]): Task[] => {
+  return dbTasks.map(task => ({
+    id: String(task.id),
+    title: task.title,
+    description: task.description,
+    assignedTo: task.assigned_to,
+    status: task.status as Task['status'],
+    createdAt: task.created_at,
+    completedAt: task.completed_at
+  }));
+};
 
 /**
  * Get all projects
@@ -24,30 +75,7 @@ export const getAllProjects = async (): Promise<ProjectTheme[]> => {
       
       // Map database results to ProjectTheme objects
       if (data) {
-        return data.map(dbProject => ({
-          id: dbProject.id,
-          title: dbProject.title,
-          description: dbProject.description,
-          category: dbProject.category,
-          image: dbProject.image,
-          techStack: dbProject.tech_stack || [],
-          difficulty: 'medium',
-          duration: dbProject.duration || '',
-          createdBy: dbProject.created_by,
-          is_public: dbProject.is_public,
-          organizationName: dbProject.organization_name,
-          goal: dbProject.goal,
-          resources: dbProject.resources || [],
-          links: dbProject.links || [],
-          detailedDescription: dbProject.detailed_description,
-          requirements: dbProject.requirements || [],
-          steps: dbProject.steps || [],
-          prerequisites: dbProject.prerequisites || [],
-          learningOutcomes: dbProject.learning_outcomes || [],
-          createdAt: dbProject.created_at,
-          updatedAt: dbProject.updated_at,
-          complexity: dbProject.complexity || 'Միջին'
-        }));
+        return data.map(dbProject => mapDbProjectToProjectTheme(dbProject));
       }
     }
     
@@ -81,33 +109,16 @@ export const getProjectById = async (id: number): Promise<ProjectTheme | null> =
       }
       
       if (data) {
-        const project: ProjectTheme = {
-          id: data.id,
-          title: data.title,
-          description: data.description,
-          category: data.category,
-          image: data.image,
-          techStack: data.tech_stack || [],
-          difficulty: 'medium',
-          duration: data.duration || '',
-          createdBy: data.created_by,
-          is_public: data.is_public,
-          organizationName: data.organization_name,
-          goal: data.goal,
-          resources: data.resources || [],
-          links: data.links || [],
-          detailedDescription: data.detailed_description,
-          requirements: data.requirements || [],
-          steps: data.steps || [],
-          prerequisites: data.prerequisites || [],
-          learningOutcomes: data.learning_outcomes || [],
-          createdAt: data.created_at,
-          updatedAt: data.updated_at,
-          complexity: data.complexity || 'Միջին',
-          // Include timeline events and tasks if available
-          timeline: data.timeline_events,
-          tasks: data.tasks
-        };
+        const project = mapDbProjectToProjectTheme(data);
+        
+        // Add timeline events and tasks if available
+        if (data.timeline_events) {
+          project.timeline = mapDbTimelineEventsToTimelineEvents(data.timeline_events);
+        }
+        
+        if (data.tasks) {
+          project.tasks = mapDbTasksToTasks(data.tasks);
+        }
         
         return project;
       }
@@ -147,6 +158,7 @@ export const createProject = async (project: Partial<ProjectTheme>, userId?: str
           category: newProject.category,
           image: newProject.image,
           tech_stack: newProject.techStack,
+          difficulty: newProject.difficulty,
           created_by: newProject.createdBy,
           is_public: newProject.is_public,
           organization_name: newProject.organizationName,
@@ -206,12 +218,13 @@ export const updateProject = async (projectId: number, updates: Partial<ProjectT
     
     if (supabase) {
       // Create a database-friendly object with snake_case keys
-      const dbUpdates = {
+      const dbUpdates: any = {
         title: updates.title,
         description: updates.description,
         category: updates.category,
         image: updates.image,
         tech_stack: updates.techStack,
+        difficulty: updates.difficulty,
         is_public: updates.is_public,
         organization_name: updates.organizationName,
         goal: updates.goal,
@@ -229,8 +242,8 @@ export const updateProject = async (projectId: number, updates: Partial<ProjectT
       
       // Remove undefined values
       Object.keys(dbUpdates).forEach(key => {
-        if (dbUpdates[key as keyof typeof dbUpdates] === undefined) {
-          delete dbUpdates[key as keyof typeof dbUpdates];
+        if (dbUpdates[key] === undefined) {
+          delete dbUpdates[key];
         }
       });
       
@@ -309,7 +322,7 @@ export const addTimelineEvent = async (projectId: number, event: Omit<TimelineEv
       
       if (data) {
         return {
-          id: data.id.toString(),
+          id: String(data.id),
           title: data.title,
           description: data.description,
           date: data.date,
@@ -353,7 +366,7 @@ export const completeTimelineEvent = async (projectId: number, eventId: string):
       
       if (data) {
         return {
-          id: data.id.toString(),
+          id: String(data.id),
           title: data.title,
           description: data.description,
           date: data.date,
@@ -412,7 +425,7 @@ export const addTask = async (projectId: number, task: Omit<Task, 'id'>): Promis
       
       if (data) {
         return {
-          id: data.id.toString(),
+          id: String(data.id),
           title: data.title,
           description: data.description,
           assignedTo: data.assigned_to,
@@ -456,7 +469,7 @@ export const updateTaskStatus = async (projectId: number, taskId: string, status
       
       if (data) {
         return {
-          id: data.id.toString(),
+          id: String(data.id),
           title: data.title,
           description: data.description,
           assignedTo: data.assigned_to,

@@ -1,250 +1,197 @@
 
 import React, { useState } from 'react';
-import { useProject } from '@/contexts/ProjectContext';
 import { ProjectTheme } from '@/data/projectThemes';
 import { Button } from '@/components/ui/button';
-import { Plus, ExternalLink, Trash2 } from 'lucide-react';
 import { Input } from '@/components/ui/input';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Separator } from '@/components/ui/separator';
-import { Label } from '@/components/ui/label';
+import { TrashIcon } from 'lucide-react';
+import ProjectDetailSection from '../ProjectDetailSection';
 
 interface ProjectResourcesTabProps {
   project: ProjectTheme;
-  isEditing?: boolean;
-  onSaveChanges?: (updates: Partial<ProjectTheme>) => Promise<any>;
+  isEditing: boolean;
+  onSaveChanges: (updates: Partial<ProjectTheme>) => Promise<void>;
 }
 
 const ProjectResourcesTab: React.FC<ProjectResourcesTabProps> = ({ 
   project, 
-  isEditing = false,
-  onSaveChanges = async () => false
+  isEditing,
+  onSaveChanges
 }) => {
-  const resources = project.resources || [];
-  const links = project.links || [];
+  const [resources, setResources] = useState<{ name: string; url: string }[]>(
+    project.resources || []
+  );
+  const [links, setLinks] = useState<{ name: string; url: string }[]>(
+    project.links || []
+  );
+  
   const [newResourceName, setNewResourceName] = useState('');
   const [newResourceUrl, setNewResourceUrl] = useState('');
   const [newLinkName, setNewLinkName] = useState('');
   const [newLinkUrl, setNewLinkUrl] = useState('');
-  const [isSaving, setIsSaving] = useState(false);
 
-  const handleAddResource = async () => {
-    if (!newResourceName || !newResourceUrl) return;
-    
-    const newResources = [
-      ...resources, 
-      { name: newResourceName, url: newResourceUrl }
-    ];
-    
-    setIsSaving(true);
-    try {
-      await onSaveChanges({ resources: newResources });
+  // Handle adding a new resource
+  const handleAddResource = () => {
+    if (newResourceName && newResourceUrl) {
+      const updatedResources = [...resources, { name: newResourceName, url: newResourceUrl }];
+      setResources(updatedResources);
       setNewResourceName('');
       setNewResourceUrl('');
-    } catch (error) {
-      console.error("Error adding resource:", error);
-    } finally {
-      setIsSaving(false);
+      
+      // Save immediately
+      onSaveChanges({
+        resources: updatedResources
+      });
     }
   };
 
-  const handleRemoveResource = async (index: number) => {
-    const newResources = [...resources];
-    newResources.splice(index, 1);
+  // Handle removing a resource
+  const handleRemoveResource = (index: number) => {
+    const updatedResources = [...resources];
+    updatedResources.splice(index, 1);
+    setResources(updatedResources);
     
-    setIsSaving(true);
-    try {
-      await onSaveChanges({ resources: newResources });
-    } catch (error) {
-      console.error("Error removing resource:", error);
-    } finally {
-      setIsSaving(false);
-    }
+    // Save immediately
+    onSaveChanges({
+      resources: updatedResources
+    });
   };
 
-  const handleAddLink = async () => {
-    if (!newLinkName || !newLinkUrl) return;
-    
-    const newLinks = [
-      ...links, 
-      { name: newLinkName, url: newLinkUrl }
-    ];
-    
-    setIsSaving(true);
-    try {
-      await onSaveChanges({ links: newLinks });
+  // Handle adding a new link
+  const handleAddLink = () => {
+    if (newLinkName && newLinkUrl) {
+      const updatedLinks = [...links, { name: newLinkName, url: newLinkUrl }];
+      setLinks(updatedLinks);
       setNewLinkName('');
       setNewLinkUrl('');
-    } catch (error) {
-      console.error("Error adding link:", error);
-    } finally {
-      setIsSaving(false);
+      
+      // Save immediately
+      onSaveChanges({
+        links: updatedLinks
+      });
     }
   };
 
-  const handleRemoveLink = async (index: number) => {
-    const newLinks = [...links];
-    newLinks.splice(index, 1);
+  // Handle removing a link
+  const handleRemoveLink = (index: number) => {
+    const updatedLinks = [...links];
+    updatedLinks.splice(index, 1);
+    setLinks(updatedLinks);
     
-    setIsSaving(true);
-    try {
-      await onSaveChanges({ links: newLinks });
-    } catch (error) {
-      console.error("Error removing link:", error);
-    } finally {
-      setIsSaving(false);
-    }
+    // Save immediately
+    onSaveChanges({
+      links: updatedLinks
+    });
   };
 
   return (
-    <div className="space-y-8">
-      {/* Resources section */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-2xl font-semibold">Ռեսուրսներ</CardTitle>
-        </CardHeader>
-        <CardContent>
-          {resources.length === 0 ? (
-            <p className="text-muted-foreground">Այս նախագծի համար ռեսուրսներ նշված չեն:</p>
-          ) : (
-            <ul className="space-y-2 mb-6">
-              {resources.map((resource, index) => (
-                <li key={index} className="flex items-center justify-between group hover:bg-muted/50 p-2 rounded-md transition-colors">
+    <div className="space-y-6">
+      {/* Resources Section */}
+      <ProjectDetailSection 
+        title="Ուսումնական ռեսուրսներ" 
+        isEditing={isEditing}
+      >
+        {resources && resources.length > 0 ? (
+          <ul className="space-y-2">
+            {resources.map((resource, index) => (
+              <li key={`resource-${index}`} className="flex items-center justify-between gap-2 py-2 border-b">
+                <div>
                   <a 
                     href={resource.url} 
                     target="_blank" 
                     rel="noopener noreferrer"
-                    className="text-blue-500 hover:underline flex items-center gap-2 flex-1"
+                    className="text-blue-600 dark:text-blue-400 hover:underline"
                   >
-                    <ExternalLink size={16} />
-                    <span>{resource.name}</span>
+                    {resource.name}
                   </a>
-                  {isEditing && (
-                    <Button 
-                      variant="ghost" 
-                      size="icon" 
-                      onClick={() => handleRemoveResource(index)}
-                      className="opacity-0 group-hover:opacity-100 transition-opacity"
-                    >
-                      <Trash2 size={16} className="text-red-500" />
-                    </Button>
-                  )}
-                </li>
-              ))}
-            </ul>
-          )}
-          
-          {isEditing && (
-            <div className="space-y-4 border-t pt-4 mt-4">
-              <h3 className="font-medium">Ավելացնել նոր ռեսուրս</h3>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                  <Label htmlFor="resourceName">Անվանում</Label>
-                  <Input 
-                    id="resourceName"
-                    value={newResourceName}
-                    onChange={(e) => setNewResourceName(e.target.value)}
-                    placeholder="Ռեսուրսի անվանում"
-                    className="mt-1"
-                  />
                 </div>
-                <div>
-                  <Label htmlFor="resourceUrl">URL</Label>
-                  <Input 
-                    id="resourceUrl"
-                    value={newResourceUrl}
-                    onChange={(e) => setNewResourceUrl(e.target.value)}
-                    placeholder="https://"
-                    className="mt-1"
-                  />
-                </div>
-              </div>
-              <Button 
-                onClick={handleAddResource} 
-                disabled={!newResourceName || !newResourceUrl || isSaving}
-                className="flex items-center gap-1"
-              >
-                <Plus size={16} />
-                Ավելացնել ռեսուրս
-              </Button>
+                {isEditing && (
+                  <Button 
+                    variant="ghost" 
+                    size="sm"
+                    onClick={() => handleRemoveResource(index)}
+                  >
+                    <TrashIcon className="h-4 w-4 text-red-500" />
+                  </Button>
+                )}
+              </li>
+            ))}
+          </ul>
+        ) : (
+          <p className="text-muted-foreground">Այս նախագծի համար չկան սահմանված ուսումնական ռեսուրսներ</p>
+        )}
+        
+        {isEditing && (
+          <div className="mt-4 space-y-2">
+            <div className="flex gap-2">
+              <Input 
+                placeholder="Ռեսուրսի անվանում" 
+                value={newResourceName}
+                onChange={(e) => setNewResourceName(e.target.value)}
+              />
+              <Input 
+                placeholder="URL" 
+                value={newResourceUrl}
+                onChange={(e) => setNewResourceUrl(e.target.value)}
+              />
+              <Button onClick={handleAddResource}>Ավելացնել</Button>
             </div>
-          )}
-        </CardContent>
-      </Card>
+          </div>
+        )}
+      </ProjectDetailSection>
       
-      {/* Links section */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-2xl font-semibold">Օգտակար հղումներ</CardTitle>
-        </CardHeader>
-        <CardContent>
-          {links.length === 0 ? (
-            <p className="text-muted-foreground">Այս նախագծի համար հղումներ նշված չեն:</p>
-          ) : (
-            <ul className="space-y-2 mb-6">
-              {links.map((link, index) => (
-                <li key={index} className="flex items-center justify-between group hover:bg-muted/50 p-2 rounded-md transition-colors">
+      {/* Links Section */}
+      <ProjectDetailSection 
+        title="Օգտակար հղումներ" 
+        isEditing={isEditing}
+      >
+        {links && links.length > 0 ? (
+          <ul className="space-y-2">
+            {links.map((link, index) => (
+              <li key={`link-${index}`} className="flex items-center justify-between gap-2 py-2 border-b">
+                <div>
                   <a 
                     href={link.url} 
                     target="_blank" 
                     rel="noopener noreferrer"
-                    className="text-blue-500 hover:underline flex items-center gap-2 flex-1"
+                    className="text-blue-600 dark:text-blue-400 hover:underline"
                   >
-                    <ExternalLink size={16} />
-                    <span>{link.name}</span>
+                    {link.name}
                   </a>
-                  {isEditing && (
-                    <Button 
-                      variant="ghost" 
-                      size="icon" 
-                      onClick={() => handleRemoveLink(index)}
-                      className="opacity-0 group-hover:opacity-100 transition-opacity"
-                    >
-                      <Trash2 size={16} className="text-red-500" />
-                    </Button>
-                  )}
-                </li>
-              ))}
-            </ul>
-          )}
-          
-          {isEditing && (
-            <div className="space-y-4 border-t pt-4 mt-4">
-              <h3 className="font-medium">Ավելացնել նոր հղում</h3>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                  <Label htmlFor="linkName">Անվանում</Label>
-                  <Input 
-                    id="linkName"
-                    value={newLinkName}
-                    onChange={(e) => setNewLinkName(e.target.value)}
-                    placeholder="Հղման անվանում"
-                    className="mt-1"
-                  />
                 </div>
-                <div>
-                  <Label htmlFor="linkUrl">URL</Label>
-                  <Input 
-                    id="linkUrl"
-                    value={newLinkUrl}
-                    onChange={(e) => setNewLinkUrl(e.target.value)}
-                    placeholder="https://"
-                    className="mt-1"
-                  />
-                </div>
-              </div>
-              <Button 
-                onClick={handleAddLink} 
-                disabled={!newLinkName || !newLinkUrl || isSaving}
-                className="flex items-center gap-1"
-              >
-                <Plus size={16} />
-                Ավելացնել հղում
-              </Button>
+                {isEditing && (
+                  <Button 
+                    variant="ghost" 
+                    size="sm"
+                    onClick={() => handleRemoveLink(index)}
+                  >
+                    <TrashIcon className="h-4 w-4 text-red-500" />
+                  </Button>
+                )}
+              </li>
+            ))}
+          </ul>
+        ) : (
+          <p className="text-muted-foreground">Այս նախագծի համար չկան սահմանված օգտակար հղումներ</p>
+        )}
+        
+        {isEditing && (
+          <div className="mt-4 space-y-2">
+            <div className="flex gap-2">
+              <Input 
+                placeholder="Հղման անվանում" 
+                value={newLinkName}
+                onChange={(e) => setNewLinkName(e.target.value)}
+              />
+              <Input 
+                placeholder="URL" 
+                value={newLinkUrl}
+                onChange={(e) => setNewLinkUrl(e.target.value)}
+              />
+              <Button onClick={handleAddLink}>Ավելացնել</Button>
             </div>
-          )}
-        </CardContent>
-      </Card>
+          </div>
+        )}
+      </ProjectDetailSection>
     </div>
   );
 };
