@@ -40,7 +40,7 @@ const ProjectResourcesTab: React.FC<ProjectResourcesTabProps> = ({
       // Save immediately
       onSaveChanges({
         resources: updatedResources
-      });
+      } as Partial<ProjectTheme>);
     }
   };
 
@@ -53,7 +53,7 @@ const ProjectResourcesTab: React.FC<ProjectResourcesTabProps> = ({
     // Save immediately
     onSaveChanges({
       resources: updatedResources
-    });
+    } as Partial<ProjectTheme>);
   };
 
   // Handle adding a new link
@@ -67,7 +67,7 @@ const ProjectResourcesTab: React.FC<ProjectResourcesTabProps> = ({
       // Save immediately
       onSaveChanges({
         links: updatedLinks
-      });
+      } as Partial<ProjectTheme>);
     }
   };
 
@@ -80,7 +80,7 @@ const ProjectResourcesTab: React.FC<ProjectResourcesTabProps> = ({
     // Save immediately
     onSaveChanges({
       links: updatedLinks
-    });
+    } as Partial<ProjectTheme>);
   };
 
   return (

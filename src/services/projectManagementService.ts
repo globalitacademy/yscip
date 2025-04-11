@@ -1,3 +1,4 @@
+
 import { ProjectTheme, TimelineEvent, Task } from '@/data/projectThemes';
 import { ProjectReservation } from '@/types/project';
 import { toast } from 'sonner';
@@ -315,7 +316,8 @@ export async function reserveProject(reservation: Omit<ProjectReservation, 'id' 
     
     // Check if project is already reserved by this user
     const existingReservation = reservations.find(
-      r => r.projectId === reservation.projectId && r.studentId === reservation.studentId
+      r => r.projectId === reservation.projectId && 
+           (r.studentId === reservation.studentId || r.studentId === reservation.userId)
     );
     
     if (existingReservation) {
@@ -330,10 +332,10 @@ export async function reserveProject(reservation: Omit<ProjectReservation, 'id' 
       ...reservation,
       id: uuidv4(),
       reservedAt: new Date().toISOString(),
-      studentId: reservation.studentId || reservation.userId
-    };
+      studentId: reservation.studentId || reservation.userId || ''
+    } as ProjectReservation;
     
-    reservations.push(newReservation as ProjectReservation);
+    reservations.push(newReservation);
     
     // Save updated reservations
     saveProjectReservations(reservations);

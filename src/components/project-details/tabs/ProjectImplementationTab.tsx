@@ -1,26 +1,32 @@
 
 import React, { useState } from 'react';
-import { ProjectTheme, Task } from '@/data/projectThemes';
+import { ProjectTheme, Task, TimelineEvent } from '@/data/projectThemes';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Input } from '@/components/ui/input';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import ProjectTaskList from '@/components/project-details/ProjectTaskList';
 import ProjectDetailSection from '../ProjectDetailSection';
 
 interface ProjectImplementationTabProps {
-  project: ProjectTheme;
-  tasks: Task[];
+  project?: ProjectTheme;
+  timeline?: TimelineEvent[];
+  tasks?: Task[];
+  projectStatus?: 'not_submitted' | 'pending' | 'approved' | 'rejected';
   isEditing: boolean;
-  addTask: (task: Omit<Task, 'id'>) => void;
-  updateTaskStatus: (taskId: string, status: Task['status']) => void;
+  addTimelineEvent?: (event: Omit<TimelineEvent, 'id'>) => void;
+  completeTimelineEvent?: (eventId: string) => void;
+  addTask?: (task: Omit<Task, 'id'>) => void;
+  updateTaskStatus?: (taskId: string, status: Task['status']) => void;
+  submitProject?: (feedback: string) => void;
+  approveProject?: (feedback: string) => void;
+  rejectProject?: (feedback: string) => void;
   onSaveChanges: (updates: Partial<ProjectTheme>) => Promise<void>;
 }
 
 const ProjectImplementationTab: React.FC<ProjectImplementationTabProps> = ({ 
-  project, 
-  tasks,
+  project = {} as ProjectTheme, 
+  tasks = [],
   isEditing,
   addTask,
   updateTaskStatus,
@@ -52,7 +58,7 @@ const ProjectImplementationTab: React.FC<ProjectImplementationTabProps> = ({
     // Save immediately
     onSaveChanges({
       implementationSteps: updatedSteps
-    });
+    } as Partial<ProjectTheme>);
   };
 
   const handleRemoveStep = (index: number) => {
@@ -63,7 +69,7 @@ const ProjectImplementationTab: React.FC<ProjectImplementationTabProps> = ({
     // Save immediately
     onSaveChanges({
       implementationSteps: updatedSteps
-    });
+    } as Partial<ProjectTheme>);
   };
 
   const handleAddRequirement = () => {
@@ -76,7 +82,7 @@ const ProjectImplementationTab: React.FC<ProjectImplementationTabProps> = ({
     // Save immediately
     onSaveChanges({
       requirements: updatedRequirements
-    });
+    } as Partial<ProjectTheme>);
   };
 
   const handleRemoveRequirement = (index: number) => {
@@ -87,7 +93,7 @@ const ProjectImplementationTab: React.FC<ProjectImplementationTabProps> = ({
     // Save immediately
     onSaveChanges({
       requirements: updatedRequirements
-    });
+    } as Partial<ProjectTheme>);
   };
 
   return (
@@ -208,8 +214,8 @@ const ProjectImplementationTab: React.FC<ProjectImplementationTabProps> = ({
           <ProjectTaskList 
             tasks={tasks} 
             isEditing={isEditing}
-            onAddTask={addTask}
-            onUpdateTaskStatus={updateTaskStatus}
+            onAddTask={addTask || (() => {})}
+            onUpdateTaskStatus={updateTaskStatus || (() => {})}
           />
         </TabsContent>
       </Tabs>

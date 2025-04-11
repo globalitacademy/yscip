@@ -33,7 +33,8 @@ const ProjectOverviewTab: React.FC = () => {
       ...(project.goal !== undefined && { goal: project.goal })
     };
     
-    return await updateProject(updatedData);
+    await updateProject(updatedData);
+    return;
   };
 
   return (

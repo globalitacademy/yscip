@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Header from '@/components/Header';
@@ -83,7 +84,7 @@ const ProjectCreatePage: React.FC = () => {
         is_public: isPublic,
         resources,
         links,
-      };
+      } as Partial<ProjectTheme>;
       
       // Create project in the database and get the response
       const createdProject = await createProject(newProject, user?.id);

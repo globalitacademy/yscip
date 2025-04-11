@@ -1,14 +1,23 @@
 
-import React from 'react';
-import { ArrowLeft, Calendar, Clock, Tag, Users } from 'lucide-react';
+import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { 
+  Calendar, 
+  Clock, 
+  Edit2, 
+  ArrowLeft, 
+  Share2, 
+  BookOpen,
+  Users,
+  Tag,
+  GraduationCap
+} from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { useProject } from '@/contexts/ProjectContext';
+import { Badge } from '@/components/ui/badge';
 import { ProjectTheme } from '@/data/projectThemes';
-import { getProjectImage } from '@/lib/getProjectImage';
-import ProjectHeaderActions from './ProjectHeaderActions';
-import ProjectBannerBackground from './ProjectBannerBackground';
-import ProjectTechStack from './ProjectTechStack';
+import { useProject } from '@/contexts/ProjectContext';
+import { useAuth } from '@/contexts/AuthContext';
+import { useTheme } from '@/hooks/use-theme';
 
 interface ProjectHeaderBannerProps {
   project: ProjectTheme;
@@ -16,112 +25,156 @@ interface ProjectHeaderBannerProps {
 
 const ProjectHeaderBanner: React.FC<ProjectHeaderBannerProps> = ({ project }) => {
   const navigate = useNavigate();
-  const { isEditing, setIsEditing, canEdit, updateProject } = useProject();
-  const [isSaving, setIsSaving] = React.useState(false);
-  const [bannerImage, setBannerImage] = React.useState(project.image || '');
-  const [title, setTitle] = React.useState(project.title || '');
-  const [description, setDescription] = React.useState(project.description || '');
+  const { canEdit, setIsEditing, isEditing, projectProgress } = useProject();
+  const { user } = useAuth();
+  const { theme } = useTheme();
+  const [copied, setCopied] = useState(false);
 
-  const handleEditClick = async () => {
-    if (isEditing) {
-      // Save changes
-      setIsSaving(true);
-      try {
-        // Update project with new values
-        const success = await updateProject({ 
-          title, 
-          description,
-          image: bannerImage
-        });
-        
-        if (success) {
-          setIsEditing(false);
-        }
-      } catch (error) {
-        console.error('Failed to update project:', error);
-      } finally {
-        setIsSaving(false);
-      }
-    } else {
-      // Start editing
-      setIsEditing(true);
-    }
+  // Get placeholder image if project image is missing
+  const projectImage = project.bannerImage || project.image || `https://source.unsplash.com/random/1200x400/?${project.category.toLowerCase()}`;
+  
+  const handleEditToggle = () => {
+    setIsEditing(!isEditing);
+  };
+  
+  const handleShare = () => {
+    navigator.clipboard.writeText(window.location.href);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
   };
 
-  const handleCancelEdit = () => {
-    // Reset values to original
-    setTitle(project.title || '');
-    setDescription(project.description || '');
-    setBannerImage(project.image || '');
-    setIsEditing(false);
+  const getCategoryColor = (category: string) => {
+    const categoryColorMap: Record<string, string> = {
+      'Web Development': 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200',
+      'Mobile App Development': 'bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200',
+      'AI & Machine Learning': 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200',
+      'Data Science': 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200',
+      'Cybersecurity': 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200',
+      'DevOps': 'bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-200',
+      'UI/UX Design': 'bg-pink-100 text-pink-800 dark:bg-pink-900 dark:text-pink-200',
+    };
+    
+    return categoryColorMap[category] || 'bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-200';
   };
-
-  const handleImageChange = (url: string) => {
-    setBannerImage(url);
-  };
-
+  
   return (
-    <div className="relative pb-6 mb-6">
-      {/* Banner background */}
-      <ProjectBannerBackground 
-        image={bannerImage}
-        isEditing={isEditing}
-        canEdit={canEdit}
-        onImageChange={handleImageChange}
-        onEditClick={handleEditClick}
-      />
+    <div className="relative">
+      {/* Banner Image */}
+      <div 
+        className="h-64 md:h-96 w-full bg-cover bg-center relative" 
+        style={{ backgroundImage: `url('${projectImage}')` }}
+      >
+        <div className="absolute inset-0 bg-gradient-to-b from-transparent to-black opacity-70"></div>
+      </div>
       
-      {/* Content overlaid on the banner */}
-      <div className="container mx-auto px-4 relative pt-72 md:pt-96">
-        <Button 
-          variant="outline" 
+      {/* Back Button */}
+      <div className="absolute top-4 left-4">
+        <Button
+          variant="secondary"
           size="sm"
-          className="mb-4 bg-white/10 hover:bg-white/20 text-white border-white/30"
           onClick={() => navigate('/projects')}
+          className="flex items-center gap-1 bg-white/80 backdrop-blur-sm hover:bg-white/90 dark:bg-gray-900/80 dark:hover:bg-gray-900/90"
         >
-          <ArrowLeft className="h-4 w-4 mr-2" /> Վերադառնալ նախագծերին
+          <ArrowLeft className="h-4 w-4" />
+          <span>Նախագծերի էջ</span>
+        </Button>
+      </div>
+      
+      {/* Edit/Share Buttons */}
+      <div className="absolute top-4 right-4 flex gap-2">
+        <Button
+          variant="secondary"
+          size="sm"
+          onClick={handleShare}
+          className="flex items-center gap-1 bg-white/80 backdrop-blur-sm hover:bg-white/90 dark:bg-gray-900/80 dark:hover:bg-gray-900/90"
+        >
+          <Share2 className="h-4 w-4" />
+          <span>{copied ? 'Պատճենված է' : 'Կիսվել'}</span>
         </Button>
         
-        <div className="flex flex-col md:flex-row justify-between gap-4 items-start md:items-end">
-          <div className="space-y-2 max-w-3xl">
-            {isEditing ? (
-              <input
-                type="text"
-                value={title}
-                onChange={(e) => setTitle(e.target.value)}
-                className="text-3xl md:text-4xl font-bold text-white bg-transparent border-b border-white/30 focus:border-white outline-none pb-1 w-full"
-                placeholder="Նախագծի վերնագիր"
+        {canEdit && (
+          <Button
+            variant={isEditing ? "destructive" : "secondary"}
+            size="sm"
+            onClick={handleEditToggle}
+            className={`flex items-center gap-1 ${
+              isEditing 
+                ? 'bg-red-500/80 hover:bg-red-500/90' 
+                : 'bg-white/80 backdrop-blur-sm hover:bg-white/90 dark:bg-gray-900/80 dark:hover:bg-gray-900/90'
+            }`}
+          >
+            <Edit2 className="h-4 w-4" />
+            <span>{isEditing ? 'Ավարտել խմբագրումը' : 'Խմբագրել'}</span>
+          </Button>
+        )}
+      </div>
+      
+      {/* Content Card */}
+      <div className="container mx-auto px-4">
+        <div className="relative -mt-20 md:-mt-28 bg-white dark:bg-gray-900 rounded-t-lg shadow-md p-6 mb-8">
+          <div className="flex flex-col md:flex-row gap-6 items-start">
+            {/* Project Image */}
+            <div className="hidden md:block flex-shrink-0">
+              <div 
+                className="w-32 h-32 rounded-lg overflow-hidden border-4 border-white dark:border-gray-800 shadow-md"
+                style={{ backgroundImage: `url('${project.image || `https://source.unsplash.com/random/150x150/?${project.category.toLowerCase()}`}')`, backgroundSize: 'cover', backgroundPosition: 'center' }}
               />
-            ) : (
-              <h1 className="text-3xl md:text-4xl font-bold text-white">{title}</h1>
-            )}
+            </div>
             
-            {isEditing ? (
-              <textarea
-                value={description}
-                onChange={(e) => setDescription(e.target.value)}
-                className="text-sm md:text-base text-white/80 bg-transparent border border-white/30 focus:border-white outline-none p-2 w-full rounded-md resize-none"
-                rows={3}
-                placeholder="Նախագծի համառոտ նկարագրություն"
-              />
-            ) : (
-              <p className="text-sm md:text-base text-white/80">{description}</p>
-            )}
-            
-            <ProjectTechStack 
-              duration={project.duration}
-              techStackCount={project.techStack?.length || 0}
-              organizationName={project.organizationName}
-            />
+            {/* Project Info */}
+            <div className="flex-grow">
+              <div className="flex flex-wrap gap-2 mb-3">
+                <Badge className={`${getCategoryColor(project.category)}`}>
+                  {project.category}
+                </Badge>
+                <Badge variant="outline" className="flex items-center gap-1">
+                  <BookOpen className="h-3 w-3" />
+                  {project.complexity}
+                </Badge>
+                <Badge variant="outline" className="flex items-center gap-1">
+                  <Clock className="h-3 w-3" />
+                  {project.duration}
+                </Badge>
+                {project.organizationName && (
+                  <Badge variant="outline" className="flex items-center gap-1">
+                    <GraduationCap className="h-3 w-3" />
+                    {project.organizationName}
+                  </Badge>
+                )}
+              </div>
+              
+              <h1 className="text-2xl md:text-3xl font-bold mb-2">{project.title}</h1>
+              
+              <p className="text-gray-600 dark:text-gray-300 mb-4">{project.description}</p>
+              
+              {project.technologies && project.technologies.length > 0 && (
+                <div className="flex flex-wrap gap-2 mt-4">
+                  {project.technologies.map((tech, index) => (
+                    <Badge variant="secondary" key={index} className="flex items-center gap-1">
+                      <Tag className="h-3 w-3" />
+                      {tech}
+                    </Badge>
+                  ))}
+                </div>
+              )}
+              
+              {/* Progress Bar */}
+              {projectProgress > 0 && (
+                <div className="mt-6">
+                  <div className="flex justify-between mb-1 text-sm">
+                    <span>Առաջընթաց</span>
+                    <span>{projectProgress}%</span>
+                  </div>
+                  <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
+                    <div 
+                      className="bg-primary h-2 rounded-full transition-all" 
+                      style={{ width: `${projectProgress}%` }}
+                    ></div>
+                  </div>
+                </div>
+              )}
+            </div>
           </div>
-          
-          <ProjectHeaderActions 
-            canEdit={canEdit} 
-            isEditing={isEditing}
-            isSaving={isSaving}
-            onEditClick={handleEditClick}
-            onCancelEdit={handleCancelEdit}
-          />
         </div>
       </div>
     </div>
