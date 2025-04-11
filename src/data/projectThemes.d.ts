@@ -23,6 +23,15 @@ export interface ProjectTheme {
   implementationSteps?: { step: string; description: string }[];
   requirements?: string[];
   difficulty?: string;
+  techStack?: string[];
+  detailedDescription?: string;
+  steps?: string[];
+  prerequisites?: string[];
+  learningOutcomes?: string[];
+  is_public?: boolean;
+  createdAt?: string;
+  updatedAt?: string;
+  status?: string;
 }
 
 export type TimelineEvent = {

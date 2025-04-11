@@ -1,14 +1,13 @@
-
-import { Project, ProjectReservation } from '@/types/project';
 import { ProjectTheme, TimelineEvent, Task } from '@/data/projectThemes';
+import { ProjectReservation } from '@/types/project';
 import { toast } from 'sonner';
 import { v4 as uuidv4 } from 'uuid';
 import { loadProjectReservations, saveProjectReservations } from '@/utils/projectUtils';
 
 /**
- * Mock function to simulate saving a project to the database
+ * Creates a new project in the database
  */
-export async function saveProject(project: Partial<ProjectTheme>): Promise<ProjectTheme> {
+export async function createProject(project: Partial<ProjectTheme>, userId?: string): Promise<ProjectTheme> {
   // Simulate API delay
   await new Promise(resolve => setTimeout(resolve, 500));
   
@@ -24,14 +23,20 @@ export async function saveProject(project: Partial<ProjectTheme>): Promise<Proje
     category: project.category || 'Web Development',
     image: project.image || '/placeholder.svg',
     complexity: project.complexity || 'Միջին',
-    technologies: project.technologies || [],
+    technologies: project.technologies || project.techStack || [],
     duration: project.duration || '2-3 շաբաթ',
-    createdBy: project.createdBy || '',
+    createdBy: project.createdBy || userId || '',
     goal: project.goal || '',
     resources: project.resources || [],
     links: project.links || [],
     requirements: project.requirements || [],
-    difficulty: project.difficulty || 'Միջին'
+    difficulty: project.difficulty || 'Միջին',
+    implementationSteps: project.implementationSteps || [],
+    organizationName: project.organizationName || '',
+    detailedDescription: project.detailedDescription || '',
+    isPublic: project.isPublic || project.is_public || false,
+    createdAt: project.createdAt || new Date().toISOString(),
+    updatedAt: new Date().toISOString()
   };
   
   // Add new project to array
@@ -300,7 +305,7 @@ export async function updateProject(
 /**
  * Reserve a project
  */
-export async function reserveProject(reservation: ProjectReservation): Promise<{ success: boolean; message: string }> {
+export async function reserveProject(reservation: Omit<ProjectReservation, 'id' | 'reservedAt'>): Promise<{ success: boolean; message: string }> {
   // Simulate API delay
   await new Promise(resolve => setTimeout(resolve, 500));
   
@@ -324,10 +329,11 @@ export async function reserveProject(reservation: ProjectReservation): Promise<{
     const newReservation = {
       ...reservation,
       id: uuidv4(),
-      reservedAt: new Date().toISOString()
+      reservedAt: new Date().toISOString(),
+      studentId: reservation.studentId || reservation.userId
     };
     
-    reservations.push(newReservation);
+    reservations.push(newReservation as ProjectReservation);
     
     // Save updated reservations
     saveProjectReservations(reservations);

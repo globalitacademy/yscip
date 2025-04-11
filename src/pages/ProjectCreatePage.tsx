@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Header from '@/components/Header';
@@ -72,6 +71,7 @@ const ProjectCreatePage: React.FC = () => {
         category,
         complexity,
         duration,
+        technologies: techStack,
         techStack,
         image: projectImage,
         organizationName,
@@ -79,6 +79,7 @@ const ProjectCreatePage: React.FC = () => {
         prerequisites,
         goal,
         learningOutcomes,
+        isPublic,
         is_public: isPublic,
         resources,
         links,
