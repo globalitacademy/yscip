@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
 import { Toaster } from 'sonner';
@@ -12,7 +11,16 @@ import RegisterPage from './pages/RegisterPage';
 import VerifyEmail from './pages/VerifyEmail';
 import NotFound from './pages/NotFound';
 import ModuleDetailPage from './pages/ModuleDetailPage';
-import ProjectsPage from './pages/ProjectsPage'; // Import the new page
+import ProjectsPage from './pages/ProjectsPage'; 
+
+// New Pages
+import Categories from './pages/Categories';
+import About from './pages/About';
+import Contact from './pages/Contact';
+import ProgrammingResources from './pages/ProgrammingResources';
+import DesignInspiration from './pages/DesignInspiration';
+import LearningPaths from './pages/LearningPaths';
+import News from './pages/News';
 
 // Admin Pages
 import UserManagementPage from './pages/UserManagementPage';
@@ -61,6 +69,15 @@ function App() {
             
             {/* Projects Page Route */}
             <Route path="/projects" element={<ProjectsPage />} />
+
+            {/* New Page Routes */}
+            <Route path="/categories" element={<Categories />} />
+            <Route path="/about" element={<About />} />
+            <Route path="/contact" element={<Contact />} />
+            <Route path="/programming-resources" element={<ProgrammingResources />} />
+            <Route path="/design-inspiration" element={<DesignInspiration />} />
+            <Route path="/learning-paths" element={<LearningPaths />} />
+            <Route path="/news" element={<News />} />
             
             {/* Admin Routes */}
             <Route path="/admin" element={<AdminRedirectPage />} />

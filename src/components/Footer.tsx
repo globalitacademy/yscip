@@ -1,8 +1,11 @@
+
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { Github, Twitter, Linkedin, Mail } from 'lucide-react';
+import { Github, Twitter, Linkedin, Mail, Book, Info, Phone, Image, BookOpen, Layers, FileText } from 'lucide-react';
+
 const Footer: React.FC = () => {
-  return <footer className="border-t border-border bg-card py-12 mt-12">
+  return (
+    <footer className="border-t border-border bg-card py-12 mt-12">
       <div className="container px-4 mx-auto">
         <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
           <div className="md:col-span-2">
@@ -31,23 +34,33 @@ const Footer: React.FC = () => {
             <h3 className="font-medium mb-4">Նավիգացիա</h3>
             <ul className="space-y-3">
               <li>
-                <Link to="/" className="text-muted-foreground hover:text-primary transition-colors">
+                <Link to="/" className="text-muted-foreground hover:text-primary transition-colors flex items-center">
+                  <Layers className="mr-2 h-4 w-4" />
                   Գլխավոր
                 </Link>
               </li>
               <li>
-                <Link to="/categories" className="text-muted-foreground hover:text-primary transition-colors">
+                <Link to="/categories" className="text-muted-foreground hover:text-primary transition-colors flex items-center">
+                  <Layers className="mr-2 h-4 w-4" />
                   Կատեգորիաներ
                 </Link>
               </li>
               <li>
-                <Link to="/about" className="text-muted-foreground hover:text-primary transition-colors">
+                <Link to="/about" className="text-muted-foreground hover:text-primary transition-colors flex items-center">
+                  <Info className="mr-2 h-4 w-4" />
                   Մեր մասին
                 </Link>
               </li>
               <li>
-                <Link to="/contact" className="text-muted-foreground hover:text-primary transition-colors">
+                <Link to="/contact" className="text-muted-foreground hover:text-primary transition-colors flex items-center">
+                  <Phone className="mr-2 h-4 w-4" />
                   Կապ
+                </Link>
+              </li>
+              <li>
+                <Link to="/news" className="text-muted-foreground hover:text-primary transition-colors flex items-center">
+                  <FileText className="mr-2 h-4 w-4" />
+                  Նորություններ
                 </Link>
               </li>
             </ul>
@@ -57,24 +70,22 @@ const Footer: React.FC = () => {
             <h3 className="font-medium mb-4">Ռեսուրսներ</h3>
             <ul className="space-y-3">
               <li>
-                <a href="#" className="text-muted-foreground hover:text-primary transition-colors">
+                <Link to="/programming-resources" className="text-muted-foreground hover:text-primary transition-colors flex items-center">
+                  <Book className="mr-2 h-4 w-4" />
                   Ծրագրավորման ռեսուրսներ
-                </a>
+                </Link>
               </li>
               <li>
-                <a href="#" className="text-muted-foreground hover:text-primary transition-colors">
+                <Link to="/design-inspiration" className="text-muted-foreground hover:text-primary transition-colors flex items-center">
+                  <Image className="mr-2 h-4 w-4" />
                   Դիզայնի ոգեշնչում
-                </a>
+                </Link>
               </li>
               <li>
-                <a href="#" className="text-muted-foreground hover:text-primary transition-colors">
+                <Link to="/learning-paths" className="text-muted-foreground hover:text-primary transition-colors flex items-center">
+                  <BookOpen className="mr-2 h-4 w-4" />
                   Ուսումնական ուղիներ
-                </a>
-              </li>
-              <li>
-                <a href="#" className="text-muted-foreground hover:text-primary transition-colors">
-                  Նորություններ
-                </a>
+                </Link>
               </li>
             </ul>
           </div>
@@ -94,6 +105,8 @@ const Footer: React.FC = () => {
           </div>
         </div>
       </div>
-    </footer>;
+    </footer>
+  );
 };
+
 export default Footer;
