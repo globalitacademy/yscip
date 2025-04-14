@@ -14,7 +14,7 @@ const ProjectHeader: React.FC = () => {
 
   if (!project) return null;
   
-  return <ProjectHeaderBanner project={project} />;
+  return <ProjectHeaderBanner project={project} isEditing={isEditing || false} />;
 };
 
 export default ProjectHeader;

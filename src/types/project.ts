@@ -11,7 +11,7 @@ export interface ProjectReservation {
   supervisorId?: string;
   instructorId?: string;
   feedback?: string;
-  studentId?: string;
+  studentId?: string; // Make this optional to align with usage
   studentName?: string;
   requestDate?: string;
   responseDate?: string;

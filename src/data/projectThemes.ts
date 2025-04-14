@@ -1,4 +1,3 @@
-
 import { LucideIcon } from 'lucide-react';
 import { BrainCircuit, Code, LayoutDashboard, Rocket, Sparkles, Terminal, Wrench } from 'lucide-react';
 
@@ -7,9 +6,12 @@ export interface ProjectTheme {
   title: string;
   description: string;
   image?: string;
+  bannerImage?: string;
   category: string;
   techStack?: string[];
+  technologies?: string[];
   complexity?: string;
+  difficulty?: string;
   duration?: string;
   createdBy?: string;
   createdAt?: string;
@@ -23,6 +25,11 @@ export interface ProjectTheme {
   status?: string;
   timeline?: TimelineEvent[];
   tasks?: Task[];
+  goal?: string;
+  resources?: string[];
+  links?: { title: string; url: string }[];
+  requirements?: string[];
+  implementationSteps?: string[];
 }
 
 export interface Task {

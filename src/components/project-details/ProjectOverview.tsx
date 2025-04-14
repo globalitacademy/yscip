@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { ProjectTheme } from '@/data/projectThemes';
@@ -40,7 +41,8 @@ const ProjectOverview: React.FC<ProjectOverviewProps> = ({
     steps: project.steps || [],
     learningOutcomes: project.learningOutcomes || [],
     prerequisites: project.prerequisites || [],
-    organizationName: project.organizationName
+    organizationName: project.organizationName,
+    goal: project.goal || ''
   });
   const [isSaving, setIsSaving] = useState(false);
 
@@ -50,7 +52,8 @@ const ProjectOverview: React.FC<ProjectOverviewProps> = ({
       steps: project.steps || [],
       learningOutcomes: project.learningOutcomes || [],
       prerequisites: project.prerequisites || [],
-      organizationName: project.organizationName
+      organizationName: project.organizationName,
+      goal: project.goal || ''
     });
   }, [project, isEditing]);
 
@@ -79,7 +82,8 @@ const ProjectOverview: React.FC<ProjectOverviewProps> = ({
         steps: project.steps,
         learningOutcomes: project.learningOutcomes,
         prerequisites: project.prerequisites,
-        organizationName: project.organizationName
+        organizationName: project.organizationName,
+        goal: project.goal
       }) !== JSON.stringify(editedProject);
       
       if (hasChanges) {
@@ -87,6 +91,10 @@ const ProjectOverview: React.FC<ProjectOverviewProps> = ({
       }
     }
   }, [isEditing]);
+
+  // Use techStack if available, fallback to technologies
+  const techStack = project.techStack || project.technologies || [];
+  const techStackCount = techStack.length;
 
   return (
     <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
