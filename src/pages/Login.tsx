@@ -6,11 +6,10 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import LoginForm from '@/components/auth/LoginForm';
 import RegistrationForm from '@/components/auth/RegistrationForm';
 import DemoAccounts from '@/components/auth/DemoAccounts';
-import DeveloperInfo from '@/components/auth/login/DeveloperInfo';
-import VerificationAlert from '@/components/auth/verification/VerificationAlert';
 import { useDemoLogin } from '@/hooks/useDemoLogin';
 import { useVerification } from '@/hooks/useVerification';
 import { useAuth } from '@/contexts/AuthContext';
+import VerificationAlert from '@/components/auth/verification/VerificationAlert';
 
 const Login: React.FC = () => {
   const { isLoggingIn, handleQuickLogin } = useDemoLogin();
@@ -56,7 +55,7 @@ const Login: React.FC = () => {
               
               <TabsContent value="login">
                 <LoginForm />
-                <DeveloperInfo />
+                {/* Removed DeveloperInfo component */}
               </TabsContent>
               
               <TabsContent value="register">
@@ -88,3 +87,4 @@ const Login: React.FC = () => {
 };
 
 export default Login;
+
