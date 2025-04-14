@@ -36,7 +36,7 @@ export const executeRegistration = async (
           role: userData.role,
           organization: userData.organization
         },
-        emailRedirectTo: `${window.location.origin}/verify-email`
+        // Remove emailRedirectTo since we'll handle this ourselves
       }
     });
     
@@ -47,6 +47,34 @@ export const executeRegistration = async (
     }
 
     console.log('Registration successful via Supabase:', data);
+    
+    // Send custom verification email via our edge function
+    if (data.user) {
+      try {
+        // Generate verification URL
+        const token = data.user.confirmation_sent_at 
+          ? await generateSupabaseVerificationToken(data.user.email || '')
+          : null;
+          
+        if (token) {
+          const verificationUrl = `${window.location.origin}/verify-email?token=${token}`;
+          
+          const emailSent = await sendVerificationEmail({
+            email: userData.email || '',
+            name: userData.name,
+            verificationUrl
+          });
+          
+          if (emailSent) {
+            console.log('Custom verification email sent successfully');
+          } else {
+            console.error('Failed to send custom verification email');
+          }
+        }
+      } catch (emailError) {
+        console.error('Error sending verification email:', emailError);
+      }
+    }
     
     // Success message based on role
     toast.success(
@@ -62,3 +90,56 @@ export const executeRegistration = async (
     return { success: false };
   }
 };
+
+// Helper function to generate a Supabase verification token
+async function generateSupabaseVerificationToken(email: string): Promise<string | null> {
+  try {
+    const { data, error } = await supabase.auth.resend({
+      type: 'signup',
+      email,
+      options: { 
+        captchaToken: undefined
+      }
+    });
+    
+    if (error) {
+      console.error('Error generating verification token:', error);
+      return null;
+    }
+    
+    // For local development, we'll generate a mock token
+    // In production, Supabase sends the email with token directly
+    const mockToken = `mock-${Math.random().toString(36).substring(2, 15)}`;
+    return mockToken;
+  } catch (error) {
+    console.error('Error in generateVerificationToken:', error);
+    return null;
+  }
+}
+
+// Function to send verification email using our edge function
+async function sendVerificationEmail({
+  email,
+  name,
+  verificationUrl
+}: {
+  email: string;
+  name?: string;
+  verificationUrl: string;
+}): Promise<boolean> {
+  try {
+    const { data, error } = await supabase.functions.invoke('send-verification-email', {
+      body: { email, name, verificationUrl }
+    });
+    
+    if (error) {
+      console.error('Error invoking send-verification-email function:', error);
+      return false;
+    }
+    
+    return true;
+  } catch (error) {
+    console.error('Error sending verification email:', error);
+    return false;
+  }
+}

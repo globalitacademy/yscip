@@ -29,7 +29,10 @@ const VerificationAlert: React.FC<VerificationAlertProps> = ({
       <AlertTitle>Հաստատման հղումն ուղարկված է</AlertTitle>
       <AlertDescription>
         <p>
-          Ձեր էլ․ փոստին ուղարկվել է հաստատման հղում։ Խնդրում ենք ստուգել Ձեր փոստարկղը և սեղմել հղման վրա՝ հաշիվը ակտիվացնելու համար։
+          Ձեր էլ․ փոստին (<strong>{email}</strong>) ուղարկվել է հաստատման հղում։ Խնդրում ենք ստուգել Ձեր փոստարկղը և սեղմել հղման վրա՝ հաշիվը ակտիվացնելու համար։
+        </p>
+        <p className="mt-2 text-sm text-muted-foreground">
+          Հաստատման նամակը կարող է հայտնվել նաև «սպամ» կամ «բուլկի» բաժնում։ Եթե նամակը չի հասել 2-3 րոպեի ընթացքում, կարող եք վերաուղարկել այն։
         </p>
         <div className="mt-4">
           <Button onClick={onResend} size="sm" variant="outline">
