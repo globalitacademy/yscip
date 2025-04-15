@@ -38,7 +38,7 @@ export const useUserOperations = (
       
       // Also send our custom email for better reliability
       // Generate a user ID, safely handling the case where data.user might be null
-      const userId = data?.user?.id || generateMockToken();
+      const userId = data?.user?.id ?? generateMockToken();
       const verificationUrl = `${window.location.origin}/verify-email?token=${userId}`;
       
       const { error: edgeError } = await supabase.functions.invoke('send-verification-email', {
