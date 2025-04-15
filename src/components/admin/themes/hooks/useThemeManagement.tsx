@@ -25,8 +25,10 @@ export function useThemeManagement() {
 
   const fetchThemes = async () => {
     try {
-      const { data, error } = await supabase
-        .from('themes')
+      // Use type assertion to bypass TypeScript limitation
+      // This will be fixed once the types are updated
+      const { data, error } = await (supabase
+        .from('themes') as any)
         .select('*')
         .order('created_at', { ascending: false });
 
@@ -53,8 +55,8 @@ export function useThemeManagement() {
     try {
       if (selectedTheme.id) {
         // Update existing theme
-        const { error } = await supabase
-          .from('themes')
+        const { error } = await (supabase
+          .from('themes') as any)
           .update({
             ...selectedTheme,
             updated_at: new Date().toISOString()
@@ -65,8 +67,8 @@ export function useThemeManagement() {
         toast.success("Թեման հաջողությամբ թարմացվել է");
       } else {
         // Add new theme
-        const { error } = await supabase
-          .from('themes')
+        const { error } = await (supabase
+          .from('themes') as any)
           .insert({
             ...selectedTheme,
             created_by: (await supabase.auth.getUser()).data.user?.id
@@ -88,8 +90,8 @@ export function useThemeManagement() {
     if (!selectedTheme?.id) return;
 
     try {
-      const { error } = await supabase
-        .from('themes')
+      const { error } = await (supabase
+        .from('themes') as any)
         .delete()
         .eq('id', selectedTheme.id);
 
