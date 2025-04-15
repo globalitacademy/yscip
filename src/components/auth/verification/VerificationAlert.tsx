@@ -34,8 +34,14 @@ const VerificationAlert: React.FC<VerificationAlertProps> = ({
         <p className="mt-2 text-sm text-muted-foreground">
           Հաստատման նամակը կարող է հայտնվել նաև «սպամ» կամ «բուլկի» բաժնում։ Եթե նամակը չի հասել 2-3 րոպեի ընթացքում, կարող եք վերաուղարկել այն։
         </p>
+        
         <div className="mt-4">
-          <Button onClick={onResend} size="sm" variant="outline">
+          <Button 
+            onClick={onResend} 
+            size="sm" 
+            variant="outline"
+            className="transition-all hover:bg-primary hover:text-primary-foreground"
+          >
             Վերաուղարկել հաստատման հղումը
           </Button>
         </div>
