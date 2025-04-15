@@ -1,7 +1,7 @@
 
-import React from 'react';
+import React, { useState } from 'react';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
-import { AlertCircle, Copy, Info } from 'lucide-react';
+import { AlertCircle, Copy, Info, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { toast } from 'sonner';
@@ -17,10 +17,21 @@ const VerificationAlert: React.FC<VerificationAlertProps> = ({
   verificationToken,
   onResend
 }) => {
+  const [isResending, setIsResending] = useState(false);
+  
   const copyVerificationLink = () => {
     const link = `${window.location.origin}/verify-email?token=${verificationToken}`;
     navigator.clipboard.writeText(link);
     toast.success('Հաստատման հղումը պատճենված է');
+  };
+  
+  const handleResend = async () => {
+    setIsResending(true);
+    try {
+      await onResend();
+    } finally {
+      setIsResending(false);
+    }
   };
 
   return (
@@ -37,12 +48,20 @@ const VerificationAlert: React.FC<VerificationAlertProps> = ({
         
         <div className="mt-4">
           <Button 
-            onClick={onResend} 
+            onClick={handleResend} 
             size="sm" 
             variant="outline"
             className="transition-all hover:bg-primary hover:text-primary-foreground"
+            disabled={isResending}
           >
-            Վերաուղարկել հաստատման հղումը
+            {isResending ? (
+              <>
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                Ուղարկում...
+              </>
+            ) : (
+              'Վերաուղարկել հաստատման հղումը'
+            )}
           </Button>
         </div>
 

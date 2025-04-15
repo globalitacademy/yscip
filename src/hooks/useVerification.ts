@@ -3,21 +3,24 @@ import { useState } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
+import { AuthResponse } from '@supabase/supabase-js';
 
 export const useVerification = () => {
   const [verificationSent, setVerificationSent] = useState(false);
   const [resendEmail, setResendEmail] = useState('');
   const [verificationToken, setVerificationToken] = useState('');
+  const [isResending, setIsResending] = useState(false);
   const { sendVerificationEmail } = useAuth();
 
   const handleResendVerification = async () => {
-    if (!resendEmail) return;
+    if (!resendEmail || isResending) return;
     
-    // Show loading feedback
+    setIsResending(true);
     const loadingId = toast.loading('Հաստատման հղումը վերաուղարկվում է...');
     
     try {
       console.log('Resending verification email to:', resendEmail);
+      let emailSent = false;
       
       // First try to resend via Supabase's built-in mechanism
       const { data, error } = await supabase.auth.resend({
@@ -32,6 +35,7 @@ export const useVerification = () => {
         console.error('Error resending verification via Supabase:', error);
       } else {
         console.log('Supabase verification email resent successfully');
+        emailSent = true;
       }
       
       // Also send our custom email for better reliability
@@ -56,25 +60,34 @@ export const useVerification = () => {
           console.error('Error sending custom verification email:', edgeError);
         } else {
           console.log('Custom verification email sent successfully');
+          emailSent = true;
         }
       } catch (customEmailError) {
         console.error('Error in custom email sending:', customEmailError);
       }
       
       // Fall back to our legacy method as last resort
-      if (!data || error) {
+      if (!emailSent) {
         console.log('Falling back to legacy verification method');
         const result = await sendVerificationEmail(resendEmail);
         
         if (result.success && result.token) {
           setVerificationToken(result.token);
+          emailSent = true;
         }
       }
       
       toast.dismiss(loadingId);
-      toast.success('Հաստատման հղումը կրկին ուղարկված է', {
-        description: 'Խնդրում ենք ստուգել Ձեր էլ․ փոստը'
-      });
+      
+      if (emailSent) {
+        toast.success('Հաստատման հղումը կրկին ուղարկված է', {
+          description: 'Խնդրում ենք ստուգել Ձեր էլ․ փոստը'
+        });
+      } else {
+        toast.error('Սխալ', {
+          description: 'Չհաջողվեց վերաուղարկել հաստատման հղումը'
+        });
+      }
     } catch (e) {
       console.error('Error in verification resend process:', e);
       
@@ -82,6 +95,8 @@ export const useVerification = () => {
       toast.error('Սխալ', {
         description: 'Չհաջողվեց վերաուղարկել հաստատման հղումը'
       });
+    } finally {
+      setIsResending(false);
     }
   };
 
@@ -95,6 +110,7 @@ export const useVerification = () => {
     verificationSent,
     resendEmail,
     verificationToken,
+    isResending,
     handleResendVerification,
     handleRegistrationSuccess
   };

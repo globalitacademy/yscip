@@ -4,6 +4,7 @@ import { PendingUser } from '@/types/auth';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { handleSignUpUser } from '@/utils/authUtils';
+import { sendVerificationEmailToUser } from '@/utils/authVerificationUtils';
 
 export const executeRegistration = async (
   userData: Partial<User> & { password: string },
@@ -34,7 +35,10 @@ export const executeRegistration = async (
         data: {
           name: userData.name,
           role: userData.role,
-          organization: userData.organization
+          organization: userData.organization,
+          department: userData.department,
+          specialization: userData.specialization,
+          avatar: `https://api.dicebear.com/7.x/avataaars/svg?seed=${Date.now()}`
         },
         emailRedirectTo: `${window.location.origin}/verify-email`
       }
@@ -66,6 +70,8 @@ export const executeRegistration = async (
         
         if (emailError) {
           console.error('Error sending verification email:', emailError);
+          // Try to send via utility function as fallback
+          await sendVerificationEmailToUser(userData.email || '', data.user.id);
         } else {
           console.log('Custom verification email sent successfully');
         }
@@ -74,6 +80,19 @@ export const executeRegistration = async (
       }
     }
     
+    // Add user to pending users for local state tracking
+    const verificationToken = data?.user?.id || generateVerificationToken();
+    const newPendingUser: PendingUser = {
+      ...userData,
+      id: data?.user?.id || `user-${Date.now()}`,
+      verificationToken,
+      verified: false,
+      registrationApproved: userData.role === 'student',
+      password: userData.password,
+    };
+    
+    setPendingUsers(prev => [...prev, newPendingUser]);
+    
     // Success message based on role
     toast.success(
       `Գրանցման հայտն ընդունված է։ Խնդրում ենք ստուգել Ձեր էլ․ փոստը՝ հաշիվը ակտիվացնելու համար։${
@@ -81,10 +100,14 @@ export const executeRegistration = async (
       }`
     );
 
-    return { success: true, token: data?.user?.id || '' };
+    return { success: true, token: verificationToken };
   } catch (error) {
     console.error('Registration error:', error);
     toast.error('Գրանցման ընթացքում սխալ է տեղի ունեցել։ Խնդրում ենք փորձել կրկին։');
     return { success: false };
   }
+};
+
+const generateVerificationToken = () => {
+  return Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
 };

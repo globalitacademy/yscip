@@ -37,7 +37,7 @@ serve(async (req) => {
     console.log(`Sending verification email to: ${email} with URL: ${verificationUrl}`);
     
     const { data, error } = await resend.emails.send({
-      from: "Verification <onboarding@resend.dev>",
+      from: "GitEdu <noreply@resend.dev>",
       to: [email],
       subject: "Հաստատեք Ձեր էլ․ փոստը",
       html: `
