@@ -1,4 +1,3 @@
-
 import { User, UserRole } from '@/types/user';
 import { mockUsers } from '@/data/mockUsers';
 import { PendingUser } from '@/types/auth';
@@ -21,8 +20,8 @@ export const useUserOperations = (
   const sendVerificationEmail = async (email: string): Promise<{success: boolean, token?: string}> => {
     console.log('Sending verification email to:', email);
     
-    // First try with Supabase
     try {
+      // First try with Supabase
       const { data, error } = await supabase.auth.resend({
         type: 'signup',
         email: email,
@@ -31,42 +30,72 @@ export const useUserOperations = (
         }
       });
       
-      if (!error) {
-        console.log('Verification email sent via Supabase');
-        toast.success(`Հաստատման հղումը կրկին ուղարկված է Ձեր էլ․ փոստին։`);
-        return { success: true };
+      if (error) {
+        console.error('Error sending verification email via Supabase:', error);
+        throw error;
       }
       
-      console.error('Error sending verification email via Supabase:', error);
+      // Also send our custom email for better reliability
+      const userId = data?.user?.id || generateMockToken();
+      const verificationUrl = `${window.location.origin}/verify-email?token=${userId}`;
+      
+      const { error: edgeError } = await supabase.functions.invoke('send-verification-email', {
+        body: { 
+          email: email, 
+          verificationUrl
+        }
+      });
+      
+      if (edgeError) {
+        console.error('Error sending custom verification email:', edgeError);
+      } else {
+        console.log('Custom verification email sent successfully');
+      }
+      
+      toast.success(`Հաստատման հղումը կրկին ուղարկված է Ձեր էլ․ փոստին։`);
+      return { success: true, token: userId };
     } catch (e) {
-      console.error('Exception sending verification email via Supabase:', e);
+      console.error('Exception sending verification email:', e);
+      
+      // Fallback to legacy method
+      const pendingUserIndex = pendingUsers.findIndex(u => u.email?.toLowerCase() === email.toLowerCase());
+      
+      if (pendingUserIndex === -1) {
+        return { success: false };
+      }
+      
+      const token = pendingUsers[pendingUserIndex].verificationToken;
+      console.log(`Verification email resent to ${email} with token: ${token}`);
+      console.log(`Verification link: ${window.location.origin}/verify-email?token=${token}`);
+      
+      toast.success(`Հաստատման հղումը կրկին ուղարկված է Ձեր էլ․ փոստին։`);
+      
+      return { success: true, token };
     }
-    
-    // Fallback to legacy method
-    const pendingUserIndex = pendingUsers.findIndex(u => u.email?.toLowerCase() === email.toLowerCase());
-    
-    if (pendingUserIndex === -1) {
-      return { success: false };
-    }
-    
-    const token = pendingUsers[pendingUserIndex].verificationToken;
-    console.log(`Verification email resent to ${email} with token: ${token}`);
-    console.log(`Verification link: ${window.location.origin}/verify-email?token=${token}`);
-    
-    toast.success(`Հաստատման հղումը կրկին ուղարկված է Ձեր էլ․ փոստին։`);
-    
-    return { success: true, token };
+  };
+
+  const generateMockToken = () => {
+    return Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
   };
 
   const verifyEmail = async (token: string): Promise<boolean> => {
     console.log('Verifying email with token:', token);
     
-    // Try with Supabase first
     try {
-      // Check if this is a Supabase token
-      if (token.includes('.')) {
-        console.log('Appears to be a Supabase token, verifying');
-        return true; // The email gets verified automatically by Supabase when they click the link
+      // First check if this is a Supabase session
+      const { data: sessionData } = await supabase.auth.getSession();
+      
+      if (sessionData && sessionData.session) {
+        console.log('User is already authenticated with Supabase');
+        return true;
+      }
+      
+      // Otherwise, try to verify the token with Supabase directly
+      const { data: userData } = await supabase.auth.getUser(token);
+      
+      if (userData && userData.user) {
+        console.log('User verified successfully with Supabase token');
+        return true;
       }
     } catch (e) {
       console.error('Error verifying with Supabase:', e);
@@ -95,7 +124,6 @@ export const useUserOperations = (
   const approveRegistration = async (userId: string): Promise<boolean> => {
     console.log('Approving registration for user:', userId);
     
-    // Try with Supabase first
     try {
       const { data, error } = await supabase
         .from('users')

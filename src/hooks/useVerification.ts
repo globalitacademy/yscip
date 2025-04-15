@@ -31,32 +31,30 @@ export const useVerification = () => {
         throw error;
       }
       
-      // Try also our custom verification email for better reliability
+      // Also send our custom email for better reliability
       try {
-        // Generate a mock token for demonstration/development
-        const mockToken = `resend-${Math.random().toString(36).substring(2, 15)}`;
-        setVerificationToken(mockToken);
-        
-        const verificationUrl = `${window.location.origin}/verify-email?token=${mockToken}`;
+        // Generate a verification URL
+        const verificationUrl = `${window.location.origin}/verify-email?token=${verificationToken}`;
         
         // Send via our custom edge function
-        await supabase.functions.invoke('send-verification-email', {
+        const { error: edgeError } = await supabase.functions.invoke('send-verification-email', {
           body: { 
             email: resendEmail, 
             verificationUrl
           }
         });
         
-        toast.dismiss(loadingId);
-        toast.success('Հաստատման հղումը կրկին ուղարկված է', {
-          description: 'Խնդրում ենք ստուգել Ձեր էլ․ փոստը'
-        });
-        
+        if (edgeError) {
+          console.error('Error sending custom verification email:', edgeError);
+        }
       } catch (customEmailError) {
         console.error('Error sending custom verification email:', customEmailError);
-        // Continue because Supabase's built-in email was successful
       }
       
+      toast.dismiss(loadingId);
+      toast.success('Հաստատման հղումը կրկին ուղարկված է', {
+        description: 'Խնդրում ենք ստուգել Ձեր էլ․ փոստը'
+      });
     } catch (e) {
       console.error('Error resending verification email:', e);
       

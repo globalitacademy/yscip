@@ -36,13 +36,14 @@ export const executeRegistration = async (
           role: userData.role,
           organization: userData.organization
         },
-        // Remove emailRedirectTo since we'll handle this ourselves
+        emailRedirectTo: `${window.location.origin}/verify-email`
       }
     });
     
     if (error) {
       console.error('Supabase registration error:', error);
       toast.error('Գրանցման ընթացքում սխալ է տեղի ունեցել։ Խնդրում ենք փորձել կրկին։');
+      // Fall back to mock user creation
       return handleSignUpUser(userData, pendingUsers, setPendingUsers);
     }
 
@@ -51,25 +52,22 @@ export const executeRegistration = async (
     // Send custom verification email via our edge function
     if (data.user) {
       try {
-        // Generate verification URL
-        const token = data.user.confirmation_sent_at 
-          ? await generateSupabaseVerificationToken(data.user.email || '')
-          : null;
-          
-        if (token) {
-          const verificationUrl = `${window.location.origin}/verify-email?token=${token}`;
-          
-          const emailSent = await sendVerificationEmail({
-            email: userData.email || '',
+        // Generate verification URL using Supabase's token
+        const verificationUrl = `${window.location.origin}/verify-email?token=${data.user.id}`;
+        
+        // Send verification email using our edge function
+        const { error: emailError } = await supabase.functions.invoke('send-verification-email', {
+          body: { 
+            email: userData.email,
             name: userData.name,
             verificationUrl
-          });
-          
-          if (emailSent) {
-            console.log('Custom verification email sent successfully');
-          } else {
-            console.error('Failed to send custom verification email');
           }
+        });
+        
+        if (emailError) {
+          console.error('Error sending verification email:', emailError);
+        } else {
+          console.log('Custom verification email sent successfully');
         }
       } catch (emailError) {
         console.error('Error sending verification email:', emailError);
@@ -83,63 +81,10 @@ export const executeRegistration = async (
       }`
     );
 
-    return { success: true, token: data?.user?.confirmation_sent_at ? 'sent' : undefined };
+    return { success: true, token: data?.user?.id || '' };
   } catch (error) {
     console.error('Registration error:', error);
     toast.error('Գրանցման ընթացքում սխալ է տեղի ունեցել։ Խնդրում ենք փորձել կրկին։');
     return { success: false };
   }
 };
-
-// Helper function to generate a Supabase verification token
-async function generateSupabaseVerificationToken(email: string): Promise<string | null> {
-  try {
-    const { data, error } = await supabase.auth.resend({
-      type: 'signup',
-      email,
-      options: { 
-        captchaToken: undefined
-      }
-    });
-    
-    if (error) {
-      console.error('Error generating verification token:', error);
-      return null;
-    }
-    
-    // For local development, we'll generate a mock token
-    // In production, Supabase sends the email with token directly
-    const mockToken = `mock-${Math.random().toString(36).substring(2, 15)}`;
-    return mockToken;
-  } catch (error) {
-    console.error('Error in generateVerificationToken:', error);
-    return null;
-  }
-}
-
-// Function to send verification email using our edge function
-async function sendVerificationEmail({
-  email,
-  name,
-  verificationUrl
-}: {
-  email: string;
-  name?: string;
-  verificationUrl: string;
-}): Promise<boolean> {
-  try {
-    const { data, error } = await supabase.functions.invoke('send-verification-email', {
-      body: { email, name, verificationUrl }
-    });
-    
-    if (error) {
-      console.error('Error invoking send-verification-email function:', error);
-      return false;
-    }
-    
-    return true;
-  } catch (error) {
-    console.error('Error sending verification email:', error);
-    return false;
-  }
-}
