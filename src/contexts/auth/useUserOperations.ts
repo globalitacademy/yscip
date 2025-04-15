@@ -37,7 +37,7 @@ export const useUserOperations = (
       }
       
       // Also send our custom email for better reliability
-      // Use optional chaining to safely access data.user?.id
+      // Generate a user ID, safely handling the case where data.user might be null
       const userId = data?.user?.id || generateMockToken();
       const verificationUrl = `${window.location.origin}/verify-email?token=${userId}`;
       
