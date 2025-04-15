@@ -4,6 +4,7 @@ import { mockUsers } from '@/data/mockUsers';
 import { PendingUser } from '@/types/auth';
 import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
+import { AuthResponse } from '@supabase/supabase-js';
 
 export const useUserOperations = (
   pendingUsers: PendingUser[],
@@ -23,7 +24,7 @@ export const useUserOperations = (
     
     try {
       // First try with Supabase
-      const { data, error } = await supabase.auth.resend({
+      const { data, error }: AuthResponse = await supabase.auth.resend({
         type: 'signup',
         email: email,
         options: {
@@ -37,8 +38,15 @@ export const useUserOperations = (
       }
       
       // Also send our custom email for better reliability
-      // Generate a user ID, safely handling the case where data might be null
-      const userId = data && data.user ? data.user.id : generateMockToken();
+      // Generate a token using either the user ID or a mock token
+      let userId: string;
+      
+      if (data && data.user && data.user.id) {
+        userId = data.user.id;
+      } else {
+        userId = generateMockToken();
+      }
+      
       const verificationUrl = `${window.location.origin}/verify-email?token=${userId}`;
       
       const { error: edgeError } = await supabase.functions.invoke('send-verification-email', {
