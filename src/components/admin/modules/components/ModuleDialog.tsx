@@ -7,6 +7,8 @@ import { Textarea } from '@/components/ui/textarea';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import type { EducationalModule } from '@/components/educationalCycle';
+import { Badge } from '@/components/ui/badge';
+import { Plus, X } from 'lucide-react';
 
 interface ModuleDialogProps {
   open: boolean;
@@ -23,7 +25,8 @@ const ModuleDialog: React.FC<ModuleDialogProps> = ({
   onSave,
   onModuleChange
 }) => {
-  // Create handlers for each field update
+  const [newTopic, setNewTopic] = React.useState('');
+
   const handleTitleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (selectedModule) {
       onModuleChange({
@@ -60,9 +63,30 @@ const ModuleDialog: React.FC<ModuleDialogProps> = ({
     }
   };
 
+  const handleAddTopic = () => {
+    if (!newTopic || !selectedModule) return;
+
+    onModuleChange({
+      ...selectedModule,
+      topics: [...(selectedModule.topics || []), newTopic]
+    });
+    setNewTopic('');
+  };
+
+  const handleRemoveTopic = (index: number) => {
+    if (!selectedModule) return;
+
+    const updatedTopics = [...(selectedModule.topics || [])];
+    updatedTopics.splice(index, 1);
+    onModuleChange({
+      ...selectedModule,
+      topics: updatedTopics
+    });
+  };
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent>
+      <DialogContent className="max-w-2xl">
         <DialogHeader>
           <DialogTitle>
             {selectedModule?.id ? 'Խմբագրել մոդուլը' : 'Ավելացնել նոր մոդուլ'}
@@ -74,13 +98,14 @@ const ModuleDialog: React.FC<ModuleDialogProps> = ({
           </DialogDescription>
         </DialogHeader>
         
-        <div className="grid gap-4 py-4">
+        <div className="grid gap-6 py-4">
           <div className="grid gap-2">
-            <Label htmlFor="title">Անվանում</Label>
+            <Label htmlFor="title">Վերնագիր</Label>
             <Input 
               id="title" 
               value={selectedModule?.title || ''} 
               onChange={handleTitleChange} 
+              placeholder="Մուտքագրեք մոդուլի վերնագիրը"
             />
           </div>
           
@@ -90,6 +115,8 @@ const ModuleDialog: React.FC<ModuleDialogProps> = ({
               id="description" 
               value={selectedModule?.description || ''} 
               onChange={handleDescriptionChange} 
+              placeholder="Մուտքագրեք մոդուլի նկարագրությունը"
+              className="min-h-[100px]"
             />
           </div>
           
@@ -120,6 +147,34 @@ const ModuleDialog: React.FC<ModuleDialogProps> = ({
               value={selectedModule?.progress || 0} 
               onChange={handleProgressChange} 
             />
+          </div>
+
+          <div className="grid gap-2">
+            <Label>Թեմաներ</Label>
+            <div className="flex flex-wrap gap-2 mb-2">
+              {selectedModule?.topics?.map((topic, index) => (
+                <Badge key={index} variant="secondary" className="flex items-center gap-1">
+                  {topic}
+                  <button 
+                    onClick={() => handleRemoveTopic(index)}
+                    className="ml-1 hover:text-destructive"
+                  >
+                    <X className="h-3 w-3" />
+                  </button>
+                </Badge>
+              ))}
+            </div>
+            <div className="flex gap-2">
+              <Input
+                value={newTopic}
+                onChange={(e) => setNewTopic(e.target.value)}
+                placeholder="Նոր թեմա"
+                onKeyPress={(e) => e.key === 'Enter' && handleAddTopic()}
+              />
+              <Button type="button" size="icon" onClick={handleAddTopic}>
+                <Plus className="h-4 w-4" />
+              </Button>
+            </div>
           </div>
         </div>
         

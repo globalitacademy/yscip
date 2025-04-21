@@ -1,24 +1,23 @@
-
 import { useState } from 'react';
-import { Plus } from 'lucide-react';
+import { Layers } from 'lucide-react';
 import { toast } from 'sonner';
 import type { EducationalModule } from '@/components/educationalCycle';
 
 export function useModuleManagement() {
   const [modules, setModules] = useState<EducationalModule[]>([
-    { id: 1, title: "Ալգորիթմների տարրերի կիրառում", icon: Plus, status: 'completed', progress: 100, description: "Ծանոթացում ալգորիթմների հետ, որոնք տեղեկատվական տեխնոլոգիաների հիմնաքարն են։" },
-    { id: 2, title: "Ծրագրավորման հիմունքներ", icon: Plus, status: 'completed', progress: 100, description: "Ծրագրավորման հիմնական սկզբունքների ուսումնասիրություն և կիրառում։" },
-    { id: 3, title: "Օբյեկտ կողմնորոշված ծրագրավորում", icon: Plus, status: 'in-progress', progress: 75, description: "Օբյեկտային մոտեցման կիրառմամբ ծրագրային ապահովման նախագծում։" },
-    { id: 4, title: "Համակարգչային ցանցեր", icon: Plus, status: 'in-progress', progress: 40, description: "Ցանցային տեխնոլոգիաների և արձանագրությունների ուսումնասիրություն։" },
-    { id: 5, title: "Ստատրիկ վեբ կայքերի նախագծում", icon: Plus, status: 'not-started', progress: 0, description: "HTML, CSS և JavaScript-ի կիրառմամբ ստատիկ կայքերի ստեղծում։" },
-    { id: 6, title: "Ջավասկրիպտի կիրառումը", icon: Plus, status: 'not-started', progress: 0, description: "JavaScript լեզվի խորացված ուսումնասիրություն վեբ կայքերում։" },
-    { id: 7, title: "Ռելյացիոն տվյալների բազաների նախագծում", icon: Plus, status: 'not-started', progress: 0, description: "SQL հարցումների և տվյալների բազաների նախագծման հիմունքներ։" },
-    { id: 8, title: "Ոչ Ռելյացիոն տվյալների բազաների նախագծում", icon: Plus, status: 'not-started', progress: 0, description: "NoSQL տվյալների բազաների ուսումնասիրություն և կիրառում։" },
-    { id: 9, title: "Դինաﬕկ վեբ կայքերի նախագծում", icon: Plus, status: 'not-started', progress: 0, description: "Վեբ հավելվածների ստեղծում ժամանակակից ֆրեյմվորկներով։" },
-    { id: 10, title: "Վեկտորային գրաֆիկա", icon: Plus, status: 'not-started', progress: 0, description: "Վեկտորային պատկերների ստեղծում և խմբագրում։" },
-    { id: 11, title: "Կետային գրաֆիկա", icon: Plus, status: 'not-started', progress: 0, description: "Կետային պատկերների մշակում և խմբագրում։" },
-    { id: 12, title: "Գրաֆիկական ինտերֆեյսի ծրագրավորում", icon: Plus, status: 'not-started', progress: 0, description: "Աշխատանք գրաֆիկական ինտերֆեյսների հետ և դրանց ստեղծում։" },
-    { id: 13, title: "Տեղեկատվության անվտանգություն", icon: Plus, status: 'not-started', progress: 0, description: "Տեղեկատվական համակարգերի պաշտպանության մեթոդների ուսումնասիրություն։" },
+    { id: 1, title: "Ալգորիթմների տարրերի կիրառում", icon: Layers, status: 'completed', progress: 100, description: "Ծանոթացում ալգորիթմների հետ, որոնք տեղեկատվական տեխնոլոգիաների հիմնաքարն են։", topics: [] },
+    { id: 2, title: "Ծրագրավորման հիմունքներ", icon: Layers, status: 'completed', progress: 100, description: "Ծրագրավորման հիմնական սկզբունքների ուսումնասիրություն և կիրառում։", topics: [] },
+    { id: 3, title: "Օբյեկտ կողմնորոշված ծրագրավորում", icon: Layers, status: 'in-progress', progress: 75, description: "Օբյեկտային մոտեցման կիրառմամբ ծրագրային ապահովման նախագծում։", topics: [] },
+    { id: 4, title: "Համակարգչային ցանցեր", icon: Layers, status: 'in-progress', progress: 40, description: "Ցանցային տեխնոլոգիաների և արձանագրությունների ուսումնասիրություն։", topics: [] },
+    { id: 5, title: "Ստատրիկ վեբ կայքերի նախագծում", icon: Layers, status: 'not-started', progress: 0, description: "HTML, CSS և JavaScript-ի կիրառմամբ ստատիկ կայքերի ստեղծում։", topics: [] },
+    { id: 6, title: "Ջավասկրիպտի կիրառումը", icon: Layers, status: 'not-started', progress: 0, description: "JavaScript լեզվի խորացված ուսումնասիրություն վեբ կայքերում։", topics: [] },
+    { id: 7, title: "Ռելյացիոն տվյալների բազաների նախագծում", icon: Layers, status: 'not-started', progress: 0, description: "SQL հարցումների և տվյալների բազաների նախագծման հիմունքներ։", topics: [] },
+    { id: 8, title: "Ոչ Ռելյացիոն տվյալների բազաների նախագծում", icon: Layers, status: 'not-started', progress: 0, description: "NoSQL տվյալների բազաների ուսումնասիրություն և կիրառում։", topics: [] },
+    { id: 9, title: "Դինաﬕկ վեբ կայքերի նախագծում", icon: Layers, status: 'not-started', progress: 0, description: "Վեբ հավելվածների ստեղծում ժամանակակից ֆրեյմվորկներով։", topics: [] },
+    { id: 10, title: "Վեկտորային գրաֆիկա", icon: Layers, status: 'not-started', progress: 0, description: "Վեկտորային պատկերների ստեղծում և խմբագրում։", topics: [] },
+    { id: 11, title: "Կետային գրաֆիկա", icon: Layers, status: 'not-started', progress: 0, description: "Կետային պատկերների մշակում և խմբագրում։", topics: [] },
+    { id: 12, title: "Գրաֆիկական ինտերֆեյսի ծրագրավորում", icon: Layers, status: 'not-started', progress: 0, description: "Աշխատանք գրաֆիկական ինտերֆեյսների հետ և դրանց ստեղծում։", topics: [] },
+    { id: 13, title: "Տեղեկատվության անվտանգություն", icon: Layers, status: 'not-started', progress: 0, description: "Տեղեկատվական համակարգերի պաշտպանության մեթոդների ուսումնասիրություն։", topics: [] },
   ]);
 
   const [isDialogOpen, setIsDialogOpen] = useState(false);
@@ -37,6 +36,11 @@ export function useModuleManagement() {
   
   const handleSaveModule = () => {
     if (!selectedModule) return;
+
+    if (!selectedModule.title) {
+      toast.error("Խնդրում ենք լրացնել մոդուլի վերնագիրը");
+      return;
+    }
     
     if (selectedModule.id) {
       // Update existing module
@@ -68,11 +72,13 @@ export function useModuleManagement() {
   
   const handleAddNewModule = () => {
     setSelectedModule({
-      id: 0, // Temporary ID
+      id: 0,
       title: "",
-      icon: Plus,
+      icon: Layers,
       status: 'not-started',
-      progress: 0
+      progress: 0,
+      description: "",
+      topics: []
     });
     setIsDialogOpen(true);
   };

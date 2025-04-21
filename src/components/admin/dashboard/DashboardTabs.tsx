@@ -5,17 +5,23 @@ import StatsTab from './tabs/StatsTab';
 import ActivityTab from './tabs/ActivityTab';
 import NotificationsTab from './tabs/NotificationsTab';
 import ApplicationsTab from './tabs/ApplicationsTab';
+import ModuleManagement from '../modules/ModuleManagement';
 
 const DashboardTabs: React.FC = () => {
   return (
-    <Tabs defaultValue="stats" className="mb-6">
+    <Tabs defaultValue="modules" className="mb-6">
       <TabsList className="mb-4 w-full md:w-auto overflow-x-auto">
+        <TabsTrigger value="modules">Մոդուլներ</TabsTrigger>
         <TabsTrigger value="stats">Վիճակագրություն</TabsTrigger>
         <TabsTrigger value="applications">Դիմումներ</TabsTrigger>
         <TabsTrigger value="activity">Գործողություններ</TabsTrigger>
         <TabsTrigger value="notifications">Ծանուցումներ</TabsTrigger>
       </TabsList>
       
+      <TabsContent value="modules">
+        <ModuleManagement />
+      </TabsContent>
+
       <TabsContent value="stats">
         <StatsTab />
       </TabsContent>

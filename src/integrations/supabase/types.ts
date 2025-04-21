@@ -740,6 +740,51 @@ export type Database = {
           },
         ]
       }
+      themes: {
+        Row: {
+          banner_image_url: string | null
+          category: string | null
+          content: string | null
+          created_at: string | null
+          created_by: string | null
+          id: string
+          image_url: string | null
+          is_published: boolean | null
+          module_id: number | null
+          summary: string
+          title: string
+          updated_at: string | null
+        }
+        Insert: {
+          banner_image_url?: string | null
+          category?: string | null
+          content?: string | null
+          created_at?: string | null
+          created_by?: string | null
+          id?: string
+          image_url?: string | null
+          is_published?: boolean | null
+          module_id?: number | null
+          summary: string
+          title: string
+          updated_at?: string | null
+        }
+        Update: {
+          banner_image_url?: string | null
+          category?: string | null
+          content?: string | null
+          created_at?: string | null
+          created_by?: string | null
+          id?: string
+          image_url?: string | null
+          is_published?: boolean | null
+          module_id?: number | null
+          summary?: string
+          title?: string
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
       timeline_events: {
         Row: {
           completed: boolean | null
