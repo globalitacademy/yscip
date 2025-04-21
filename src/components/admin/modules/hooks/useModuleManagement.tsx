@@ -1,3 +1,4 @@
+
 import { useState } from 'react';
 import { Layers } from 'lucide-react';
 import { toast } from 'sonner';
@@ -23,6 +24,7 @@ export function useModuleManagement() {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [selectedModule, setSelectedModule] = useState<EducationalModule | null>(null);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+  const [isRichTextMode, setIsRichTextMode] = useState(false);
   
   const handleEditClick = (module: EducationalModule) => {
     setSelectedModule({...module});
@@ -78,9 +80,14 @@ export function useModuleManagement() {
       status: 'not-started',
       progress: 0,
       description: "",
-      topics: []
+      topics: [],
+      content: ""
     });
     setIsDialogOpen(true);
+  };
+
+  const toggleRichTextMode = () => {
+    setIsRichTextMode(!isRichTextMode);
   };
 
   return {
@@ -88,6 +95,7 @@ export function useModuleManagement() {
     isDialogOpen,
     selectedModule,
     isDeleteDialogOpen,
+    isRichTextMode,
     setIsDialogOpen,
     setSelectedModule,
     setIsDeleteDialogOpen,
@@ -95,6 +103,7 @@ export function useModuleManagement() {
     handleDeleteClick,
     handleSaveModule,
     handleDeleteModule,
-    handleAddNewModule
+    handleAddNewModule,
+    toggleRichTextMode
   };
 }
