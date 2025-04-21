@@ -3,6 +3,7 @@ import { useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { Plus } from 'lucide-react';
+import type { Database } from '@/integrations/supabase/types';
 
 // Define Theme type based on the database schema
 export interface Theme {
@@ -15,7 +16,14 @@ export interface Theme {
   category?: string;
   module_id?: number;
   is_published?: boolean;
+  created_by?: string;
+  created_at?: string;
+  updated_at?: string;
 }
+
+type ThemeRow = Database['public']['Tables']['themes']['Row'];
+type ThemeInsert = Database['public']['Tables']['themes']['Insert'];
+type ThemeUpdate = Database['public']['Tables']['themes']['Update'];
 
 export function useThemeManagement() {
   const [themes, setThemes] = useState<Theme[]>([]);
@@ -25,22 +33,29 @@ export function useThemeManagement() {
 
   const fetchThemes = async () => {
     try {
-      // Use type assertion to bypass TypeScript limitation
-      // This will be fixed once the types are updated
-      const { data, error } = await (supabase
-        .from('themes') as any)
+      const { data, error } = await supabase
+        .from('themes')
         .select('*')
         .order('created_at', { ascending: false });
 
       if (error) throw error;
-      setThemes(data || []);
+      if (!data) {
+        setThemes([]);
+        return;
+      }
+      // Map to Theme interface
+      setThemes(
+        data.map((row: ThemeRow) => ({
+          ...row,
+        }))
+      );
     } catch (error) {
       toast.error('Error fetching themes', { description: String(error) });
     }
   };
 
   const handleEditClick = (theme: Theme) => {
-    setSelectedTheme({...theme});
+    setSelectedTheme({ ...theme });
     setIsDialogOpen(true);
   };
 
@@ -51,28 +66,31 @@ export function useThemeManagement() {
 
   const handleSaveTheme = async () => {
     if (!selectedTheme) return;
-
     try {
       if (selectedTheme.id) {
         // Update existing theme
-        const { error } = await (supabase
-          .from('themes') as any)
-          .update({
-            ...selectedTheme,
-            updated_at: new Date().toISOString()
-          })
+        const updateObj: ThemeUpdate = {
+          ...selectedTheme,
+          updated_at: new Date().toISOString()
+        };
+        const { error } = await supabase
+          .from('themes')
+          .update(updateObj)
           .eq('id', selectedTheme.id);
 
         if (error) throw error;
         toast.success("Թեման հաջողությամբ թարմացվել է");
       } else {
         // Add new theme
-        const { error } = await (supabase
-          .from('themes') as any)
-          .insert({
-            ...selectedTheme,
-            created_by: (await supabase.auth.getUser()).data.user?.id
-          });
+        const userResp = await supabase.auth.getUser();
+        const created_by = userResp.data.user?.id;
+        const insertObj: ThemeInsert = {
+          ...selectedTheme,
+          created_by
+        };
+        const { error } = await supabase
+          .from('themes')
+          .insert(insertObj);
 
         if (error) throw error;
         toast.success("Նոր թեման ավելացվել է");
@@ -90,8 +108,8 @@ export function useThemeManagement() {
     if (!selectedTheme?.id) return;
 
     try {
-      const { error } = await (supabase
-        .from('themes') as any)
+      const { error } = await supabase
+        .from('themes')
         .delete()
         .eq('id', selectedTheme.id);
 
