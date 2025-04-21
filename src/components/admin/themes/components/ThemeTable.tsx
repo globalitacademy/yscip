@@ -37,11 +37,11 @@ const ThemeTable: React.FC<ThemeTableProps> = ({ themes, onEditClick, onDeleteCl
               <TableCell>{theme.category || 'Անկատեգորիա'}</TableCell>
               <TableCell>
                 {theme.is_published ? (
-                  <Badge variant="success" className="bg-green-100 text-green-800 hover:bg-green-200">
+                  <Badge variant="success">
                     Հրապարակված
                   </Badge>
                 ) : (
-                  <Badge variant="secondary" className="bg-amber-100 text-amber-800 hover:bg-amber-200">
+                  <Badge variant="warning">
                     Սևագիր
                   </Badge>
                 )}
