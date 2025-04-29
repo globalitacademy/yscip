@@ -14,10 +14,20 @@ import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 
+// Define TaskStatus type to match what's used in the app
+type TaskStatus = 'pending' | 'in_progress' | 'completed' | 'todo' | 'in-progress' | 'review' | 'done';
+type TaskPriority = 'high' | 'medium' | 'low';
+
+// Update the Task interface or extend it to include any missing properties
+interface ExtendedTask extends Task {
+  priority?: TaskPriority;
+  deadline?: string;
+}
+
 interface ProjectTasksProps {
-  tasks: Task[];
-  onAddTask: (task: Omit<Task, 'id'>) => void;
-  onUpdateTaskStatus: (taskId: string, status: Task['status']) => void;
+  tasks: ExtendedTask[];
+  onAddTask: (task: Omit<ExtendedTask, 'id'>) => void;
+  onUpdateTaskStatus: (taskId: string, status: TaskStatus) => void;
   isEditing: boolean;
 }
 
@@ -31,7 +41,7 @@ const ProjectTasks: React.FC<ProjectTasksProps> = ({
     title: '',
     description: '',
     deadline: format(new Date(Date.now() + 7 * 24 * 60 * 60 * 1000), 'yyyy-MM-dd'), // A week from now
-    priority: 'medium' as Task['priority']
+    priority: 'medium' as TaskPriority
   });
   const [taskFilter, setTaskFilter] = useState<'all' | 'active' | 'completed'>('all');
   const [dialogOpen, setDialogOpen] = useState(false);
@@ -43,7 +53,7 @@ const ProjectTasks: React.FC<ProjectTasksProps> = ({
       title: newTask.title,
       description: newTask.description,
       deadline: new Date(newTask.deadline).toISOString(),
-      status: 'pending',
+      status: 'todo' as TaskStatus, // Changed from 'pending' to a valid status
       priority: newTask.priority,
       assignedTo: 'current-user' // Placeholder
     });
@@ -58,7 +68,7 @@ const ProjectTasks: React.FC<ProjectTasksProps> = ({
     setDialogOpen(false);
   };
   
-  const getPriorityBadge = (priority: Task['priority']) => {
+  const getPriorityBadge = (priority: TaskPriority) => {
     switch (priority) {
       case 'high':
         return <Badge variant="destructive">Բարձր</Badge>;
@@ -66,24 +76,32 @@ const ProjectTasks: React.FC<ProjectTasksProps> = ({
         return <Badge variant="default">Միջին</Badge>;
       case 'low':
         return <Badge variant="secondary">Ցածր</Badge>;
+      default:
+        return <Badge variant="default">Միջին</Badge>;
     }
   };
   
-  const getStatusBadge = (status: Task['status']) => {
+  const getStatusBadge = (status: TaskStatus) => {
     switch (status) {
       case 'completed':
+      case 'done':
         return <Badge className="bg-green-600">Ավարտված</Badge>;
       case 'in_progress':
+      case 'in-progress':
+      case 'review':
         return <Badge className="bg-blue-600">Ընթացքի մեջ</Badge>;
       case 'pending':
+      case 'todo':
+        return <Badge variant="outline">Սպասվող</Badge>;
+      default:
         return <Badge variant="outline">Սպասվող</Badge>;
     }
   };
 
   const filteredTasks = tasks.filter(task => {
     if (taskFilter === 'all') return true;
-    if (taskFilter === 'active') return task.status !== 'completed';
-    if (taskFilter === 'completed') return task.status === 'completed';
+    if (taskFilter === 'active') return task.status !== 'completed' && task.status !== 'done';
+    if (taskFilter === 'completed') return task.status === 'completed' || task.status === 'done';
     return true;
   });
 
@@ -145,7 +163,7 @@ const ProjectTasks: React.FC<ProjectTasksProps> = ({
                   <RadioGroup 
                     defaultValue={newTask.priority} 
                     className="mt-2"
-                    onValueChange={(value) => setNewTask({...newTask, priority: value as Task['priority']})}
+                    onValueChange={(value) => setNewTask({...newTask, priority: value as TaskPriority})}
                   >
                     <div className="flex items-center space-x-2">
                       <RadioGroupItem value="high" id="high" />
@@ -188,19 +206,19 @@ const ProjectTasks: React.FC<ProjectTasksProps> = ({
                 key={task.id}
                 className={cn(
                   "border rounded-lg p-4 transition-colors",
-                  task.status === 'completed' ? "bg-muted/30" : ""
+                  (task.status === 'completed' || task.status === 'done') ? "bg-muted/30" : ""
                 )}
               >
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
                   <h3 className={cn(
                     "font-medium text-lg",
-                    task.status === 'completed' && "line-through text-muted-foreground"
+                    (task.status === 'completed' || task.status === 'done') && "line-through text-muted-foreground"
                   )}>
                     {task.title}
                   </h3>
                   <div className="flex flex-wrap gap-2">
-                    {getPriorityBadge(task.priority)}
-                    {getStatusBadge(task.status)}
+                    {task.priority && getPriorityBadge(task.priority)}
+                    {getStatusBadge(task.status as TaskStatus)}
                   </div>
                 </div>
                 
@@ -210,27 +228,31 @@ const ProjectTasks: React.FC<ProjectTasksProps> = ({
                 
                 <div className="flex items-center justify-between mt-4">
                   <div className="text-sm text-muted-foreground flex items-center">
-                    <Clock className="h-3.5 w-3.5 mr-1" />
-                    Վերջնաժամկետ: {format(new Date(task.deadline), 'dd.MM.yyyy')}
+                    {task.deadline && (
+                      <>
+                        <Clock className="h-3.5 w-3.5 mr-1" />
+                        Վերջնաժամկետ: {format(new Date(task.deadline), 'dd.MM.yyyy')}
+                      </>
+                    )}
                   </div>
                   
-                  {isEditing && task.status !== 'completed' && (
+                  {isEditing && (task.status !== 'completed' && task.status !== 'done') && (
                     <Button
                       variant="outline"
                       size="sm"
                       className="h-7 text-xs"
-                      onClick={() => onUpdateTaskStatus(task.id, 'completed')}
+                      onClick={() => onUpdateTaskStatus(task.id, 'done')} // Changed from 'completed' to 'done'
                     >
                       <Check className="h-3.5 w-3.5 mr-1" /> Նշել որպես ավարտված
                     </Button>
                   )}
                   
-                  {isEditing && task.status === 'completed' && (
+                  {isEditing && (task.status === 'completed' || task.status === 'done') && (
                     <Button
                       variant="outline"
                       size="sm"
                       className="h-7 text-xs"
-                      onClick={() => onUpdateTaskStatus(task.id, 'pending')}
+                      onClick={() => onUpdateTaskStatus(task.id, 'todo')} // Changed from 'pending' to 'todo'
                     >
                       Նշել որպես անավարտ
                     </Button>

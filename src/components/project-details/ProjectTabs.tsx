@@ -15,9 +15,9 @@ import { SlideUp } from '@/components/LocalTransitions';
 import Timeline from '@/components/Timeline';
 import TaskManager from '@/components/tasks/TaskManager';
 import ProjectApproval from '@/components/ProjectApproval';
-import ProjectDiscussions from '@/components/projects/ProjectDiscussions';
-import ProjectFiles from '@/components/projects/ProjectFiles';
-import ProjectEvaluation from '@/components/projects/ProjectEvaluation';
+import ProjectDiscussions from '@/components/project-details/ProjectDiscussions';
+import ProjectFiles from '@/components/project-details/ProjectFiles';
+import ProjectEvaluation from '@/components/project-details/ProjectEvaluation';
 import ProjectOverview from './ProjectOverview';
 import ProjectTimeline from './ProjectTimeline';
 import { ProjectTheme, Task, TimelineEvent } from '@/data/projectThemes';
@@ -171,9 +171,14 @@ const ProjectTabs: React.FC<ProjectTabsProps> = ({
         <TabsContent value="gantt" className="mt-6 animate-fade-in">
           <SlideUp>
             <div className="bg-card rounded-xl shadow-md p-6 border border-border/30">
+              {/* Only passing timeline prop to ProjectTimeline since that's all it needs for now */}
               <ProjectTimeline 
-                timeline={timeline} 
-                tasks={tasks}
+                timeline={timeline}
+                projectStatus={projectStatus}
+                onSubmitProject={submitProject}
+                onApproveProject={approveProject}
+                onRejectProject={rejectProject}
+                isEditing={isEditing}
               />
             </div>
           </SlideUp>

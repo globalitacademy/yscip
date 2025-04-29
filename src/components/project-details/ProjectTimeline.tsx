@@ -14,24 +14,25 @@ import { format } from 'date-fns';
 
 interface ProjectTimelineProps {
   timeline: TimelineEvent[];
-  onAddEvent: (event: Omit<TimelineEvent, 'id'>) => void;
-  onCompleteEvent: (eventId: string) => void;
-  isEditing: boolean;
-  projectStatus: 'not_submitted' | 'pending' | 'approved' | 'rejected';
-  onSubmitProject: (feedback: string) => void;
-  onApproveProject: (feedback: string) => void;
-  onRejectProject: (feedback: string) => void;
+  tasks?: any[]; // Make tasks optional
+  onAddEvent?: (event: Omit<TimelineEvent, 'id'>) => void;
+  onCompleteEvent?: (eventId: string) => void;
+  isEditing?: boolean;
+  projectStatus?: 'not_submitted' | 'pending' | 'approved' | 'rejected';
+  onSubmitProject?: (feedback: string) => void;
+  onApproveProject?: (feedback: string) => void;
+  onRejectProject?: (feedback: string) => void;
 }
 
 const ProjectTimeline: React.FC<ProjectTimelineProps> = ({
   timeline,
   onAddEvent,
   onCompleteEvent,
-  isEditing,
-  projectStatus,
-  onSubmitProject,
-  onApproveProject,
-  onRejectProject
+  isEditing = false,
+  projectStatus = 'not_submitted',
+  onSubmitProject = () => {},
+  onApproveProject = () => {},
+  onRejectProject = () => {}
 }) => {
   const [newEvent, setNewEvent] = useState({
     title: '',
@@ -41,13 +42,13 @@ const ProjectTimeline: React.FC<ProjectTimelineProps> = ({
   const [feedback, setFeedback] = useState('');
   
   const handleAddEvent = () => {
-    if (!newEvent.title || !newEvent.date) return;
+    if (!onAddEvent || !newEvent.title || !newEvent.date) return;
     
     onAddEvent({
       title: newEvent.title,
       description: newEvent.description,
       date: new Date(newEvent.date).toISOString(),
-      completed: false
+      isCompleted: false // Fixed property name
     });
     
     setNewEvent({
@@ -189,7 +190,7 @@ const ProjectTimeline: React.FC<ProjectTimelineProps> = ({
                     <div 
                       className={cn(
                         "absolute left-4 w-5 h-5 rounded-full border-2 -translate-x-1/2",
-                        event.completed 
+                        event.isCompleted 
                           ? "bg-primary border-primary" 
                           : "bg-background border-border"
                       )}
@@ -211,7 +212,7 @@ const ProjectTimeline: React.FC<ProjectTimelineProps> = ({
                           {format(new Date(event.date), 'dd.MM.yyyy')}
                         </div>
                         
-                        {isEditing && !event.completed && (
+                        {isEditing && !event.isCompleted && onCompleteEvent && (
                           <Button 
                             variant="outline" 
                             size="sm" 
@@ -227,7 +228,7 @@ const ProjectTimeline: React.FC<ProjectTimelineProps> = ({
                 ))}
                 
                 {/* Add new event form */}
-                {isEditing && (
+                {isEditing && onAddEvent && (
                   <div className="relative pl-14 pt-2">
                     <div className="absolute left-4 w-5 h-5 rounded-full border-2 border-dashed border-border -translate-x-1/2 bg-background" />
                     
