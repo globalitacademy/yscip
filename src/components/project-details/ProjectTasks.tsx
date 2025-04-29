@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -53,7 +52,7 @@ const ProjectTasks: React.FC<ProjectTasksProps> = ({
       title: newTask.title,
       description: newTask.description,
       deadline: new Date(newTask.deadline).toISOString(),
-      status: 'todo' as TaskStatus, // Changed to explicitly use TaskStatus
+      status: 'todo' as TaskStatus,
       priority: newTask.priority,
       assignedTo: 'current-user' // Placeholder
     });
@@ -86,7 +85,6 @@ const ProjectTasks: React.FC<ProjectTasksProps> = ({
       case 'completed':
       case 'done':
         return <Badge className="bg-green-600">Ավարտված</Badge>;
-      case 'in_progress':
       case 'in-progress':
       case 'inProgress':
       case 'review':

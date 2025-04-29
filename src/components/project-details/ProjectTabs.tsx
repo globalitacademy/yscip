@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { 
   BookOpen, 
@@ -22,6 +21,7 @@ import ProjectOverview from './ProjectOverview';
 import ProjectTimeline from './ProjectTimeline';
 import { ProjectTheme, Task, TimelineEvent } from '@/data/projectThemes';
 import { cn } from '@/lib/utils';
+import { TaskStatus } from '@/utils/taskUtils';
 
 interface ProjectTabsProps {
   project: ProjectTheme;
@@ -40,7 +40,7 @@ interface ProjectTabsProps {
   addTimelineEvent: (event: Omit<TimelineEvent, 'id'>) => void;
   completeTimelineEvent: (eventId: string) => void;
   addTask: (task: Omit<Task, 'id'>) => void;
-  updateTaskStatus: (taskId: string, status: Task['status']) => void;
+  updateTaskStatus: (taskId: string, status: TaskStatus) => void;
   submitProject: (feedback: string) => void;
   approveProject: (feedback: string) => void;
   rejectProject: (feedback: string) => void;
@@ -118,7 +118,7 @@ const ProjectTabs: React.FC<ProjectTabsProps> = ({
             
             <div>
               <SlideUp>
-                <div className="bg-card rounded-xl shadow-md p-6 border border-border/30 h-full">
+                <div className="bg-card rounded-xl shadow-md p-6 border border-border/30">
                   <ProjectApproval 
                     projectStatus={projectStatus}
                     onSubmit={submitProject}

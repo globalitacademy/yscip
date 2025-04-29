@@ -211,7 +211,7 @@ const ProjectDetailsContent: React.FC = () => {
               <ProjectTasks
                 tasks={tasks}
                 onAddTask={addTask}
-                onUpdateTaskStatus={(taskId: string, status: TaskStatus) => updateTaskStatus(taskId, status)}
+                onUpdateTaskStatus={updateTaskStatus}
                 isEditing={isEditing}
               />
             </TabsContent>
