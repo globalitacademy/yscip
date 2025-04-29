@@ -33,6 +33,8 @@ import LecturerProgramsPage from './pages/LecturerProgramsPage'
 import LecturerCoursesPage from './pages/LecturerCoursesPage'
 import LecturerEducationalModulesPage from './pages/LecturerEducationalModulesPage'
 import LecturerTasksPage from './pages/LecturerTasksPage'
+import AdminProjectsPage from './pages/AdminProjectsPage'
+import ProjectManagementPage from './pages/ProjectManagementPage'
 
 function App() {
   return (
@@ -74,6 +76,10 @@ function App() {
             <Route path="/admin/lecturer-courses" element={<LecturerCoursesPage />} />
             <Route path="/admin/lecturer-educational-modules" element={<LecturerEducationalModulesPage />} />
             <Route path="/admin/lecturer-tasks" element={<LecturerTasksPage />} />
+            
+            {/* Admin Routes */}
+            <Route path="/admin/admin-projects" element={<AdminProjectsPage />} />
+            <Route path="/admin/project-management" element={<ProjectManagementPage />} />
             
             <Route path="*" element={<NotFound />} />
           </Routes>
