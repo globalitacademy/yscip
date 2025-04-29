@@ -1,21 +1,22 @@
+
 import React, { useState } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import AdminLayout from '@/components/AdminLayout';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
-import { toast } from "@/components/ui/use-toast";
+import { toast } from "sonner";
 import { MessageSquare, Search, Clipboard } from 'lucide-react';
-import { useProject } from '@/contexts/ProjectContext';
+import { ProjectProvider } from '@/contexts/ProjectContext';
 import { loadProjectReservations, ProjectReservation } from '@/utils/reservationUtils';
 import SupervisorProjectManagement from '@/components/supervisor/SupervisorProjectManagement';
 import SupervisorRequestsTab from '@/components/supervisor/SupervisorRequestsTab';
 import SupervisorRejectDialog from '@/components/supervisor/SupervisorRejectDialog';
 import SupervisorEmptyState from '@/components/supervisor/SupervisorEmptyState';
 
-const SupervisedStudentsPage: React.FC = () => {
+// Inner component that uses ProjectContext
+const SupervisedStudentsContent: React.FC = () => {
   const { user } = useAuth();
-  const { approveReservation, rejectReservation } = useProject();
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedReservation, setSelectedReservation] = useState<ProjectReservation | null>(null);
   const [showRejectDialog, setShowRejectDialog] = useState(false);
@@ -40,11 +41,14 @@ const SupervisedStudentsPage: React.FC = () => {
   );
   
   const handleApprove = (reservation: ProjectReservation) => {
-    approveReservation(reservation.id);
-    toast({
-      title: "Հարցումն ընդունված է",
-      description: `Դուք հաստատել եք ${reservation.projectTitle || `Project #${reservation.projectId}`} նախագծի ղեկավարումը։`,
-    });
+    // We're not using the useProject hook here anymore
+    // Instead, we'll implement the approval functionality directly
+    const updatedReservations = projectReservations.map(res => 
+      res.id === reservation.id ? { ...res, status: 'approved', responseDate: new Date().toISOString() } : res
+    );
+    localStorage.setItem('projectReservations', JSON.stringify(updatedReservations));
+    
+    toast(`Դուք հաստատել եք ${reservation.projectTitle || `Project #${reservation.projectId}`} նախագծի ղեկավարումը։`);
   };
   
   const handleOpenRejectDialog = (reservation: ProjectReservation) => {
@@ -54,32 +58,33 @@ const SupervisedStudentsPage: React.FC = () => {
   
   const handleReject = () => {
     if (selectedReservation && rejectFeedback) {
-      rejectReservation(selectedReservation.id, rejectFeedback);
+      // Implement rejection functionality directly instead of using useProject
+      const updatedReservations = projectReservations.map(res => 
+        res.id === selectedReservation.id ? 
+        { ...res, status: 'rejected', feedback: rejectFeedback, responseDate: new Date().toISOString() } : res
+      );
+      localStorage.setItem('projectReservations', JSON.stringify(updatedReservations));
+      
       setShowRejectDialog(false);
       setRejectFeedback('');
       setSelectedReservation(null);
-      toast({
-        title: "Հարցումը մերժված է",
-        description: "Ուսանողը կստանա ձեր մերժման պատճառը։",
-      });
+      toast("Հարցումը մերժված է։ Ուսանողը կստանա ձեր մերժման պատճառը։");
     }
   };
   
   if (!user || (user.role !== 'supervisor' && user.role !== 'project_manager')) {
     return (
-      <AdminLayout pageTitle="Ուսանողների ղեկավարում">
-        <div className="flex flex-col items-center justify-center py-12">
-          <h2 className="text-xl font-semibold mb-2">Մուտքն արգելված է</h2>
-          <p className="text-muted-foreground">
-            Այս էջը հասանելի է միայն նախագծերի ղեկավարների համար։
-          </p>
-        </div>
-      </AdminLayout>
+      <div className="flex flex-col items-center justify-center py-12">
+        <h2 className="text-xl font-semibold mb-2">Մուտքն արգելված է</h2>
+        <p className="text-muted-foreground">
+          Այս էջը հասանելի է միայն նախագծերի ղեկավարների համար։
+        </p>
+      </div>
     );
   }
   
   return (
-    <AdminLayout pageTitle="Ուսանողների ղեկավարում">
+    <>
       <Tabs defaultValue="requests" className="w-full">
         <TabsList className="mb-6">
           <TabsTrigger value="requests" className="flex items-center gap-2">
@@ -145,6 +150,23 @@ const SupervisedStudentsPage: React.FC = () => {
         setRejectFeedback={setRejectFeedback}
         onReject={handleReject}
       />
+    </>
+  );
+};
+
+// Outer component wrapper
+const SupervisedStudentsPage: React.FC = () => {
+  // Since we don't have a specific project, we'll use a mock one
+  const mockProject = {
+    id: 0,
+    title: "Supervised Projects",
+  };
+
+  return (
+    <AdminLayout pageTitle="Ուսանողների ղեկավարում">
+      <ProjectProvider projectId={0} initialProject={mockProject}>
+        <SupervisedStudentsContent />
+      </ProjectProvider>
     </AdminLayout>
   );
 };
