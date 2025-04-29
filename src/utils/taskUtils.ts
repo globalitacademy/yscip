@@ -4,14 +4,15 @@ import { Task } from '@/data/projectThemes';
 import { getUsersByRole } from '@/data/userRoles';
 
 // Define a consistent TaskStatus type to use across the application
-export type TaskStatus = 'todo' | 'in-progress' | 'review' | 'done' | 'pending' | 'open' | 'inProgress' | 'completed';
+export type TaskStatus = 'todo' | 'in-progress' | 'review' | 'done' | 'pending' | 'open' | 'inProgress' | 'completed' | 'backlog';
 
 // Task status utilities
 export const getTaskStatusColor = (status: TaskStatus) => {
   switch (status) {
     case 'todo': 
     case 'open':
-    case 'pending': return 'bg-slate-100 text-slate-700 border-slate-200';
+    case 'pending':
+    case 'backlog': return 'bg-slate-100 text-slate-700 border-slate-200';
     case 'inProgress': 
     case 'in-progress': return 'bg-blue-100 text-blue-700 border-blue-200';
     case 'review': return 'bg-amber-100 text-amber-700 border-amber-200';
@@ -25,7 +26,8 @@ export const getTaskStatusText = (status: TaskStatus) => {
   switch (status) {
     case 'todo':
     case 'open':
-    case 'pending': return 'Սպասվող';
+    case 'pending':
+    case 'backlog': return 'Սպասվող';
     case 'inProgress':
     case 'in-progress': return 'Ընթացքի մեջ';
     case 'review': return 'Վերանայում';
@@ -46,7 +48,7 @@ export const groupTasksByStatus = (tasks: Task[]) => {
 
 // Map status between different formats
 export const normalizeStatus = (status: TaskStatus): 'todo' | 'in-progress' | 'review' | 'done' => {
-  if (['open', 'pending', 'todo'].includes(status)) return 'todo';
+  if (['open', 'pending', 'todo', 'backlog'].includes(status)) return 'todo';
   if (['inProgress', 'in-progress'].includes(status)) return 'in-progress';
   if (['completed', 'done'].includes(status)) return 'done';
   if (status === 'review') return 'review';
