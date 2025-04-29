@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
@@ -179,17 +180,17 @@ const ProjectProgressSummary: React.FC = () => {
   
   return (
     <Card className="border-0 shadow-lg bg-white/50 backdrop-blur-sm dark:bg-zinc-900/50">
-      <CardHeader className="flex items-start flex-row justify-between">
-        <CardTitle className="text-xl flex items-center gap-2 text-primary dark:text-primary-foreground">
-          <TrendingUp size={20} /> Առաջընթացի ամփոփում
+      <CardHeader className="flex items-start flex-col md:flex-row md:items-center md:justify-between p-4 md:p-6">
+        <CardTitle className="text-lg md:text-xl flex items-center gap-2 text-primary dark:text-primary-foreground">
+          <TrendingUp size={isMobile ? 18 : 20} /> Առաջընթացի ամփոփում
         </CardTitle>
-        <div className="px-2.5 py-1 rounded-full bg-primary/10 text-primary text-xs font-medium flex items-center gap-1.5">
+        <div className="px-2 py-1 md:px-2.5 md:py-1 mt-2 md:mt-0 rounded-full bg-primary/10 text-primary text-xs font-medium flex items-center gap-1.5">
           <BarChart2 size={12} />
           {getProgressStatus()}
         </div>
       </CardHeader>
       
-      <CardContent className="space-y-6">
+      <CardContent className="space-y-4 md:space-y-6 p-4 md:p-6">
         <motion.div
           initial="hidden"
           animate="visible"
@@ -209,7 +210,7 @@ const ProjectProgressSummary: React.FC = () => {
             </div>
           </motion.div>
           
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-3 md:gap-4 mt-4 md:mt-6">
             <motion.div variants={fadeInUp}>
               <div className="flex justify-between items-center mb-2">
                 <div className="text-sm font-medium flex items-center gap-1.5">
@@ -246,18 +247,18 @@ const ProjectProgressSummary: React.FC = () => {
         
         {daysRemaining !== null && (
           <motion.div 
-            className="bg-blue-50 dark:bg-blue-900/30 p-4 rounded-lg flex items-center gap-4 border border-blue-100 dark:border-blue-900"
+            className="bg-blue-50 dark:bg-blue-900/30 p-3 md:p-4 rounded-lg flex flex-col md:flex-row md:items-center md:gap-4 border border-blue-100 dark:border-blue-900"
             variants={fadeInUp}
             initial="hidden"
             animate="visible"
             transition={{ delay: 0.3 }}
           >
-            <div className="p-2.5 rounded-full bg-blue-200 dark:bg-blue-700 text-blue-700 dark:text-blue-200">
-              <Clock size={20} />
+            <div className="p-2 md:p-2.5 rounded-full bg-blue-200 dark:bg-blue-700 text-blue-700 dark:text-blue-200 mx-auto md:mx-0 mb-2 md:mb-0">
+              <Clock size={isMobile ? 18 : 20} />
             </div>
-            <div>
-              <h4 className="text-sm font-medium text-blue-800 dark:text-blue-300">Մոտավոր մնացած ժամանակ</h4>
-              <p className="text-xl font-bold text-blue-900 dark:text-blue-200">{daysRemaining} օր</p>
+            <div className="text-center md:text-left">
+              <h4 className="text-xs md:text-sm font-medium text-blue-800 dark:text-blue-300">Մոտավոր մնացած ժամանակ</h4>
+              <p className="text-lg md:text-xl font-bold text-blue-900 dark:text-blue-200">{daysRemaining} օր</p>
             </div>
           </motion.div>
         )}
