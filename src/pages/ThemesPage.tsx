@@ -26,7 +26,7 @@ const ThemesPage: React.FC = () => {
         // Mock data fetching - in a real app, this would be an API call
         const mockThemes: Theme[] = [
           {
-            id: 1,
+            id: '1',
             title: 'Ալգորիթմների հիմունքներ',
             summary: 'Տվյալների կառուցվածքներ և ալգորիթմներ։ Հիմնական հասկացությունները։',
             content: '<p>Ալգորիթմները համակարգչային գիտության հիմքն են կազմում...</p>',
@@ -36,7 +36,7 @@ const ThemesPage: React.FC = () => {
             created_at: new Date().toISOString(),
           },
           {
-            id: 2,
+            id: '2',
             title: 'Տվյալների կառուցվածքներ',
             summary: 'Տվյալների կառուցվածքների ներածություն և տեսակներ',
             content: '<p>Տվյալների կառուցվածքները կարևոր են ծրագրավորման մեջ...</p>',
@@ -46,7 +46,7 @@ const ThemesPage: React.FC = () => {
             created_at: new Date().toISOString(),
           },
           {
-            id: 3,
+            id: '3',
             title: 'Օբյեկտ կողմնորոշված ծրագրավորում',
             summary: 'ՕԿԾ հիմնական սկզբունքներն ու կիրառությունները',
             content: '<p>Օբյեկտ կողմնորոշված ծրագրավորումը ծրագրավորման մոտեցում է...</p>',
@@ -56,7 +56,7 @@ const ThemesPage: React.FC = () => {
             created_at: new Date().toISOString(),
           },
           {
-            id: 4,
+            id: '4',
             title: 'Ցանցային տեխնոլոգիաներ',
             summary: 'Համակարգչային ցանցերի կառուցվածքն ու հիմնական արձանագրությունները',
             content: '<p>Համակարգչային ցանցերի բազային գիտելիքներ...</p>',
@@ -66,7 +66,7 @@ const ThemesPage: React.FC = () => {
             created_at: new Date().toISOString(),
           },
           {
-            id: 5,
+            id: '5',
             title: 'Վեբ կայքերի նախագծում',
             summary: 'HTML, CSS և JavaScript-ի հիմունքներ',
             content: '<p>Վեբ կայքերի պատրաստման տեխնոլոգիաներ...</p>',

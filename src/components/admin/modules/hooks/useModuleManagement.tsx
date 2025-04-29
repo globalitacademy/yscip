@@ -4,6 +4,13 @@ import { Layers } from 'lucide-react';
 import { toast } from 'sonner';
 import type { EducationalModule } from '@/components/educationalCycle';
 
+// Update the EducationalModule type to include content
+declare module '@/components/educationalCycle' {
+  interface EducationalModule {
+    content?: string;
+  }
+}
+
 export function useModuleManagement() {
   const [modules, setModules] = useState<EducationalModule[]>([
     { id: 1, title: "Ալգորիթմների տարրերի կիրառում", icon: Layers, status: 'completed', progress: 100, description: "Ծանոթացում ալգորիթմների հետ, որոնք տեղեկատվական տեխնոլոգիաների հիմնաքարն են։", topics: [] },

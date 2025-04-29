@@ -8,13 +8,23 @@ interface ThemeContextType {
   setTheme: (theme: Theme) => void;
 }
 
+interface ThemeProviderProps {
+  children: React.ReactNode;
+  defaultTheme?: Theme;
+  storageKey?: string;
+}
+
 const ThemeContext = createContext<ThemeContextType>({
   theme: 'light',
   setTheme: () => {},
 });
 
-export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const [theme, setTheme] = useState<Theme>('light');
+export const ThemeProvider: React.FC<ThemeProviderProps> = ({ 
+  children, 
+  defaultTheme = 'light',
+  storageKey = 'theme'
+}) => {
+  const [theme, setTheme] = useState<Theme>(defaultTheme);
   const [mounted, setMounted] = useState(false);
   
   // Only run this effect on client-side
@@ -22,7 +32,7 @@ export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     setMounted(true);
     
     // Check if theme is stored in localStorage
-    const storedTheme = localStorage.getItem('theme') as Theme | null;
+    const storedTheme = localStorage.getItem(storageKey) as Theme | null;
     
     if (storedTheme) {
       setTheme(storedTheme);
@@ -30,13 +40,13 @@ export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       // Use system preference if no stored theme
       setTheme('dark');
     }
-  }, []);
+  }, [storageKey]);
   
   useEffect(() => {
     if (!mounted) return;
     
     // Update localStorage when theme changes
-    localStorage.setItem('theme', theme);
+    localStorage.setItem(storageKey, theme);
     
     // Apply theme class to document and remove the other one with a transition
     const root = document.documentElement;
@@ -65,7 +75,7 @@ export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     }, 300);
     
     return () => clearTimeout(timeoutId);
-  }, [theme, mounted]);
+  }, [theme, mounted, storageKey]);
   
   return (
     <ThemeContext.Provider value={{ theme, setTheme }}>

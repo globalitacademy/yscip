@@ -6,7 +6,7 @@ import { Plus } from 'lucide-react';
 
 // Define Theme type based on the database schema
 export interface Theme {
-  id?: string;
+  id: string;
   title: string;
   summary: string;
   content?: string;
@@ -15,6 +15,7 @@ export interface Theme {
   category?: string;
   module_id?: number;
   is_published?: boolean;
+  created_at?: string;
 }
 
 export function useThemeManagement() {
@@ -108,6 +109,7 @@ export function useThemeManagement() {
 
   const handleAddNewTheme = () => {
     setSelectedTheme({
+      id: '',
       title: '',
       summary: '',
       content: '',

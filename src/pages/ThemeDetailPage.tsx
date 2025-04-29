@@ -24,7 +24,7 @@ const ThemeDetailPage: React.FC = () => {
         // Mock data fetching - in a real app, this would be an API call
         // This is demo data while we don't have a real API
         setTheme({
-          id: parseInt(id || '0'),
+          id: id || '0',
           title: 'Ալգորիթմների հիմունքներ',
           summary: 'Տվյալների կառուցվածքներ և ալգորիթմներ։ Հիմնական հասկացությունները։',
           content: `<h2>Ալգորիթմների ներածություն</h2>
@@ -54,7 +54,7 @@ const ThemeDetailPage: React.FC = () => {
         // Mock related themes
         setRelatedThemes([
           {
-            id: 1,
+            id: '1',
             title: 'Տվյալների կառուցվածքներ',
             summary: 'Տվյալների կառուցվածքների ներածություն և տեսակներ',
             content: '',
@@ -63,7 +63,7 @@ const ThemeDetailPage: React.FC = () => {
             is_published: true,
           },
           {
-            id: 2,
+            id: '2',
             title: 'Ալգորիթմների վերլուծություն',
             summary: 'Ալգորիթմների ժամանակի և հիշողության բարդության վերլուծություն',
             content: '',
