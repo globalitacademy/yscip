@@ -1,106 +1,160 @@
 
 import React, { useState } from 'react';
-import { Plus, Edit, Save, X, Check } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { cn } from '@/lib/utils';
+import { 
+  Plus, 
+  MessageCircle, 
+  FileText, 
+  Share2, 
+  Calendar, 
+  UserPlus, 
+  X
+} from 'lucide-react';
+import { useAuth } from '@/contexts/AuthContext';
 import { useProject } from '@/contexts/ProjectContext';
 import { toast } from 'sonner';
+import { cn } from '@/lib/utils';
+
+interface ActionButtonProps {
+  icon: React.ReactNode;
+  label: string;
+  onClick: () => void;
+  color: string;
+}
+
+const ActionButton: React.FC<ActionButtonProps> = ({ icon, label, onClick, color }) => {
+  return (
+    <button
+      onClick={onClick}
+      className={cn(
+        "flex items-center gap-2 px-4 py-2 rounded-full",
+        "text-white transition-all duration-200",
+        "hover:translate-y-[-2px]",
+        color
+      )}
+    >
+      {icon}
+      <span>{label}</span>
+    </button>
+  );
+};
 
 const FloatingActionButton: React.FC = () => {
   const [isOpen, setIsOpen] = useState(false);
-  const { canEdit, isEditing, setIsEditing, updateProject } = useProject();
-  const [isSaving, setIsSaving] = useState(false);
+  const { user } = useAuth();
+  const { project } = useProject();
+
+  if (!user || !project) return null;
 
   const toggleMenu = () => {
-    setIsOpen(!isOpen);
+    setIsOpen(prev => !prev);
   };
 
-  const handleAction = async (action: 'edit' | 'save' | 'cancel') => {
-    switch (action) {
-      case 'edit':
-        setIsEditing(true);
-        toast.info("Խմբագրման ռեժիմը միացված է");
-        break;
-      case 'save':
-        setIsSaving(true);
-        try {
-          const success = await updateProject({});
-          if (success) {
-            setIsEditing(false);
-            toast.success("Փոփոխությունները հաջողությամբ պահպանվել են");
-          }
-        } catch (error) {
-          console.error('Error saving:', error);
-          toast.error("Սխալ պահպանելիս");
-        } finally {
-          setIsSaving(false);
-        }
-        break;
-      case 'cancel':
-        setIsEditing(false);
-        toast.info("Խմբագրման ռեժիմը անջատված է");
-        break;
-    }
+  const handleAddDiscussion = () => {
+    toast.success('Քննարկում ավելացնելու համակարգը շուտով հասանելի կլինի');
     setIsOpen(false);
   };
 
-  if (!canEdit) return null;
+  const handleUploadFile = () => {
+    toast.success('Ֆայլ վերբեռնելու համակարգը շուտով հասանելի կլինի');
+    setIsOpen(false);
+  };
+
+  const handleShare = () => {
+    // Copy URL to clipboard
+    navigator.clipboard.writeText(window.location.href);
+    toast.success('Հղումը պատճենված է');
+    setIsOpen(false);
+  };
+
+  const handleAddEvent = () => {
+    toast.success('Իրադարձություն ավելացնելու համակարգը շուտով հասանելի կլինի');
+    setIsOpen(false);
+  };
+
+  const handleInvite = () => {
+    toast.success('Հրավիրելու համակարգը շուտով հասանելի կլինի');
+    setIsOpen(false);
+  };
+
+  // Որոշենք թե ինչ գործողություններ ցուցադրել կախված օգտատիրոջ դերից
+  const actions: ActionButtonProps[] = [];
+
+  // Բոլոր օգտատերերը կարող են կիսվել
+  actions.push({
+    icon: <Share2 size={16} />,
+    label: 'Կիսվել',
+    onClick: handleShare,
+    color: 'bg-purple-600 hover:bg-purple-700'
+  });
+
+  // Ղեկավարներ, դասախոսներ, ադմիններ և գործատուները կարող են ֆայլեր ավելացնել
+  if (['supervisor', 'lecturer', 'admin', 'employer', 'project_manager'].includes(user.role)) {
+    actions.push({
+      icon: <FileText size={16} />,
+      label: 'Ավելացնել ֆայլ',
+      onClick: handleUploadFile,
+      color: 'bg-blue-600 hover:bg-blue-700'
+    });
+  }
+
+  // Բոլորը կարող են քննարկումներ ավելացնել
+  actions.push({
+    icon: <MessageCircle size={16} />,
+    label: 'Նոր քննարկում',
+    onClick: handleAddDiscussion,
+    color: 'bg-emerald-600 hover:bg-emerald-700'
+  });
+
+  // Ղեկավարներ, դասախոսներ և ադմինները կարող են միջոցառումներ ավելացնել
+  if (['supervisor', 'lecturer', 'admin', 'project_manager'].includes(user.role)) {
+    actions.push({
+      icon: <Calendar size={16} />,
+      label: 'Ավելացնել իրադարձություն',
+      onClick: handleAddEvent,
+      color: 'bg-amber-600 hover:bg-amber-700'
+    });
+  }
+
+  // Ղեկավարներ, դասախոսներ և ադմինները կարող են հրավիրել
+  if (['supervisor', 'lecturer', 'admin', 'project_manager'].includes(user.role)) {
+    actions.push({
+      icon: <UserPlus size={16} />,
+      label: 'Հրավիրել',
+      onClick: handleInvite,
+      color: 'bg-red-600 hover:bg-red-700'
+    });
+  }
 
   return (
-    <div className="fixed bottom-6 right-6 z-50">
-      {/* Action buttons that appear when FAB is clicked */}
-      <div className={cn(
-        "flex flex-col-reverse gap-3 mb-4 transition-all duration-300 transform",
-        isOpen ? "opacity-100 scale-100" : "opacity-0 scale-75 pointer-events-none"
-      )}>
-        {isEditing ? (
-          <>
-            <Button 
-              size="icon"
-              variant="outline" 
-              className="rounded-full shadow-lg bg-green-500 hover:bg-green-600 border-0 text-white"
-              onClick={() => handleAction('save')}
-              disabled={isSaving}
+    <div className="fixed bottom-8 right-8 z-50">
+      {isOpen && (
+        <div className="absolute bottom-16 right-0 mb-2 flex flex-col gap-2 items-end transition-all duration-300">
+          {actions.map((action, index) => (
+            <div 
+              key={index}
+              className="transform transition-all duration-300"
+              style={{ 
+                opacity: isOpen ? 1 : 0,
+                transform: `translateY(${isOpen ? 0 : 20}px)`,
+                transitionDelay: `${index * 50}ms`
+              }}
             >
-              {isSaving ? <Plus className="h-5 w-5 animate-spin" /> : <Check className="h-5 w-5" />}
-            </Button>
-            <Button 
-              size="icon"
-              variant="outline" 
-              className="rounded-full shadow-lg bg-red-500 hover:bg-red-600 border-0 text-white"
-              onClick={() => handleAction('cancel')}
-            >
-              <X className="h-5 w-5" />
-            </Button>
-          </>
-        ) : (
-          <Button 
-            size="icon"
-            variant="outline" 
-            className="rounded-full shadow-lg bg-blue-500 hover:bg-blue-600 border-0 text-white"
-            onClick={() => handleAction('edit')}
-          >
-            <Edit className="h-5 w-5" />
-          </Button>
-        )}
-      </div>
-
-      {/* Main floating action button */}
-      <Button
-        size="icon"
+              <ActionButton {...action} />
+            </div>
+          ))}
+        </div>
+      )}
+      
+      <button
         onClick={toggleMenu}
         className={cn(
-          "rounded-full shadow-lg w-14 h-14 transition-all duration-300",
-          isOpen ? "bg-gray-600 hover:bg-gray-700" : "bg-primary hover:bg-primary/90"
+          "w-12 h-12 rounded-full text-white flex items-center justify-center shadow-lg",
+          "transition-all duration-300 transform",
+          isOpen ? "bg-red-500 hover:bg-red-600 rotate-45" : "bg-primary hover:bg-primary/90"
         )}
       >
-        <Plus 
-          className={cn(
-            "h-6 w-6 transition-transform duration-300", 
-            isOpen && "rotate-45"
-          )} 
-        />
-      </Button>
+        {isOpen ? <X size={24} /> : <Plus size={24} />}
+      </button>
     </div>
   );
 };

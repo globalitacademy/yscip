@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Header from '@/components/Header';
@@ -20,6 +21,10 @@ import ProjectDiscussions from './ProjectDiscussions';
 import ProjectFiles from './ProjectFiles';
 import ProjectEvaluation from './ProjectEvaluation';
 import { TaskStatus } from '@/utils/taskUtils';
+import ProjectHeaderBanner from './ProjectHeaderBanner';
+import ProjectRoleBasedActions from './ProjectRoleBasedActions';
+import ProjectParticipants from './ProjectParticipants';
+import ProjectProgressSummary from './ProjectProgressSummary';
 
 const ProjectDetailsContent: React.FC = () => {
   const { 
@@ -97,7 +102,7 @@ const ProjectDetailsContent: React.FC = () => {
       <Header />
       
       <main className="flex-grow bg-gradient-to-br from-background to-background/80">
-        <ProjectBanner project={project} isEditing={isEditing} onSaveChanges={handleSaveChanges} />
+        <ProjectHeaderBanner project={project} isEditing={isEditing} />
         
         <div className="container mx-auto px-4 py-8">
           {projectStatus === 'rejected' && (
@@ -121,55 +126,53 @@ const ProjectDetailsContent: React.FC = () => {
             </Alert>
           )}
           
-          <div className="mb-8">
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-              <div className="flex flex-wrap gap-2">
-                <Badge variant="outline" className="flex items-center gap-1.5 px-3 py-1.5">
-                  <Tag className="h-3.5 w-3.5" /> 
-                  {project.category}
-                </Badge>
-                {project.duration && (
-                  <Badge variant="outline" className="flex items-center gap-1.5 px-3 py-1.5">
-                    <Clock className="h-3.5 w-3.5" /> 
-                    {project.duration}
-                  </Badge>
-                )}
-                {projectStatus && (
-                  <Badge 
-                    className={cn(
-                      "px-3 py-1.5",
-                      projectStatus === 'approved' && "bg-green-600",
-                      projectStatus === 'pending' && "bg-amber-600",
-                      projectStatus === 'rejected' && "bg-red-600",
-                      projectStatus === 'not_submitted' && "bg-blue-600"
+          {/* Երկու սյունակներ՝ գործողություններ և առաջընթաց */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-8">
+            <div className="md:col-span-2">
+              <div className="mb-8">
+                <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+                  <div className="flex flex-wrap gap-2">
+                    <Badge variant="outline" className="flex items-center gap-1.5 px-3 py-1.5">
+                      <Tag className="h-3.5 w-3.5" /> 
+                      {project.category}
+                    </Badge>
+                    {project.duration && (
+                      <Badge variant="outline" className="flex items-center gap-1.5 px-3 py-1.5">
+                        <Clock className="h-3.5 w-3.5" /> 
+                        {project.duration}
+                      </Badge>
                     )}
-                  >
-                    {projectStatus === 'approved' && "Հաստատված"}
-                    {projectStatus === 'pending' && "Սպասում է"}
-                    {projectStatus === 'rejected' && "Մերժված"}
-                    {projectStatus === 'not_submitted' && "Չի ներկայացվել"}
-                  </Badge>
-                )}
-                {isReserved && (
-                  <Badge variant="secondary" className="flex items-center gap-1.5 px-3 py-1.5">
-                    <Users className="h-3.5 w-3.5" /> 
-                    Ամրագրված
-                  </Badge>
-                )}
+                    {projectStatus && (
+                      <Badge 
+                        className={cn(
+                          "px-3 py-1.5",
+                          projectStatus === 'approved' && "bg-green-600",
+                          projectStatus === 'pending' && "bg-amber-600",
+                          projectStatus === 'rejected' && "bg-red-600",
+                          projectStatus === 'not_submitted' && "bg-blue-600"
+                        )}
+                      >
+                        {projectStatus === 'approved' && "Հաստատված"}
+                        {projectStatus === 'pending' && "Սպասում է"}
+                        {projectStatus === 'rejected' && "Մերժված"}
+                        {projectStatus === 'not_submitted' && "Չի ներկայացվել"}
+                      </Badge>
+                    )}
+                    {isReserved && (
+                      <Badge variant="secondary" className="flex items-center gap-1.5 px-3 py-1.5">
+                        <Users className="h-3.5 w-3.5" /> 
+                        Ամրագրված
+                      </Badge>
+                    )}
+                  </div>
+                </div>
               </div>
               
-              {projectProgress > 0 && (
-                <div className="flex items-center gap-2">
-                  <span className="text-sm font-medium">Առաջընթաց:</span>
-                  <div className="w-32 h-2 bg-muted rounded-full overflow-hidden">
-                    <div 
-                      className="h-full bg-primary" 
-                      style={{ width: `${projectProgress}%` }}
-                    />
-                  </div>
-                  <span className="text-sm font-medium">{projectProgress}%</span>
-                </div>
-              )}
+              <ProjectRoleBasedActions />
+            </div>
+            
+            <div>
+              <ProjectProgressSummary />
             </div>
           </div>
           
@@ -178,9 +181,9 @@ const ProjectDetailsContent: React.FC = () => {
               <TabsTrigger value="overview">Նկարագիր</TabsTrigger>
               <TabsTrigger value="timeline">Ժամանակացույց</TabsTrigger>
               <TabsTrigger value="tasks">Քայլեր</TabsTrigger>
+              <TabsTrigger value="participants">Մասնակիցներ</TabsTrigger>
               <TabsTrigger value="discussions">Քննարկումներ</TabsTrigger>
               <TabsTrigger value="files">Ֆայլեր</TabsTrigger>
-              <TabsTrigger value="evaluation">Գնահատական</TabsTrigger>
             </TabsList>
             
             <TabsContent value="overview" className="animate-in fade-in-50 slide-in-from-bottom-3">
@@ -216,16 +219,16 @@ const ProjectDetailsContent: React.FC = () => {
               />
             </TabsContent>
             
+            <TabsContent value="participants" className="animate-in fade-in-50 slide-in-from-bottom-3">
+              <ProjectParticipants />
+            </TabsContent>
+            
             <TabsContent value="discussions" className="animate-in fade-in-50 slide-in-from-bottom-3">
               <ProjectDiscussions projectId={project.id} isEditing={isEditing} />
             </TabsContent>
             
             <TabsContent value="files" className="animate-in fade-in-50 slide-in-from-bottom-3">
               <ProjectFiles projectId={project.id} isEditing={isEditing} />
-            </TabsContent>
-            
-            <TabsContent value="evaluation" className="animate-in fade-in-50 slide-in-from-bottom-3">
-              <ProjectEvaluation projectId={project.id} isEditing={isEditing} />
             </TabsContent>
           </Tabs>
         </div>
