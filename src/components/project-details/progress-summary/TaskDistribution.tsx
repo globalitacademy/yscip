@@ -1,114 +1,74 @@
 
 import React from 'react';
-import { Circle, Clock, AlertCircle, CheckCircle, BarChart2 } from 'lucide-react';
+import { CheckCircle, Clock, CircleDashed } from 'lucide-react';
 import { motion } from 'framer-motion';
-import { cn } from '@/lib/utils';
-import { useIsMobile } from '@/hooks/use-mobile';
 import { Task } from '@/data/projectThemes';
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
-
-const fadeInUp = {
-  hidden: { opacity: 0, y: 10 },
-  visible: { opacity: 1, y: 0 }
-};
+import { calculateTaskDistribution } from './progressUtils';
 
 interface TaskDistributionProps {
   tasks: Task[];
 }
 
 const TaskDistribution: React.FC<TaskDistributionProps> = ({ tasks }) => {
-  const isMobile = useIsMobile();
+  const { todo, inProgress, completed } = calculateTaskDistribution(tasks);
   
-  // Հաշվարկում ենք քանակը ըստ կարգավիճակի
-  const todoCount = tasks.filter(t => t.status === 'todo').length;
-  const inProgressCount = tasks.filter(t => 
-    t.status === 'inProgress' || t.status === 'in-progress').length;
-  const reviewCount = tasks.filter(t => t.status === 'review').length;
-  const doneCount = tasks.filter(t => 
-    t.status === 'done' || t.status === 'completed').length;
-  
-  const categories = [
-    {
-      name: "Նոր",
-      count: todoCount,
-      icon: <Circle size={14} className="text-slate-500" />,
-      tooltip: "Նոր քայլեր, որոնք դեռ չեն սկսվել"
-    },
-    {
-      name: "Ընթացքում",
-      count: inProgressCount,
-      icon: <Clock size={14} className="text-blue-500" />,
-      tooltip: "Քայլեր, որոնք ներկայումս իրականացվում են"
-    },
-    {
-      name: "Վերանայում",
-      count: reviewCount,
-      icon: <AlertCircle size={14} className="text-amber-500" />,
-      tooltip: "Քայլեր, որոնք սպասում են վերանայման"
-    },
-    {
-      name: "Ավարտված",
-      count: doneCount,
-      icon: <CheckCircle size={14} className="text-green-500" />,
-      tooltip: "Ավարտված քայլեր"
+  const containerVariants = {
+    hidden: { opacity: 0 },
+    visible: {
+      opacity: 1,
+      transition: {
+        staggerChildren: 0.1
+      }
     }
-  ];
+  };
   
-  return (
-    <div className="mt-4">
-      <h3 className="text-sm font-medium mb-2 flex items-center gap-1.5">
-        <BarChart2 size={14} /> Քայլերի բաշխում
-      </h3>
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
-        {categories.map((category, index) => (
-          <TooltipProvider key={index}>
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <motion.div 
-                  className={cn(
-                    "flex items-center rounded bg-white dark:bg-zinc-800 shadow-sm border border-muted/30",
-                    "transition-all duration-300 ease-in-out hover:shadow-md",
-                    "w-full h-full",
-                    isMobile 
-                      ? "p-2 gap-1.5 flex-col justify-center items-center text-center" 
-                      : "p-2.5 gap-2.5 flex-row items-center"
-                  )}
-                  variants={fadeInUp}
-                  initial="hidden"
-                  animate="visible"
-                  transition={{ delay: index * 0.1 }}
-                  whileHover={{ scale: 1.02 }}
-                >
-                  <div className={cn(
-                    "rounded-full bg-muted/50",
-                    isMobile ? "p-1.5 mb-1" : "p-1.5"
-                  )}>
-                    {category.icon}
-                  </div>
-                  <div className={cn(
-                    "text-xs",
-                    isMobile ? "flex flex-col items-center" : ""
-                  )}>
-                    <div className="text-muted-foreground">{category.name}</div>
-                    <div className={cn(
-                      "font-bold",
-                      isMobile ? "text-lg mt-0.5" : "text-base"
-                    )}>{category.count}</div>
-                  </div>
-                </motion.div>
-              </TooltipTrigger>
-              <TooltipContent>
-                <p>{category.tooltip}</p>
-              </TooltipContent>
-            </Tooltip>
-          </TooltipProvider>
-        ))}
+  const itemVariants = {
+    hidden: { opacity: 0, x: -5 },
+    visible: { opacity: 1, x: 0 }
+  };
+  
+  if (tasks.length === 0) {
+    return (
+      <div className="mt-4 p-3 bg-muted/40 rounded-lg text-center text-muted-foreground text-sm">
+        Նախագծի քայլերը դեռ սահմանված չեն
       </div>
+    );
+  }
+
+  return (
+    <div className="mt-4 md:mt-6">
+      <h4 className="text-sm font-medium mb-3">Քայլերի վիճակագրություն</h4>
+      
+      <motion.div 
+        className="space-y-3"
+        variants={containerVariants}
+        initial="hidden"
+        animate="visible"
+      >
+        <motion.div variants={itemVariants} className="flex justify-between items-center">
+          <div className="flex items-center gap-2">
+            <CircleDashed size={16} className="text-gray-500" />
+            <span className="text-sm">Սպասվող</span>
+          </div>
+          <span className="text-sm font-medium">{todo}%</span>
+        </motion.div>
+        
+        <motion.div variants={itemVariants} className="flex justify-between items-center">
+          <div className="flex items-center gap-2">
+            <Clock size={16} className="text-amber-500" />
+            <span className="text-sm">Ընթացքում</span>
+          </div>
+          <span className="text-sm font-medium">{inProgress}%</span>
+        </motion.div>
+        
+        <motion.div variants={itemVariants} className="flex justify-between items-center">
+          <div className="flex items-center gap-2">
+            <CheckCircle size={16} className="text-green-500" />
+            <span className="text-sm">Ավարտված</span>
+          </div>
+          <span className="text-sm font-medium">{completed}%</span>
+        </motion.div>
+      </motion.div>
     </div>
   );
 };

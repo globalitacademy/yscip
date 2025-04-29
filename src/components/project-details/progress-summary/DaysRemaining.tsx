@@ -20,6 +20,13 @@ const DaysRemaining: React.FC<DaysRemainingProps> = ({ daysRemaining }) => {
     visible: { opacity: 1, y: 0 }
   };
 
+  // Ընտրում ենք տեքստի գույնը՝ կախված մնացած օրերից
+  const getTextColorClass = () => {
+    if (daysRemaining <= 7) return 'text-red-900 dark:text-red-200';
+    if (daysRemaining <= 14) return 'text-amber-900 dark:text-amber-200';
+    return 'text-blue-900 dark:text-blue-200';
+  };
+
   return (
     <motion.div 
       className="bg-blue-50 dark:bg-blue-900/30 p-3 md:p-4 rounded-lg flex flex-col md:flex-row md:items-center md:gap-4 border border-blue-100 dark:border-blue-900"
@@ -33,7 +40,7 @@ const DaysRemaining: React.FC<DaysRemainingProps> = ({ daysRemaining }) => {
       </div>
       <div className="text-center md:text-left">
         <h4 className="text-xs md:text-sm font-medium text-blue-800 dark:text-blue-300">Մոտավոր մնացած ժամանակ</h4>
-        <p className="text-lg md:text-xl font-bold text-blue-900 dark:text-blue-200">{daysRemaining} օր</p>
+        <p className={`text-lg md:text-xl font-bold ${getTextColorClass()}`}>{daysRemaining} օր</p>
       </div>
     </motion.div>
   );

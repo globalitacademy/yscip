@@ -53,12 +53,14 @@ const ProgressBars: React.FC<ProgressBarsProps> = ({
             className={`h-full rounded-full ${progressColor}`}
             custom={projectProgress}
             variants={progressVariants}
+            initial="hidden"
+            animate="visible"
           />
         </div>
       </motion.div>
       
       <div className="grid grid-cols-1 md:grid-cols-2 gap-3 md:gap-4 mt-4 md:mt-6">
-        <motion.div variants={fadeInUp}>
+        <motion.div variants={fadeInUp} initial="hidden" animate="visible">
           <div className="flex justify-between items-center mb-2">
             <div className="text-sm font-medium flex items-center gap-1.5">
               <CheckCircle size={14} /> Քայլեր
@@ -70,11 +72,13 @@ const ProgressBars: React.FC<ProgressBarsProps> = ({
               className="h-full bg-emerald-500 rounded-full"
               custom={taskPercentage}
               variants={progressVariants}
+              initial="hidden"
+              animate="visible"
             />
           </div>
         </motion.div>
         
-        <motion.div variants={fadeInUp}>
+        <motion.div variants={fadeInUp} initial="hidden" animate="visible">
           <div className="flex justify-between items-center mb-2">
             <div className="text-sm font-medium flex items-center gap-1.5">
               <Clock size={14} /> Ժամանակացույց
@@ -86,6 +90,8 @@ const ProgressBars: React.FC<ProgressBarsProps> = ({
               className="h-full bg-blue-500 rounded-full"
               custom={timelinePercentage}
               variants={progressVariants}
+              initial="hidden"
+              animate="visible"
             />
           </div>
         </motion.div>

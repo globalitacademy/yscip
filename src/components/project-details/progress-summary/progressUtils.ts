@@ -20,3 +20,20 @@ export const calculateDaysRemaining = (project: ProjectTheme | null, projectProg
   
   return remainingDays;
 };
+
+// Հաշվարկվում է թե ինչպիսի կատեգորիաներում են բաշխված խնդիրները (todo, in progress, done)
+export const calculateTaskDistribution = (tasks: Task[]): { todo: number, inProgress: number, completed: number } => {
+  if (tasks.length === 0) {
+    return { todo: 0, inProgress: 0, completed: 0 };
+  }
+  
+  const todoCount = tasks.filter(task => task.status === 'todo' || task.status === 'backlog').length;
+  const inProgressCount = tasks.filter(task => task.status === 'inProgress' || task.status === 'review').length;
+  const completedCount = tasks.filter(task => task.status === 'done' || task.status === 'completed').length;
+  
+  return {
+    todo: Math.round((todoCount / tasks.length) * 100),
+    inProgress: Math.round((inProgressCount / tasks.length) * 100),
+    completed: Math.round((completedCount / tasks.length) * 100)
+  };
+};
