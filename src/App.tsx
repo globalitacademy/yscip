@@ -20,6 +20,14 @@ import SupervisorDashboard from './pages/SupervisorDashboard'
 import MyProjectsPage from './pages/MyProjectsPage'
 import TasksPage from './pages/TasksPage'
 import PortfolioPage from './pages/PortfolioPage'
+import SupervisedStudentsPage from './pages/SupervisedStudentsPage'
+import StudentProjectsPage from './pages/StudentProjectsPage'
+import ProgramsPage from './pages/ProgramsPage'
+import CoursesPage from './pages/CoursesPage'
+import EducationalModulesPage from './pages/EducationalModulesPage'
+import PendingApprovalsPage from './pages/PendingApprovalsPage'
+import SupervisorTasksPage from './pages/SupervisorTasksPage'
+import StudentProgressPage from './pages/StudentProgressPage'
 
 function App() {
   return (
@@ -39,9 +47,22 @@ function App() {
             <Route path="/module/:id" element={<ModuleDetailPage />} />
             <Route path="/themes" element={<ThemesPage />} />
             <Route path="/theme/:id" element={<ThemeDetailPage />} />
+            
+            {/* Student Routes */}
             <Route path="/admin/my-projects" element={<MyProjectsPage />} />
             <Route path="/admin/tasks" element={<TasksPage />} />
             <Route path="/admin/portfolio" element={<PortfolioPage />} />
+            
+            {/* Supervisor Routes */}
+            <Route path="/admin/supervised-students" element={<SupervisedStudentsPage />} />
+            <Route path="/admin/student-projects" element={<StudentProjectsPage />} />
+            <Route path="/admin/programs" element={<ProgramsPage />} />
+            <Route path="/admin/courses" element={<CoursesPage />} />
+            <Route path="/admin/educational-modules" element={<EducationalModulesPage />} />
+            <Route path="/admin/pending-approvals" element={<PendingApprovalsPage />} />
+            <Route path="/admin/supervisor-tasks" element={<SupervisorTasksPage />} />
+            <Route path="/admin/student-progress" element={<StudentProgressPage />} />
+            
             <Route path="*" element={<NotFound />} />
           </Routes>
         </Router>
