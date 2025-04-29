@@ -7,12 +7,14 @@ import {
   Share2, 
   Calendar, 
   UserPlus, 
-  X
+  X,
+  PlusCircle
 } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useProject } from '@/contexts/ProjectContext';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
+import { motion, AnimatePresence } from 'framer-motion';
 
 interface ActionButtonProps {
   icon: React.ReactNode;
@@ -23,18 +25,20 @@ interface ActionButtonProps {
 
 const ActionButton: React.FC<ActionButtonProps> = ({ icon, label, onClick, color }) => {
   return (
-    <button
+    <motion.button
       onClick={onClick}
       className={cn(
-        "flex items-center gap-2 px-4 py-2 rounded-full",
+        "flex items-center gap-2 px-4 py-2 rounded-full shadow-lg",
         "text-white transition-all duration-200",
-        "hover:translate-y-[-2px]",
+        "hover:shadow-xl",
         color
       )}
+      whileHover={{ scale: 1.05, y: -2 }}
+      whileTap={{ scale: 0.95 }}
     >
       {icon}
       <span>{label}</span>
-    </button>
+    </motion.button>
   );
 };
 
@@ -127,34 +131,39 @@ const FloatingActionButton: React.FC = () => {
 
   return (
     <div className="fixed bottom-8 right-8 z-50">
-      {isOpen && (
-        <div className="absolute bottom-16 right-0 mb-2 flex flex-col gap-2 items-end transition-all duration-300">
-          {actions.map((action, index) => (
-            <div 
-              key={index}
-              className="transform transition-all duration-300"
-              style={{ 
-                opacity: isOpen ? 1 : 0,
-                transform: `translateY(${isOpen ? 0 : 20}px)`,
-                transitionDelay: `${index * 50}ms`
-              }}
-            >
-              <ActionButton {...action} />
-            </div>
-          ))}
-        </div>
-      )}
+      <AnimatePresence>
+        {isOpen && (
+          <div className="absolute bottom-16 right-0 mb-2 flex flex-col gap-2 items-end">
+            {actions.map((action, index) => (
+              <motion.div 
+                key={index}
+                initial={{ opacity: 0, y: 20, scale: 0.8 }}
+                animate={{ opacity: 1, y: 0, scale: 1 }}
+                exit={{ opacity: 0, y: 10, scale: 0.8 }}
+                transition={{ duration: 0.2, delay: index * 0.05 }}
+              >
+                <ActionButton {...action} />
+              </motion.div>
+            ))}
+          </div>
+        )}
+      </AnimatePresence>
       
-      <button
+      <motion.button
         onClick={toggleMenu}
         className={cn(
-          "w-12 h-12 rounded-full text-white flex items-center justify-center shadow-lg",
+          "w-14 h-14 rounded-full text-white flex items-center justify-center shadow-xl",
           "transition-all duration-300 transform",
-          isOpen ? "bg-red-500 hover:bg-red-600 rotate-45" : "bg-primary hover:bg-primary/90"
+          isOpen 
+            ? "bg-red-500 hover:bg-red-600" 
+            : "bg-primary hover:bg-primary/90"
         )}
+        whileHover={{ scale: 1.05 }}
+        whileTap={{ scale: 0.95 }}
+        animate={{ rotate: isOpen ? 45 : 0 }}
       >
-        {isOpen ? <X size={24} /> : <Plus size={24} />}
-      </button>
+        {isOpen ? <X size={24} /> : <PlusCircle size={28} />}
+      </motion.button>
     </div>
   );
 };

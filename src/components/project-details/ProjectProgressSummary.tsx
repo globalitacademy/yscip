@@ -7,8 +7,9 @@ import {
   CheckCircle, 
   Circle, 
   Clock, 
-  AlertCircle, 
-  BarChart2 
+  AlertCircle,
+  BarChart2,
+  TrendingUp 
 } from 'lucide-react';
 import { useProject } from '@/contexts/ProjectContext';
 import { cn } from '@/lib/utils';
@@ -19,6 +20,22 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
+import { motion } from 'framer-motion';
+
+const fadeInUp = {
+  hidden: { opacity: 0, y: 10 },
+  visible: { opacity: 1, y: 0 }
+};
+
+const staggerContainer = {
+  hidden: { opacity: 0 },
+  visible: {
+    opacity: 1,
+    transition: {
+      staggerChildren: 0.1
+    }
+  }
+};
 
 const ProjectProgressSummary: React.FC = () => {
   const { project, tasks, timeline, projectProgress } = useProject();
@@ -75,131 +92,170 @@ const ProjectProgressSummary: React.FC = () => {
     const doneCount = tasks.filter(t => 
       t.status === 'done' || t.status === 'completed').length;
     
+    const categories = [
+      {
+        name: "Նոր",
+        count: todoCount,
+        icon: <Circle size={14} className="text-slate-500" />,
+        tooltip: "Նոր քայլեր, որոնք դեռ չեն սկսվել"
+      },
+      {
+        name: "Ընթացքում",
+        count: inProgressCount,
+        icon: <Clock size={14} className="text-blue-500" />,
+        tooltip: "Քայլեր, որոնք ներկայումս իրականացվում են"
+      },
+      {
+        name: "Վերանայում",
+        count: reviewCount,
+        icon: <AlertCircle size={14} className="text-amber-500" />,
+        tooltip: "Քայլեր, որոնք սպասում են վերանայման"
+      },
+      {
+        name: "Ավարտված",
+        count: doneCount,
+        icon: <CheckCircle size={14} className="text-green-500" />,
+        tooltip: "Ավարտված քայլեր"
+      }
+    ];
+    
     return (
       <div className="grid grid-cols-2 md:grid-cols-4 gap-2 mt-4">
-        <TooltipProvider>
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <div className="flex items-center p-2 rounded bg-muted/50 gap-2">
-                <Circle size={14} className="text-slate-500" />
-                <div className="text-xs">
-                  <div>Նոր</div>
-                  <div className="font-bold">{todoCount}</div>
-                </div>
-              </div>
-            </TooltipTrigger>
-            <TooltipContent>
-              <p>Նոր քայլեր, որոնք դեռ չեն սկսվել</p>
-            </TooltipContent>
-          </Tooltip>
-        </TooltipProvider>
-        
-        <TooltipProvider>
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <div className="flex items-center p-2 rounded bg-muted/50 gap-2">
-                <Clock size={14} className="text-blue-500" />
-                <div className="text-xs">
-                  <div>Ընթացքում</div>
-                  <div className="font-bold">{inProgressCount}</div>
-                </div>
-              </div>
-            </TooltipTrigger>
-            <TooltipContent>
-              <p>Քայլեր, որոնք ներկայումս իրականացվում են</p>
-            </TooltipContent>
-          </Tooltip>
-        </TooltipProvider>
-        
-        <TooltipProvider>
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <div className="flex items-center p-2 rounded bg-muted/50 gap-2">
-                <AlertCircle size={14} className="text-amber-500" />
-                <div className="text-xs">
-                  <div>Վերանայում</div>
-                  <div className="font-bold">{reviewCount}</div>
-                </div>
-              </div>
-            </TooltipTrigger>
-            <TooltipContent>
-              <p>Քայլեր, որոնք սպասում են վերանայման</p>
-            </TooltipContent>
-          </Tooltip>
-        </TooltipProvider>
-        
-        <TooltipProvider>
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <div className="flex items-center p-2 rounded bg-muted/50 gap-2">
-                <CheckCircle size={14} className="text-green-500" />
-                <div className="text-xs">
-                  <div>Ավարտված</div>
-                  <div className="font-bold">{doneCount}</div>
-                </div>
-              </div>
-            </TooltipTrigger>
-            <TooltipContent>
-              <p>Ավարտված քայլեր</p>
-            </TooltipContent>
-          </Tooltip>
-        </TooltipProvider>
+        {categories.map((category, index) => (
+          <TooltipProvider key={index}>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <motion.div 
+                  className="flex items-center p-2.5 rounded bg-white dark:bg-zinc-800 shadow-sm border border-muted/30 gap-2.5"
+                  variants={fadeInUp}
+                  initial="hidden"
+                  animate="visible"
+                  transition={{ delay: index * 0.1 }}
+                  whileHover={{ scale: 1.02 }}
+                >
+                  <div className="p-1.5 rounded-full bg-muted/50">
+                    {category.icon}
+                  </div>
+                  <div className="text-xs">
+                    <div className="text-muted-foreground">{category.name}</div>
+                    <div className="font-bold text-base">{category.count}</div>
+                  </div>
+                </motion.div>
+              </TooltipTrigger>
+              <TooltipContent>
+                <p>{category.tooltip}</p>
+              </TooltipContent>
+            </Tooltip>
+          </TooltipProvider>
+        ))}
       </div>
     );
   };
+
+  const progressVariants = {
+    hidden: { width: '0%' },
+    visible: (i: number) => ({
+      width: `${i}%`,
+      transition: { duration: 1, ease: "easeOut" }
+    })
+  };
   
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle className="text-xl flex items-center gap-2">
-          <BarChart2 size={20} /> Առաջընթացի ամփոփում
+    <Card className="border-0 shadow-lg bg-white/50 backdrop-blur-sm dark:bg-zinc-900/50">
+      <CardHeader className="flex items-start flex-row justify-between">
+        <CardTitle className="text-xl flex items-center gap-2 text-primary dark:text-primary-foreground">
+          <TrendingUp size={20} /> Առաջընթացի ամփոփում
         </CardTitle>
+        <div className="px-2.5 py-1 rounded-full bg-primary/10 text-primary text-xs font-medium flex items-center gap-1.5">
+          <BarChart2 size={12} />
+          {getProgressStatus()}
+        </div>
       </CardHeader>
       
       <CardContent className="space-y-6">
-        <div>
-          <div className="flex justify-between items-center mb-2">
-            <div className="text-sm font-medium">Ընդհանուր առաջընթաց</div>
-            <div className="text-sm font-medium">{projectProgress}%</div>
-          </div>
-          <Progress value={projectProgress} className={cn("h-2", getProgressColor())} />
-          <div className="mt-1 text-xs text-muted-foreground">{getProgressStatus()}</div>
-        </div>
-        
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div>
+        <motion.div
+          initial="hidden"
+          animate="visible"
+          variants={staggerContainer}
+        >
+          <motion.div variants={fadeInUp}>
             <div className="flex justify-between items-center mb-2">
-              <div className="text-sm font-medium">Քայլեր</div>
-              <div className="text-sm font-medium">{completedTasks}/{totalTasks}</div>
+              <div className="text-sm font-medium">Ընդհանուր առաջընթաց</div>
+              <div className="text-sm font-medium">{projectProgress}%</div>
             </div>
-            <Progress value={taskPercentage} className="h-2 bg-muted" />
-          </div>
+            <div className="h-2 bg-muted rounded-full overflow-hidden">
+              <motion.div
+                className={cn("h-full rounded-full", getProgressColor())}
+                custom={projectProgress}
+                variants={progressVariants}
+              />
+            </div>
+          </motion.div>
           
-          <div>
-            <div className="flex justify-between items-center mb-2">
-              <div className="text-sm font-medium">Ժամանակացույց</div>
-              <div className="text-sm font-medium">{completedEvents}/{totalEvents}</div>
-            </div>
-            <Progress value={timelinePercentage} className="h-2 bg-muted" />
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-6">
+            <motion.div variants={fadeInUp}>
+              <div className="flex justify-between items-center mb-2">
+                <div className="text-sm font-medium flex items-center gap-1.5">
+                  <CheckCircle size={14} /> Քայլեր
+                </div>
+                <div className="text-sm font-medium">{completedTasks}/{totalTasks}</div>
+              </div>
+              <div className="h-2 bg-muted rounded-full overflow-hidden">
+                <motion.div
+                  className="h-full bg-emerald-500 rounded-full"
+                  custom={taskPercentage}
+                  variants={progressVariants}
+                />
+              </div>
+            </motion.div>
+            
+            <motion.div variants={fadeInUp}>
+              <div className="flex justify-between items-center mb-2">
+                <div className="text-sm font-medium flex items-center gap-1.5">
+                  <Clock size={14} /> Ժամանակացույց
+                </div>
+                <div className="text-sm font-medium">{completedEvents}/{totalEvents}</div>
+              </div>
+              <div className="h-2 bg-muted rounded-full overflow-hidden">
+                <motion.div
+                  className="h-full bg-blue-500 rounded-full"
+                  custom={timelinePercentage}
+                  variants={progressVariants}
+                />
+              </div>
+            </motion.div>
           </div>
-        </div>
+        </motion.div>
         
         {daysRemaining !== null && (
-          <div className="bg-muted/50 p-3 rounded-md flex items-center gap-3">
-            <div className="p-2 rounded-full bg-blue-100 text-blue-700">
+          <motion.div 
+            className="bg-blue-50 dark:bg-blue-900/30 p-4 rounded-lg flex items-center gap-4 border border-blue-100 dark:border-blue-900"
+            variants={fadeInUp}
+            initial="hidden"
+            animate="visible"
+            transition={{ delay: 0.3 }}
+          >
+            <div className="p-2.5 rounded-full bg-blue-200 dark:bg-blue-700 text-blue-700 dark:text-blue-200">
               <Clock size={20} />
             </div>
             <div>
-              <h4 className="text-sm font-medium">Մոտավոր մնացած ժամանակ</h4>
-              <p className="text-sm text-muted-foreground">{daysRemaining} օր</p>
+              <h4 className="text-sm font-medium text-blue-800 dark:text-blue-300">Մոտավոր մնացած ժամանակ</h4>
+              <p className="text-xl font-bold text-blue-900 dark:text-blue-200">{daysRemaining} օր</p>
             </div>
-          </div>
+          </motion.div>
         )}
         
-        <div>
-          <h3 className="text-sm font-medium mb-1">Քայլերի բաշխում</h3>
+        <motion.div
+          variants={fadeInUp}
+          initial="hidden"
+          animate="visible"
+          transition={{ delay: 0.4 }}
+        >
+          <h3 className="text-sm font-medium mb-2 flex items-center gap-1.5">
+            <BarChart size={14} /> Քայլերի բաշխում
+          </h3>
           {renderTasksDistribution()}
-        </div>
+        </motion.div>
       </CardContent>
     </Card>
   );
