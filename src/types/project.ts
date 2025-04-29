@@ -1,5 +1,6 @@
 
 import { ProjectTheme, Task, TimelineEvent } from '@/data/projectThemes';
+import { TaskStatus } from '@/utils/taskUtils';
 
 export interface ProjectReservation {
   id: string;
@@ -25,7 +26,7 @@ export interface ProjectContextType {
   addTimelineEvent: (event: Omit<TimelineEvent, 'id'>) => void;
   completeTimelineEvent: (eventId: string) => void;
   addTask: (task: Omit<Task, 'id'>) => void;
-  updateTaskStatus: (taskId: string, status: Task['status']) => void;
+  updateTaskStatus: (taskId: string, status: TaskStatus) => void;
   submitProject: (feedback: string) => void;
   approveProject: (feedback: string) => void;
   rejectProject: (feedback: string) => void;

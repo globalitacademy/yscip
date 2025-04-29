@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Task } from '@/data/projectThemes';
 import { User } from '@/data/userRoles';
@@ -10,15 +9,16 @@ import {
   User as UserIcon
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { TaskStatus } from '@/utils/taskUtils';
 
 interface TaskStatusColumnProps {
   status: 'todo' | 'in-progress' | 'review' | 'done';
   statusText: string;
   statusColor: string;
   tasks: Task[];
-  onUpdateStatus?: (taskId: string, status: Task['status']) => void;
+  onUpdateStatus?: (taskId: string, status: TaskStatus) => void;
   students: User[];
-  isEditing?: boolean; // Add isEditing prop
+  isEditing?: boolean;
 }
 
 const TaskStatusColumn: React.FC<TaskStatusColumnProps> = ({
@@ -28,7 +28,7 @@ const TaskStatusColumn: React.FC<TaskStatusColumnProps> = ({
   tasks = [],
   onUpdateStatus,
   students,
-  isEditing = false // Set default value to false
+  isEditing = false
 }) => {
   const getStudentName = (id: string) => {
     const student = students.find(s => s.id === id);
@@ -38,7 +38,7 @@ const TaskStatusColumn: React.FC<TaskStatusColumnProps> = ({
   const canMoveLeft = status !== 'todo';
   const canMoveRight = status !== 'done';
   
-  const getPreviousStatus = (): Task['status'] => {
+  const getPreviousStatus = (): TaskStatus => {
     switch(status) {
       case 'in-progress': return 'todo';
       case 'review': return 'in-progress';
@@ -47,7 +47,7 @@ const TaskStatusColumn: React.FC<TaskStatusColumnProps> = ({
     }
   };
   
-  const getNextStatus = (): Task['status'] => {
+  const getNextStatus = (): TaskStatus => {
     switch(status) {
       case 'todo': return 'in-progress';
       case 'in-progress': return 'review';

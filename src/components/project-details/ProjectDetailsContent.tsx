@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Header from '@/components/Header';
@@ -20,6 +19,7 @@ import ProjectTasks from './ProjectTasks';
 import ProjectDiscussions from './ProjectDiscussions';
 import ProjectFiles from './ProjectFiles';
 import ProjectEvaluation from './ProjectEvaluation';
+import { TaskStatus } from '@/utils/taskUtils';
 
 const ProjectDetailsContent: React.FC = () => {
   const { 
@@ -211,7 +211,7 @@ const ProjectDetailsContent: React.FC = () => {
               <ProjectTasks
                 tasks={tasks}
                 onAddTask={addTask}
-                onUpdateTaskStatus={updateTaskStatus}
+                onUpdateTaskStatus={(taskId: string, status: TaskStatus) => updateTaskStatus(taskId, status)}
                 isEditing={isEditing}
               />
             </TabsContent>

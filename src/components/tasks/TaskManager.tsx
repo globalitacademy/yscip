@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Task } from '@/data/projectThemes';
 import { getCurrentUser, getUsersByRole, rolePermissions } from '@/data/userRoles';
@@ -8,20 +7,20 @@ import { Dialog, DialogTrigger } from "@/components/ui/dialog";
 import { toast } from "@/components/ui/use-toast";
 import TaskStatusColumn from './TaskStatusColumn';
 import TaskForm from './TaskForm';
-import { getTaskStatusColor, getTaskStatusText, groupTasksByStatus, normalizeStatus } from '@/utils/taskUtils';
+import { getTaskStatusColor, getTaskStatusText, groupTasksByStatus, normalizeStatus, TaskStatus } from '@/utils/taskUtils';
 
 interface TaskManagerProps {
   tasks: Task[];
   onAddTask?: (task: Omit<Task, 'id'>) => void;
-  onUpdateTaskStatus?: (taskId: string, status: Task['status']) => void;
-  isEditing?: boolean; // Add isEditing prop
+  onUpdateTaskStatus?: (taskId: string, status: TaskStatus) => void;
+  isEditing?: boolean;
 }
 
 const TaskManager: React.FC<TaskManagerProps> = ({ 
   tasks = [],
   onAddTask,
   onUpdateTaskStatus,
-  isEditing = false  // Set default value to false
+  isEditing = false
 }) => {
   const currentUser = getCurrentUser();
   const permissions = rolePermissions[currentUser.role];
@@ -38,7 +37,7 @@ const TaskManager: React.FC<TaskManagerProps> = ({
     }
   };
 
-  const updateStatus = (taskId: string, status: Task['status']) => {
+  const updateStatus = (taskId: string, status: TaskStatus) => {
     if (onUpdateTaskStatus) {
       onUpdateTaskStatus(taskId, status);
       toast({

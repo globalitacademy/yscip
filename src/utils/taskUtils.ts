@@ -3,24 +3,29 @@ import { v4 as uuidv4 } from 'uuid';
 import { Task } from '@/data/projectThemes';
 import { getUsersByRole } from '@/data/userRoles';
 
+// Define a consistent TaskStatus type to use across the application
+export type TaskStatus = 'todo' | 'in-progress' | 'review' | 'done' | 'pending' | 'open' | 'inProgress' | 'completed';
+
 // Task status utilities
-export const getTaskStatusColor = (status: Task['status']) => {
+export const getTaskStatusColor = (status: TaskStatus) => {
   switch (status) {
-    case 'todo': return 'bg-slate-100 text-slate-700 border-slate-200';
+    case 'todo': 
+    case 'open':
+    case 'pending': return 'bg-slate-100 text-slate-700 border-slate-200';
     case 'inProgress': 
     case 'in-progress': return 'bg-blue-100 text-blue-700 border-blue-200';
     case 'review': return 'bg-amber-100 text-amber-700 border-amber-200';
     case 'done':
     case 'completed': return 'bg-green-100 text-green-700 border-green-200';
-    case 'open': return 'bg-slate-100 text-slate-700 border-slate-200';
     default: return 'bg-slate-100 text-slate-700 border-slate-200';
   }
 };
 
-export const getTaskStatusText = (status: Task['status']) => {
+export const getTaskStatusText = (status: TaskStatus) => {
   switch (status) {
     case 'todo':
-    case 'open': return 'Սպասվող';
+    case 'open':
+    case 'pending': return 'Սպասվող';
     case 'inProgress':
     case 'in-progress': return 'Ընթացքի մեջ';
     case 'review': return 'Վերանայում';
@@ -32,21 +37,19 @@ export const getTaskStatusText = (status: Task['status']) => {
 
 export const groupTasksByStatus = (tasks: Task[]) => {
   return {
-    todo: tasks.filter(task => task.status === 'todo' || task.status === 'open'),
-    'in-progress': tasks.filter(task => task.status === 'inProgress' || task.status === 'in-progress'),
+    todo: tasks.filter(task => ['todo', 'open', 'pending'].includes(task.status as string)),
+    'in-progress': tasks.filter(task => ['inProgress', 'in-progress'].includes(task.status as string)),
     review: tasks.filter(task => task.status === 'review'),
-    done: tasks.filter(task => task.status === 'done' || task.status === 'completed')
+    done: tasks.filter(task => ['done', 'completed'].includes(task.status as string))
   };
 };
 
 // Map status between different formats
-export const normalizeStatus = (status: Task['status']): 'todo' | 'in-progress' | 'review' | 'done' => {
-  if (status === 'open') return 'todo';
-  if (status === 'inProgress') return 'in-progress';
-  if (status === 'completed') return 'done';
-  if (['todo', 'in-progress', 'review', 'done'].includes(status as string)) {
-    return status as 'todo' | 'in-progress' | 'review' | 'done';
-  }
+export const normalizeStatus = (status: TaskStatus): 'todo' | 'in-progress' | 'review' | 'done' => {
+  if (['open', 'pending', 'todo'].includes(status)) return 'todo';
+  if (['inProgress', 'in-progress'].includes(status)) return 'in-progress';
+  if (['completed', 'done'].includes(status)) return 'done';
+  if (status === 'review') return 'review';
   return 'todo'; // Default case
 };
 
@@ -56,14 +59,14 @@ export class TaskUtils {
       id: uuidv4(),
       title,
       description,
-      status: 'todo',
+      status: 'todo' as TaskStatus,
       assignee: assignedTo,
       assignedTo,
       dueDate: new Date().toISOString().split('T')[0]
     };
   }
 
-  static updateTaskStatus(tasks: Task[], taskId: string, newStatus: Task['status']): Task[] {
+  static updateTaskStatus(tasks: Task[], taskId: string, newStatus: TaskStatus): Task[] {
     return tasks.map(task => 
       task.id === taskId ? { ...task, status: newStatus } : task
     );

@@ -13,9 +13,9 @@ import { Textarea } from '@/components/ui/textarea';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { TaskStatus, getTaskStatusColor, getTaskStatusText } from '@/utils/taskUtils';
 
-// Define TaskStatus type to match what's used in the app
-type TaskStatus = 'pending' | 'in_progress' | 'completed' | 'todo' | 'in-progress' | 'review' | 'done';
+// Define TaskPriority type
 type TaskPriority = 'high' | 'medium' | 'low';
 
 // Update the Task interface or extend it to include any missing properties
@@ -53,7 +53,7 @@ const ProjectTasks: React.FC<ProjectTasksProps> = ({
       title: newTask.title,
       description: newTask.description,
       deadline: new Date(newTask.deadline).toISOString(),
-      status: 'todo' as TaskStatus, // Changed from 'pending' to a valid status
+      status: 'todo' as TaskStatus, // Changed to explicitly use TaskStatus
       priority: newTask.priority,
       assignedTo: 'current-user' // Placeholder
     });
@@ -88,9 +88,11 @@ const ProjectTasks: React.FC<ProjectTasksProps> = ({
         return <Badge className="bg-green-600">Ավարտված</Badge>;
       case 'in_progress':
       case 'in-progress':
+      case 'inProgress':
       case 'review':
         return <Badge className="bg-blue-600">Ընթացքի մեջ</Badge>;
       case 'pending':
+      case 'open':
       case 'todo':
         return <Badge variant="outline">Սպասվող</Badge>;
       default:
@@ -100,8 +102,8 @@ const ProjectTasks: React.FC<ProjectTasksProps> = ({
 
   const filteredTasks = tasks.filter(task => {
     if (taskFilter === 'all') return true;
-    if (taskFilter === 'active') return task.status !== 'completed' && task.status !== 'done';
-    if (taskFilter === 'completed') return task.status === 'completed' || task.status === 'done';
+    if (taskFilter === 'active') return !['completed', 'done'].includes(task.status as string);
+    if (taskFilter === 'completed') return ['completed', 'done'].includes(task.status as string);
     return true;
   });
 
@@ -241,7 +243,7 @@ const ProjectTasks: React.FC<ProjectTasksProps> = ({
                       variant="outline"
                       size="sm"
                       className="h-7 text-xs"
-                      onClick={() => onUpdateTaskStatus(task.id, 'done')} // Changed from 'completed' to 'done'
+                      onClick={() => onUpdateTaskStatus(task.id, 'done')}
                     >
                       <Check className="h-3.5 w-3.5 mr-1" /> Նշել որպես ավարտված
                     </Button>
@@ -252,7 +254,7 @@ const ProjectTasks: React.FC<ProjectTasksProps> = ({
                       variant="outline"
                       size="sm"
                       className="h-7 text-xs"
-                      onClick={() => onUpdateTaskStatus(task.id, 'todo')} // Changed from 'pending' to 'todo'
+                      onClick={() => onUpdateTaskStatus(task.id, 'todo')}
                     >
                       Նշել որպես անավարտ
                     </Button>

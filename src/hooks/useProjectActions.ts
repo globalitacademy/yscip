@@ -8,6 +8,7 @@ import {
 } from '@/utils/projectUtils';
 import { useProjectPermissions } from '@/hooks/useProjectPermissions';
 import { User } from '@/types/user';
+import { TaskStatus } from '@/utils/taskUtils';
 
 export const useProjectActions = (
   project: any,
@@ -47,7 +48,7 @@ export const useProjectActions = (
     setTasks(prev => [...prev, newTask]);
   };
 
-  const updateTaskStatus = (taskId: string, status: Task['status']) => {
+  const updateTaskStatus = (taskId: string, status: TaskStatus) => {
     // Student can only update their assigned tasks
     if (user?.role === 'student') {
       const task = tasks.find(t => t.id === taskId);
