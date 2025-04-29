@@ -5,11 +5,13 @@ import { useTheme } from '@/hooks/use-theme';
 import { Toggle } from '@/components/ui/toggle';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
-import { useProject } from '@/contexts/ProjectContext';
 
-export const ThemeToggle: React.FC = () => {
+interface ThemeToggleProps {
+  isEditing?: boolean;
+}
+
+export const ThemeToggle: React.FC<ThemeToggleProps> = ({ isEditing = false }) => {
   const { theme, setTheme } = useTheme();
-  const { isEditing } = useProject();
   
   const toggleTheme = () => {
     const newTheme = theme === 'dark' ? 'light' : 'dark';

@@ -105,8 +105,8 @@ const ProjectHeaderBanner: React.FC<ProjectHeaderBannerProps> = ({
               <ArrowLeft className="h-4 w-4 mr-1.5" /> Վերադառնալ
             </Button>
             
-            {/* Theme Toggle */}
-            <ThemeToggle />
+            {/* Theme Toggle - Pass the isEditing prop */}
+            <ThemeToggle isEditing={isEditing} />
           </div>
           
           <div className="max-w-4xl w-full backdrop-blur-sm bg-black/30 p-6 rounded-xl border border-white/10 shadow-lg">
