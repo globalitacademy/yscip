@@ -42,7 +42,7 @@ const ProjectBannerBackground: React.FC<ProjectBannerBackgroundProps> = ({
             />
           </div>
           <div 
-            className="absolute inset-0 bg-gradient-to-b from-transparent via-black/60 to-black/80"
+            className="absolute inset-0 bg-gradient-to-b from-transparent via-black/40 to-black/75 backdrop-blur-[1px]"
             aria-hidden="true"
           ></div>
           
