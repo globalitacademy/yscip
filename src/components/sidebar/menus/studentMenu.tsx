@@ -3,7 +3,7 @@ import React from 'react';
 import { 
   Folders, 
   CheckSquare,
-  Layers 
+  Briefcase 
 } from 'lucide-react';
 import { SidebarMenuGroup } from '../types';
 
@@ -25,7 +25,7 @@ export const studentMenuItems: SidebarMenuGroup[] = [
       },
       {
         title: 'Պորտֆոլիո',
-        icon: <Layers className="h-4 w-4" />,
+        icon: <Briefcase className="h-4 w-4" />,
         href: '/admin/portfolio',
         roles: ['student']
       }

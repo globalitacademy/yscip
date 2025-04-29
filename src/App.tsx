@@ -17,6 +17,9 @@ import StudentDashboard from './pages/StudentDashboard'
 import EmployerDashboard from './pages/EmployerDashboard' 
 import LecturerDashboard from './pages/LecturerDashboard'
 import SupervisorDashboard from './pages/SupervisorDashboard'
+import MyProjectsPage from './pages/MyProjectsPage'
+import TasksPage from './pages/TasksPage'
+import PortfolioPage from './pages/PortfolioPage'
 
 function App() {
   return (
@@ -36,6 +39,9 @@ function App() {
             <Route path="/module/:id" element={<ModuleDetailPage />} />
             <Route path="/themes" element={<ThemesPage />} />
             <Route path="/theme/:id" element={<ThemeDetailPage />} />
+            <Route path="/admin/my-projects" element={<MyProjectsPage />} />
+            <Route path="/admin/tasks" element={<TasksPage />} />
+            <Route path="/admin/portfolio" element={<PortfolioPage />} />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </Router>

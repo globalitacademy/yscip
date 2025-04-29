@@ -1,9 +1,11 @@
 
-import React, { useEffect } from 'react';
+import React from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import AdminLayout from '@/components/AdminLayout';
-import { Navigate } from 'react-router-dom';
+import { Navigate, Link } from 'react-router-dom';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Folders, CheckSquare, Briefcase } from 'lucide-react';
 
 const StudentDashboard: React.FC = () => {
   const { user } = useAuth();
@@ -14,83 +16,57 @@ const StudentDashboard: React.FC = () => {
 
   return (
     <AdminLayout pageTitle="Ուսանողի վահանակ">
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">
-              Իմ նախագծերը
-            </CardTitle>
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth="2"
-              className="h-4 w-4 text-muted-foreground"
-            >
-              <path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6" />
-            </svg>
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">0</div>
-            <p className="text-xs text-muted-foreground">
-              Ընթացիկ նախագծերի քանակ
-            </p>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">
-              Ավարտված առաջադրանքներ
-            </CardTitle>
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth="2"
-              className="h-4 w-4 text-muted-foreground"
-            >
-              <rect width="20" height="14" x="2" y="5" rx="2" />
-              <path d="M2 10h20" />
-            </svg>
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">0</div>
-            <p className="text-xs text-muted-foreground">
-              Ընդհանուր առաջադրանքների 0%
-            </p>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">
-              Իմ դասընթացները
-            </CardTitle>
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth="2"
-              className="h-4 w-4 text-muted-foreground"
-            >
-              <path d="M22 12h-4l-3 9L9 3l-3 9H2" />
-            </svg>
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">0</div>
-            <p className="text-xs text-muted-foreground">
-              Ներկայումս գրանցված դասընթացներ
-            </p>
-          </CardContent>
-        </Card>
+      <div className="grid gap-4 md:grid-cols-3">
+        <Link to="/admin/my-projects" className="no-underline">
+          <Card className="cursor-pointer hover:shadow-md transition-shadow">
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">
+                Իմ նախագծերը
+              </CardTitle>
+              <Folders className="h-4 w-4 text-muted-foreground" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">0</div>
+              <p className="text-xs text-muted-foreground">
+                Ընթացիկ նախագծերի քանակ
+              </p>
+            </CardContent>
+          </Card>
+        </Link>
+        
+        <Link to="/admin/tasks" className="no-underline">
+          <Card className="cursor-pointer hover:shadow-md transition-shadow">
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">
+                Հանձնարարություններ
+              </CardTitle>
+              <CheckSquare className="h-4 w-4 text-muted-foreground" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">0</div>
+              <p className="text-xs text-muted-foreground">
+                Ընդհանուր առաջադրանքների 0%
+              </p>
+            </CardContent>
+          </Card>
+        </Link>
+        
+        <Link to="/admin/portfolio" className="no-underline">
+          <Card className="cursor-pointer hover:shadow-md transition-shadow">
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">
+                Պորտֆոլիո
+              </CardTitle>
+              <Briefcase className="h-4 w-4 text-muted-foreground" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">-</div>
+              <p className="text-xs text-muted-foreground">
+                Դիտել իմ պրոֆեսիոնալ պրոֆիլը
+              </p>
+            </CardContent>
+          </Card>
+        </Link>
       </div>
 
       <div className="mt-6">
@@ -102,6 +78,24 @@ const StudentDashboard: React.FC = () => {
             <p className="text-sm text-muted-foreground">
               Ներկայումս ծանուցումներ չկան։ Նոր ծանուցումները կհայտնվեն այստեղ։
             </p>
+          </CardContent>
+        </Card>
+      </div>
+      
+      <div className="mt-6">
+        <Card>
+          <CardHeader className="flex items-center justify-between">
+            <CardTitle>Առաջարկվող նախագծեր</CardTitle>
+            <Button variant="outline" size="sm" asChild>
+              <Link to="/admin/my-projects">Բոլոր նախագծերը</Link>
+            </Button>
+          </CardHeader>
+          <CardContent className="p-0">
+            <div className="border-t">
+              <div className="p-4 text-center text-sm text-muted-foreground">
+                Ներկայումս չկան առաջարկվող նախագծեր։
+              </div>
+            </div>
           </CardContent>
         </Card>
       </div>
