@@ -9,6 +9,7 @@ import ProjectHeaderActions from './ProjectHeaderActions';
 import ProjectBannerBackground from './ProjectBannerBackground';
 import ProjectTechStack from './ProjectTechStack';
 import { toast } from 'sonner';
+import ThemeToggle from '@/components/ui/theme-toggle';
 
 interface ProjectHeaderBannerProps {
   project: ProjectTheme;
@@ -94,14 +95,19 @@ const ProjectHeaderBanner: React.FC<ProjectHeaderBannerProps> = ({
       {/* Content overlaid on the banner */}
       <div className="container relative z-10 px-4 pt-32 pb-6 mx-auto">
         <div className="flex flex-col items-start">
-          <Button 
-            variant="ghost" 
-            size="sm" 
-            onClick={() => navigate(-1)} 
-            className="mb-4 text-white/80 hover:text-white hover:bg-white/10"
-          >
-            <ArrowLeft className="h-4 w-4 mr-1.5" /> Վերադառնալ
-          </Button>
+          <div className="flex justify-between items-center w-full mb-4">
+            <Button 
+              variant="ghost" 
+              size="sm" 
+              onClick={() => navigate(-1)} 
+              className="text-white/80 hover:text-white hover:bg-white/10"
+            >
+              <ArrowLeft className="h-4 w-4 mr-1.5" /> Վերադառնալ
+            </Button>
+            
+            {/* Theme Toggle */}
+            <ThemeToggle />
+          </div>
           
           <div className="max-w-4xl w-full backdrop-blur-sm bg-black/30 p-6 rounded-xl border border-white/10 shadow-lg">
             <div className="flex justify-between items-start mb-2">
