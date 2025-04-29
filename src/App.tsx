@@ -13,6 +13,10 @@ import ModuleDetailPage from './pages/ModuleDetailPage'
 import ThemesPage from './pages/ThemesPage'
 import ThemeDetailPage from './pages/ThemeDetailPage'
 import AuthProvider from './contexts/AuthContext'
+import StudentDashboard from './pages/StudentDashboard'
+import EmployerDashboard from './pages/EmployerDashboard' 
+import LecturerDashboard from './pages/LecturerDashboard'
+import SupervisorDashboard from './pages/SupervisorDashboard'
 
 function App() {
   return (
@@ -24,6 +28,10 @@ function App() {
             <Route path="/login" element={<LoginPage />} />
             <Route path="/register" element={<RegisterPage />} />
             <Route path="/admin" element={<AdminDashboard />} />
+            <Route path="/student-dashboard" element={<StudentDashboard />} />
+            <Route path="/employer-dashboard" element={<EmployerDashboard />} />
+            <Route path="/lecturer-dashboard" element={<LecturerDashboard />} />
+            <Route path="/supervisor-dashboard" element={<SupervisorDashboard />} />
             <Route path="/modules" element={<ModulesPage />} />
             <Route path="/module/:id" element={<ModuleDetailPage />} />
             <Route path="/themes" element={<ThemesPage />} />

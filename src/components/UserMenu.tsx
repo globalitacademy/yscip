@@ -11,7 +11,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger
 } from '@/components/ui/dropdown-menu';
-import { LogOut, User, UserCog, GraduationCap, ChevronDown, Building, School } from 'lucide-react';
+import { LogOut, User, UserCog, GraduationCap, ChevronDown, Building, School, LayoutDashboard } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { mockUsers } from '@/data/mockUsers';
 import { toast } from 'sonner';
@@ -73,6 +73,30 @@ const UserMenu: React.FC = () => {
     logout();
   };
 
+  const handleDashboardClick = () => {
+    switch (user.role) {
+      case 'admin':
+        navigate('/admin');
+        break;
+      case 'student':
+        navigate('/student-dashboard');
+        break;
+      case 'employer':
+        navigate('/employer-dashboard');
+        break;
+      case 'lecturer':
+      case 'instructor':
+        navigate('/lecturer-dashboard');
+        break;
+      case 'supervisor':
+      case 'project_manager':
+        navigate('/supervisor-dashboard');
+        break;
+      default:
+        navigate('/');
+    }
+  };
+
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
@@ -88,6 +112,11 @@ const UserMenu: React.FC = () => {
       <DropdownMenuContent align="end" className="w-56">
         <DropdownMenuLabel>Իմ հաշիվը</DropdownMenuLabel>
         <DropdownMenuSeparator />
+        
+        <DropdownMenuItem onClick={handleDashboardClick} className="flex items-center cursor-pointer">
+          <LayoutDashboard className="h-4 w-4 mr-2" />
+          <span>Կառավարման վահանակ</span>
+        </DropdownMenuItem>
         
         <DropdownMenuItem disabled className="flex justify-between">
           <span>Ընթացիկ դերը</span>
