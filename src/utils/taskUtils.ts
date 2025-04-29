@@ -39,7 +39,7 @@ export const getTaskStatusText = (status: TaskStatus) => {
 
 export const groupTasksByStatus = (tasks: Task[]) => {
   return {
-    todo: tasks.filter(task => ['todo', 'open', 'pending'].includes(task.status as string)),
+    todo: tasks.filter(task => ['todo', 'open', 'pending', 'backlog'].includes(task.status as string)),
     'in-progress': tasks.filter(task => ['inProgress', 'in-progress'].includes(task.status as string)),
     review: tasks.filter(task => task.status === 'review'),
     done: tasks.filter(task => ['done', 'completed'].includes(task.status as string))
