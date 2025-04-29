@@ -6,6 +6,7 @@ import {
   Briefcase 
 } from 'lucide-react';
 import { SidebarMenuGroup } from '../types';
+import { useTheme } from '@/hooks/use-theme';
 
 export const studentMenuItems: SidebarMenuGroup[] = [
   {
@@ -32,3 +33,4 @@ export const studentMenuItems: SidebarMenuGroup[] = [
     ]
   }
 ];
+
