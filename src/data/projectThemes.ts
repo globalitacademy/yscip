@@ -1,5 +1,7 @@
+
 import { LucideIcon } from 'lucide-react';
 import { BrainCircuit, Code, LayoutDashboard, Rocket, Sparkles, Terminal, Wrench } from 'lucide-react';
+import { TaskStatus } from '@/utils/taskUtils';
 
 export interface ProjectTheme {
   id: number;
@@ -36,7 +38,7 @@ export interface Task {
   id: string;
   title: string;
   description?: string;
-  status: 'todo' | 'inProgress' | 'in-progress' | 'review' | 'done' | 'completed' | 'open' | 'pending';
+  status: TaskStatus;
   assignee?: string;
   assignedTo?: string;
   dueDate?: string;

@@ -100,8 +100,8 @@ const ProjectTasks: React.FC<ProjectTasksProps> = ({
 
   const filteredTasks = tasks.filter(task => {
     if (taskFilter === 'all') return true;
-    if (taskFilter === 'active') return !['completed', 'done'].includes(task.status as string);
-    if (taskFilter === 'completed') return ['completed', 'done'].includes(task.status as string);
+    if (taskFilter === 'active') return !['completed', 'done'].includes(task.status);
+    if (taskFilter === 'completed') return ['completed', 'done'].includes(task.status);
     return true;
   });
 

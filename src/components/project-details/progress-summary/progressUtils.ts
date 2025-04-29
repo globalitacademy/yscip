@@ -27,10 +27,10 @@ export const calculateTaskDistribution = (tasks: Task[]): { todo: number, inProg
     return { todo: 0, inProgress: 0, completed: 0 };
   }
   
-  // Update the comparison to include 'backlog' in the todo tasks count
-  const todoCount = tasks.filter(task => task.status === 'todo' || task.status === 'open' || task.status === 'pending' || task.status === 'backlog').length;
-  const inProgressCount = tasks.filter(task => task.status === 'inProgress' || task.status === 'in-progress' || task.status === 'review').length;
-  const completedCount = tasks.filter(task => task.status === 'done' || task.status === 'completed').length;
+  // Include 'backlog' in the todo tasks count
+  const todoCount = tasks.filter(task => ['todo', 'open', 'pending', 'backlog'].includes(task.status)).length;
+  const inProgressCount = tasks.filter(task => ['inProgress', 'in-progress', 'review'].includes(task.status)).length;
+  const completedCount = tasks.filter(task => ['done', 'completed'].includes(task.status)).length;
   
   return {
     todo: Math.round((todoCount / tasks.length) * 100),
