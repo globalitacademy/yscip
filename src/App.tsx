@@ -35,6 +35,7 @@ import LecturerEducationalModulesPage from './pages/LecturerEducationalModulesPa
 import LecturerTasksPage from './pages/LecturerTasksPage'
 import AdminProjectsPage from './pages/AdminProjectsPage'
 import ProjectManagementPage from './pages/ProjectManagementPage'
+import ProjectDetails from './pages/ProjectDetails'
 
 function App() {
   return (
@@ -54,6 +55,7 @@ function App() {
             <Route path="/module/:id" element={<ModuleDetailPage />} />
             <Route path="/themes" element={<ThemesPage />} />
             <Route path="/theme/:id" element={<ThemeDetailPage />} />
+            <Route path="/project/:id" element={<ProjectDetails />} />
             
             {/* Student Routes */}
             <Route path="/admin/my-projects" element={<MyProjectsPage />} />
