@@ -12,24 +12,27 @@ import ModulesPage from './pages/ModulesPage'
 import ModuleDetailPage from './pages/ModuleDetailPage'
 import ThemesPage from './pages/ThemesPage'
 import ThemeDetailPage from './pages/ThemeDetailPage'
+import AuthProvider from './contexts/AuthContext'
 
 function App() {
   return (
     <ThemeProvider>
-      <Router>
-        <Routes>
-          <Route path="/" element={<Index />} />
-          <Route path="/login" element={<LoginPage />} />
-          <Route path="/register" element={<RegisterPage />} />
-          <Route path="/admin" element={<AdminDashboard />} />
-          <Route path="/modules" element={<ModulesPage />} />
-          <Route path="/module/:id" element={<ModuleDetailPage />} />
-          <Route path="/themes" element={<ThemesPage />} />
-          <Route path="/theme/:id" element={<ThemeDetailPage />} />
-          <Route path="*" element={<NotFound />} />
-        </Routes>
-      </Router>
-      <Toaster />
+      <AuthProvider>
+        <Router>
+          <Routes>
+            <Route path="/" element={<Index />} />
+            <Route path="/login" element={<LoginPage />} />
+            <Route path="/register" element={<RegisterPage />} />
+            <Route path="/admin" element={<AdminDashboard />} />
+            <Route path="/modules" element={<ModulesPage />} />
+            <Route path="/module/:id" element={<ModuleDetailPage />} />
+            <Route path="/themes" element={<ThemesPage />} />
+            <Route path="/theme/:id" element={<ThemeDetailPage />} />
+            <Route path="*" element={<NotFound />} />
+          </Routes>
+        </Router>
+        <Toaster />
+      </AuthProvider>
     </ThemeProvider>
   )
 }
