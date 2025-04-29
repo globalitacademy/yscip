@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { ArrowLeft, Calendar, Clock, Tag, Users } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
@@ -8,10 +9,12 @@ import ProjectHeaderActions from './ProjectHeaderActions';
 import ProjectBannerBackground from './ProjectBannerBackground';
 import ProjectTechStack from './ProjectTechStack';
 import { toast } from 'sonner';
+
 interface ProjectHeaderBannerProps {
   project: ProjectTheme;
   isEditing: boolean;
 }
+
 const ProjectHeaderBanner: React.FC<ProjectHeaderBannerProps> = ({
   project,
   isEditing
@@ -33,6 +36,7 @@ const ProjectHeaderBanner: React.FC<ProjectHeaderBannerProps> = ({
     setTitle(project.title || '');
     setDescription(project.description || '');
   }, [project]);
+
   const handleEditClick = async () => {
     if (isEditing) {
       // Save changes
@@ -59,6 +63,7 @@ const ProjectHeaderBanner: React.FC<ProjectHeaderBannerProps> = ({
       setIsEditing(true);
     }
   };
+
   const handleCancelEdit = () => {
     // Reset values to original
     setTitle(project.title || '');
@@ -66,6 +71,7 @@ const ProjectHeaderBanner: React.FC<ProjectHeaderBannerProps> = ({
     setBannerImage(project.image || project.bannerImage || '');
     setIsEditing(false);
   };
+
   const handleImageChange = (url: string) => {
     setBannerImage(url);
   };
@@ -73,12 +79,79 @@ const ProjectHeaderBanner: React.FC<ProjectHeaderBannerProps> = ({
   // Use techStack if available, fallback to technologies
   const techStack = project.techStack || project.technologies || [];
   const techStackCount = techStack.length;
-  return <div className="relative pb-6 mb-6">
+
+  return (
+    <div className="relative pb-6 mb-6">
       {/* Banner background */}
-      <ProjectBannerBackground image={bannerImage} isEditing={isEditing} canEdit={canEdit} onImageChange={handleImageChange} onEditClick={() => setIsEditing(true)} />
+      <ProjectBannerBackground 
+        image={bannerImage} 
+        isEditing={isEditing} 
+        canEdit={canEdit} 
+        onImageChange={handleImageChange} 
+        onEditClick={() => setIsEditing(true)} 
+      />
       
       {/* Content overlaid on the banner */}
-      
-    </div>;
+      <div className="container relative z-10 px-4 pt-32 pb-6 mx-auto">
+        <div className="flex flex-col items-start">
+          <Button 
+            variant="ghost" 
+            size="sm" 
+            onClick={() => navigate(-1)} 
+            className="mb-4 text-white/80 hover:text-white hover:bg-white/10"
+          >
+            <ArrowLeft className="h-4 w-4 mr-1.5" /> Վերադառնալ
+          </Button>
+          
+          <div className="max-w-4xl w-full backdrop-blur-sm bg-black/30 p-6 rounded-xl border border-white/10 shadow-lg">
+            <div className="flex justify-between items-start mb-2">
+              <div className="space-y-3 flex-1">
+                {isEditing ? (
+                  <input
+                    type="text"
+                    value={title}
+                    onChange={(e) => setTitle(e.target.value)}
+                    className="text-3xl md:text-4xl font-bold text-white bg-transparent border-b border-white/30 w-full focus:outline-none focus:border-white"
+                  />
+                ) : (
+                  <h1 className="text-3xl md:text-4xl font-bold text-white">{project.title}</h1>
+                )}
+                
+                <ProjectTechStack 
+                  duration={project.duration} 
+                  techStackCount={techStackCount} 
+                  organizationName={project.organizationName} 
+                />
+                
+                {isEditing ? (
+                  <textarea
+                    value={description}
+                    onChange={(e) => setDescription(e.target.value)}
+                    rows={3}
+                    className="bg-transparent border border-white/30 rounded w-full p-2 text-white resize-none focus:outline-none focus:border-white mt-2"
+                  />
+                ) : (
+                  <p className="text-white/90 max-w-3xl">{project.description}</p>
+                )}
+              </div>
+              
+              {canEdit && (
+                <div className="ml-4">
+                  <ProjectHeaderActions 
+                    canEdit={canEdit} 
+                    isEditing={isEditing} 
+                    isSaving={isSaving}
+                    onEditClick={handleEditClick} 
+                    onCancelEdit={handleCancelEdit} 
+                  />
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
 };
+
 export default ProjectHeaderBanner;

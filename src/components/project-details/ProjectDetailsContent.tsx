@@ -98,7 +98,7 @@ const ProjectDetailsContent: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen flex flex-col">
+    <div className="min-h-screen flex flex-col bg-gradient-to-b from-background to-muted/20">
       <Header />
       
       <main className="flex-grow">
@@ -108,7 +108,10 @@ const ProjectDetailsContent: React.FC = () => {
               variant={isEditing ? "destructive" : "default"}
               size="sm" 
               onClick={handleToggleEditing}
-              className="mb-2"
+              className={cn(
+                "mb-2 transition-all duration-200",
+                isEditing ? "shadow-md" : "shadow hover:shadow-md"
+              )}
             >
               {isEditing ? (
                 <>
@@ -127,7 +130,7 @@ const ProjectDetailsContent: React.FC = () => {
         
         <div className="container px-4 mx-auto py-8 max-w-6xl">
           {projectStatus === 'rejected' && (
-            <Alert variant="destructive" className="mb-6">
+            <Alert variant="destructive" className="mb-6 animate-fade-in">
               <AlertCircle className="h-4 w-4" />
               <AlertTitle>Նախագիծը մերժված է</AlertTitle>
               <AlertDescription>
@@ -137,7 +140,7 @@ const ProjectDetailsContent: React.FC = () => {
           )}
           
           {isEditing && (
-            <Alert className="mb-6 border-amber-200 bg-amber-50">
+            <Alert className="mb-6 border-amber-200 bg-amber-50 animate-fade-in">
               <AlertCircle className="h-4 w-4 text-amber-500" />
               <AlertTitle>Խմբագրման ռեժիմ</AlertTitle>
               <AlertDescription>
@@ -149,25 +152,27 @@ const ProjectDetailsContent: React.FC = () => {
           
           <ProjectHeader />
           
-          <ProjectTabs 
-            project={project}
-            timeline={timeline}
-            tasks={tasks}
-            projectStatus={projectStatus}
-            isReserved={isReserved}
-            projectMembers={projectMembers}
-            organization={organization}
-            similarProjects={similarProjects}
-            addTimelineEvent={addTimelineEvent}
-            completeTimelineEvent={completeTimelineEvent}
-            addTask={addTask}
-            updateTaskStatus={updateTaskStatus}
-            submitProject={submitProject}
-            approveProject={approveProject}
-            rejectProject={rejectProject}
-            isEditing={isEditing}
-            onSaveChanges={handleSaveChanges}
-          />
+          <div className="mt-8 bg-card rounded-xl shadow-lg border border-border/50 p-6 animate-fade-in">
+            <ProjectTabs 
+              project={project}
+              timeline={timeline}
+              tasks={tasks}
+              projectStatus={projectStatus}
+              isReserved={isReserved}
+              projectMembers={projectMembers}
+              organization={organization}
+              similarProjects={similarProjects}
+              addTimelineEvent={addTimelineEvent}
+              completeTimelineEvent={completeTimelineEvent}
+              addTask={addTask}
+              updateTaskStatus={updateTaskStatus}
+              submitProject={submitProject}
+              approveProject={approveProject}
+              rejectProject={rejectProject}
+              isEditing={isEditing}
+              onSaveChanges={handleSaveChanges}
+            />
+          </div>
         </div>
       </main>
       
