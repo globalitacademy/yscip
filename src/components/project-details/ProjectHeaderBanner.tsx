@@ -8,6 +8,7 @@ import { ProjectTheme } from '@/data/projectThemes';
 import ProjectHeaderActions from './ProjectHeaderActions';
 import ProjectBannerBackground from './ProjectBannerBackground';
 import ProjectTechStack from './ProjectTechStack';
+import { toast } from 'sonner';
 
 interface ProjectHeaderBannerProps {
   project: ProjectTheme;
@@ -21,6 +22,13 @@ const ProjectHeaderBanner: React.FC<ProjectHeaderBannerProps> = ({ project, isEd
   const [bannerImage, setBannerImage] = React.useState(project.image || project.bannerImage || '');
   const [title, setTitle] = React.useState(project.title || '');
   const [description, setDescription] = React.useState(project.description || '');
+
+  // Update local state when project changes
+  React.useEffect(() => {
+    setBannerImage(project.image || project.bannerImage || '');
+    setTitle(project.title || '');
+    setDescription(project.description || '');
+  }, [project]);
 
   const handleEditClick = async () => {
     if (isEditing) {
@@ -36,9 +44,11 @@ const ProjectHeaderBanner: React.FC<ProjectHeaderBannerProps> = ({ project, isEd
         
         if (success) {
           setIsEditing(false);
+          toast.success("Փոփոխությունները հաջողությամբ պահպանվել են");
         }
       } catch (error) {
         console.error('Failed to update project:', error);
+        toast.error("Սխալ փոփոխություններ պահպանելիս");
       } finally {
         setIsSaving(false);
       }
@@ -72,7 +82,7 @@ const ProjectHeaderBanner: React.FC<ProjectHeaderBannerProps> = ({ project, isEd
         isEditing={isEditing}
         canEdit={canEdit}
         onImageChange={handleImageChange}
-        onEditClick={handleEditClick}
+        onEditClick={() => setIsEditing(true)}
       />
       
       {/* Content overlaid on the banner */}
@@ -81,7 +91,7 @@ const ProjectHeaderBanner: React.FC<ProjectHeaderBannerProps> = ({ project, isEd
           variant="outline" 
           size="sm"
           className="mb-4 bg-white/10 hover:bg-white/20 text-white border-white/30"
-          onClick={() => navigate('/projects')}
+          onClick={() => navigate('/admin/admin-projects')}
         >
           <ArrowLeft className="h-4 w-4 mr-2" /> Վերադառնալ նախագծերին
         </Button>
