@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
@@ -21,6 +20,7 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { motion } from 'framer-motion';
+import { useIsMobile } from '@/hooks/use-mobile';
 
 const fadeInUp = {
   hidden: { opacity: 0, y: 10 },
@@ -39,6 +39,7 @@ const staggerContainer = {
 
 const ProjectProgressSummary: React.FC = () => {
   const { project, tasks, timeline, projectProgress } = useProject();
+  const isMobile = useIsMobile();
   
   if (!project) return null;
   
@@ -126,19 +127,35 @@ const ProjectProgressSummary: React.FC = () => {
             <Tooltip>
               <TooltipTrigger asChild>
                 <motion.div 
-                  className="flex items-center p-2.5 rounded bg-white dark:bg-zinc-800 shadow-sm border border-muted/30 gap-2.5"
+                  className={cn(
+                    "flex items-center rounded bg-white dark:bg-zinc-800 shadow-sm border border-muted/30",
+                    "transition-all duration-300 ease-in-out hover:shadow-md",
+                    "w-full h-full",
+                    isMobile 
+                      ? "p-2 gap-1.5 flex-col justify-center items-center text-center" 
+                      : "p-2.5 gap-2.5 flex-row items-center"
+                  )}
                   variants={fadeInUp}
                   initial="hidden"
                   animate="visible"
                   transition={{ delay: index * 0.1 }}
                   whileHover={{ scale: 1.02 }}
                 >
-                  <div className="p-1.5 rounded-full bg-muted/50">
+                  <div className={cn(
+                    "rounded-full bg-muted/50",
+                    isMobile ? "p-1.5 mb-1" : "p-1.5"
+                  )}>
                     {category.icon}
                   </div>
-                  <div className="text-xs">
+                  <div className={cn(
+                    "text-xs",
+                    isMobile ? "flex flex-col items-center" : ""
+                  )}>
                     <div className="text-muted-foreground">{category.name}</div>
-                    <div className="font-bold text-base">{category.count}</div>
+                    <div className={cn(
+                      "font-bold",
+                      isMobile ? "text-lg mt-0.5" : "text-base"
+                    )}>{category.count}</div>
                   </div>
                 </motion.div>
               </TooltipTrigger>
