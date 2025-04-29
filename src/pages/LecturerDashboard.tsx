@@ -6,6 +6,7 @@ import { Navigate, useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
 import { ArrowRight, BookOpen, Users, FolderGit2, CheckSquare, Layers } from 'lucide-react';
 
 const LecturerDashboard: React.FC = () => {
