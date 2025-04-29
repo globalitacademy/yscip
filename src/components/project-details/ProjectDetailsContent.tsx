@@ -14,6 +14,7 @@ import { cn } from '@/lib/utils';
 import { AlertCircle, Edit, Save, X } from 'lucide-react';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { useAuth } from '@/contexts/AuthContext';
+import FloatingActionButton from './FloatingActionButton';
 
 const ProjectDetailsContent: React.FC = () => {
   const { 
@@ -175,6 +176,9 @@ const ProjectDetailsContent: React.FC = () => {
           </div>
         </div>
       </main>
+      
+      {/* Add Floating Action Button for quick actions */}
+      <FloatingActionButton />
       
       <Footer />
     </div>
