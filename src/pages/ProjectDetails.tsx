@@ -84,7 +84,7 @@ const ProjectDetails: React.FC = () => {
     );
   }
   
-  // Show loading skeleton while data is being fetched (simulating network request)
+  // Show loading skeleton while data is being fetched
   if (!project) {
     return (
       <div className="container mx-auto px-4 py-8">
