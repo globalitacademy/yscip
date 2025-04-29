@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import AdminLayout from '@/components/AdminLayout';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from '@/components/ui/card';
@@ -801,3 +802,27 @@ const TasksTable: React.FC<TasksTableProps> = ({
                           <DropdownMenuItem onClick={() => toggleTaskStatus(task)}>
                             Փոխել կարգավիճակը
                           </DropdownMenuItem>
+                          <DropdownMenuItem onClick={() => handleDuplicateTask(task)}>
+                            Պատճենել
+                          </DropdownMenuItem>
+                          <DropdownMenuItem 
+                            onClick={() => handleDeleteTask(task)}
+                            className="text-red-600 focus:text-red-600"
+                          >
+                            Ջնջել
+                          </DropdownMenuItem>
+                        </DropdownMenuContent>
+                      </DropdownMenu>
+                    </div>
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </div>
+      </CardContent>
+    </Card>
+  );
+};
+
+export default LecturerTasksPage;
