@@ -86,56 +86,58 @@ const ProjectHeaderBanner: React.FC<ProjectHeaderBannerProps> = ({ project, isEd
       />
       
       {/* Content overlaid on the banner */}
-      <div className="container mx-auto px-4 relative pt-72 md:pt-96">
-        <Button 
-          variant="outline" 
-          size="sm"
-          className="mb-4 bg-white/10 hover:bg-white/20 text-white border-white/30"
-          onClick={() => navigate('/admin/admin-projects')}
-        >
-          <ArrowLeft className="h-4 w-4 mr-2" /> Վերադառնալ նախագծերին
-        </Button>
-        
-        <div className="flex flex-col md:flex-row justify-between gap-4 items-start md:items-end">
-          <div className="space-y-2 max-w-3xl">
-            {isEditing ? (
-              <input
-                type="text"
-                value={title}
-                onChange={(e) => setTitle(e.target.value)}
-                className="text-3xl md:text-4xl font-bold text-white bg-transparent border-b border-white/30 focus:border-white outline-none pb-1 w-full"
-                placeholder="Նախագծի վերնագիր"
+      <div className="container mx-auto px-4 relative z-10">
+        <div className="backdrop-blur-sm bg-black/20 rounded-xl p-6 mt-64 md:mt-80 border border-white/10 shadow-xl">
+          <Button 
+            variant="outline" 
+            size="sm"
+            className="mb-4 bg-white/20 hover:bg-white/30 text-white border-white/30 backdrop-blur-sm"
+            onClick={() => navigate('/admin/admin-projects')}
+          >
+            <ArrowLeft className="h-4 w-4 mr-2" /> Վերադառնալ նախագծերին
+          </Button>
+          
+          <div className="flex flex-col md:flex-row justify-between gap-6 items-start md:items-end">
+            <div className="space-y-3 max-w-3xl">
+              {isEditing ? (
+                <input
+                  type="text"
+                  value={title}
+                  onChange={(e) => setTitle(e.target.value)}
+                  className="text-3xl md:text-4xl font-bold text-white bg-transparent border-b border-white/30 focus:border-white outline-none pb-1 w-full"
+                  placeholder="Նախագծի վերնագիր"
+                />
+              ) : (
+                <h1 className="text-3xl md:text-4xl font-bold text-white">{title}</h1>
+              )}
+              
+              {isEditing ? (
+                <textarea
+                  value={description}
+                  onChange={(e) => setDescription(e.target.value)}
+                  className="text-sm md:text-base text-white/80 bg-transparent border border-white/30 focus:border-white outline-none p-2 w-full rounded-md resize-none"
+                  rows={3}
+                  placeholder="Նախագծի համառոտ նկարագրություն"
+                />
+              ) : (
+                <p className="text-sm md:text-base text-white/90">{description}</p>
+              )}
+              
+              <ProjectTechStack 
+                duration={project.duration}
+                techStackCount={techStackCount}
+                organizationName={project.organizationName}
               />
-            ) : (
-              <h1 className="text-3xl md:text-4xl font-bold text-white">{title}</h1>
-            )}
+            </div>
             
-            {isEditing ? (
-              <textarea
-                value={description}
-                onChange={(e) => setDescription(e.target.value)}
-                className="text-sm md:text-base text-white/80 bg-transparent border border-white/30 focus:border-white outline-none p-2 w-full rounded-md resize-none"
-                rows={3}
-                placeholder="Նախագծի համառոտ նկարագրություն"
-              />
-            ) : (
-              <p className="text-sm md:text-base text-white/80">{description}</p>
-            )}
-            
-            <ProjectTechStack 
-              duration={project.duration}
-              techStackCount={techStackCount}
-              organizationName={project.organizationName}
+            <ProjectHeaderActions 
+              canEdit={canEdit} 
+              isEditing={isEditing}
+              isSaving={isSaving}
+              onEditClick={handleEditClick}
+              onCancelEdit={handleCancelEdit}
             />
           </div>
-          
-          <ProjectHeaderActions 
-            canEdit={canEdit} 
-            isEditing={isEditing}
-            isSaving={isSaving}
-            onEditClick={handleEditClick}
-            onCancelEdit={handleCancelEdit}
-          />
         </div>
       </div>
     </div>
