@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
@@ -6,17 +5,13 @@ import UserMenu from './UserMenu';
 import DatabaseSyncButton from './DatabaseSyncButton';
 import { LayoutDashboard, Square } from 'lucide-react';
 import { ThemeToggle } from './ui/theme-toggle';
-
 const Header: React.FC = () => {
   const {
     user,
     isAuthenticated
   } = useAuth();
-  
   const isAdmin = user?.role === 'admin';
-  
-  return (
-    <header className="fixed top-0 left-0 right-0 z-50 bg-white shadow-md dark:bg-gray-900 dark:border-b dark:border-gray-800 dark:text-white transition-colors duration-300">
+  return <header className="fixed top-0 left-0 right-0 z-50 bg-white shadow-md dark:bg-gray-900 dark:border-b dark:border-gray-800 dark:text-white transition-colors duration-300">
       <div className="container mx-auto px-4 py-4">
         <div className="flex justify-between items-center">
           <Link to="/" className="flex items-center gap-2">
@@ -32,15 +27,7 @@ const Header: React.FC = () => {
             
             <ThemeToggle />
             
-            {isAdmin && (
-              <Link 
-                to="/admin/dashboard" 
-                className="flex items-center gap-2 px-3 py-2 text-sm font-medium rounded-md bg-blue-50 text-blue-700 hover:bg-blue-100 dark:bg-blue-900/30 dark:text-blue-300 dark:hover:bg-blue-800/50 transition-colors"
-              >
-                <LayoutDashboard className="w-4 h-4" />
-                <span className="hidden md:inline">Կառավարում</span>
-              </Link>
-            )}
+            {isAdmin}
             
             {isAuthenticated ? <UserMenu /> : <div className="space-x-2">
                 <Link to="/login" className="px-4 py-2 border border-gray-300 rounded text-gray-700 hover:bg-gray-50 dark:border-gray-600 dark:text-gray-300 dark:hover:bg-gray-800 transition-colors">
@@ -53,8 +40,6 @@ const Header: React.FC = () => {
           </div>
         </div>
       </div>
-    </header>
-  );
+    </header>;
 };
-
 export default Header;
