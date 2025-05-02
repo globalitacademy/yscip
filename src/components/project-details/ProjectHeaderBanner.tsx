@@ -47,6 +47,7 @@ const ProjectHeaderBanner: React.FC<ProjectHeaderBannerProps> = ({
     setTitle(project.title || '');
     setDescription(project.description || '');
     setBannerImage(project.image || '');
+    setImageUrl(project.image || '');
   }, [project]);
 
   const handleEditClick = async () => {
@@ -54,12 +55,16 @@ const ProjectHeaderBanner: React.FC<ProjectHeaderBannerProps> = ({
       // Save changes
       setIsSaving(true);
       try {
-        // Update project with new values
-        const success = await updateProject({
+        // Update project with new values - make sure to pass the projectId from the context
+        const updatedData = {
           title,
           description,
           image: bannerImage
-        });
+        };
+        console.log("Saving updated project data:", updatedData);
+        
+        const success = await updateProject(updatedData);
+        
         if (success) {
           setIsEditing(false);
           toast.success('Փոփոխությունները հաջողությամբ պահպանվել են');
@@ -84,6 +89,7 @@ const ProjectHeaderBanner: React.FC<ProjectHeaderBannerProps> = ({
     setTitle(project.title || '');
     setDescription(project.description || '');
     setBannerImage(project.image || '');
+    setImageUrl(project.image || '');
     setIsEditing(false);
     toast.info('Փոփոխությունները չեղարկվել են');
   };
@@ -91,6 +97,7 @@ const ProjectHeaderBanner: React.FC<ProjectHeaderBannerProps> = ({
   const handleImageChange = (url: string) => {
     console.log("Image URL changed to:", url);
     setBannerImage(url);
+    setImageUrl(url);
     toast.info('Նկարի URL-ը փոխվել է, սակայն չի պահպանվել: Խնդրում ենք սեղմել "Պահպանել" կոճակը՝ փոփոխությունները պահպանելու համար', {
       duration: 5000
     });
@@ -113,7 +120,7 @@ const ProjectHeaderBanner: React.FC<ProjectHeaderBannerProps> = ({
     <div className="relative py-0 overflow-hidden text-white min-h-[500px] group">
       {/* Banner Background with Image - Passing correct props */}
       <ProjectBannerBackground 
-        image={bannerImage || project.image}
+        image={bannerImage}
         isEditing={isEditing}
         canEdit={canEdit}
         onImageChange={handleImageChange}

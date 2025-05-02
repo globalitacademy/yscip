@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { cn } from '@/lib/utils';
 import ImageUploader from '../common/image-uploader/ImageUploader';
@@ -24,14 +25,18 @@ const ProjectBannerBackground: React.FC<ProjectBannerBackgroundProps> = ({
 }) => {
   const [showImageUrl, setShowImageUrl] = useState(false);
   const [imageUrl, setImageUrl] = useState(image || '');
+  // Track current displayed image to ensure UI updates immediately
+  const [displayImage, setDisplayImage] = useState(image || '');
 
   // Log state for debugging
   useEffect(() => {
     if (isEditing) {
       console.log("EDIT MODE ACTIVE in ProjectBannerBackground");
       console.log("Can edit:", canEdit);
+      console.log("Current image:", image);
+      console.log("Display image:", displayImage);
     }
-  }, [isEditing, canEdit]);
+  }, [isEditing, canEdit, image, displayImage]);
 
   const handleImageUrlChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setImageUrl(e.target.value);
@@ -42,14 +47,17 @@ const ProjectBannerBackground: React.FC<ProjectBannerBackgroundProps> = ({
       toast.error('Նկարի URL-ն չի կարող լինել դատարկ');
       return;
     }
+    // Update both local display image and parent component
+    setDisplayImage(imageUrl);
     onImageChange(imageUrl);
     toast.success('Նկարի URL-ն հաջողությամբ փոխվել է');
     setShowImageUrl(false);
   };
 
-  // Update local state when prop changes
+  // Update local state when props change
   useEffect(() => {
     setImageUrl(image || '');
+    setDisplayImage(image || '');
   }, [image]);
 
   return (
@@ -104,7 +112,7 @@ const ProjectBannerBackground: React.FC<ProjectBannerBackgroundProps> = ({
         {/* Display image for everyone - now more consistent */}
         <div className="w-full h-full">
           <img 
-            src={image || 'https://images.unsplash.com/photo-1470071459604-3b5ec3a7fe05?q=80&w=1920&auto=format&fit=crop'}
+            src={displayImage || 'https://images.unsplash.com/photo-1470071459604-3b5ec3a7fe05?q=80&w=1920&auto=format&fit=crop'}
             alt="Project banner"
             className="w-full h-full object-cover transition-all duration-1000 hover:scale-105"
             onError={(e) => {
@@ -121,7 +129,7 @@ const ProjectBannerBackground: React.FC<ProjectBannerBackgroundProps> = ({
           <div className="hidden">
             <ScaleIn delay="delay-200">
               <ImageUploader
-                currentImage={image || '/placeholder-banner.jpg'}
+                currentImage={displayImage || '/placeholder-banner.jpg'}
                 onImageChange={onImageChange}
                 previewHeight="h-full"
                 placeholder="Սեղմեք նկար ներբեռնելու համար"

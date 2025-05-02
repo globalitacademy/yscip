@@ -114,11 +114,13 @@ export const ProjectProvider: React.FC<ProjectProviderProps> = ({
   const updateProject = async (updates: Partial<any>): Promise<boolean> => {
     try {
       if (!project || !projectId) {
+        console.error('No project found or projectId is missing');
         toast.error('Նախագիծը չի գտնվել');
         return false;
       }
 
       setIsUpdating(true);
+      console.log(`Updating project ID ${projectId} with data:`, updates);
 
       // Combine current project data with updates
       const updatedProject = {
@@ -133,15 +135,14 @@ export const ProjectProvider: React.FC<ProjectProviderProps> = ({
       if (success) {
         // Update local state after successful API call
         setProject(updatedProject);
-        toast.success('Նախագիծը հաջողությամբ թարմացվել է');
+        console.log('Project updated successfully:', updatedProject);
         return true;
       } else {
-        toast.error('Նախագծի թարմացման ժամանակ սխալ է տեղի ունեցել');
+        console.error('Failed to update project');
         return false;
       }
     } catch (error) {
       console.error('Error updating project:', error);
-      toast.error('Նախագծի թարմացման ժամանակ սխալ է տեղի ունեցել');
       return false;
     } finally {
       setIsUpdating(false);
