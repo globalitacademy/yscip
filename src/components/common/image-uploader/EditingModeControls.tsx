@@ -2,11 +2,12 @@
 import React from 'react';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
-import { ImageIcon, Save, X, Upload } from 'lucide-react';
+import { Upload, Save, X, ImageIcon } from 'lucide-react';
+import ImagePreview from './ImagePreview';
 
 interface EditingModeControlsProps {
-  previewUrl: string | null;
   currentImage: string | null;
+  previewUrl: string | null;
   placeholder: string;
   previewHeight: string;
   rounded: boolean;
@@ -16,8 +17,8 @@ interface EditingModeControlsProps {
 }
 
 const EditingModeControls: React.FC<EditingModeControlsProps> = ({
-  previewUrl,
   currentImage,
+  previewUrl,
   placeholder,
   previewHeight,
   rounded,
@@ -25,68 +26,46 @@ const EditingModeControls: React.FC<EditingModeControlsProps> = ({
   onSave,
   onCancel
 }) => {
+  // Determine which image to show
+  const imgSrc = previewUrl || currentImage;
+  
   return (
-    <div>
-      <div className="mb-3">
-        {previewUrl ? (
-          <div className={cn(
-            "relative",
-            previewHeight,
-            rounded && "rounded-full overflow-hidden"
-          )}>
-            <img 
-              src={previewUrl} 
-              alt="Preview"
-              className={cn(
-                "object-cover w-full h-full",
-                rounded ? "rounded-full" : "rounded-lg"
-              )}
-            />
-            <div className="absolute inset-0 flex items-center justify-center">
-              <Button
-                variant="outline"
-                className="gap-1.5 bg-background/80 hover:bg-background"
-                onClick={onTriggerFileInput}
-              >
-                <Upload size={14} /> Ընտրել այլ նկար
-              </Button>
-            </div>
-          </div>
-        ) : (
-          <div 
-            className={cn(
-              "flex flex-col items-center justify-center gap-3 cursor-pointer",
-              "bg-muted/50 border-2 border-dashed border-primary/40",
-              previewHeight,
-              rounded ? "rounded-full" : "rounded-lg"
-            )}
-            onClick={onTriggerFileInput}
-          >
-            <ImageIcon className="w-8 h-8 text-muted-foreground/60" />
-            <span className="text-sm text-muted-foreground text-center px-4">
-              {placeholder}
-            </span>
-          </div>
-        )}
-      </div>
+    <div className="space-y-4">
+      <ImagePreview
+        imgSrc={imgSrc}
+        placeholder={placeholder}
+        previewHeight={previewHeight}
+        rounded={rounded}
+        disabled={false}
+        isEditing={true}
+      />
       
-      <div className="flex gap-2 justify-end">
-        <Button 
-          variant="outline" 
-          size="sm" 
-          onClick={onCancel} 
-          className="gap-1.5 text-destructive hover:text-destructive"
+      <div className="flex flex-wrap gap-2">
+        <Button
+          onClick={onTriggerFileInput}
+          variant="outline"
+          className="flex items-center gap-1.5"
         >
-          <X size={14} /> Չեղարկել
+          <Upload size={16} />
+          Փոխել նկարը
         </Button>
-        <Button 
-          variant="default" 
-          size="sm" 
+        
+        <Button
           onClick={onSave}
-          className="gap-1.5"
-          disabled={!previewUrl || previewUrl === currentImage}
+          className="bg-green-600 hover:bg-green-700 text-white gap-1.5"
+          disabled={!previewUrl}
         >
-          <Save size={14} /> Պահպանել
+          <Save size={16} />
+          Պահպանել
+        </Button>
+        
+        <Button
+          onClick={onCancel}
+          variant="outline"
+          className="border-destructive text-destructive hover:bg-destructive/10 gap-1.5"
+        >
+          <X size={16} />
+          Չեղարկել
         </Button>
       </div>
     </div>

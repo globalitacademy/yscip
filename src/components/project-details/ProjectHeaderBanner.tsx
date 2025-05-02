@@ -1,11 +1,14 @@
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { ArrowLeft } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { useProject } from '@/contexts/ProjectContext';
 import ProjectHeaderActions from './ProjectHeaderActions';
 import ThemeToggle from '@/components/ui/theme-toggle';
+import ProjectBannerBackground from './ProjectBannerBackground';
+import { getProjectImage } from '@/lib/getProjectImage';
+import { Badge } from '@/components/ui/badge';
 
 interface ProjectHeaderBannerProps {
   project: any;
@@ -22,14 +25,16 @@ const ProjectHeaderBanner: React.FC<ProjectHeaderBannerProps> = ({
     canEdit,
     updateProject
   } = useProject();
-  const [isSaving, setIsSaving] = React.useState(false);
-  const [title, setTitle] = React.useState(project.title || '');
-  const [description, setDescription] = React.useState(project.description || '');
+  const [isSaving, setIsSaving] = useState(false);
+  const [title, setTitle] = useState(project.title || '');
+  const [description, setDescription] = useState(project.description || '');
+  const [bannerImage, setBannerImage] = useState(project.image || '');
 
   // Update local state when project changes
-  React.useEffect(() => {
+  useEffect(() => {
     setTitle(project.title || '');
     setDescription(project.description || '');
+    setBannerImage(project.image || '');
   }, [project]);
 
   const handleEditClick = async () => {
@@ -40,7 +45,8 @@ const ProjectHeaderBanner: React.FC<ProjectHeaderBannerProps> = ({
         // Update project with new values
         const success = await updateProject({
           title,
-          description
+          description,
+          image: bannerImage
         });
         if (success) {
           setIsEditing(false);
@@ -60,30 +66,81 @@ const ProjectHeaderBanner: React.FC<ProjectHeaderBannerProps> = ({
     // Reset values to original
     setTitle(project.title || '');
     setDescription(project.description || '');
+    setBannerImage(project.image || '');
     setIsEditing(false);
   };
 
+  const handleImageChange = (url: string) => {
+    setBannerImage(url);
+  };
+
   return (
-    <div className="relative py-10 bg-white dark:bg-gray-900">
-      <div className="container mx-auto px-4">
-        <div className="flex justify-between items-center mb-4">
+    <div className="relative py-0 bg-gradient-to-r from-blue-900 to-indigo-900 text-white">
+      {/* Banner Background with Image */}
+      <ProjectBannerBackground 
+        image={project.image}
+        isEditing={isEditing}
+        canEdit={canEdit}
+        onImageChange={handleImageChange}
+        onEditClick={() => setIsEditing(true)}
+      />
+      
+      <div className="container relative z-10 mx-auto px-4 pt-32 pb-16">
+        <div className="flex justify-between items-start mb-6">
           <Button 
             variant="ghost" 
             size="sm" 
             onClick={() => navigate('/projects')} 
-            className="flex items-center gap-1.5 text-muted-foreground hover:text-foreground"
+            className="flex items-center gap-1.5 text-white hover:text-white/80 bg-black/20 hover:bg-black/30"
           >
             <ArrowLeft className="h-4 w-4" /> 
             Վերադառնալ բոլոր պրոեկտների ցանկին
           </Button>
           
-          <div>
-            {project && project.category && (
-              <span className="bg-red-100 text-red-700 text-xs font-medium px-3 py-1.5 rounded">
-                Առաջարկված
-              </span>
+          <div className="flex items-center gap-4">
+            <ThemeToggle />
+            {canEdit && (
+              <ProjectHeaderActions 
+                canEdit={canEdit}
+                isEditing={isEditing}
+                isSaving={isSaving}
+                onEditClick={handleEditClick}
+                onCancelEdit={handleCancelEdit}
+              />
             )}
           </div>
+        </div>
+        
+        <div className="mt-8 max-w-3xl">
+          {isEditing ? (
+            <input
+              type="text"
+              value={title}
+              onChange={(e) => setTitle(e.target.value)}
+              className="text-4xl font-bold bg-transparent border-b border-white/30 text-white w-full mb-4 focus:outline-none focus:border-white/60"
+              placeholder="Նախագծի վերնագիր"
+            />
+          ) : (
+            <h1 className="text-4xl font-bold mb-4">{project.title}</h1>
+          )}
+          
+          {isEditing ? (
+            <textarea
+              value={description}
+              onChange={(e) => setDescription(e.target.value)}
+              className="text-lg bg-transparent border border-white/30 rounded text-white w-full p-2 focus:outline-none focus:border-white/60"
+              rows={3}
+              placeholder="Նախագծի նկարագրություն"
+            />
+          ) : (
+            <p className="text-lg text-white/80 mb-4">{project.description}</p>
+          )}
+          
+          {project && project.category && (
+            <Badge className="mt-4 bg-red-500 text-white hover:bg-red-600">
+              {project.category}
+            </Badge>
+          )}
         </div>
       </div>
     </div>

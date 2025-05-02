@@ -6,17 +6,10 @@ import Footer from '@/components/Footer';
 import { useProject } from '@/contexts/ProjectContext';
 import { toast } from 'sonner';
 import { AlertCircle } from 'lucide-react';
-import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { cn } from '@/lib/utils';
 import { useAuth } from '@/contexts/AuthContext';
-import ProjectDescription from './ProjectDescription';
-import ProjectTimeline from './ProjectTimeline';
-import ProjectTasks from './ProjectTasks';
-import ProjectDiscussions from './ProjectDiscussions';
-import ProjectFiles from './ProjectFiles';
-import ProjectEvaluation from './ProjectEvaluation';
+import ProjectTabs from './ProjectTabs';
 import ProjectHeaderBanner from './ProjectHeaderBanner';
 import ProjectProgressSummary from './ProjectProgressSummary';
 import { motion } from 'framer-motion';
@@ -108,11 +101,22 @@ const ProjectDetailsContent: React.FC = () => {
         <ProjectHeaderBanner project={project} isEditing={isEditing} />
         
         <div className="container mx-auto px-4 py-8">
-          <ProjectDescription 
+          <ProjectTabs
             project={project}
+            timeline={timeline}
+            tasks={tasks}
+            projectStatus={projectStatus}
+            isReserved={isReserved}
             projectMembers={projectMembers}
             organization={organization}
             similarProjects={similarProjects}
+            addTimelineEvent={addTimelineEvent}
+            completeTimelineEvent={completeTimelineEvent}
+            addTask={addTask}
+            updateTaskStatus={updateTaskStatus}
+            submitProject={submitProject}
+            approveProject={approveProject}
+            rejectProject={rejectProject}
             isEditing={isEditing}
             onSaveChanges={handleSaveChanges}
           />
