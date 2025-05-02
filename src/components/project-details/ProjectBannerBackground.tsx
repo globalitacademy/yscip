@@ -5,7 +5,7 @@ import ImageUploader from '../common/image-uploader/ImageUploader';
 import { ScaleIn } from '@/components/LocalTransitions';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Edit, Image as ImageIcon } from 'lucide-react';
+import { Edit, Image as ImageIcon, Link } from 'lucide-react';
 import { toast } from 'sonner';
 
 interface ProjectBannerBackgroundProps {
@@ -62,18 +62,19 @@ const ProjectBannerBackground: React.FC<ProjectBannerBackgroundProps> = ({
       <div className="absolute inset-0 z-0 transform transition-all duration-700 hover:scale-105">
         {/* URL editing interface - shown only when in edit mode and URL editing is active */}
         {isEditing && canEdit && showImageUrl ? (
-          <div className="absolute top-4 left-4 right-4 z-30 bg-black/80 p-6 rounded-lg backdrop-blur-md border border-white/20 shadow-xl">
-            <div className="flex flex-col gap-4">
-              <h3 className="text-white text-lg font-medium">Փոխել նկարի URL-ն</h3>
+          <div className="absolute inset-0 z-50 flex items-center justify-center">
+            <div className="w-full max-w-2xl mx-4 bg-black/90 p-6 rounded-lg backdrop-blur-md border border-white/30 shadow-xl">
+              <h3 className="text-white text-xl font-medium mb-4">Փոխել նկարի URL-ն</h3>
               <div className="flex flex-col gap-3">
                 <label className="text-white text-sm">Նկարի URL</label>
                 <Input 
                   value={imageUrl} 
                   onChange={handleImageUrlChange} 
-                  className="bg-black/40 border-white/30 text-white" 
+                  className="bg-black/60 border-white/50 text-white" 
                   placeholder="https://example.com/image.jpg"
+                  autoFocus
                 />
-                <div className="flex gap-2 mt-2">
+                <div className="flex gap-2 mt-4">
                   <Button 
                     onClick={handleImageUrlSubmit} 
                     className="bg-primary hover:bg-primary/90 text-white"
@@ -92,15 +93,17 @@ const ProjectBannerBackground: React.FC<ProjectBannerBackgroundProps> = ({
             </div>
           </div>
         ) : isEditing && canEdit ? (
-          <div className="absolute top-4 right-4 z-30">
-            <Button 
-              onClick={() => setShowImageUrl(true)}
-              size="lg"
-              className="bg-black/70 border border-white/20 text-white hover:bg-black/80 backdrop-blur-sm shadow-xl flex items-center gap-2"
-            >
-              <ImageIcon className="mr-2 h-5 w-5" />
-              Խմբագրել նկարի URL
-            </Button>
+          <div className="absolute top-4 right-4 z-30 animate-pulse">
+            <ScaleIn delay="delay-100">
+              <Button 
+                onClick={() => setShowImageUrl(true)}
+                size="lg"
+                className="bg-primary hover:bg-primary/90 border border-white/20 text-white hover:shadow-lg shadow-xl flex items-center gap-2"
+              >
+                <Link className="mr-2 h-5 w-5" />
+                Խմբագրել նկարի URL
+              </Button>
+            </ScaleIn>
           </div>
         ) : null}
 

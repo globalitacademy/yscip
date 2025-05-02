@@ -80,6 +80,9 @@ const ProjectHeaderBanner: React.FC<ProjectHeaderBannerProps> = ({
   const handleImageChange = (url: string) => {
     console.log("Image URL changed to:", url);
     setBannerImage(url);
+    toast.info('Նկարի URL-ը փոխվել է, սակայն չի պահպանվել: Խնդրում ենք սեղմել "Պահպանել" կոճակը՝ փոփոխությունները պահպանելու համար', {
+      duration: 5000
+    });
   };
 
   return (
