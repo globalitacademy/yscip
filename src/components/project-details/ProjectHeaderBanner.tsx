@@ -9,6 +9,7 @@ import ThemeToggle from '@/components/ui/theme-toggle';
 import ProjectBannerBackground from './ProjectBannerBackground';
 import { getProjectImage } from '@/lib/getProjectImage';
 import { Badge } from '@/components/ui/badge';
+import { FadeIn, SlideUp } from '@/components/LocalTransitions';
 
 interface ProjectHeaderBannerProps {
   project: any;
@@ -75,7 +76,7 @@ const ProjectHeaderBanner: React.FC<ProjectHeaderBannerProps> = ({
   };
 
   return (
-    <div className="relative py-0 bg-gradient-to-r from-blue-900 to-indigo-900 text-white">
+    <div className="relative py-0 overflow-hidden text-white min-h-[500px] group">
       {/* Banner Background with Image */}
       <ProjectBannerBackground 
         image={project.image}
@@ -85,63 +86,67 @@ const ProjectHeaderBanner: React.FC<ProjectHeaderBannerProps> = ({
         onEditClick={() => setIsEditing(true)}
       />
       
-      <div className="container relative z-10 mx-auto px-4 pt-32 pb-16">
-        <div className="flex justify-between items-start mb-6">
-          <Button 
-            variant="ghost" 
-            size="sm" 
-            onClick={() => navigate('/projects')} 
-            className="flex items-center gap-1.5 text-white hover:text-white/80 bg-black/20 hover:bg-black/30"
-          >
-            <ArrowLeft className="h-4 w-4" /> 
-            Վերադառնալ բոլոր պրոեկտների ցանկին
-          </Button>
-          
-          <div className="flex items-center gap-4">
-            <ThemeToggle />
-            {canEdit && (
-              <ProjectHeaderActions 
-                canEdit={canEdit}
-                isEditing={isEditing}
-                isSaving={isSaving}
-                onEditClick={handleEditClick}
-                onCancelEdit={handleCancelEdit}
+      <div className="container relative z-10 mx-auto px-4 pt-32 pb-16 flex flex-col justify-between min-h-[500px]">
+        <FadeIn delay="delay-100">
+          <div className="flex justify-between items-start">
+            <Button 
+              variant="ghost" 
+              size="sm" 
+              onClick={() => navigate('/projects')} 
+              className="flex items-center gap-1.5 text-white hover:text-white/80 bg-black/20 hover:bg-black/30 backdrop-blur-sm border border-white/10"
+            >
+              <ArrowLeft className="h-4 w-4" /> 
+              Վերադառնալ բոլոր նախագծերի ցանկին
+            </Button>
+            
+            <div className="flex items-center gap-4">
+              <ThemeToggle />
+              {canEdit && (
+                <ProjectHeaderActions 
+                  canEdit={canEdit}
+                  isEditing={isEditing}
+                  isSaving={isSaving}
+                  onEditClick={handleEditClick}
+                  onCancelEdit={handleCancelEdit}
+                />
+              )}
+            </div>
+          </div>
+        </FadeIn>
+        
+        <SlideUp delay="delay-300">
+          <div className="mt-auto max-w-3xl backdrop-blur-md bg-black/20 p-6 rounded-xl border border-white/10 shadow-xl transform transition-all duration-300 group-hover:translate-y-[-4px]">
+            {isEditing ? (
+              <input
+                type="text"
+                value={title}
+                onChange={(e) => setTitle(e.target.value)}
+                className="text-4xl font-bold bg-transparent border-b border-white/30 text-white w-full mb-4 focus:outline-none focus:border-white/60"
+                placeholder="Նախագծի վերնագիր"
               />
+            ) : (
+              <h1 className="text-4xl font-bold mb-4">{project.title}</h1>
+            )}
+            
+            {isEditing ? (
+              <textarea
+                value={description}
+                onChange={(e) => setDescription(e.target.value)}
+                className="text-lg bg-transparent border border-white/30 rounded text-white w-full p-2 focus:outline-none focus:border-white/60"
+                rows={3}
+                placeholder="Նախագծի նկարագրություն"
+              />
+            ) : (
+              <p className="text-lg text-white/80 mb-4">{project.description}</p>
+            )}
+            
+            {project && project.category && (
+              <Badge className="mt-4 bg-primary/80 hover:bg-primary text-white backdrop-blur-sm border-white/20">
+                {project.category}
+              </Badge>
             )}
           </div>
-        </div>
-        
-        <div className="mt-8 max-w-3xl">
-          {isEditing ? (
-            <input
-              type="text"
-              value={title}
-              onChange={(e) => setTitle(e.target.value)}
-              className="text-4xl font-bold bg-transparent border-b border-white/30 text-white w-full mb-4 focus:outline-none focus:border-white/60"
-              placeholder="Նախագծի վերնագիր"
-            />
-          ) : (
-            <h1 className="text-4xl font-bold mb-4">{project.title}</h1>
-          )}
-          
-          {isEditing ? (
-            <textarea
-              value={description}
-              onChange={(e) => setDescription(e.target.value)}
-              className="text-lg bg-transparent border border-white/30 rounded text-white w-full p-2 focus:outline-none focus:border-white/60"
-              rows={3}
-              placeholder="Նախագծի նկարագրություն"
-            />
-          ) : (
-            <p className="text-lg text-white/80 mb-4">{project.description}</p>
-          )}
-          
-          {project && project.category && (
-            <Badge className="mt-4 bg-red-500 text-white hover:bg-red-600">
-              {project.category}
-            </Badge>
-          )}
-        </div>
+        </SlideUp>
       </div>
     </div>
   );
