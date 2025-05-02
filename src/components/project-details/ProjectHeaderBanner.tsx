@@ -71,6 +71,7 @@ const ProjectHeaderBanner: React.FC<ProjectHeaderBannerProps> = ({
   };
 
   const handleImageChange = (url: string) => {
+    console.log("Image URL changed to:", url);
     setBannerImage(url);
   };
 
@@ -78,7 +79,7 @@ const ProjectHeaderBanner: React.FC<ProjectHeaderBannerProps> = ({
     <div className="relative py-0 overflow-hidden text-white min-h-[500px] group">
       {/* Banner Background with Image */}
       <ProjectBannerBackground 
-        image={project.image}
+        image={bannerImage || project.image}
         isEditing={isEditing}
         canEdit={canEdit}
         onImageChange={handleImageChange}

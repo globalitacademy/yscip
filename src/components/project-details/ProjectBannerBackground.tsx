@@ -1,5 +1,4 @@
-
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { cn } from '@/lib/utils';
 import ImageUploader from '../common/image-uploader/ImageUploader';
 import { ScaleIn } from '@/components/LocalTransitions';
@@ -34,6 +33,11 @@ const ProjectBannerBackground: React.FC<ProjectBannerBackgroundProps> = ({
     setShowImageUrl(false);
   };
 
+  // Update local state when prop changes
+  useEffect(() => {
+    setImageUrl(image || '');
+  }, [image]);
+
   return (
     <div className="absolute inset-0 z-0 overflow-hidden">
       {/* Animated decorative elements */}
@@ -49,6 +53,7 @@ const ProjectBannerBackground: React.FC<ProjectBannerBackgroundProps> = ({
       
       {/* Image with subtle animation */}
       <div className="absolute inset-0 z-0 transform transition-all duration-700 hover:scale-105">
+        {/* URL editing interface - shown only when in edit mode and URL editing is active */}
         {isEditing && canEdit && showImageUrl ? (
           <div className="absolute top-4 left-4 right-4 z-20 bg-black/80 p-4 rounded-lg backdrop-blur-md border border-white/20">
             <div className="flex flex-col gap-2">
@@ -82,31 +87,35 @@ const ProjectBannerBackground: React.FC<ProjectBannerBackgroundProps> = ({
           </div>
         ) : null}
 
-        {canEdit ? (
-          <ScaleIn delay="delay-200">
-            <ImageUploader
-              currentImage={image || '/placeholder-banner.jpg'}
-              onImageChange={onImageChange}
-              previewHeight="h-full"
-              placeholder="Սեղմեք նկար ներբեռնելու համար"
-              rounded={false}
-              disabled={!isEditing}
-              showEditButton={canEdit}
-              overlayMode={true}
-            />
-          </ScaleIn>
-        ) : (
-          <div className="w-full h-full">
-            <img 
-              src={image || 'https://images.unsplash.com/photo-1470071459604-3b5ec3a7fe05?q=80&w=1920&auto=format&fit=crop'}
-              alt="Project banner"
-              className="w-full h-full object-cover transition-all duration-1000 hover:scale-105"
-              onError={(e) => {
-                (e.target as HTMLImageElement).src = 'https://images.unsplash.com/photo-1482938289607-e9573fc25ebb?q=80&w=1920&auto=format&fit=crop';
-              }}
-            />
-            {/* Noise texture overlay */}
-            <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyMDAiIGhlaWdodD0iMjAwIj48ZmlsdGVyIGlkPSJhIiB4PSIwIiB5PSIwIj48ZmVUdXJidWxlbmNlIGJhc2VGcmVxdWVuY3k9Ii43NSIgc3RpdGNoVGlsZXM9InN0aXRjaCIgdHlwZT0iZnJhY3RhbE5vaXNlIi8+PGZlQ29sb3JNYXRyaXggdHlwZT0ic2F0dXJhdGUiIHZhbHVlcz0iMCIvPjwvZmlsdGVyPjxwYXRoIGQ9Ik0wIDBoMjAwdjIwMEgweiIgZmlsdGVyPSJ1cmwoI2EpIiBvcGFjaXR5PSIuMDUiLz48L3N2Zz4=')] opacity-20" />
+        {/* Display image for everyone - now more consistent */}
+        <div className="w-full h-full">
+          <img 
+            src={image || 'https://images.unsplash.com/photo-1470071459604-3b5ec3a7fe05?q=80&w=1920&auto=format&fit=crop'}
+            alt="Project banner"
+            className="w-full h-full object-cover transition-all duration-1000 hover:scale-105"
+            onError={(e) => {
+              (e.target as HTMLImageElement).src = 'https://images.unsplash.com/photo-1482938289607-e9573fc25ebb?q=80&w=1920&auto=format&fit=crop';
+            }}
+          />
+          {/* Noise texture overlay */}
+          <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyMDAiIGhlaWdodD0iMjAwIj48ZmlsdGVyIGlkPSJhIiB4PSIwIiB5PSIwIj48ZmVUdXJidWxlbmNlIGJhc2VGcmVxdWVuY3k9Ii43NSIgc3RpdGNoVGlsZXM9InN0aXRjaCIgdHlwZT0iZnJhY3RhbE5vaXNlIi8+PGZlQ29sb3JNYXRyaXggdHlwZT0ic2F0dXJhdGUiIHZhbHVlcz0iMCIvPjwvZmlsdGVyPjxwYXRoIGQ9Ik0wIDBoMjAwdjIwMEgweiIgZmlsdGVyPSJ1cmwoI2EpIiBvcGFjaXR5PSIuMDUiLz48L3N2Zz4=')] opacity-20" />
+        </div>
+
+        {/* Keep the ImageUploader for edit mode but hide it for now */}
+        {canEdit && isEditing && (
+          <div className="hidden">
+            <ScaleIn delay="delay-200">
+              <ImageUploader
+                currentImage={image || '/placeholder-banner.jpg'}
+                onImageChange={onImageChange}
+                previewHeight="h-full"
+                placeholder="Սեղմեք նկար ներբեռնելու համար"
+                rounded={false}
+                disabled={!isEditing}
+                showEditButton={canEdit}
+                overlayMode={true}
+              />
+            </ScaleIn>
           </div>
         )}
       </div>

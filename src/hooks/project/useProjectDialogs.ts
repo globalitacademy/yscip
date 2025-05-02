@@ -26,15 +26,34 @@ export const useProjectDialogs = (
   
   const handleDelete = useCallback(async () => {
     if (!selectedProject) return;
-    await deleteProject(selectedProject);
-    setIsDeleteDialogOpen(false);
-    setSelectedProject(null);
     
-    queryClient.invalidateQueries({ queryKey: ['projects'] });
+    try {
+      const success = await deleteProject(selectedProject);
+      if (success) {
+        setIsDeleteDialogOpen(false);
+        setSelectedProject(null);
+        
+        queryClient.invalidateQueries({ queryKey: ['projects'] });
+      } else {
+        console.error('Failed to delete project');
+      }
+    } catch (error) {
+      console.error('Error deleting project:', error);
+    }
   }, [selectedProject, deleteProject, queryClient, setIsDeleteDialogOpen, setSelectedProject]);
 
   const handleChangeImage = useCallback(async () => {
-    if (!selectedProject) return;
+    if (!selectedProject) {
+      console.error('No project selected for image update');
+      return;
+    }
+    
+    if (!newImageUrl || newImageUrl.trim() === '') {
+      console.error('Image URL is empty');
+      return;
+    }
+    
+    console.log('Updating project image to:', newImageUrl);
     
     try {
       const success = await updateProjectImage(selectedProject, newImageUrl);
@@ -54,7 +73,10 @@ export const useProjectDialogs = (
   }, [selectedProject, newImageUrl, updateProjectImage, queryClient, setIsImageDialogOpen, setNewImageUrl, setSelectedProject]);
 
   const handleSaveEdit = useCallback(async () => {
-    if (!selectedProject) return;
+    if (!selectedProject) {
+      console.error('No project selected for editing');
+      return;
+    }
     
     // Make sure all required fields are included in the updates
     const updatesToSave = {
@@ -66,19 +88,36 @@ export const useProjectDialogs = (
       is_public: editedProject.is_public !== undefined ? editedProject.is_public : selectedProject.is_public
     };
     
-    await updateProject(selectedProject, updatesToSave);
-    setIsEditDialogOpen(false);
-    setEditedProject({});
-    setSelectedProject(null);
-    
-    queryClient.invalidateQueries({ queryKey: ['projects'] });
+    try {
+      const success = await updateProject(selectedProject, updatesToSave);
+      
+      if (success) {
+        setIsEditDialogOpen(false);
+        setEditedProject({});
+        setSelectedProject(null);
+        
+        queryClient.invalidateQueries({ queryKey: ['projects'] });
+      } else {
+        console.error('Failed to update project');
+      }
+    } catch (error) {
+      console.error('Error updating project:', error);
+    }
   }, [selectedProject, editedProject, updateProject, queryClient, setIsEditDialogOpen, setEditedProject, setSelectedProject]);
 
   const handleProjectCreated = useCallback(async (project: ProjectTheme) => {
-    await createProject(project);
-    setIsCreateDialogOpen(false);
-    
-    queryClient.invalidateQueries({ queryKey: ['projects'] });
+    try {
+      const success = await createProject(project);
+      
+      if (success) {
+        setIsCreateDialogOpen(false);
+        queryClient.invalidateQueries({ queryKey: ['projects'] });
+      } else {
+        console.error('Failed to create project');
+      }
+    } catch (error) {
+      console.error('Error creating project:', error);
+    }
   }, [createProject, queryClient, setIsCreateDialogOpen]);
 
   return {

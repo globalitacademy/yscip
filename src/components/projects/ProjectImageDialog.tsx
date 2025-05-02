@@ -1,5 +1,5 @@
 
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
@@ -27,6 +27,13 @@ const ProjectImageDialog: React.FC<ProjectImageDialogProps> = ({
   const [activeTab, setActiveTab] = useState<string>("url");
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  // Update the preview when the newImageUrl changes
+  useEffect(() => {
+    if (newImageUrl && !previewUrl) {
+      setPreviewUrl(null); // Clear any file preview
+    }
+  }, [newImageUrl]);
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -60,6 +67,18 @@ const ProjectImageDialog: React.FC<ProjectImageDialogProps> = ({
     fileInputRef.current?.click();
   };
 
+  const handleUrlChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setNewImageUrl(e.target.value);
+    setPreviewUrl(null);
+  };
+
+  // Make sure the dialog shows the correct project image when opened
+  useEffect(() => {
+    if (open && selectedProject) {
+      setNewImageUrl(selectedProject.image || '');
+    }
+  }, [open, selectedProject, setNewImageUrl]);
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-md">
@@ -89,10 +108,7 @@ const ProjectImageDialog: React.FC<ProjectImageDialogProps> = ({
                 id="image-url"
                 placeholder="Օրինակ՝ https://example.com/image.jpg"
                 value={newImageUrl}
-                onChange={(e) => {
-                  setNewImageUrl(e.target.value);
-                  setPreviewUrl(null);
-                }}
+                onChange={handleUrlChange}
               />
             </div>
           </TabsContent>
@@ -136,7 +152,13 @@ const ProjectImageDialog: React.FC<ProjectImageDialogProps> = ({
         
         <DialogFooter className="flex-col sm:flex-row gap-2">
           <Button variant="outline" onClick={() => onOpenChange(false)} className="w-full sm:w-auto">Չեղարկել</Button>
-          <Button onClick={onSave} disabled={!newImageUrl && !previewUrl} className="w-full sm:w-auto">Պահպանել</Button>
+          <Button 
+            onClick={onSave} 
+            disabled={!newImageUrl && !previewUrl} 
+            className="w-full sm:w-auto"
+          >
+            Պահպանել
+          </Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>
