@@ -1,11 +1,17 @@
 
 import React from 'react';
-import { useNavigate } from 'react-router-dom';
 import { useProject } from '@/contexts/ProjectContext';
 import ProjectHeaderBanner from './ProjectHeaderBanner';
 
 const ProjectHeader: React.FC = () => {
   const { project, isEditing, canEdit } = useProject();
+
+  // Log state for debugging
+  React.useEffect(() => {
+    console.log("ProjectHeader component mounted");
+    console.log("Project header - isEditing:", isEditing);
+    console.log("Project header - canEdit:", canEdit);
+  }, [isEditing, canEdit]);
 
   if (!project) return null;
   

@@ -31,6 +31,14 @@ const ProjectHeaderBanner: React.FC<ProjectHeaderBannerProps> = ({
   const [description, setDescription] = useState(project.description || '');
   const [bannerImage, setBannerImage] = useState(project.image || '');
 
+  // Log state for debugging
+  useEffect(() => {
+    console.log("ProjectHeaderBanner render");
+    console.log("isEditing:", isEditing);
+    console.log("canEdit:", canEdit);
+    console.log("bannerImage:", bannerImage);
+  }, [isEditing, canEdit, bannerImage]);
+
   // Update local state when project changes
   useEffect(() => {
     setTitle(project.title || '');
@@ -87,7 +95,7 @@ const ProjectHeaderBanner: React.FC<ProjectHeaderBannerProps> = ({
 
   return (
     <div className="relative py-0 overflow-hidden text-white min-h-[500px] group">
-      {/* Banner Background with Image */}
+      {/* Banner Background with Image - Passing correct props */}
       <ProjectBannerBackground 
         image={bannerImage || project.image}
         isEditing={isEditing}
@@ -96,6 +104,7 @@ const ProjectHeaderBanner: React.FC<ProjectHeaderBannerProps> = ({
         onEditClick={() => setIsEditing(true)}
       />
       
+      {/* Content container with important edit info for user */}
       <div className="container relative z-20 mx-auto px-4 pt-32 pb-16 flex flex-col justify-between min-h-[500px]">
         <FadeIn delay="delay-100">
           <div className="flex justify-between items-start">
@@ -158,10 +167,11 @@ const ProjectHeaderBanner: React.FC<ProjectHeaderBannerProps> = ({
         </SlideUp>
       </div>
       
+      {/* Edit mode notification */}
       {isEditing && (
         <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 z-30">
           <div className="bg-black/70 text-white px-4 py-2 rounded-full text-sm backdrop-blur-md border border-white/10">
-            Խմբագրման ռեժիմ
+            Խմբագրման ռեժիմ - Կարող եք փոխել նկարի URL-ը կոճակի միջոցով
           </div>
         </div>
       )}

@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { cn } from '@/lib/utils';
 import ImageUploader from '../common/image-uploader/ImageUploader';
@@ -25,6 +24,14 @@ const ProjectBannerBackground: React.FC<ProjectBannerBackgroundProps> = ({
 }) => {
   const [showImageUrl, setShowImageUrl] = useState(false);
   const [imageUrl, setImageUrl] = useState(image || '');
+
+  // Log state for debugging
+  useEffect(() => {
+    if (isEditing) {
+      console.log("EDIT MODE ACTIVE in ProjectBannerBackground");
+      console.log("Can edit:", canEdit);
+    }
+  }, [isEditing, canEdit]);
 
   const handleImageUrlChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setImageUrl(e.target.value);
@@ -62,7 +69,7 @@ const ProjectBannerBackground: React.FC<ProjectBannerBackgroundProps> = ({
       <div className="absolute inset-0 z-0 transform transition-all duration-700 hover:scale-105">
         {/* URL editing interface - shown only when in edit mode and URL editing is active */}
         {isEditing && canEdit && showImageUrl ? (
-          <div className="absolute inset-0 z-50 flex items-center justify-center">
+          <div className="absolute inset-0 z-[100] flex items-center justify-center">
             <div className="w-full max-w-2xl mx-4 bg-black/90 p-6 rounded-lg backdrop-blur-md border border-white/30 shadow-xl">
               <h3 className="text-white text-xl font-medium mb-4">Փոխել նկարի URL-ն</h3>
               <div className="flex flex-col gap-3">
@@ -92,19 +99,6 @@ const ProjectBannerBackground: React.FC<ProjectBannerBackgroundProps> = ({
               </div>
             </div>
           </div>
-        ) : isEditing && canEdit ? (
-          <div className="absolute top-4 right-4 z-30 animate-pulse">
-            <ScaleIn delay="delay-100">
-              <Button 
-                onClick={() => setShowImageUrl(true)}
-                size="lg"
-                className="bg-primary hover:bg-primary/90 border border-white/20 text-white hover:shadow-lg shadow-xl flex items-center gap-2"
-              >
-                <Link className="mr-2 h-5 w-5" />
-                Խմբագրել նկարի URL
-              </Button>
-            </ScaleIn>
-          </div>
         ) : null}
 
         {/* Display image for everyone - now more consistent */}
@@ -121,6 +115,39 @@ const ProjectBannerBackground: React.FC<ProjectBannerBackgroundProps> = ({
           {/* Noise texture overlay */}
           <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyMDAiIGhlaWdodD0iMjAwIj48ZmlsdGVyIGlkPSJhIiB4PSIwIiB5PSIwIj48ZmVUdXJidWxlbmNlIGJhc2VGcmVxdWVuY3k9Ii43NSIgc3RpdGNoVGlsZXM9InN0aXRjaCIgdHlwZT0iZnJhY3RhbE5vaXNlIi8+PGZlQ29sb3JNYXRyaXggdHlwZT0ic2F0dXJhdGUiIHZhbHVlcz0iMCIvPjwvZmlsdGVyPjxwYXRoIGQ9Ik0wIDBoMjAwdjIwMEgweiIgZmlsdGVyPSJ1cmwoI2EpIiBvcGFjaXR5PSIuMDUiLz48L3N2Zz4=')] opacity-20" />
         </div>
+
+        {/* Edit Image URL Button - PROMINENT AND VISIBLE - MOVED TO Z=100 for visibility */}
+        {isEditing && canEdit && !showImageUrl && (
+          <>
+            {/* Primary Button - Top */}
+            <div className="absolute top-4 right-4 z-[100] animate-pulse">
+              <ScaleIn delay="delay-100">
+                <Button 
+                  onClick={() => setShowImageUrl(true)}
+                  size="lg"
+                  className="bg-primary hover:bg-primary/90 border border-white/20 text-white shadow-lg flex items-center gap-2"
+                >
+                  <Link className="mr-2 h-5 w-5" />
+                  Խմբագրել նկարի URL
+                </Button>
+              </ScaleIn>
+            </div>
+
+            {/* Secondary Button - Center for better visibility */}
+            <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 z-[100]">
+              <ScaleIn delay="delay-200">
+                <Button 
+                  onClick={() => setShowImageUrl(true)}
+                  size="lg"
+                  className="bg-primary/90 hover:bg-primary border-2 border-white/40 text-white shadow-xl flex items-center gap-2 px-8 py-6"
+                >
+                  <Link className="mr-2 h-6 w-6" />
+                  Խմբագրել նկարի URL
+                </Button>
+              </ScaleIn>
+            </div>
+          </>
+        )}
 
         {/* Keep the ImageUploader for edit mode but hide it for now */}
         {canEdit && isEditing && (
