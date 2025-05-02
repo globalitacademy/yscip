@@ -7,11 +7,9 @@ import { useProject } from '@/contexts/ProjectContext';
 import { toast } from 'sonner';
 import { AlertCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { cn } from '@/lib/utils';
 import { useAuth } from '@/contexts/AuthContext';
 import ProjectTabs from './ProjectTabs';
 import ProjectHeaderBanner from './ProjectHeaderBanner';
-import ProjectProgressSummary from './ProjectProgressSummary';
 import { motion } from 'framer-motion';
 
 const ProjectDetailsContent: React.FC = () => {
@@ -119,6 +117,8 @@ const ProjectDetailsContent: React.FC = () => {
             rejectProject={rejectProject}
             isEditing={isEditing}
             onSaveChanges={handleSaveChanges}
+            activeTab={activeTab}
+            setActiveTab={setActiveTab}
           />
         </div>
       </main>

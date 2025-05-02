@@ -1,107 +1,160 @@
 
 import React from 'react';
-import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
-import { Star, Award } from 'lucide-react';
-import { cn } from '@/lib/utils';
+import { Star, Clock, CheckCircle, AlertTriangle } from 'lucide-react';
+import { Progress } from '@/components/ui/progress';
 
 interface ProjectEvaluationProps {
   projectId: number;
-  isEditing: boolean;
+  isEditing?: boolean;
 }
 
-const ProjectEvaluation: React.FC<ProjectEvaluationProps> = ({
-  projectId,
-  isEditing
-}) => {
-  // Mock data - in a real app this would come from an API
-  const evaluation = {
-    score: 85,
-    feedback: `Պրոեկտը կատարված է բարձր մակարդակով: Ուսանողը ցուցաբերել է հիմնարար գիտելիքներ և կարողություններ: 
-    
-Խնդրի լուծման ճանապարհին կիրառել է համապատասխան մեթոդներ և մոտեցումներ:
-
-Կան մի քանի փոքր թերություններ, որոնք կարող են բարելավվել հետագայում:
-- Կոդի որակը պետք է բարելավել 
-- Օպտիմիզացիայի հարցերը դեռ պետք է լուծել
-- UI/UX դիզայնը կարող է ավելի ինտուիտիվ լինել`,
-    criterias: [
-      { name: 'Տեխնիկական իրականացում', score: 9, maxScore: 10 },
-      { name: 'Կոդի որակ', score: 8, maxScore: 10 },
-      { name: 'Դիզայն և UI/UX', score: 7, maxScore: 10 },
-      { name: 'Նախագծի ամբողջականություն', score: 9, maxScore: 10 },
-      { name: 'Ներկայացում և փաստաթղթեր', score: 8, maxScore: 10 },
+const ProjectEvaluation: React.FC<ProjectEvaluationProps> = ({ projectId, isEditing = false }) => {
+  // Mock evaluation data
+  const evaluationData = {
+    overall: 85,
+    technical: 90,
+    design: 80,
+    documentation: 85,
+    presentation: 70,
+    status: 'completed',
+    feedback: 'Նախագիծը լավ է իրականացված, սակայն ներկայացման մասը կարող էր լինել ավելի համապարփակ։ Տեխնիկական իրականացումը գերազանց է, դիզայնը՝ լավ։',
+    strengths: [
+      'Գերազանց կոդի կազմակերպում և ճարտարապետություն',
+      'Լավ փաստաթղթավորում',
+      'Դժվար խնդիրների լուծումների ստեղծարար մոտեցում'
+    ],
+    areasForImprovement: [
+      'Ներկայացման հմտություններ',
+      'Օգտագործողի ինտերֆեյսի դիզայն',
+      'Ժամանակի կառավարում'
     ]
   };
-
+  
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle className="flex items-center gap-2">
-          <Star className="h-5 w-5" /> Գնահատական և կարծիքներ
-        </CardTitle>
-      </CardHeader>
-      <CardContent>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-          <div>
-            {/* Score overview */}
-            <div className="flex items-center justify-center mb-8">
-              <div className="relative">
-                <div className="w-32 h-32 rounded-full border-[12px] border-muted flex items-center justify-center">
-                  <div className="text-4xl font-bold">
-                    {evaluation.score}%
-                  </div>
-                </div>
-                <div 
-                  className="absolute top-0 left-0 w-32 h-32 rounded-full border-[12px] border-primary border-l-transparent border-b-transparent"
-                  style={{ 
-                    transform: `rotate(${evaluation.score * 3.6}deg)`,
-                    transition: 'transform 1s ease-out'
-                  }}
-                />
+    <div className="space-y-8">
+      <div className="flex justify-between items-center">
+        <h2 className="text-2xl font-bold">Նախագծի գնահատական</h2>
+        
+        <div className="flex items-center gap-2">
+          <div className={`px-3 py-1 rounded-full text-sm font-medium 
+            ${evaluationData.status === 'completed' 
+              ? 'bg-green-100 text-green-800' 
+              : 'bg-amber-100 text-amber-800'}`
+          }>
+            {evaluationData.status === 'completed' ? (
+              <div className="flex items-center gap-1">
+                <CheckCircle size={14} />
+                <span>Գնահատված</span>
               </div>
+            ) : (
+              <div className="flex items-center gap-1">
+                <Clock size={14} />
+                <span>Սպասում է գնահատման</span>
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
+      
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+        {/* Left column - Scores */}
+        <div className="space-y-6 bg-card rounded-xl shadow-md p-6 border border-border/30">
+          <h3 className="text-xl font-semibold mb-4">Գնահատականներ</h3>
+          
+          <div className="space-y-4">
+            <div className="space-y-2">
+              <div className="flex justify-between items-center">
+                <span className="text-sm font-medium">Ընդհանուր գնահատական</span>
+                <div className="flex items-center gap-1">
+                  <Star className="text-amber-500 fill-amber-500" size={16} />
+                  <span className="font-semibold">{evaluationData.overall}%</span>
+                </div>
+              </div>
+              <Progress value={evaluationData.overall} className="h-2" />
             </div>
             
-            {/* Criterias */}
-            <div className="space-y-4">
-              <h3 className="font-medium text-lg mb-3">Գնահատման չափանիշներ</h3>
-              
-              {evaluation.criterias.map((criteria, index) => (
-                <div key={index} className="space-y-2">
-                  <div className="flex justify-between text-sm">
-                    <span>{criteria.name}</span>
-                    <span className="font-medium">{criteria.score}/{criteria.maxScore}</span>
-                  </div>
-                  <div className="w-full h-2 bg-muted rounded-full overflow-hidden">
-                    <div 
-                      className={cn(
-                        "h-full transition-all duration-500",
-                        criteria.score / criteria.maxScore > 0.8 ? "bg-green-500" :
-                        criteria.score / criteria.maxScore > 0.6 ? "bg-amber-500" : 
-                        "bg-red-500"
-                      )}
-                      style={{ width: `${(criteria.score / criteria.maxScore) * 100}%` }}
-                    />
-                  </div>
+            <div className="space-y-2">
+              <div className="flex justify-between items-center">
+                <span className="text-sm font-medium">Տեխնիկական իրականացում</span>
+                <div className="flex items-center gap-1">
+                  <Star className="text-amber-500 fill-amber-500" size={16} />
+                  <span className="font-semibold">{evaluationData.technical}%</span>
                 </div>
-              ))}
-            </div>
-          </div>
-          
-          <div>
-            {/* Feedback */}
-            <div className="space-y-4">
-              <h3 className="font-medium text-lg mb-3 flex items-center gap-2">
-                <Award className="h-5 w-5 text-amber-500" /> Գնահատողի կարծիքը
-              </h3>
-              
-              <div className="p-4 bg-muted/30 rounded-lg border whitespace-pre-line">
-                {evaluation.feedback}
               </div>
+              <Progress value={evaluationData.technical} className="h-2" />
+            </div>
+            
+            <div className="space-y-2">
+              <div className="flex justify-between items-center">
+                <span className="text-sm font-medium">Դիզայն</span>
+                <div className="flex items-center gap-1">
+                  <Star className="text-amber-500 fill-amber-500" size={16} />
+                  <span className="font-semibold">{evaluationData.design}%</span>
+                </div>
+              </div>
+              <Progress value={evaluationData.design} className="h-2" />
+            </div>
+            
+            <div className="space-y-2">
+              <div className="flex justify-between items-center">
+                <span className="text-sm font-medium">Փաստաթղթավորում</span>
+                <div className="flex items-center gap-1">
+                  <Star className="text-amber-500 fill-amber-500" size={16} />
+                  <span className="font-semibold">{evaluationData.documentation}%</span>
+                </div>
+              </div>
+              <Progress value={evaluationData.documentation} className="h-2" />
+            </div>
+            
+            <div className="space-y-2">
+              <div className="flex justify-between items-center">
+                <span className="text-sm font-medium">Ներկայացում</span>
+                <div className="flex items-center gap-1">
+                  <Star className="text-amber-500 fill-amber-500" size={16} />
+                  <span className="font-semibold">{evaluationData.presentation}%</span>
+                </div>
+              </div>
+              <Progress value={evaluationData.presentation} className="h-2" />
             </div>
           </div>
         </div>
-      </CardContent>
-    </Card>
+        
+        {/* Right column - Feedback */}
+        <div className="space-y-6 bg-card rounded-xl shadow-md p-6 border border-border/30">
+          <h3 className="text-xl font-semibold mb-4">Դասախոսի կարծիքը</h3>
+          
+          <div className="prose prose-sm max-w-none">
+            <p>{evaluationData.feedback}</p>
+          </div>
+          
+          <div className="space-y-4 pt-4">
+            <div>
+              <h4 className="font-medium flex items-center gap-2 mb-2">
+                <CheckCircle className="text-green-500" size={16} />
+                Ուժեղ կողմեր
+              </h4>
+              <ul className="list-disc list-inside space-y-1 text-sm">
+                {evaluationData.strengths.map((strength, index) => (
+                  <li key={index}>{strength}</li>
+                ))}
+              </ul>
+            </div>
+            
+            <div>
+              <h4 className="font-medium flex items-center gap-2 mb-2">
+                <AlertTriangle className="text-amber-500" size={16} />
+                Զարգացման ուղղություններ
+              </h4>
+              <ul className="list-disc list-inside space-y-1 text-sm">
+                {evaluationData.areasForImprovement.map((area, index) => (
+                  <li key={index}>{area}</li>
+                ))}
+              </ul>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
   );
 };
 

@@ -1,63 +1,54 @@
 
 import React from 'react';
 import { cn } from '@/lib/utils';
-import { Edit } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import ImageUploader from '@/components/common/image-uploader/ImageUploader';
+import ImageUploader from '../common/image-uploader/ImageUploader';
 
 interface ProjectBannerBackgroundProps {
   image?: string;
   isEditing: boolean;
   canEdit: boolean;
-  onImageChange: (url: string) => void;
-  onEditClick: () => void;
+  onImageChange: (imageUrl: string) => void;
+  onEditClick?: () => void;
 }
 
-const ProjectBannerBackground: React.FC<ProjectBannerBackgroundProps> = ({
-  image,
+const ProjectBannerBackground: React.FC<ProjectBannerBackgroundProps> = ({ 
+  image, 
   isEditing,
   canEdit,
   onImageChange,
   onEditClick
 }) => {
-  // Default image if none provided
-  const imageUrl = image || 'https://source.unsplash.com/random/1600x900/?code';
-
   return (
-    <div className="absolute inset-0 h-64 md:h-80">
-      {isEditing ? (
-        <ImageUploader
-          currentImage={imageUrl}
-          onImageChange={onImageChange}
-          previewHeight="h-64 md:h-80"
-          overlayMode={true}
-        />
-      ) : (
-        <>
-          <div className="h-full w-full bg-gradient-to-r from-primary/20 to-secondary/20">
+    <div className="absolute inset-0 z-0">
+      {/* Dark overlay */}
+      <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/50 to-transparent z-10" />
+      
+      {/* Image */}
+      <div className="absolute inset-0 z-0">
+        {canEdit ? (
+          <ImageUploader
+            currentImage={image || '/placeholder-banner.jpg'}
+            onImageChange={onImageChange}
+            previewHeight="h-full"
+            placeholder="Սեղմեք նկար ներբեռնելու համար"
+            rounded={false}
+            disabled={!isEditing}
+            showEditButton={canEdit}
+            overlayMode={true}
+          />
+        ) : (
+          <div className="w-full h-full">
             <img 
-              src={imageUrl}
-              alt="Project banner" 
-              className="h-full w-full object-cover object-center opacity-60"
+              src={image || '/placeholder-banner.jpg'} 
+              alt="Project banner"
+              className="w-full h-full object-cover"
+              onError={(e) => {
+                (e.target as HTMLImageElement).src = 'https://via.placeholder.com/1200x400?text=Նախագծի+եզրագիծ';
+              }}
             />
           </div>
-          <div 
-            className="absolute inset-0 bg-gradient-to-b from-transparent via-black/30 to-black/70 backdrop-blur-[1px]"
-            aria-hidden="true"
-          ></div>
-          
-          {canEdit && (
-            <Button 
-              variant="outline" 
-              size="sm"
-              className="absolute right-4 top-4 bg-white/20 hover:bg-white/30 text-white border-white/30"
-              onClick={onEditClick}
-            >
-              <Edit className="h-4 w-4 mr-1.5" /> Խմբագրել նկարը
-            </Button>
-          )}
-        </>
-      )}
+        )}
+      </div>
     </div>
   );
 };

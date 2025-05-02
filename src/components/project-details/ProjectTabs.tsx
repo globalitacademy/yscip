@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { 
   BookOpen, 
@@ -46,6 +47,8 @@ interface ProjectTabsProps {
   rejectProject: (feedback: string) => void;
   isEditing?: boolean;
   onSaveChanges?: (updates: Partial<ProjectTheme>) => void;
+  activeTab: string;
+  setActiveTab: (tab: string) => void;
 }
 
 const ProjectTabs: React.FC<ProjectTabsProps> = ({
@@ -65,10 +68,12 @@ const ProjectTabs: React.FC<ProjectTabsProps> = ({
   approveProject,
   rejectProject,
   isEditing = false,
-  onSaveChanges = () => {}
+  onSaveChanges = () => {},
+  activeTab,
+  setActiveTab
 }) => {
   return (
-    <Tabs defaultValue="overview" className="w-full mb-16">
+    <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full mb-16">
       <TabsList className="grid w-full grid-cols-2 sm:grid-cols-3 md:grid-cols-7 h-auto rounded-xl bg-muted/50 p-1">
         {[
           { value: "overview", icon: <BookOpen size={16} />, label: "Նկարագիր" },
@@ -171,7 +176,6 @@ const ProjectTabs: React.FC<ProjectTabsProps> = ({
         <TabsContent value="gantt" className="mt-6 animate-fade-in">
           <SlideUp>
             <div className="bg-card rounded-xl shadow-md p-6 border border-border/30">
-              {/* Only passing timeline prop to ProjectTimeline since that's all it needs for now */}
               <ProjectTimeline 
                 timeline={timeline}
                 projectStatus={projectStatus}

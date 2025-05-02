@@ -1,71 +1,55 @@
 
 import React from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { TrendingUp } from 'lucide-react';
-import { useProject } from '@/contexts/ProjectContext';
-import { motion } from 'framer-motion';
-import { useIsMobile } from '@/hooks/use-mobile';
+import { BarChart, CheckCircle, Clock, FileText } from 'lucide-react';
+import { cn } from '@/lib/utils';
+import { Progress } from '@/components/ui/progress';
 
-// Import sub-components
-import ProgressBars from './progress-summary/ProgressBars';
-import DaysRemaining from './progress-summary/DaysRemaining';
-import TaskDistribution from './progress-summary/TaskDistribution';
-import ProgressStatus from './progress-summary/ProgressStatus';
-import { getProgressColor, calculateDaysRemaining } from './progress-summary/progressUtils';
+interface ProjectProgressSummaryProps {
+  progress: number;
+  completedTasks: number;
+  totalTasks: number;
+  className?: string;
+}
 
-const staggerContainer = {
-  hidden: { opacity: 0 },
-  visible: {
-    opacity: 1,
-    transition: {
-      staggerChildren: 0.1
-    }
-  }
-};
-
-const ProjectProgressSummary: React.FC = () => {
-  const { project, tasks, timeline, projectProgress } = useProject();
-  const isMobile = useIsMobile();
-  
-  if (!project) return null;
-  
-  const progressColor = getProgressColor(projectProgress);
-  const daysRemaining = calculateDaysRemaining(project, projectProgress);
-  
+const ProjectProgressSummary: React.FC<ProjectProgressSummaryProps> = ({
+  progress,
+  completedTasks,
+  totalTasks,
+  className
+}) => {
   return (
-    <Card className="border-0 shadow-lg bg-white/50 backdrop-blur-sm dark:bg-zinc-900/50">
-      <CardHeader className="flex items-start flex-col md:flex-row md:items-center md:justify-between p-4 md:p-6">
-        <CardTitle className="text-lg md:text-xl flex items-center gap-2 text-primary dark:text-primary-foreground">
-          <TrendingUp size={isMobile ? 18 : 20} /> Առաջընթացի ամփոփում
-        </CardTitle>
-        <ProgressStatus projectProgress={projectProgress} />
-      </CardHeader>
+    <div className={cn("space-y-5", className)}>
+      <div className="flex flex-col space-y-1.5">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <BarChart size={18} className="text-muted-foreground" />
+            <h3 className="font-medium text-sm">Ընդհանուր առաջընթաց</h3>
+          </div>
+          <span className="font-medium text-sm">{Math.round(progress)}%</span>
+        </div>
+        <Progress value={progress} className="h-2" />
+      </div>
       
-      <CardContent className="space-y-4 md:space-y-6 p-4 md:p-6">
-        <motion.div
-          initial="hidden"
-          animate="visible"
-          variants={staggerContainer}
-        >
-          <ProgressBars 
-            tasks={tasks} 
-            timeline={timeline} 
-            projectProgress={projectProgress}
-            progressColor={progressColor}
-          />
-          
-          <DaysRemaining daysRemaining={daysRemaining} />
-          
-          <motion.div
-            initial="hidden"
-            animate="visible"
-            transition={{ delay: 0.4 }}
-          >
-            <TaskDistribution tasks={tasks} />
-          </motion.div>
-        </motion.div>
-      </CardContent>
-    </Card>
+      <div className="grid grid-cols-2 gap-4">
+        <div className="flex items-start gap-2">
+          <CheckCircle size={18} className="text-green-500 mt-0.5" />
+          <div>
+            <p className="font-medium text-sm">Ավարտված առաջադրանքներ</p>
+            <p className="text-muted-foreground text-sm">{completedTasks} / {totalTasks}</p>
+          </div>
+        </div>
+        
+        <div className="flex items-start gap-2">
+          <Clock size={18} className="text-amber-500 mt-0.5" />
+          <div>
+            <p className="font-medium text-sm">Ընթացիկ փուլ</p>
+            <p className="text-muted-foreground text-sm">
+              {progress < 100 ? 'Ընթացքի մեջ' : 'Ավարտված'}
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
   );
 };
 
