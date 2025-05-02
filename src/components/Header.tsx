@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
@@ -5,6 +6,7 @@ import UserMenu from './UserMenu';
 import DatabaseSyncButton from './DatabaseSyncButton';
 import { LayoutDashboard, Square } from 'lucide-react';
 import { ThemeToggle } from './ui/theme-toggle';
+
 const Header: React.FC = () => {
   const {
     user,
@@ -27,7 +29,11 @@ const Header: React.FC = () => {
             
             <ThemeToggle />
             
-            {isAdmin}
+            {isAdmin && (
+              <Link to="/admin" className="p-2 rounded hover:bg-gray-100 dark:hover:bg-gray-800">
+                <LayoutDashboard className="h-5 w-5 text-gray-600 dark:text-gray-300" />
+              </Link>
+            )}
             
             {isAuthenticated ? <UserMenu /> : <div className="space-x-2">
                 <Link to="/login" className="px-4 py-2 border border-gray-300 rounded text-gray-700 hover:bg-gray-50 dark:border-gray-600 dark:text-gray-300 dark:hover:bg-gray-800 transition-colors">
