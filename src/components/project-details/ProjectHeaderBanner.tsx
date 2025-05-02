@@ -36,14 +36,17 @@ const ProjectHeaderBanner: React.FC<ProjectHeaderBannerProps> = ({
 
   // Log state for debugging
   useEffect(() => {
-    console.log("ProjectHeaderBanner render");
-    console.log("isEditing:", isEditing);
-    console.log("canEdit:", canEdit);
-    console.log("bannerImage:", bannerImage);
-  }, [isEditing, canEdit, bannerImage]);
+    console.log("[ProjectHeaderBanner] Component state:");
+    console.log("- isEditing:", isEditing);
+    console.log("- canEdit:", canEdit);
+    console.log("- bannerImage:", bannerImage);
+    console.log("- project.image:", project.image);
+    console.log("- imageUrl:", imageUrl);
+  }, [isEditing, canEdit, bannerImage, project.image, imageUrl]);
 
   // Update local state when project changes
   useEffect(() => {
+    console.log("[ProjectHeaderBanner] Project updated, updating local state with:", project);
     setTitle(project.title || '');
     setDescription(project.description || '');
     setBannerImage(project.image || '');
@@ -55,13 +58,13 @@ const ProjectHeaderBanner: React.FC<ProjectHeaderBannerProps> = ({
       // Save changes
       setIsSaving(true);
       try {
-        // Update project with new values - make sure to pass the projectId from the context
+        // Update project with new values
         const updatedData = {
           title,
           description,
           image: bannerImage
         };
-        console.log("Saving updated project data:", updatedData);
+        console.log("[ProjectHeaderBanner] Saving project updates:", updatedData);
         
         const success = await updateProject(updatedData);
         
@@ -72,7 +75,7 @@ const ProjectHeaderBanner: React.FC<ProjectHeaderBannerProps> = ({
           toast.error('Սխալ տեղի ունեցավ պահպանման ընթացքում։');
         }
       } catch (error) {
-        console.error('Failed to update project:', error);
+        console.error('[ProjectHeaderBanner] Failed to update project:', error);
         toast.error('Չհաջողվեց պահպանել փոփոխությունները');
       } finally {
         setIsSaving(false);
@@ -95,7 +98,7 @@ const ProjectHeaderBanner: React.FC<ProjectHeaderBannerProps> = ({
   };
 
   const handleImageChange = (url: string) => {
-    console.log("Image URL changed to:", url);
+    console.log("[ProjectHeaderBanner] Image URL changed to:", url);
     setBannerImage(url);
     setImageUrl(url);
     toast.info('Նկարի URL-ը փոխվել է, սակայն չի պահպանվել: Խնդրում ենք սեղմել "Պահպանել" կոճակը՝ փոփոխությունները պահպանելու համար', {

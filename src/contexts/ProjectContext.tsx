@@ -113,20 +113,25 @@ export const ProjectProvider: React.FC<ProjectProviderProps> = ({
 
   const updateProject = async (updates: Partial<any>): Promise<boolean> => {
     try {
-      if (!project || !projectId) {
-        console.error('No project found or projectId is missing');
-        toast.error('Նախագիծը չի գտնվել');
+      if (!projectId) {
+        console.error('ProjectId is missing for updateProject:', projectId);
+        toast.error('Նախագծի ID-ն բացակայում է');
+        return false;
+      }
+
+      if (!updates || Object.keys(updates).length === 0) {
+        console.error('No updates provided to updateProject');
+        toast.error('Թարմացնելու համար տվյալներ չեն տրամադրվել');
         return false;
       }
 
       setIsUpdating(true);
-      console.log(`Updating project ID ${projectId} with data:`, updates);
+      console.log(`[ProjectContext] Updating project ID ${projectId} with data:`, updates);
 
       // Combine current project data with updates
       const updatedProject = {
         ...project,
-        ...updates,
-        updatedAt: new Date().toISOString()
+        ...updates
       };
 
       // Call the projectService to update the project in the database
@@ -134,15 +139,18 @@ export const ProjectProvider: React.FC<ProjectProviderProps> = ({
       
       if (success) {
         // Update local state after successful API call
+        console.log('[ProjectContext] Update successful, setting new project state:', updatedProject);
         setProject(updatedProject);
-        console.log('Project updated successfully:', updatedProject);
+        toast.success('Փոփոխությունները հաջողությամբ պահպանվել են');
         return true;
       } else {
-        console.error('Failed to update project');
+        console.error('[ProjectContext] Failed to update project in database');
+        toast.error('Չհաջողվեց պահպանել փոփոխությունները տվյալների բազայում');
         return false;
       }
     } catch (error) {
-      console.error('Error updating project:', error);
+      console.error('[ProjectContext] Error updating project:', error);
+      toast.error('Սխալ տեղի ունեցավ պրոեկտը թարմացնելիս');
       return false;
     } finally {
       setIsUpdating(false);

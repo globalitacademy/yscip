@@ -28,15 +28,24 @@ const ProjectBannerBackground: React.FC<ProjectBannerBackgroundProps> = ({
   // Track current displayed image to ensure UI updates immediately
   const [displayImage, setDisplayImage] = useState(image || '');
 
-  // Log state for debugging
+  // Debug logs
   useEffect(() => {
-    if (isEditing) {
-      console.log("EDIT MODE ACTIVE in ProjectBannerBackground");
-      console.log("Can edit:", canEdit);
-      console.log("Current image:", image);
-      console.log("Display image:", displayImage);
+    console.log("[ProjectBannerBackground] Component state:");
+    console.log("- isEditing:", isEditing);
+    console.log("- canEdit:", canEdit);
+    console.log("- image prop:", image);
+    console.log("- imageUrl state:", imageUrl);
+    console.log("- displayImage state:", displayImage);
+  }, [isEditing, canEdit, image, imageUrl, displayImage]);
+
+  // Update local state when image prop changes
+  useEffect(() => {
+    if (image !== undefined && image !== imageUrl) {
+      console.log("[ProjectBannerBackground] Image prop changed to:", image);
+      setImageUrl(image || '');
+      setDisplayImage(image || '');
     }
-  }, [isEditing, canEdit, image, displayImage]);
+  }, [image]);
 
   const handleImageUrlChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setImageUrl(e.target.value);
@@ -47,18 +56,19 @@ const ProjectBannerBackground: React.FC<ProjectBannerBackgroundProps> = ({
       toast.error('Նկարի URL-ն չի կարող լինել դատարկ');
       return;
     }
+    
+    console.log("[ProjectBannerBackground] Submitting image URL:", imageUrl);
+    
     // Update both local display image and parent component
     setDisplayImage(imageUrl);
     onImageChange(imageUrl);
+    
     toast.success('Նկարի URL-ն հաջողությամբ փոխվել է');
     setShowImageUrl(false);
   };
 
-  // Update local state when props change
-  useEffect(() => {
-    setImageUrl(image || '');
-    setDisplayImage(image || '');
-  }, [image]);
+  // Default fallback image if none provided
+  const fallbackImage = 'https://images.unsplash.com/photo-1470071459604-3b5ec3a7fe05?q=80&w=1920&auto=format&fit=crop';
 
   return (
     <div className="absolute inset-0 z-0 overflow-hidden">
@@ -109,10 +119,10 @@ const ProjectBannerBackground: React.FC<ProjectBannerBackgroundProps> = ({
           </div>
         ) : null}
 
-        {/* Display image for everyone - now more consistent */}
+        {/* Display image for everyone */}
         <div className="w-full h-full">
           <img 
-            src={displayImage || 'https://images.unsplash.com/photo-1470071459604-3b5ec3a7fe05?q=80&w=1920&auto=format&fit=crop'}
+            src={displayImage || fallbackImage}
             alt="Project banner"
             className="w-full h-full object-cover transition-all duration-1000 hover:scale-105"
             onError={(e) => {

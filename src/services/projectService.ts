@@ -12,7 +12,7 @@ export const fetchProjects = async (): Promise<ProjectTheme[]> => {
       .order('created_at', { ascending: false });
 
     if (error) {
-      console.error('Error fetching projects:', error);
+      console.error('[projectService] Error fetching projects:', error);
       return [];
     }
 
@@ -37,7 +37,7 @@ export const fetchProjects = async (): Promise<ProjectTheme[]> => {
       detailedDescription: project.description // Use description as fallback
     }));
   } catch (error) {
-    console.error('Error in fetchProjects:', error);
+    console.error('[projectService] Error in fetchProjects:', error);
     return [];
   }
 };
@@ -69,7 +69,7 @@ export const createProject = async (project: ProjectTheme): Promise<boolean> => 
       .insert(projectToCreate);
 
     if (error) {
-      console.error('Error creating project:', error);
+      console.error('[projectService] Error creating project:', error);
       toast.error('Նախագծի ստեղծման ժամանակ սխալ է տեղի ունեցել');
       return false;
     }
@@ -77,7 +77,7 @@ export const createProject = async (project: ProjectTheme): Promise<boolean> => 
     toast.success('Նախագիծը հաջողությամբ ստեղծվել է');
     return true;
   } catch (error) {
-    console.error('Error in createProject:', error);
+    console.error('[projectService] Error in createProject:', error);
     toast.error('Նախագծի ստեղծման ժամանակ սխալ է տեղի ունեցել');
     return false;
   }
@@ -86,7 +86,8 @@ export const createProject = async (project: ProjectTheme): Promise<boolean> => 
 // Update an existing project
 export const updateProject = async (id: number, updatedData: Partial<ProjectTheme>): Promise<boolean> => {
   try {
-    console.log('Updating project with data:', updatedData);
+    console.log('[projectService] Updating project with data:', updatedData);
+    console.log('[projectService] Project ID:', id);
     
     // Map from ProjectTheme to Supabase column names
     const dataToUpdate: any = {};
@@ -95,7 +96,10 @@ export const updateProject = async (id: number, updatedData: Partial<ProjectThem
     if (updatedData.description !== undefined) dataToUpdate.description = updatedData.description;
     // If detailedDescription is provided, update the description field
     if (updatedData.detailedDescription !== undefined) dataToUpdate.description = updatedData.detailedDescription;
-    if (updatedData.image !== undefined) dataToUpdate.image = updatedData.image;
+    if (updatedData.image !== undefined) {
+      dataToUpdate.image = updatedData.image;
+      console.log('[projectService] Updating image URL to:', updatedData.image);
+    }
     if (updatedData.category !== undefined) dataToUpdate.category = updatedData.category;
     if (updatedData.techStack !== undefined) dataToUpdate.tech_stack = updatedData.techStack;
     if (updatedData.duration !== undefined) dataToUpdate.duration = updatedData.duration;
@@ -109,25 +113,26 @@ export const updateProject = async (id: number, updatedData: Partial<ProjectThem
     // Always update the 'updated_at' timestamp
     dataToUpdate.updated_at = new Date().toISOString();
 
-    console.log('Mapped data to update:', dataToUpdate);
+    console.log('[projectService] Mapped data to update:', dataToUpdate);
 
-    // UNCOMMENT AND USE REAL SUPABASE IMPLEMENTATION
-    const { error } = await supabase
+    // REAL SUPABASE IMPLEMENTATION
+    const { data, error } = await supabase
       .from('projects')
       .update(dataToUpdate)
-      .eq('id', id);
+      .eq('id', id)
+      .select();
 
     if (error) {
-      console.error('Error updating project:', error);
+      console.error('[projectService] Error updating project:', error);
       toast.error('Նախագծի թարմացման ժամանակ սխալ է տեղի ունեցել');
       return false;
     }
     
-    console.log('Project updated successfully');
+    console.log('[projectService] Project updated successfully, response:', data);
     toast.success('Նախագիծը հաջողությամբ թարմացվել է');
     return true;
   } catch (error) {
-    console.error('Error in updateProject:', error);
+    console.error('[projectService] Error in updateProject:', error);
     toast.error('Նախագծի թարմացման ժամանակ սխալ է տեղի ունեցել');
     return false;
   }
@@ -142,7 +147,7 @@ export const deleteProject = async (id: number): Promise<boolean> => {
       .eq('id', id);
 
     if (error) {
-      console.error('Error deleting project:', error);
+      console.error('[projectService] Error deleting project:', error);
       toast.error('Նախագծի ջնջման ժամանակ սխալ է տեղի ունեցել');
       return false;
     }
@@ -150,7 +155,7 @@ export const deleteProject = async (id: number): Promise<boolean> => {
     toast.success('Նախագիծը հաջողությամբ ջնջվել է');
     return true;
   } catch (error) {
-    console.error('Error in deleteProject:', error);
+    console.error('[projectService] Error in deleteProject:', error);
     toast.error('Նախագծի ջնջման ժամանակ սխալ է տեղի ունեցել');
     return false;
   }
