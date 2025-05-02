@@ -32,11 +32,11 @@ const ProjectHeaderBanner: React.FC<ProjectHeaderBannerProps> = ({
   const [description, setDescription] = useState(project.description || '');
   const [bannerImage, setBannerImage] = useState(project.image || '');
   const [showImageUrl, setShowImageUrl] = useState(false);
-  const [imageUrl, setImageUrl] = useState(bannerImage || '');
+  const [imageUrl, setImageUrl] = useState(project.image || '');
 
-  // Log state for debugging
+  // Enhanced logging for debugging
   useEffect(() => {
-    console.log("[ProjectHeaderBanner] Component state:");
+    console.log("[ProjectHeaderBanner] Component state updated:");
     console.log("- isEditing:", isEditing);
     console.log("- canEdit:", canEdit);
     console.log("- bannerImage:", bannerImage);
@@ -49,8 +49,13 @@ const ProjectHeaderBanner: React.FC<ProjectHeaderBannerProps> = ({
     console.log("[ProjectHeaderBanner] Project updated, updating local state with:", project);
     setTitle(project.title || '');
     setDescription(project.description || '');
-    setBannerImage(project.image || '');
-    setImageUrl(project.image || '');
+    
+    // Important: Only update if the image has actually changed
+    if (project.image !== bannerImage) {
+      console.log("[ProjectHeaderBanner] Updating banner image from", bannerImage, "to", project.image);
+      setBannerImage(project.image || '');
+      setImageUrl(project.image || '');
+    }
   }, [project]);
 
   const handleEditClick = async () => {
@@ -65,6 +70,19 @@ const ProjectHeaderBanner: React.FC<ProjectHeaderBannerProps> = ({
           image: bannerImage
         };
         console.log("[ProjectHeaderBanner] Saving project updates:", updatedData);
+        
+        // Compare with original values
+        const hasChanges = 
+          title !== project.title || 
+          description !== project.description || 
+          bannerImage !== project.image;
+        
+        if (!hasChanges) {
+          console.log("[ProjectHeaderBanner] No changes detected, skipping update");
+          setIsEditing(false);
+          toast.info('Փոփոխություններ չեն կատարվել');
+          return;
+        }
         
         const success = await updateProject(updatedData);
         
@@ -101,6 +119,8 @@ const ProjectHeaderBanner: React.FC<ProjectHeaderBannerProps> = ({
     console.log("[ProjectHeaderBanner] Image URL changed to:", url);
     setBannerImage(url);
     setImageUrl(url);
+    
+    // Important: don't update the project just yet, wait for save
     toast.info('Նկարի URL-ը փոխվել է, սակայն չի պահպանվել: Խնդրում ենք սեղմել "Պահպանել" կոճակը՝ փոփոխությունները պահպանելու համար', {
       duration: 5000
     });
@@ -115,6 +135,8 @@ const ProjectHeaderBanner: React.FC<ProjectHeaderBannerProps> = ({
       toast.error('Նկարի URL-ն չի կարող լինել դատարկ');
       return;
     }
+    
+    console.log("[ProjectHeaderBanner] Submitting image URL:", imageUrl);
     handleImageChange(imageUrl);
     setShowImageUrl(false);
   };

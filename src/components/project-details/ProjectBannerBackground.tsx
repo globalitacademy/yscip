@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { cn } from '@/lib/utils';
 import ImageUploader from '../common/image-uploader/ImageUploader';
@@ -28,9 +27,9 @@ const ProjectBannerBackground: React.FC<ProjectBannerBackgroundProps> = ({
   // Track current displayed image to ensure UI updates immediately
   const [displayImage, setDisplayImage] = useState(image || '');
 
-  // Debug logs
+  // Enhanced logging for debugging
   useEffect(() => {
-    console.log("[ProjectBannerBackground] Component state:");
+    console.log("[ProjectBannerBackground] Component state updated:");
     console.log("- isEditing:", isEditing);
     console.log("- canEdit:", canEdit);
     console.log("- image prop:", image);
@@ -38,12 +37,20 @@ const ProjectBannerBackground: React.FC<ProjectBannerBackgroundProps> = ({
     console.log("- displayImage state:", displayImage);
   }, [isEditing, canEdit, image, imageUrl, displayImage]);
 
-  // Update local state when image prop changes
+  // Update local state when image prop changes - with enhanced validation
   useEffect(() => {
-    if (image !== undefined && image !== imageUrl) {
+    if (image !== undefined && image !== null) {
       console.log("[ProjectBannerBackground] Image prop changed to:", image);
-      setImageUrl(image || '');
-      setDisplayImage(image || '');
+      
+      // Only update if truly different (compare normalized URLs)
+      const normalizedImage = image.trim();
+      const normalizedCurrent = imageUrl.trim();
+      
+      if (normalizedImage !== normalizedCurrent) {
+        console.log("[ProjectBannerBackground] Updating image URL from", imageUrl, "to", image);
+        setImageUrl(normalizedImage);
+        setDisplayImage(normalizedImage);
+      }
     }
   }, [image]);
 
@@ -60,8 +67,9 @@ const ProjectBannerBackground: React.FC<ProjectBannerBackgroundProps> = ({
     console.log("[ProjectBannerBackground] Submitting image URL:", imageUrl);
     
     // Update both local display image and parent component
-    setDisplayImage(imageUrl);
-    onImageChange(imageUrl);
+    const trimmedUrl = imageUrl.trim();
+    setDisplayImage(trimmedUrl);
+    onImageChange(trimmedUrl);
     
     toast.success('Նկարի URL-ն հաջողությամբ փոխվել է');
     setShowImageUrl(false);
@@ -122,6 +130,7 @@ const ProjectBannerBackground: React.FC<ProjectBannerBackgroundProps> = ({
         {/* Display image for everyone */}
         <div className="w-full h-full">
           <img 
+            key={displayImage || 'fallback'} // Key to force re-render when image changes
             src={displayImage || fallbackImage}
             alt="Project banner"
             className="w-full h-full object-cover transition-all duration-1000 hover:scale-105"
@@ -134,21 +143,18 @@ const ProjectBannerBackground: React.FC<ProjectBannerBackgroundProps> = ({
           <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyMDAiIGhlaWdodD0iMjAwIj48ZmlsdGVyIGlkPSJhIiB4PSIwIiB5PSIwIj48ZmVUdXJidWxlbmNlIGJhc2VGcmVxdWVuY3k9Ii43NSIgc3RpdGNoVGlsZXM9InN0aXRjaCIgdHlwZT0iZnJhY3RhbE5vaXNlIi8+PGZlQ29sb3JNYXRyaXggdHlwZT0ic2F0dXJhdGUiIHZhbHVlcz0iMCIvPjwvZmlsdGVyPjxwYXRoIGQ9Ik0wIDBoMjAwdjIwMEgweiIgZmlsdGVyPSJ1cmwoI2EpIiBvcGFjaXR5PSIuMDUiLz48L3N2Zz4=')] opacity-20" />
         </div>
 
-        {/* Keep the ImageUploader for edit mode but hide it for now */}
-        {canEdit && isEditing && (
-          <div className="hidden">
-            <ScaleIn delay="delay-200">
-              <ImageUploader
-                currentImage={displayImage || '/placeholder-banner.jpg'}
-                onImageChange={onImageChange}
-                previewHeight="h-full"
-                placeholder="Սեղմեք նկար ներբեռնելու համար"
-                rounded={false}
-                disabled={!isEditing}
-                showEditButton={canEdit}
-                overlayMode={true}
-              />
-            </ScaleIn>
+        {/* Edit button for image URL */}
+        {canEdit && isEditing && !showImageUrl && (
+          <div className="absolute bottom-6 left-6 z-20">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setShowImageUrl(true)}
+              className="bg-white/10 border-white/30 text-white hover:bg-white/20 flex items-center gap-2"
+            >
+              <Link className="h-4 w-4" />
+              Փոխել նկարի URL-ը
+            </Button>
           </div>
         )}
       </div>

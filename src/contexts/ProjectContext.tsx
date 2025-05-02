@@ -1,4 +1,3 @@
-
 import React, { createContext, useContext, useState } from 'react';
 import { useProjectState } from '@/hooks/useProjectState';
 import { useProjectActions } from '@/hooks/useProjectActions';
@@ -125,6 +124,20 @@ export const ProjectProvider: React.FC<ProjectProviderProps> = ({
         return false;
       }
 
+      // Enhanced validation especially for image URLs
+      if (updates.image !== undefined) {
+        if (typeof updates.image !== 'string') {
+          console.error('[ProjectContext] Invalid image format:', updates.image);
+          toast.error('Նկարի URL-ը պետք է լինի տեքստ');
+          return false;
+        }
+        
+        // Validate image before sending to service
+        if (updates.image.trim() === '') {
+          console.warn('[ProjectContext] Empty image URL provided');
+        }
+      }
+
       setIsUpdating(true);
       console.log(`[ProjectContext] Updating project ID ${projectId} with data:`, updates);
 
@@ -133,6 +146,13 @@ export const ProjectProvider: React.FC<ProjectProviderProps> = ({
         ...project,
         ...updates
       };
+
+      // Handle image changes specially - trace the image value
+      if (updates.image !== undefined) {
+        console.log('[ProjectContext] Image before update:', project.image);
+        console.log('[ProjectContext] New image value:', updates.image);
+        console.log('[ProjectContext] Combined image value:', updatedProject.image);
+      }
 
       // Call the projectService to update the project in the database
       const success = await projectService.updateProject(projectId, updatedProject);

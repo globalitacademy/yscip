@@ -6,12 +6,16 @@ import ProjectHeaderBanner from './ProjectHeaderBanner';
 const ProjectHeader: React.FC = () => {
   const { project, isEditing, canEdit } = useProject();
 
-  // Log state for debugging
+  // Enhanced logging for debugging
   useEffect(() => {
-    console.log("[ProjectHeader] Component mounted");
+    console.log("[ProjectHeader] Component mounted or updated");
     console.log("- isEditing:", isEditing);
     console.log("- canEdit:", canEdit);
     console.log("- project:", project);
+    
+    if (project && project.image) {
+      console.log("- Current project image URL:", project.image);
+    }
   }, [isEditing, canEdit, project]);
 
   if (!project) {

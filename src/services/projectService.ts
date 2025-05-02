@@ -1,4 +1,3 @@
-
 import { supabase } from '@/integrations/supabase/client';
 import { ProjectTheme } from '@/data/projectThemes';
 import { toast } from 'sonner';
@@ -83,23 +82,37 @@ export const createProject = async (project: ProjectTheme): Promise<boolean> => 
   }
 };
 
-// Update an existing project
+// Enhanced update project function with better debugging and validation
 export const updateProject = async (id: number, updatedData: Partial<ProjectTheme>): Promise<boolean> => {
   try {
     console.log('[projectService] Updating project with data:', updatedData);
     console.log('[projectService] Project ID:', id);
     
-    // Map from ProjectTheme to Supabase column names
+    if (!id || id <= 0) {
+      console.error('[projectService] Invalid project ID:', id);
+      toast.error('Անվավեր նախագծի ID');
+      return false;
+    }
+    
+    // Map from ProjectTheme to Supabase column names with enhanced validation
     const dataToUpdate: any = {};
     
-    if (updatedData.title !== undefined) dataToUpdate.title = updatedData.title;
-    if (updatedData.description !== undefined) dataToUpdate.description = updatedData.description;
-    // If detailedDescription is provided, update the description field
-    if (updatedData.detailedDescription !== undefined) dataToUpdate.description = updatedData.detailedDescription;
+    // Handle text fields with validation
+    if (typeof updatedData.title === 'string') dataToUpdate.title = updatedData.title.trim();
+    if (typeof updatedData.description === 'string') dataToUpdate.description = updatedData.description.trim();
+    if (typeof updatedData.detailedDescription === 'string') dataToUpdate.description = updatedData.detailedDescription.trim();
+    
+    // Handle image with special validation
     if (updatedData.image !== undefined) {
-      dataToUpdate.image = updatedData.image;
-      console.log('[projectService] Updating image URL to:', updatedData.image);
+      if (typeof updatedData.image === 'string') {
+        dataToUpdate.image = updatedData.image.trim(); 
+        console.log('[projectService] Updating image URL to:', dataToUpdate.image);
+      } else {
+        console.warn('[projectService] Invalid image format, expected string but got:', typeof updatedData.image);
+      }
     }
+    
+    // Handle other fields
     if (updatedData.category !== undefined) dataToUpdate.category = updatedData.category;
     if (updatedData.techStack !== undefined) dataToUpdate.tech_stack = updatedData.techStack;
     if (updatedData.duration !== undefined) dataToUpdate.duration = updatedData.duration;
@@ -114,8 +127,13 @@ export const updateProject = async (id: number, updatedData: Partial<ProjectThem
     dataToUpdate.updated_at = new Date().toISOString();
 
     console.log('[projectService] Mapped data to update:', dataToUpdate);
+    
+    if (Object.keys(dataToUpdate).length === 0) {
+      console.warn('[projectService] No valid fields to update');
+      return false;
+    }
 
-    // REAL SUPABASE IMPLEMENTATION
+    // SUPABASE API CALL
     const { data, error } = await supabase
       .from('projects')
       .update(dataToUpdate)
@@ -158,5 +176,23 @@ export const deleteProject = async (id: number): Promise<boolean> => {
     console.error('[projectService] Error in deleteProject:', error);
     toast.error('Նախագծի ջնջման ժամանակ սխալ է տեղի ունեցել');
     return false;
+  }
+};
+
+// Function to verify image URL is valid
+export const validateImageUrl = async (url: string): Promise<boolean> => {
+  if (!url || typeof url !== 'string') return false;
+  
+  // If it's a data URL, assume it's valid
+  if (url.startsWith('data:image/')) return true;
+  
+  // If it's a URL, try to fetch the head to validate
+  try {
+    const response = await fetch(url, { method: 'HEAD' });
+    return response.ok && (response.headers.get('Content-Type') || '').startsWith('image/');
+  } catch (error) {
+    console.warn('[projectService] Error validating image URL:', error);
+    // Return true anyway - we'll handle load errors in the image component
+    return true;
   }
 };
