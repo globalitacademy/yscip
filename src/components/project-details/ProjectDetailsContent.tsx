@@ -54,6 +54,22 @@ const ProjectDetailsContent: React.FC = () => {
       </div>
     );
   }
+
+  // Handle image update function to pass to ProjectHeaderBanner
+  const handleImageChange = async (newImageUrl: string) => {
+    if (!project || !updateProject) return;
+    
+    console.log("[ProjectDetailsContent] Handling image change:", newImageUrl);
+    try {
+      const success = await updateProject({ image: newImageUrl });
+      if (success) {
+        toast.success('Նկարը հաջողությամբ թարմացվել է');
+      }
+    } catch (error) {
+      console.error('[ProjectDetailsContent] Error updating image:', error);
+      toast.error('Չհաջողվեց թարմացնել նկարը');
+    }
+  };
   
   // Mock data for the project members
   const projectMembers = [
@@ -96,7 +112,11 @@ const ProjectDetailsContent: React.FC = () => {
       <Header />
       
       <main className="flex-grow">
-        <ProjectHeaderBanner project={project} isEditing={isEditing} />
+        <ProjectHeaderBanner 
+          project={project} 
+          isEditing={isEditing} 
+          onImageChange={handleImageChange} 
+        />
         
         <div className="container mx-auto px-4 py-8">
           <ProjectTabs
