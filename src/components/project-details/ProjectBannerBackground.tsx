@@ -1,8 +1,11 @@
 
-import React from 'react';
+import React, { useState } from 'react';
 import { cn } from '@/lib/utils';
 import ImageUploader from '../common/image-uploader/ImageUploader';
 import { ScaleIn } from '@/components/LocalTransitions';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Edit } from 'lucide-react';
 
 interface ProjectBannerBackgroundProps {
   image?: string;
@@ -19,6 +22,18 @@ const ProjectBannerBackground: React.FC<ProjectBannerBackgroundProps> = ({
   onImageChange,
   onEditClick
 }) => {
+  const [showImageUrl, setShowImageUrl] = useState(false);
+  const [imageUrl, setImageUrl] = useState(image || '');
+
+  const handleImageUrlChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setImageUrl(e.target.value);
+  };
+
+  const handleImageUrlSubmit = () => {
+    onImageChange(imageUrl);
+    setShowImageUrl(false);
+  };
+
   return (
     <div className="absolute inset-0 z-0 overflow-hidden">
       {/* Animated decorative elements */}
@@ -34,6 +49,39 @@ const ProjectBannerBackground: React.FC<ProjectBannerBackgroundProps> = ({
       
       {/* Image with subtle animation */}
       <div className="absolute inset-0 z-0 transform transition-all duration-700 hover:scale-105">
+        {isEditing && canEdit && showImageUrl ? (
+          <div className="absolute top-4 left-4 right-4 z-20 bg-black/80 p-4 rounded-lg backdrop-blur-md border border-white/20">
+            <div className="flex flex-col gap-2">
+              <label className="text-white text-sm">Նկարի URL</label>
+              <div className="flex gap-2">
+                <Input 
+                  value={imageUrl} 
+                  onChange={handleImageUrlChange} 
+                  className="bg-black/40 border-white/30 text-white" 
+                  placeholder="https://example.com/image.jpg"
+                />
+                <Button onClick={handleImageUrlSubmit} variant="outline" className="bg-white/10 hover:bg-white/20 text-white">
+                  Պահպանել
+                </Button>
+                <Button onClick={() => setShowImageUrl(false)} variant="outline" className="bg-red-500/10 hover:bg-red-500/20 text-white">
+                  Չեղարկել
+                </Button>
+              </div>
+            </div>
+          </div>
+        ) : isEditing && canEdit ? (
+          <div className="absolute top-4 right-4 z-20">
+            <Button 
+              onClick={() => setShowImageUrl(true)}
+              variant="outline" 
+              className="bg-black/40 border-white/20 text-white hover:bg-black/60"
+            >
+              <Edit className="mr-2 h-4 w-4" />
+              Խմբագրել նկարի URL
+            </Button>
+          </div>
+        ) : null}
+
         {canEdit ? (
           <ScaleIn delay="delay-200">
             <ImageUploader

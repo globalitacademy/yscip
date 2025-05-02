@@ -35,12 +35,22 @@ export const useProjectDialogs = (
 
   const handleChangeImage = useCallback(async () => {
     if (!selectedProject) return;
-    await updateProjectImage(selectedProject, newImageUrl);
-    setIsImageDialogOpen(false);
-    setNewImageUrl('');
-    setSelectedProject(null);
     
-    queryClient.invalidateQueries({ queryKey: ['projects'] });
+    try {
+      const success = await updateProjectImage(selectedProject, newImageUrl);
+      
+      if (success) {
+        setIsImageDialogOpen(false);
+        setNewImageUrl('');
+        setSelectedProject(null);
+        
+        queryClient.invalidateQueries({ queryKey: ['projects'] });
+      } else {
+        console.error('Failed to update project image');
+      }
+    } catch (error) {
+      console.error('Error updating project image:', error);
+    }
   }, [selectedProject, newImageUrl, updateProjectImage, queryClient, setIsImageDialogOpen, setNewImageUrl, setSelectedProject]);
 
   const handleSaveEdit = useCallback(async () => {
