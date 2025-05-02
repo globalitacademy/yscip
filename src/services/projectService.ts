@@ -82,10 +82,10 @@ export const createProject = async (project: ProjectTheme): Promise<boolean> => 
   }
 };
 
-// Enhanced update project function with better debugging and validation
+// Enhanced update project function with improved error handling and validation
 export const updateProject = async (id: number, updatedData: Partial<ProjectTheme>): Promise<boolean> => {
   try {
-    console.log('[projectService] Updating project with data:', updatedData);
+    console.log('[projectService] Updating project with data:', JSON.stringify(updatedData));
     console.log('[projectService] Project ID:', id);
     
     if (!id || id <= 0) {
@@ -94,21 +94,23 @@ export const updateProject = async (id: number, updatedData: Partial<ProjectThem
       return false;
     }
     
-    // Map from ProjectTheme to Supabase column names with enhanced validation
-    const dataToUpdate: any = {};
+    // Deep clone updatedData to avoid mutation issues
+    const dataToUpdate: Record<string, any> = {};
     
     // Handle text fields with validation
     if (typeof updatedData.title === 'string') dataToUpdate.title = updatedData.title.trim();
     if (typeof updatedData.description === 'string') dataToUpdate.description = updatedData.description.trim();
     if (typeof updatedData.detailedDescription === 'string') dataToUpdate.description = updatedData.detailedDescription.trim();
     
-    // Handle image with special validation
+    // Special handling for image field
     if (updatedData.image !== undefined) {
       if (typeof updatedData.image === 'string') {
-        dataToUpdate.image = updatedData.image.trim(); 
-        console.log('[projectService] Updating image URL to:', dataToUpdate.image);
+        const trimmedImage = updatedData.image.trim();
+        dataToUpdate.image = trimmedImage;
+        console.log('[projectService] Processing image update:', trimmedImage);
       } else {
         console.warn('[projectService] Invalid image format, expected string but got:', typeof updatedData.image);
+        return false;
       }
     }
     
@@ -126,29 +128,35 @@ export const updateProject = async (id: number, updatedData: Partial<ProjectThem
     // Always update the 'updated_at' timestamp
     dataToUpdate.updated_at = new Date().toISOString();
 
-    console.log('[projectService] Mapped data to update:', dataToUpdate);
+    console.log('[projectService] Final data to update:', dataToUpdate);
     
     if (Object.keys(dataToUpdate).length === 0) {
       console.warn('[projectService] No valid fields to update');
       return false;
     }
 
-    // SUPABASE API CALL
-    const { data, error } = await supabase
-      .from('projects')
-      .update(dataToUpdate)
-      .eq('id', id)
-      .select();
+    // SUPABASE API CALL with detailed error logging
+    try {
+      const { data, error } = await supabase
+        .from('projects')
+        .update(dataToUpdate)
+        .eq('id', id)
+        .select();
 
-    if (error) {
-      console.error('[projectService] Error updating project:', error);
-      toast.error('Նախագծի թարմացման ժամանակ սխալ է տեղի ունեցել');
+      if (error) {
+        console.error('[projectService] Supabase error updating project:', error);
+        toast.error(`Տվյալների բազայի սխալ: ${error.message}`);
+        return false;
+      }
+      
+      console.log('[projectService] Project updated successfully, response:', data);
+      toast.success('Նախագիծը հաջողությամբ թարմացվել է');
+      return true;
+    } catch (dbError) {
+      console.error('[projectService] Database operation error:', dbError);
+      toast.error('Տվյալների բազայի հետ կապի սխալ');
       return false;
     }
-    
-    console.log('[projectService] Project updated successfully, response:', data);
-    toast.success('Նախագիծը հաջողությամբ թարմացվել է');
-    return true;
   } catch (error) {
     console.error('[projectService] Error in updateProject:', error);
     toast.error('Նախագծի թարմացման ժամանակ սխալ է տեղի ունեցել');

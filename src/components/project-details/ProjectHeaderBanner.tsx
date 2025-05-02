@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { ArrowLeft, Link } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
@@ -7,7 +6,6 @@ import { Input } from '@/components/ui/input';
 import { useProject } from '@/contexts/ProjectContext';
 import ProjectHeaderActions from './ProjectHeaderActions';
 import ProjectBannerBackground from './ProjectBannerBackground';
-import { getProjectImage } from '@/lib/getProjectImage';
 import { Badge } from '@/components/ui/badge';
 import { FadeIn, SlideUp } from '@/components/LocalTransitions';
 import { toast } from 'sonner';
@@ -15,11 +13,13 @@ import { toast } from 'sonner';
 interface ProjectHeaderBannerProps {
   project: any;
   isEditing: boolean;
+  onImageChange: (newImageUrl: string) => void;
 }
 
 const ProjectHeaderBanner: React.FC<ProjectHeaderBannerProps> = ({
   project,
-  isEditing
+  isEditing,
+  onImageChange
 }) => {
   const navigate = useNavigate();
   const {
@@ -50,12 +50,10 @@ const ProjectHeaderBanner: React.FC<ProjectHeaderBannerProps> = ({
     setTitle(project.title || '');
     setDescription(project.description || '');
     
-    // Important: Only update if the image has actually changed
-    if (project.image !== bannerImage) {
-      console.log("[ProjectHeaderBanner] Updating banner image from", bannerImage, "to", project.image);
-      setBannerImage(project.image || '');
-      setImageUrl(project.image || '');
-    }
+    // Always update local banner image when project image changes
+    console.log("[ProjectHeaderBanner] Updating banner image from", bannerImage, "to", project.image);
+    setBannerImage(project.image || '');
+    setImageUrl(project.image || '');
   }, [project]);
 
   const handleEditClick = async () => {
@@ -66,16 +64,15 @@ const ProjectHeaderBanner: React.FC<ProjectHeaderBannerProps> = ({
         // Update project with new values
         const updatedData = {
           title,
-          description,
-          image: bannerImage
+          description
+          // Note: Image is now handled separately via onImageChange
         };
         console.log("[ProjectHeaderBanner] Saving project updates:", updatedData);
         
         // Compare with original values
         const hasChanges = 
           title !== project.title || 
-          description !== project.description || 
-          bannerImage !== project.image;
+          description !== project.description;
         
         if (!hasChanges) {
           console.log("[ProjectHeaderBanner] No changes detected, skipping update");
@@ -120,10 +117,10 @@ const ProjectHeaderBanner: React.FC<ProjectHeaderBannerProps> = ({
     setBannerImage(url);
     setImageUrl(url);
     
-    // Important: don't update the project just yet, wait for save
-    toast.info('Նկարի URL-ը փոխվել է, սակայն չի պահպանվել: Խնդրում ենք սեղմել "Պահպանել" կոճակը՝ փոփոխությունները պահպանելու համար', {
-      duration: 5000
-    });
+    // Call parent handler to update image immediately
+    onImageChange(url);
+    
+    toast.success('Նկարը թարմացվել է');
   };
 
   const handleImageUrlChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -240,7 +237,7 @@ const ProjectHeaderBanner: React.FC<ProjectHeaderBannerProps> = ({
                 <div className="flex flex-col gap-3">
                   <Input 
                     value={imageUrl} 
-                    onChange={handleImageUrlChange} 
+                    onChange={(e) => setImageUrl(e.target.value)} 
                     className="bg-black/60 border-white/50 text-white" 
                     placeholder="https://example.com/image.jpg"
                     autoFocus

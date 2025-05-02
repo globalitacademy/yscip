@@ -1,7 +1,6 @@
+
 import React, { useState, useEffect } from 'react';
 import { cn } from '@/lib/utils';
-import ImageUploader from '../common/image-uploader/ImageUploader';
-import { ScaleIn } from '@/components/LocalTransitions';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Edit, Image as ImageIcon, Link } from 'lucide-react';
@@ -24,6 +23,7 @@ const ProjectBannerBackground: React.FC<ProjectBannerBackgroundProps> = ({
 }) => {
   const [showImageUrl, setShowImageUrl] = useState(false);
   const [imageUrl, setImageUrl] = useState(image || '');
+  
   // Track current displayed image to ensure UI updates immediately
   const [displayImage, setDisplayImage] = useState(image || '');
 
@@ -42,15 +42,9 @@ const ProjectBannerBackground: React.FC<ProjectBannerBackgroundProps> = ({
     if (image !== undefined && image !== null) {
       console.log("[ProjectBannerBackground] Image prop changed to:", image);
       
-      // Only update if truly different (compare normalized URLs)
-      const normalizedImage = image.trim();
-      const normalizedCurrent = imageUrl.trim();
-      
-      if (normalizedImage !== normalizedCurrent) {
-        console.log("[ProjectBannerBackground] Updating image URL from", imageUrl, "to", image);
-        setImageUrl(normalizedImage);
-        setDisplayImage(normalizedImage);
-      }
+      // Always update local state when image prop changes
+      setImageUrl(image);
+      setDisplayImage(image);
     }
   }, [image]);
 
@@ -68,7 +62,9 @@ const ProjectBannerBackground: React.FC<ProjectBannerBackgroundProps> = ({
     
     // Update both local display image and parent component
     const trimmedUrl = imageUrl.trim();
-    setDisplayImage(trimmedUrl);
+    setDisplayImage(trimmedUrl); // Update local state for immediate UI feedback
+    
+    // Notify parent components of the change
     onImageChange(trimmedUrl);
     
     toast.success('Նկարի URL-ն հաջողությամբ փոխվել է');

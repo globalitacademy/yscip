@@ -113,53 +113,52 @@ export const ProjectProvider: React.FC<ProjectProviderProps> = ({
   const updateProject = async (updates: Partial<any>): Promise<boolean> => {
     try {
       if (!projectId) {
-        console.error('ProjectId is missing for updateProject:', projectId);
+        console.error('[ProjectContext] ProjectId is missing for updateProject:', projectId);
         toast.error('Նախագծի ID-ն բացակայում է');
         return false;
       }
 
       if (!updates || Object.keys(updates).length === 0) {
-        console.error('No updates provided to updateProject');
+        console.error('[ProjectContext] No updates provided to updateProject');
         toast.error('Թարմացնելու համար տվյալներ չեն տրամադրվել');
         return false;
       }
 
-      // Enhanced validation especially for image URLs
+      // Log the update request in detail for debugging
+      console.log(`[ProjectContext] Updating project ID ${projectId} with data:`, JSON.stringify(updates));
+
+      // More detailed logging for image updates
       if (updates.image !== undefined) {
-        if (typeof updates.image !== 'string') {
-          console.error('[ProjectContext] Invalid image format:', updates.image);
-          toast.error('Նկարի URL-ը պետք է լինի տեքստ');
-          return false;
-        }
-        
-        // Validate image before sending to service
-        if (updates.image.trim() === '') {
-          console.warn('[ProjectContext] Empty image URL provided');
-        }
+        console.log('[ProjectContext] Image update requested:');
+        console.log('- Current image:', project?.image);
+        console.log('- New image:', updates.image);
       }
 
-      setIsUpdating(true);
-      console.log(`[ProjectContext] Updating project ID ${projectId} with data:`, updates);
+      // Create a clean update object - only include defined properties
+      const cleanUpdates: Record<string, any> = {};
+      Object.entries(updates).forEach(([key, value]) => {
+        if (value !== undefined) {
+          cleanUpdates[key] = value;
+        }
+      });
 
-      // Combine current project data with updates
-      const updatedProject = {
-        ...project,
-        ...updates
-      };
-
-      // Handle image changes specially - trace the image value
-      if (updates.image !== undefined) {
-        console.log('[ProjectContext] Image before update:', project.image);
-        console.log('[ProjectContext] New image value:', updates.image);
-        console.log('[ProjectContext] Combined image value:', updatedProject.image);
-      }
+      console.log('[ProjectContext] Clean updates object:', cleanUpdates);
 
       // Call the projectService to update the project in the database
-      const success = await projectService.updateProject(projectId, updatedProject);
+      const success = await projectService.updateProject(projectId, cleanUpdates);
       
       if (success) {
         // Update local state after successful API call
-        console.log('[ProjectContext] Update successful, setting new project state:', updatedProject);
+        console.log('[ProjectContext] Update successful, updating local state');
+        
+        // Create updated project object with the new values
+        const updatedProject = {
+          ...project,
+          ...cleanUpdates,
+          updated_at: new Date().toISOString() // Add updated timestamp
+        };
+        
+        console.log('[ProjectContext] New project state:', updatedProject);
         setProject(updatedProject);
         toast.success('Փոփոխությունները հաջողությամբ պահպանվել են');
         return true;
@@ -172,8 +171,6 @@ export const ProjectProvider: React.FC<ProjectProviderProps> = ({
       console.error('[ProjectContext] Error updating project:', error);
       toast.error('Սխալ տեղի ունեցավ պրոեկտը թարմացնելիս');
       return false;
-    } finally {
-      setIsUpdating(false);
     }
   };
 
