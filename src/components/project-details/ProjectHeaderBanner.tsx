@@ -3,6 +3,7 @@ import React, { useState, useEffect } from 'react';
 import { ArrowLeft, Link } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
 import { useProject } from '@/contexts/ProjectContext';
 import ProjectHeaderActions from './ProjectHeaderActions';
 import ProjectBannerBackground from './ProjectBannerBackground';
