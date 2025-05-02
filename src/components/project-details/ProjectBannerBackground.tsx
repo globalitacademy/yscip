@@ -19,6 +19,9 @@ const ProjectBannerBackground: React.FC<ProjectBannerBackgroundProps> = ({
   onImageChange,
   onEditClick
 }) => {
+  // Make sure we have a valid image URL - support both regular URLs and data URLs
+  const imageUrl = image || 'https://images.unsplash.com/photo-1470071459604-3b5ec3a7fe05?q=80&w=1920&auto=format&fit=crop';
+  
   return (
     <div className="absolute inset-0 z-0 overflow-hidden">
       {/* Animated decorative elements */}
@@ -37,7 +40,7 @@ const ProjectBannerBackground: React.FC<ProjectBannerBackgroundProps> = ({
         {canEdit ? (
           <ScaleIn delay="delay-200">
             <ImageUploader
-              currentImage={image || '/placeholder-banner.jpg'}
+              currentImage={imageUrl}
               onImageChange={onImageChange}
               previewHeight="h-full"
               placeholder="Սեղմեք նկար ներբեռնելու համար"
@@ -50,7 +53,7 @@ const ProjectBannerBackground: React.FC<ProjectBannerBackgroundProps> = ({
         ) : (
           <div className="w-full h-full">
             <img 
-              src={image || 'https://images.unsplash.com/photo-1470071459604-3b5ec3a7fe05?q=80&w=1920&auto=format&fit=crop'}
+              src={imageUrl}
               alt="Project banner"
               className="w-full h-full object-cover transition-all duration-1000 hover:scale-105"
               onError={(e) => {
