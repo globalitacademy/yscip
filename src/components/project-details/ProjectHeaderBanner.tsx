@@ -5,7 +5,6 @@ import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { useProject } from '@/contexts/ProjectContext';
 import ProjectHeaderActions from './ProjectHeaderActions';
-import ThemeToggle from '@/components/ui/theme-toggle';
 import ProjectBannerBackground from './ProjectBannerBackground';
 import { getProjectImage } from '@/lib/getProjectImage';
 import { Badge } from '@/components/ui/badge';
@@ -100,7 +99,6 @@ const ProjectHeaderBanner: React.FC<ProjectHeaderBannerProps> = ({
             </Button>
             
             <div className="flex items-center gap-4">
-              <ThemeToggle />
               {canEdit && (
                 <ProjectHeaderActions 
                   canEdit={canEdit}
