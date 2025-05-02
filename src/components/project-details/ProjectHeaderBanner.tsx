@@ -9,6 +9,7 @@ import ProjectBannerBackground from './ProjectBannerBackground';
 import { getProjectImage } from '@/lib/getProjectImage';
 import { Badge } from '@/components/ui/badge';
 import { FadeIn, SlideUp } from '@/components/LocalTransitions';
+import { toast } from 'sonner';
 
 interface ProjectHeaderBannerProps {
   project: any;
@@ -50,15 +51,20 @@ const ProjectHeaderBanner: React.FC<ProjectHeaderBannerProps> = ({
         });
         if (success) {
           setIsEditing(false);
+          toast.success('Փոփոխությունները հաջողությամբ պահպանվել են');
+        } else {
+          toast.error('Սխալ տեղի ունեցավ պահպանման ընթացքում։');
         }
       } catch (error) {
         console.error('Failed to update project:', error);
+        toast.error('Չհաջողվեց պահպանել փոփոխությունները');
       } finally {
         setIsSaving(false);
       }
     } else {
       // Start editing
       setIsEditing(true);
+      toast.info('Դուք մտել եք խմբագրման ռեժիմ');
     }
   };
 
@@ -68,6 +74,7 @@ const ProjectHeaderBanner: React.FC<ProjectHeaderBannerProps> = ({
     setDescription(project.description || '');
     setBannerImage(project.image || '');
     setIsEditing(false);
+    toast.info('Փոփոխությունները չեղարկվել են');
   };
 
   const handleImageChange = (url: string) => {
@@ -86,7 +93,7 @@ const ProjectHeaderBanner: React.FC<ProjectHeaderBannerProps> = ({
         onEditClick={() => setIsEditing(true)}
       />
       
-      <div className="container relative z-10 mx-auto px-4 pt-32 pb-16 flex flex-col justify-between min-h-[500px]">
+      <div className="container relative z-20 mx-auto px-4 pt-32 pb-16 flex flex-col justify-between min-h-[500px]">
         <FadeIn delay="delay-100">
           <div className="flex justify-between items-start">
             <Button 
@@ -147,6 +154,14 @@ const ProjectHeaderBanner: React.FC<ProjectHeaderBannerProps> = ({
           </div>
         </SlideUp>
       </div>
+      
+      {isEditing && (
+        <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 z-30">
+          <div className="bg-black/70 text-white px-4 py-2 rounded-full text-sm backdrop-blur-md border border-white/10">
+            Խմբագրման ռեժիմ
+          </div>
+        </div>
+      )}
     </div>
   );
 };

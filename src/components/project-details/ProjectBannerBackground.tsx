@@ -1,10 +1,12 @@
+
 import React, { useState, useEffect } from 'react';
 import { cn } from '@/lib/utils';
 import ImageUploader from '../common/image-uploader/ImageUploader';
 import { ScaleIn } from '@/components/LocalTransitions';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Edit } from 'lucide-react';
+import { Edit, Image as ImageIcon } from 'lucide-react';
+import { toast } from 'sonner';
 
 interface ProjectBannerBackgroundProps {
   image?: string;
@@ -29,7 +31,12 @@ const ProjectBannerBackground: React.FC<ProjectBannerBackgroundProps> = ({
   };
 
   const handleImageUrlSubmit = () => {
+    if (!imageUrl.trim()) {
+      toast.error('Նկարի URL-ն չի կարող լինել դատարկ');
+      return;
+    }
     onImageChange(imageUrl);
+    toast.success('Նկարի URL-ն հաջողությամբ փոխվել է');
     setShowImageUrl(false);
   };
 
@@ -55,33 +62,43 @@ const ProjectBannerBackground: React.FC<ProjectBannerBackgroundProps> = ({
       <div className="absolute inset-0 z-0 transform transition-all duration-700 hover:scale-105">
         {/* URL editing interface - shown only when in edit mode and URL editing is active */}
         {isEditing && canEdit && showImageUrl ? (
-          <div className="absolute top-4 left-4 right-4 z-20 bg-black/80 p-4 rounded-lg backdrop-blur-md border border-white/20">
-            <div className="flex flex-col gap-2">
-              <label className="text-white text-sm">Նկարի URL</label>
-              <div className="flex gap-2">
+          <div className="absolute top-4 left-4 right-4 z-30 bg-black/80 p-6 rounded-lg backdrop-blur-md border border-white/20 shadow-xl">
+            <div className="flex flex-col gap-4">
+              <h3 className="text-white text-lg font-medium">Փոխել նկարի URL-ն</h3>
+              <div className="flex flex-col gap-3">
+                <label className="text-white text-sm">Նկարի URL</label>
                 <Input 
                   value={imageUrl} 
                   onChange={handleImageUrlChange} 
                   className="bg-black/40 border-white/30 text-white" 
                   placeholder="https://example.com/image.jpg"
                 />
-                <Button onClick={handleImageUrlSubmit} variant="outline" className="bg-white/10 hover:bg-white/20 text-white">
-                  Պահպանել
-                </Button>
-                <Button onClick={() => setShowImageUrl(false)} variant="outline" className="bg-red-500/10 hover:bg-red-500/20 text-white">
-                  Չեղարկել
-                </Button>
+                <div className="flex gap-2 mt-2">
+                  <Button 
+                    onClick={handleImageUrlSubmit} 
+                    className="bg-primary hover:bg-primary/90 text-white"
+                  >
+                    Պահպանել
+                  </Button>
+                  <Button 
+                    onClick={() => setShowImageUrl(false)} 
+                    variant="outline" 
+                    className="bg-red-500/10 hover:bg-red-500/20 text-white border-red-500/30"
+                  >
+                    Չեղարկել
+                  </Button>
+                </div>
               </div>
             </div>
           </div>
         ) : isEditing && canEdit ? (
-          <div className="absolute top-4 right-4 z-20">
+          <div className="absolute top-4 right-4 z-30">
             <Button 
               onClick={() => setShowImageUrl(true)}
-              variant="outline" 
-              className="bg-black/40 border-white/20 text-white hover:bg-black/60"
+              size="lg"
+              className="bg-black/70 border border-white/20 text-white hover:bg-black/80 backdrop-blur-sm shadow-xl flex items-center gap-2"
             >
-              <Edit className="mr-2 h-4 w-4" />
+              <ImageIcon className="mr-2 h-5 w-5" />
               Խմբագրել նկարի URL
             </Button>
           </div>
@@ -94,6 +111,7 @@ const ProjectBannerBackground: React.FC<ProjectBannerBackgroundProps> = ({
             alt="Project banner"
             className="w-full h-full object-cover transition-all duration-1000 hover:scale-105"
             onError={(e) => {
+              console.error("Image failed to load, using fallback");
               (e.target as HTMLImageElement).src = 'https://images.unsplash.com/photo-1482938289607-e9573fc25ebb?q=80&w=1920&auto=format&fit=crop';
             }}
           />
