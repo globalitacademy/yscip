@@ -1,7 +1,7 @@
 
 import React from 'react';
 import { ChevronDown } from 'lucide-react';
-import { FadeIn, SlideDown, SlideUp } from '../LocalTransitions';
+import { FadeIn, SlideUp, SlideDown } from '../LocalTransitions';
 
 interface HeroContentProps {
   scrollToThemes: () => void;

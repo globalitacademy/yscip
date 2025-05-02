@@ -69,10 +69,10 @@ const ProjectTimeline: React.FC<ProjectTimelineProps> = ({
         label: 'Ժամանակացույց',
         data: sortedTimeline.map((_, index) => index + 1), // Just for display positioning
         backgroundColor: sortedTimeline.map(event => 
-          event.completed ? 'rgba(34, 197, 94, 0.6)' : 'rgba(59, 130, 246, 0.6)'
+          event.isCompleted ? 'rgba(34, 197, 94, 0.6)' : 'rgba(59, 130, 246, 0.6)'
         ),
         borderColor: sortedTimeline.map(event => 
-          event.completed ? 'rgb(34, 197, 94)' : 'rgb(59, 130, 246)'
+          event.isCompleted ? 'rgb(34, 197, 94)' : 'rgb(59, 130, 246)'
         ),
         borderWidth: 1,
       },
@@ -101,7 +101,7 @@ const ProjectTimeline: React.FC<ProjectTimelineProps> = ({
             const event = sortedTimeline[context.dataIndex];
             return [
               `Ամսաթիվ: ${formatDate(event.date)}`,
-              `Կարգավիճակ: ${event.completed ? 'Ավարտված' : 'Ընթացքի մեջ'}`,
+              `Կարգավիճակ: ${event.isCompleted ? 'Ավարտված' : 'Ընթացքի մեջ'}`,
               `Նկարագրություն: ${event.description}`
             ];
           }
@@ -146,7 +146,7 @@ const ProjectTimeline: React.FC<ProjectTimelineProps> = ({
         <div className="space-y-4">
           {sortedTimeline.map((event, index) => (
             <div key={index} className="flex items-start gap-4 p-4 bg-muted/30 rounded-lg border border-muted">
-              <div className={`w-3 h-3 mt-1.5 rounded-full ${event.completed ? 'bg-green-500' : 'bg-blue-500'}`} />
+              <div className={`w-3 h-3 mt-1.5 rounded-full ${event.isCompleted ? 'bg-green-500' : 'bg-blue-500'}`} />
               <div className="flex-grow">
                 <div className="flex justify-between mb-1">
                   <h4 className="font-medium">{event.title}</h4>
