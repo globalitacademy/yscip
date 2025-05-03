@@ -136,3 +136,18 @@ export const getAvailableSupervisors = () => {
     role: supervisor.role
   }));
 };
+
+// Get reservation by ID
+export const getReservationById = (reservationId: string): ProjectReservation | undefined => {
+  const reservations = loadProjectReservations();
+  return reservations.find(res => res.id === reservationId);
+};
+
+// Get reservation by project ID
+export const getReservationByProjectId = (projectId: number, userId?: string): ProjectReservation | undefined => {
+  const reservations = loadProjectReservations();
+  return reservations.find(res => 
+    res.projectId === projectId && 
+    (!userId || res.userId === userId || res.studentId === userId)
+  );
+};

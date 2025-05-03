@@ -1,3 +1,4 @@
+
 import { v4 as uuidv4 } from 'uuid';
 import { Task, TimelineEvent } from '@/data/projectThemes';
 import { 
@@ -37,13 +38,13 @@ export const useProjectActions = (
     if (!permissions.canAddTimeline) return;
     
     const newEvent = { ...event, id: uuidv4() };
-    setTimeline(prev => [...prev, newEvent]);
+    setTimeline([...timeline, newEvent]);
   };
 
   const completeTimelineEvent = (eventId: string) => {
     if (!permissions.canApproveTimelineEvents) return;
     
-    setTimeline(prev => prev.map(event => 
+    setTimeline(timeline.map(event => 
       event.id === eventId ? { ...event, completed: true } : event
     ));
   };
@@ -52,7 +53,7 @@ export const useProjectActions = (
     if (!permissions.canAddTasks) return;
     
     const newTask = { ...task, id: uuidv4() };
-    setTasks(prev => [...prev, newTask]);
+    setTasks([...tasks, newTask]);
   };
 
   const updateTaskStatus = (taskId: string, status: TaskStatus) => {
@@ -62,7 +63,7 @@ export const useProjectActions = (
       if (!task || task.assignedTo !== user.id) return;
     }
     
-    setTasks(prev => prev.map(task => 
+    setTasks(tasks.map(task => 
       task.id === taskId ? { ...task, status } : task
     ));
   };
@@ -136,7 +137,7 @@ export const useProjectActions = (
     return reservation ? reservation.status : null;
   };
 
-  const updateOrganization = (orgData: {
+  const updateOrganization = async (orgData: {
     name: string;
     website?: string;
     logo?: string;
@@ -147,7 +148,7 @@ export const useProjectActions = (
     
     // Update the organization data
     const updatedOrg = {
-      id: orgData.id || 'org-1',
+      id: 'org-1', // Use a default ID since it's not provided in the parameter
       name: orgData.name,
       website: orgData.website || 'https://example.com',
       logo: orgData.logo || '/placeholder.svg'
