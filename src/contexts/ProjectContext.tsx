@@ -1,4 +1,3 @@
-
 import React, { createContext, useContext, useState } from 'react';
 import { useProjectState } from '@/hooks/useProjectState';
 import { useProjectActions } from '@/hooks/useProjectActions';
@@ -8,6 +7,7 @@ import { ProjectReservation } from '@/types/project';
 import { calculateProjectProgress } from '@/utils/projectProgressUtils';
 import { toast } from 'sonner';
 import * as projectService from '@/services/projectService';
+import { supabase } from '@/integrations/supabase/client';
 
 interface ProjectContextType {
   projectId: number;
