@@ -30,6 +30,7 @@ const ProjectBannerBackground: React.FC<ProjectBannerBackgroundProps> = ({
   const [newImageUrl, setNewImageUrl] = useState(imageUrl);
   
   console.log("[ProjectBannerBackground] Rendering with image:", imageUrl);
+  console.log("[ProjectBannerBackground] isEditing state:", isEditing);
 
   // Handle image URL change
   const handleImageSubmit = () => {
@@ -88,14 +89,14 @@ const ProjectBannerBackground: React.FC<ProjectBannerBackgroundProps> = ({
           </div>
         )}
 
-        {/* Image edit controls when in edit mode */}
+        {/* Image edit controls when in edit mode - Enhanced visibility and always displayed in edit mode */}
         {isEditing && (
-          <div className="absolute top-6 right-6 z-20">
+          <div className="absolute top-6 right-6 z-30">
             <Button
-              variant="outline"
+              variant="secondary"
               size="sm"
               onClick={() => setShowImageForm(true)}
-              className="bg-white/10 border-white/30 text-white hover:bg-white/20 flex items-center gap-2"
+              className="bg-white/20 border border-white/40 text-white hover:bg-white/30 flex items-center gap-2 shadow-lg"
             >
               <ImageIcon className="h-4 w-4" />
               Փոխել ֆոնային նկարը
@@ -103,22 +104,23 @@ const ProjectBannerBackground: React.FC<ProjectBannerBackgroundProps> = ({
           </div>
         )}
         
-        {/* Image URL input modal */}
+        {/* Image URL input modal - Made more prominent */}
         {showImageForm && (
           <div className="absolute inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm">
-            <div className="bg-card p-6 rounded-lg shadow-xl w-full max-w-md">
+            <div className="bg-card p-6 rounded-lg shadow-xl w-full max-w-md border border-white/20">
               <h3 className="text-xl font-bold mb-4">Փոխել նկարի URL-ը</h3>
               <Input
                 value={newImageUrl}
                 onChange={(e) => setNewImageUrl(e.target.value)}
                 placeholder="https://example.com/image.jpg"
                 className="mb-4"
+                autoFocus
               />
               <div className="flex justify-end gap-2">
                 <Button variant="outline" onClick={() => setShowImageForm(false)}>
                   Չեղարկել
                 </Button>
-                <Button onClick={handleImageSubmit}>
+                <Button onClick={handleImageSubmit} variant="default">
                   Պահպանել
                 </Button>
               </div>

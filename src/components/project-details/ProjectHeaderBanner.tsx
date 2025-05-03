@@ -134,7 +134,7 @@ const ProjectHeaderBanner: React.FC<ProjectHeaderBannerProps> = ({
 
   return (
     <div className="relative py-0 overflow-hidden text-white min-h-[500px] group">
-      {/* Banner Background with Image - Pass correct props */}
+      {/* Banner Background with Image - Make sure to pass the isEditing prop correctly */}
       <ProjectBannerBackground 
         image={imageUrl}
         isEditing={isEditing}
