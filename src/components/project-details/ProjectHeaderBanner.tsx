@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { ArrowLeft, Link } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
@@ -30,29 +31,23 @@ const ProjectHeaderBanner: React.FC<ProjectHeaderBannerProps> = ({
   const [isSaving, setIsSaving] = useState(false);
   const [title, setTitle] = useState(project.title || '');
   const [description, setDescription] = useState(project.description || '');
-  const [bannerImage, setBannerImage] = useState(project.image || '');
-  const [showImageUrl, setShowImageUrl] = useState(false);
   const [imageUrl, setImageUrl] = useState(project.image || '');
-
+  const [showImageUrl, setShowImageUrl] = useState(false);
+  
   // Enhanced logging for debugging
   useEffect(() => {
     console.log("[ProjectHeaderBanner] Component state updated:");
     console.log("- isEditing:", isEditing);
     console.log("- canEdit:", canEdit);
-    console.log("- bannerImage:", bannerImage);
     console.log("- project.image:", project.image);
     console.log("- imageUrl:", imageUrl);
-  }, [isEditing, canEdit, bannerImage, project.image, imageUrl]);
+  }, [isEditing, canEdit, project.image, imageUrl]);
 
   // Update local state when project changes
   useEffect(() => {
     console.log("[ProjectHeaderBanner] Project updated, updating local state with:", project);
     setTitle(project.title || '');
     setDescription(project.description || '');
-    
-    // Always update local banner image when project image changes
-    console.log("[ProjectHeaderBanner] Updating banner image from", bannerImage, "to", project.image);
-    setBannerImage(project.image || '');
     setImageUrl(project.image || '');
   }, [project]);
 
@@ -65,7 +60,6 @@ const ProjectHeaderBanner: React.FC<ProjectHeaderBannerProps> = ({
         const updatedData = {
           title,
           description
-          // Note: Image is now handled separately via onImageChange
         };
         console.log("[ProjectHeaderBanner] Saving project updates:", updatedData);
         
@@ -106,7 +100,6 @@ const ProjectHeaderBanner: React.FC<ProjectHeaderBannerProps> = ({
     // Reset values to original
     setTitle(project.title || '');
     setDescription(project.description || '');
-    setBannerImage(project.image || '');
     setImageUrl(project.image || '');
     setIsEditing(false);
     toast.info('Փոփոխությունները չեղարկվել են');
@@ -114,13 +107,10 @@ const ProjectHeaderBanner: React.FC<ProjectHeaderBannerProps> = ({
 
   const handleImageChange = (url: string) => {
     console.log("[ProjectHeaderBanner] Image URL changed to:", url);
-    setBannerImage(url);
     setImageUrl(url);
     
     // Call parent handler to update image immediately
     onImageChange(url);
-    
-    toast.success('Նկարը թարմացվել է');
   };
 
   const handleImageUrlChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -140,9 +130,9 @@ const ProjectHeaderBanner: React.FC<ProjectHeaderBannerProps> = ({
 
   return (
     <div className="relative py-0 overflow-hidden text-white min-h-[500px] group">
-      {/* Banner Background with Image - Passing correct props */}
+      {/* Banner Background with Image - Pass correct props */}
       <ProjectBannerBackground 
-        image={bannerImage}
+        image={imageUrl}
         isEditing={isEditing}
         canEdit={canEdit}
         onImageChange={handleImageChange}
@@ -219,7 +209,6 @@ const ProjectHeaderBanner: React.FC<ProjectHeaderBannerProps> = ({
             Խմբագրման ռեժիմ
           </div>
           
-          {/* Նկարի URL-ը փոխելու կոճակը հաղորդագրության կողքին */}
           <Button 
             onClick={() => setShowImageUrl(true)} 
             size="sm"
