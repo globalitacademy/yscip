@@ -1,8 +1,10 @@
 
-import React from 'react';
+import React, { useState } from 'react';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
-import { Edit } from 'lucide-react';
+import { Edit, ImageIcon, Upload } from 'lucide-react';
+import { Input } from '@/components/ui/input';
+import { toast } from 'sonner';
 
 interface ProjectBannerBackgroundProps {
   image?: string;
@@ -23,7 +25,23 @@ const ProjectBannerBackground: React.FC<ProjectBannerBackgroundProps> = ({
   const fallbackImage = 'https://images.unsplash.com/photo-1470071459604-3b5ec3a7fe05?q=80&w=1920&auto=format&fit=crop';
   const imageUrl = image || fallbackImage;
   
+  // State for image URL input form
+  const [showImageForm, setShowImageForm] = useState(false);
+  const [newImageUrl, setNewImageUrl] = useState(imageUrl);
+  
   console.log("[ProjectBannerBackground] Rendering with image:", imageUrl);
+
+  // Handle image URL change
+  const handleImageSubmit = () => {
+    if (!newImageUrl.trim()) {
+      toast.error('Նկարի URL-ը չի կարող լինել դատարկ');
+      return;
+    }
+    
+    onImageChange(newImageUrl);
+    setShowImageForm(false);
+    toast.success('Նկարը հաջողությամբ փոխվել է');
+  };
 
   return (
     <div className="absolute inset-0 z-0 overflow-hidden">
@@ -67,6 +85,44 @@ const ProjectBannerBackground: React.FC<ProjectBannerBackgroundProps> = ({
               <Edit className="h-4 w-4" />
               Խմբագրել նախագիծը
             </Button>
+          </div>
+        )}
+
+        {/* Image edit controls when in edit mode */}
+        {isEditing && (
+          <div className="absolute top-6 right-6 z-20">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setShowImageForm(true)}
+              className="bg-white/10 border-white/30 text-white hover:bg-white/20 flex items-center gap-2"
+            >
+              <ImageIcon className="h-4 w-4" />
+              Փոխել ֆոնային նկարը
+            </Button>
+          </div>
+        )}
+        
+        {/* Image URL input modal */}
+        {showImageForm && (
+          <div className="absolute inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm">
+            <div className="bg-card p-6 rounded-lg shadow-xl w-full max-w-md">
+              <h3 className="text-xl font-bold mb-4">Փոխել նկարի URL-ը</h3>
+              <Input
+                value={newImageUrl}
+                onChange={(e) => setNewImageUrl(e.target.value)}
+                placeholder="https://example.com/image.jpg"
+                className="mb-4"
+              />
+              <div className="flex justify-end gap-2">
+                <Button variant="outline" onClick={() => setShowImageForm(false)}>
+                  Չեղարկել
+                </Button>
+                <Button onClick={handleImageSubmit}>
+                  Պահպանել
+                </Button>
+              </div>
+            </div>
           </div>
         )}
       </div>

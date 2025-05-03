@@ -1,6 +1,6 @@
 
 import React, { useState, useEffect } from 'react';
-import { ArrowLeft, Link } from 'lucide-react';
+import { ArrowLeft } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -32,7 +32,6 @@ const ProjectHeaderBanner: React.FC<ProjectHeaderBannerProps> = ({
   const [title, setTitle] = useState(project.title || '');
   const [description, setDescription] = useState(project.description || '');
   const [imageUrl, setImageUrl] = useState(project.image || '');
-  const [showImageUrl, setShowImageUrl] = useState(false);
   
   // Enhanced logging for debugging
   useEffect(() => {
@@ -105,27 +104,32 @@ const ProjectHeaderBanner: React.FC<ProjectHeaderBannerProps> = ({
     toast.info('Փոփոխությունները չեղարկվել են');
   };
 
-  const handleImageChange = (url: string) => {
+  // Improved image change handler with direct save
+  const handleImageChange = async (url: string) => {
     console.log("[ProjectHeaderBanner] Image URL changed to:", url);
     setImageUrl(url);
     
-    // Call parent handler to update image immediately
+    // Call parent handler to update image in the UI
     onImageChange(url);
-  };
-
-  const handleImageUrlChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setImageUrl(e.target.value);
-  };
-
-  const handleImageUrlSubmit = () => {
-    if (!imageUrl.trim()) {
-      toast.error('Նկարի URL-ն չի կարող լինել դատարկ');
-      return;
-    }
     
-    console.log("[ProjectHeaderBanner] Submitting image URL:", imageUrl);
-    handleImageChange(imageUrl);
-    setShowImageUrl(false);
+    // Immediately save the image change to storage
+    try {
+      const imageUpdate = { image: url };
+      console.log("[ProjectHeaderBanner] Saving image update:", imageUpdate);
+      
+      const success = await updateProject(imageUpdate);
+      
+      if (success) {
+        console.log("[ProjectHeaderBanner] Image successfully updated");
+        toast.success('Նկարը հաջողությամբ թարմացվել է');
+      } else {
+        console.error("[ProjectHeaderBanner] Failed to update image");
+        toast.error('Նկարի թարմացման ժամանակ սխալ է տեղի ունեցել');
+      }
+    } catch (error) {
+      console.error("[ProjectHeaderBanner] Error updating image:", error);
+      toast.error('Նկարի թարմացման ժամանակ սխալ է տեղի ունեցել');
+    }
   };
 
   return (
@@ -202,54 +206,12 @@ const ProjectHeaderBanner: React.FC<ProjectHeaderBannerProps> = ({
         </SlideUp>
       </div>
       
-      {/* Edit mode notification with URL edit button */}
+      {/* Edit mode notification */}
       {isEditing && (
-        <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 z-30 flex items-center gap-2">
+        <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 z-30">
           <div className="bg-black/70 text-white px-4 py-2 rounded-full text-sm backdrop-blur-md border border-white/10">
             Խմբագրման ռեժիմ
           </div>
-          
-          <Button 
-            onClick={() => setShowImageUrl(true)} 
-            size="sm"
-            className="bg-primary hover:bg-primary/90 border border-white/20 text-white shadow-lg flex items-center gap-1.5 rounded-full px-4 py-1"
-          >
-            <Link className="h-4 w-4" />
-            Փոխել նկարի URL-ը
-          </Button>
-          
-          {/* URL editing modal */}
-          {showImageUrl && (
-            <div className="fixed inset-0 z-[200] flex items-center justify-center bg-black/80 backdrop-blur-sm">
-              <div className="w-full max-w-md p-6 bg-black/90 rounded-lg border border-white/30 shadow-xl">
-                <h3 className="text-white text-xl font-medium mb-4">Փոխել նկարի URL-ը</h3>
-                <div className="flex flex-col gap-3">
-                  <Input 
-                    value={imageUrl} 
-                    onChange={(e) => setImageUrl(e.target.value)} 
-                    className="bg-black/60 border-white/50 text-white" 
-                    placeholder="https://example.com/image.jpg"
-                    autoFocus
-                  />
-                  <div className="flex gap-2 mt-4 justify-between">
-                    <Button 
-                      onClick={() => setShowImageUrl(false)} 
-                      variant="outline" 
-                      className="bg-red-500/10 hover:bg-red-500/20 text-white border-red-500/30"
-                    >
-                      Չեղարկել
-                    </Button>
-                    <Button 
-                      onClick={handleImageUrlSubmit} 
-                      className="bg-primary hover:bg-primary/90 text-white"
-                    >
-                      Պահպանել
-                    </Button>
-                  </div>
-                </div>
-              </div>
-            </div>
-          )}
         </div>
       )}
     </div>
