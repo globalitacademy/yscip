@@ -9,9 +9,17 @@ import { formatDate } from '@/lib/utils';
 import ProjectProgressSummary from './ProjectProgressSummary';
 import ProjectMembers from '@/components/projects/ProjectMembers';
 import { useProject } from '@/contexts/project';
+import EditableField from '@/components/common/EditableField';
 
 interface ProjectOverviewProps {
   project: ProjectTheme;
+  projectMembers?: { id: string; name: string; role: string; avatar: string; }[];
+  organization?: {
+    id: string;
+    name: string;
+    website: string;
+    logo: string;
+  } | null;
   similarProjects: ProjectTheme[];
   isEditing: boolean;
   onSaveChanges: (updates: Partial<ProjectTheme>) => void;

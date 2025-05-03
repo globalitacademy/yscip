@@ -1,4 +1,3 @@
-
 import { v4 as uuidv4 } from 'uuid';
 import { Task, TimelineEvent } from '@/data/projectThemes';
 import { 
@@ -9,19 +8,27 @@ import {
 import { useProjectPermissions } from '@/hooks/useProjectPermissions';
 import { User } from '@/types/user';
 import { TaskStatus } from '@/utils/taskUtils';
+import { toast } from 'sonner';
+import { getReservationById, getReservationByProjectId } from '@/utils/reservationUtils';
 
 export const useProjectActions = (
   project: any,
   user: User | null,
   timeline: TimelineEvent[],
-  setTimeline: React.Dispatch<React.SetStateAction<TimelineEvent[]>>,
+  setTimeline: (timeline: TimelineEvent[]) => void,
   tasks: Task[],
-  setTasks: React.Dispatch<React.SetStateAction<Task[]>>,
-  setProjectStatus: React.Dispatch<React.SetStateAction<'not_submitted' | 'pending' | 'approved' | 'rejected'>>,
-  setIsReserved: React.Dispatch<React.SetStateAction<boolean>>,
-  setProjectReservationsState: React.Dispatch<React.SetStateAction<any[]>>,
-  setShowSupervisorDialog: React.Dispatch<React.SetStateAction<boolean>>,
-  selectedSupervisor: string | null
+  setTasks: (tasks: Task[]) => void,
+  setProjectStatus: (status: 'not_submitted' | 'pending' | 'approved' | 'rejected') => void,
+  setIsReserved: (isReserved: boolean) => void,
+  setProjectReservations: (reservations: any[]) => void,
+  setShowSupervisorDialog: (show: boolean) => void,
+  selectedSupervisor: string | null,
+  setOrganization: React.Dispatch<React.SetStateAction<{
+    id: string;
+    name: string;
+    website: string;
+    logo: string;
+  } | null>>
 ) => {
   // Get permissions based on user role
   const permissions = useProjectPermissions(user?.role);
@@ -104,19 +111,19 @@ export const useProjectActions = (
     // Update local state
     if (success) {
       setIsReserved(true);
-      setProjectReservationsState(loadProjectReservations());
+      setProjectReservations(loadProjectReservations());
       setShowSupervisorDialog(false);
     }
   };
 
   const approveReservation = (reservationId: string) => {
     const updatedReservations = updateReservationStatus(reservationId, 'approved');
-    setProjectReservationsState(updatedReservations);
+    setProjectReservations(updatedReservations);
   };
 
   const rejectReservation = (reservationId: string, feedback: string) => {
     const updatedReservations = updateReservationStatus(reservationId, 'rejected', feedback);
-    setProjectReservationsState(updatedReservations);
+    setProjectReservations(updatedReservations);
   };
 
   const getReservationStatus = (): 'pending' | 'approved' | 'rejected' | null => {
@@ -127,6 +134,30 @@ export const useProjectActions = (
     );
     
     return reservation ? reservation.status : null;
+  };
+
+  const updateOrganization = (orgData: {
+    name: string;
+    website?: string;
+    logo?: string;
+  }) => {
+    console.log('Updating organization:', orgData);
+    
+    if (!project) return false;
+    
+    // Update the organization data
+    const updatedOrg = {
+      id: orgData.id || 'org-1',
+      name: orgData.name,
+      website: orgData.website || 'https://example.com',
+      logo: orgData.logo || '/placeholder.svg'
+    };
+    
+    setOrganization(updatedOrg);
+    
+    // In a real app, you would persist this to the database
+    toast.success('Կազմակերպության տվյալները թարմացվել են');
+    return true;
   };
 
   return {
@@ -142,6 +173,7 @@ export const useProjectActions = (
     reserveProject,
     approveReservation,
     rejectReservation,
-    getReservationStatus
+    getReservationStatus,
+    updateOrganization
   };
 };

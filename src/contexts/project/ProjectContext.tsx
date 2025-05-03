@@ -1,4 +1,3 @@
-
 import React, { createContext, useContext, useState } from 'react';
 import { ProjectContextType, ProjectProviderProps } from './types';
 import { useAuth } from '@/contexts/AuthContext';
@@ -73,7 +72,8 @@ export const ProjectProvider: React.FC<ProjectProviderProps> = ({
     setIsReserved,
     setProjectReservationsState,
     setShowSupervisorDialog,
-    selectedSupervisor
+    selectedSupervisor,
+    setOrganization
   );
 
   const projectProgress = calculateProjectProgress(tasks, timeline);
