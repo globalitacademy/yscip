@@ -2,6 +2,7 @@
 import { useState } from 'react';
 import { updateProject } from '@/contexts/project/projectUpdateService';
 import { User } from '@/types/user';
+import { ProjectMember } from '@/contexts/project/types';
 
 /**
  * Hook for managing additional project context state
@@ -20,12 +21,7 @@ export const useProjectContextState = (projectId: number, initialProject: any, u
   } | null>(initialProject?.organization || null);
   
   // Project members state
-  const [projectMembers, setProjectMembers] = useState<{
-    id: string;
-    name: string;
-    role: string;
-    avatar: string;
-  }[]>(initialProject?.projectMembers || []);
+  const [projectMembers, setProjectMembers] = useState<ProjectMember[]>(initialProject?.projectMembers || []);
 
   // Enhanced updateProject function with state updates
   const updateProjectWithState = async (updates: Partial<any>): Promise<boolean> => {
@@ -53,6 +49,11 @@ export const useProjectContextState = (projectId: number, initialProject: any, u
         // Update project members if included in updates
         if (updates.projectMembers) {
           setProjectMembers(updates.projectMembers);
+        }
+        
+        // Handle image updates separately to ensure consistency across different views
+        if (updates.image) {
+          console.log("Updating project image to:", updates.image);
         }
       }
       

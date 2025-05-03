@@ -11,6 +11,7 @@ import { User } from '@/types/user';
 import { TaskStatus } from '@/utils/taskUtils';
 import { toast } from 'sonner';
 import { getReservationById, getReservationByProjectId } from '@/utils/reservationUtils';
+import { ProjectMember } from '@/contexts/project/types';
 
 export const useProjectActions = (
   project: any,
@@ -29,7 +30,8 @@ export const useProjectActions = (
     name: string;
     website: string;
     logo: string;
-  } | null>>
+  } | null>>,
+  setProjectMembers: React.Dispatch<React.SetStateAction<ProjectMember[]>>
 ) => {
   // Get permissions based on user role
   const permissions = useProjectPermissions(user?.role);
@@ -161,6 +163,24 @@ export const useProjectActions = (
     return true;
   };
 
+  const updateProjectMembers = async (members: ProjectMember[]): Promise<boolean> => {
+    try {
+      console.log('Updating project members:', members);
+      if (!project) return false;
+      
+      // Update local state
+      setProjectMembers(members);
+      
+      // In a real app, you would persist this to the database
+      toast.success('Նախագծի մասնակիցները հաջողությամբ թարմացվել են');
+      return true;
+    } catch (error) {
+      console.error('Error updating project members:', error);
+      toast.error('Նախագծի մասնակիցների թարմացման ժամանակ սխալ է տեղի ունեցել');
+      return false;
+    }
+  };
+
   return {
     addTimelineEvent,
     completeTimelineEvent,
@@ -175,6 +195,7 @@ export const useProjectActions = (
     approveReservation,
     rejectReservation,
     getReservationStatus,
-    updateOrganization
+    updateOrganization,
+    updateProjectMembers
   };
 };
