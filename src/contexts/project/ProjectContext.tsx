@@ -25,7 +25,11 @@ export const ProjectProvider: React.FC<ProjectProviderProps> = ({
     setProject,
     selectedSupervisor,
     setSelectedSupervisor,
-    updateProjectWithState
+    updateProjectWithState,
+    organization,
+    setOrganization,
+    projectMembers,
+    setProjectMembers
   } = useProjectContextState(projectId, initialProject, user);
 
   const {
@@ -56,7 +60,8 @@ export const ProjectProvider: React.FC<ProjectProviderProps> = ({
     reserveProject,
     approveReservation,
     rejectReservation,
-    getReservationStatus
+    getReservationStatus,
+    updateOrganization
   } = useProjectActions(
     project,
     user,
@@ -75,6 +80,14 @@ export const ProjectProvider: React.FC<ProjectProviderProps> = ({
 
   const selectSupervisor = (supervisorId: string) => {
     setSelectedSupervisor(supervisorId);
+  };
+  
+  // Add method to update project members
+  const updateProjectMembers = (members: any[]) => {
+    console.log('Updating project members:', members);
+    setProjectMembers(members);
+    // Persist changes if needed
+    return updateProjectWithState({ projectMembers: members });
   };
 
   return (
@@ -106,7 +119,11 @@ export const ProjectProvider: React.FC<ProjectProviderProps> = ({
       selectedSupervisor,
       selectSupervisor,
       getReservationStatus,
-      updateProject: updateProjectWithState
+      updateProject: updateProjectWithState,
+      organization,
+      updateOrganization,
+      projectMembers,
+      updateProjectMembers
     }}>
       {children}
     </ProjectContext.Provider>

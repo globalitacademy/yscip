@@ -31,6 +31,19 @@ export interface ProjectContextType {
   selectSupervisor: (supervisorId: string) => void;
   getReservationStatus: () => 'pending' | 'approved' | 'rejected' | null;
   updateProject: (updates: Partial<any>) => Promise<boolean>;
+  
+  // Organization related fields
+  organization: {
+    id: string;
+    name: string;
+    website: string;
+    logo: string;
+  } | null;
+  updateOrganization: (orgData: { name: string; website?: string; logo?: string }) => Promise<boolean>;
+  
+  // Project members
+  projectMembers: { id: string; name: string; role: string; avatar: string }[];
+  updateProjectMembers: (members: { id: string; name: string; role: string; avatar: string }[]) => Promise<boolean>;
 }
 
 export interface ProjectProviderProps {

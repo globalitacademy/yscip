@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Clock, Tag, Users, Building, FileText, Calendar, GraduationCap } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
@@ -8,16 +7,11 @@ import { Input } from '@/components/ui/input';
 import { ProjectTheme } from '@/data/projectThemes';
 import { formatDate } from '@/lib/utils';
 import ProjectProgressSummary from './ProjectProgressSummary';
+import ProjectMembers from '@/components/projects/ProjectMembers';
+import { useProject } from '@/contexts/project';
 
 interface ProjectOverviewProps {
   project: ProjectTheme;
-  projectMembers: { id: string; name: string; role: string; avatar: string }[];
-  organization: {
-    id: string;
-    name: string;
-    website: string;
-    logo: string;
-  } | null;
   similarProjects: ProjectTheme[];
   isEditing: boolean;
   onSaveChanges: (updates: Partial<ProjectTheme>) => void;
@@ -25,12 +19,18 @@ interface ProjectOverviewProps {
 
 const ProjectOverview: React.FC<ProjectOverviewProps> = ({
   project,
-  projectMembers,
-  organization,
   similarProjects,
   isEditing,
   onSaveChanges
 }) => {
+  // Get data from context
+  const { 
+    projectMembers, 
+    organization,
+    updateOrganization,
+    updateProjectMembers 
+  } = useProject();
+  
   // Local state for edited fields
   const [title, setTitle] = useState(project.title || '');
   const [description, setDescription] = useState(project.description || '');
@@ -73,6 +73,16 @@ const ProjectOverview: React.FC<ProjectOverviewProps> = ({
   
   const handleRemoveTech = (tech: string) => {
     setTechStack(techStack.filter(t => t !== tech));
+  };
+  
+  // Handle organization update
+  const handleOrganizationChange = (name: string) => {
+    if (organization) {
+      updateOrganization({
+        ...organization,
+        name
+      });
+    }
   };
   
   // Calculate progress (should ideally come from project data)
@@ -271,27 +281,16 @@ const ProjectOverview: React.FC<ProjectOverviewProps> = ({
           )}
         </section>
         
+        {/* Project Team Section */}
         <section className="bg-card rounded-xl shadow-md p-6 border border-border/30">
           <h2 className="text-2xl font-bold mb-4">Նախագծի թիմ</h2>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            {projectMembers.map((member) => (
-              <div key={member.id} className="flex items-center gap-3 p-3 rounded-lg border border-gray-100">
-                <div className="w-10 h-10 rounded-full overflow-hidden bg-muted">
-                  <img 
-                    src={member.avatar || 'https://via.placeholder.com/40'} 
-                    alt={member.name}
-                    className="w-full h-full object-cover"
-                  />
-                </div>
-                <div>
-                  <p className="font-medium">{member.name}</p>
-                  <p className="text-sm text-muted-foreground capitalize">{member.role}</p>
-                </div>
-              </div>
-            ))}
-          </div>
+          <ProjectMembers 
+            isEditing={isEditing}
+            members={projectMembers} 
+          />
         </section>
         
+        {/* Organization Section */}
         {organization && (
           <section className="bg-card rounded-xl shadow-md p-6 border border-border/30">
             <h2 className="text-2xl font-bold mb-4">Պատվիրատու կազմակերպություն</h2>
@@ -304,7 +303,15 @@ const ProjectOverview: React.FC<ProjectOverviewProps> = ({
                 />
               </div>
               <div>
-                <p className="text-lg font-semibold">{organization.name}</p>
+                {isEditing ? (
+                  <EditableField 
+                    value={organization.name}
+                    onChange={handleOrganizationChange}
+                    placeholder="Մուտքագրեք կազմակերպության անունը"
+                  />
+                ) : (
+                  <p className="text-lg font-semibold">{organization.name}</p>
+                )}
                 <a 
                   href={organization.website} 
                   target="_blank" 

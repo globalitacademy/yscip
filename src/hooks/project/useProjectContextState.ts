@@ -10,11 +10,29 @@ export const useProjectContextState = (projectId: number, initialProject: any, u
   const [project, setProject] = useState<any>(initialProject);
   const [isUpdating, setIsUpdating] = useState(false);
   const [selectedSupervisor, setSelectedSupervisor] = useState<string | null>(null);
+  
+  // Organization state
+  const [organization, setOrganization] = useState<{
+    id: string;
+    name: string;
+    website: string;
+    logo: string;
+  } | null>(initialProject?.organization || null);
+  
+  // Project members state
+  const [projectMembers, setProjectMembers] = useState<{
+    id: string;
+    name: string;
+    role: string;
+    avatar: string;
+  }[]>(initialProject?.projectMembers || []);
 
   // Enhanced updateProject function with state updates
   const updateProjectWithState = async (updates: Partial<any>): Promise<boolean> => {
     try {
       setIsUpdating(true);
+      console.log('Updating project with:', updates);
+      
       const success = await updateProject(projectId, project, updates);
       
       if (success) {
@@ -26,6 +44,16 @@ export const useProjectContextState = (projectId: number, initialProject: any, u
         };
         
         setProject(updatedProject);
+        
+        // Update organization if included in updates
+        if (updates.organization) {
+          setOrganization(updates.organization);
+        }
+        
+        // Update project members if included in updates
+        if (updates.projectMembers) {
+          setProjectMembers(updates.projectMembers);
+        }
       }
       
       return success;
@@ -40,6 +68,10 @@ export const useProjectContextState = (projectId: number, initialProject: any, u
     isUpdating,
     selectedSupervisor,
     setSelectedSupervisor,
-    updateProjectWithState
+    updateProjectWithState,
+    organization,
+    setOrganization,
+    projectMembers,
+    setProjectMembers
   };
 };
