@@ -18,7 +18,7 @@ interface ProjectTasksProps {
 
 interface ProjectTimelineProps {
   timeline: TimelineEvent[];
-  completeTimelineEvent: (eventId: string) => void;
+  completeTimelineEvent: (eventId: string) => void; // Using the same prop name as in the component
   canEdit: boolean;
 }
 

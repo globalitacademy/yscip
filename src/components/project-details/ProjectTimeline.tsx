@@ -34,20 +34,24 @@ ChartJS.register(
 
 interface ProjectTimelineProps {
   timeline: TimelineEvent[];
-  projectStatus: 'not_submitted' | 'pending' | 'approved' | 'rejected';
-  onSubmitProject: (feedback: string) => void;
-  onApproveProject: (feedback: string) => void;
-  onRejectProject: (feedback: string) => void;
+  projectStatus?: 'not_submitted' | 'pending' | 'approved' | 'rejected'; // Make this optional
+  onSubmitProject?: (feedback: string) => void;
+  onApproveProject?: (feedback: string) => void;
+  onRejectProject?: (feedback: string) => void;
   isEditing?: boolean;
+  completeTimelineEvent: (eventId: string) => void; // Add this prop to match what's being passed in ProjectTabs.tsx
+  canEdit?: boolean; // Add this prop to match what's being passed in ProjectTabs.tsx
 }
 
 const ProjectTimeline: React.FC<ProjectTimelineProps> = ({
   timeline,
-  projectStatus,
-  onSubmitProject,
-  onApproveProject,
-  onRejectProject,
-  isEditing = false
+  projectStatus = 'not_submitted', // Default value
+  onSubmitProject = () => {}, // Default empty function
+  onApproveProject = () => {}, // Default empty function
+  onRejectProject = () => {}, // Default empty function
+  isEditing = false,
+  completeTimelineEvent,
+  canEdit = false
 }) => {
   const [submissionDialog, setSubmissionDialog] = useState(false);
   const [approvalDialog, setApprovalDialog] = useState(false);
@@ -153,6 +157,20 @@ const ProjectTimeline: React.FC<ProjectTimelineProps> = ({
                   <span className="text-sm text-muted-foreground">{formatDate(event.date)}</span>
                 </div>
                 <p className="text-sm text-muted-foreground">{event.description}</p>
+                
+                {/* Add UI for completing timeline events when in edit mode */}
+                {canEdit && !event.isCompleted && (
+                  <div className="mt-2 text-right">
+                    <Button 
+                      variant="outline" 
+                      size="sm" 
+                      onClick={() => completeTimelineEvent(event.id)}
+                      className="text-green-600 border-green-200 hover:bg-green-50"
+                    >
+                      Նշել որպես ավարտված
+                    </Button>
+                  </div>
+                )}
               </div>
             </div>
           ))}
