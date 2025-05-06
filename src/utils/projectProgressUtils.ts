@@ -1,6 +1,7 @@
 
 import { v4 as uuidv4 } from 'uuid';
 import { Task, TimelineEvent } from '@/data/projectThemes';
+import { normalizeStatus } from '@/utils/taskUtils';
 
 // Calculate project progress based on tasks and timeline
 export const calculateProjectProgress = (tasks: Task[], timeline: TimelineEvent[]): number => {
@@ -13,7 +14,7 @@ export const calculateProjectProgress = (tasks: Task[], timeline: TimelineEvent[
   if (tasks.length > 0) {
     totalItems += tasks.length;
     completedItems += tasks.filter(task => 
-      task.status === 'done' || task.status === 'completed'
+      normalizeStatus(task.status) === 'completed'
     ).length;
   }
   
@@ -67,7 +68,7 @@ export const generateSampleTasks = (userId: string): Task[] => {
       id: uuidv4(),
       title: 'Տեխնիկական առաջադրանքի կազմում',
       description: 'Նախագծի տեխնիկական առաջադրանքի մշակում և կազմում',
-      status: 'done',
+      status: 'completed',
       assignee: userId,
       assignedTo: userId,
       dueDate: new Date().toISOString().split('T')[0]
@@ -76,7 +77,7 @@ export const generateSampleTasks = (userId: string): Task[] => {
       id: uuidv4(),
       title: 'Ճարտարապետության մշակում',
       description: 'Նախագծի ճարտարապետության նախագծում և սխեմատիկ պատկերում',
-      status: 'inProgress',
+      status: 'in_progress',
       assignee: userId,
       assignedTo: userId,
       dueDate: new Date().toISOString().split('T')[0]
@@ -85,7 +86,7 @@ export const generateSampleTasks = (userId: string): Task[] => {
       id: uuidv4(),
       title: 'UI/UX դիզայն',
       description: 'Օգտագործողի միջերեսի նախատիպի մշակում',
-      status: 'todo',
+      status: 'not_started',
       assignee: userId,
       assignedTo: userId,
       dueDate: new Date().toISOString().split('T')[0]

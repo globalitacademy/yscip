@@ -1,9 +1,9 @@
-
 import React from 'react';
 import { Progress } from '@/components/ui/progress';
 import { motion } from 'framer-motion';
 import { CheckCircle, Clock } from 'lucide-react';
 import { Task, TimelineEvent } from '@/data/projectThemes';
+import { normalizeStatus } from '@/utils/taskUtils';
 
 const progressVariants = {
   hidden: { width: '0%' },
@@ -26,9 +26,9 @@ const ProgressBars: React.FC<ProgressBarsProps> = ({
   projectProgress,
   progressColor 
 }) => {
-  // Հաշվարկում ենք վիճակագրությունը
+  // Calculate statistics
   const completedTasks = tasks.filter(task => 
-    task.status === 'done' || task.status === 'completed').length;
+    normalizeStatus(task.status) === 'completed').length;
   const totalTasks = tasks.length;
   const taskPercentage = totalTasks > 0 ? Math.round((completedTasks / totalTasks) * 100) : 0;
   

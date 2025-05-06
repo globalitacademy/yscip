@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { z } from 'zod';
 import { useForm } from 'react-hook-form';
@@ -28,6 +27,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
+import { TaskStatus } from '@/utils/taskUtils';
 
 const formSchema = z.object({
   title: z.string().min(3, { message: 'Վերնագիրը պետք է ունենա առնվազն 3 նիշ' }),
@@ -58,7 +58,7 @@ const TaskForm: React.FC<TaskFormProps> = ({ onSubmit, onClose, currentUserId, s
     const newTask: Omit<Task, 'id'> = {
       title: values.title,
       description: values.description,
-      status: 'todo',
+      status: 'not_started' as TaskStatus,
       assignee: values.assignedTo,
       assignedTo: values.assignedTo,
       dueDate: values.dueDate,

@@ -1,7 +1,8 @@
+
 import React, { useState } from 'react';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Task } from '@/data/projectThemes';
+import { Task, ProjectTheme } from '@/data/projectThemes';
 import { ListChecks, Check, Clock, Plus } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { format } from 'date-fns';
@@ -12,7 +13,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { TaskStatus, getTaskStatusColor, getTaskStatusText } from '@/utils/taskUtils';
+import { TaskStatus, normalizeStatus, getTaskStatusColor, getTaskStatusText } from '@/utils/taskUtils';
 
 // Define TaskPriority type
 type TaskPriority = 'high' | 'medium' | 'low';
@@ -24,17 +25,18 @@ interface ExtendedTask extends Task {
 }
 
 interface ProjectTasksProps {
+  project?: ProjectTheme;
   tasks: ExtendedTask[];
   onAddTask: (task: Omit<ExtendedTask, 'id'>) => void;
-  onUpdateTaskStatus: (taskId: string, status: TaskStatus) => void;
-  isEditing: boolean;
+  updateTaskStatus: (taskId: string, status: TaskStatus) => void;
+  canEdit: boolean;
 }
 
 const ProjectTasks: React.FC<ProjectTasksProps> = ({
   tasks,
   onAddTask,
-  onUpdateTaskStatus,
-  isEditing
+  updateTaskStatus,
+  canEdit
 }) => {
   const [newTask, setNewTask] = useState({
     title: '',
@@ -52,7 +54,7 @@ const ProjectTasks: React.FC<ProjectTasksProps> = ({
       title: newTask.title,
       description: newTask.description,
       deadline: new Date(newTask.deadline).toISOString(),
-      status: 'todo' as TaskStatus,
+      status: 'not_started' as TaskStatus,
       priority: newTask.priority,
       assignedTo: 'current-user' // Placeholder
     });
@@ -80,19 +82,18 @@ const ProjectTasks: React.FC<ProjectTasksProps> = ({
     }
   };
   
-  const getStatusBadge = (status: TaskStatus) => {
-    switch (status) {
+  const getStatusBadge = (status: string) => {
+    const normalizedStatus = normalizeStatus(status);
+    
+    switch (normalizedStatus) {
       case 'completed':
-      case 'done':
         return <Badge className="bg-green-600">Ավարտված</Badge>;
-      case 'in-progress':
-      case 'inProgress':
-      case 'review':
+      case 'in_progress':
         return <Badge className="bg-blue-600">Ընթացքի մեջ</Badge>;
-      case 'pending':
-      case 'open':
-      case 'todo':
+      case 'not_started':
         return <Badge variant="outline">Սպասվող</Badge>;
+      case 'blocked':
+        return <Badge variant="destructive">Արգելափակված</Badge>;
       default:
         return <Badge variant="outline">Սպասվող</Badge>;
     }
@@ -100,10 +101,14 @@ const ProjectTasks: React.FC<ProjectTasksProps> = ({
 
   const filteredTasks = tasks.filter(task => {
     if (taskFilter === 'all') return true;
-    if (taskFilter === 'active') return !['completed', 'done'].includes(task.status);
-    if (taskFilter === 'completed') return ['completed', 'done'].includes(task.status);
+    if (taskFilter === 'active') return normalizeStatus(task.status) !== 'completed';
+    if (taskFilter === 'completed') return normalizeStatus(task.status) === 'completed';
     return true;
   });
+
+  const isTaskCompleted = (taskStatus: string): boolean => {
+    return normalizeStatus(taskStatus) === 'completed';
+  };
 
   return (
     <Card>
@@ -112,7 +117,7 @@ const ProjectTasks: React.FC<ProjectTasksProps> = ({
           <ListChecks className="h-5 w-5" /> Հանձնարարություններ
         </CardTitle>
         
-        {isEditing && (
+        {canEdit && (
           <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
             <DialogTrigger asChild>
               <Button size="sm">
@@ -206,19 +211,19 @@ const ProjectTasks: React.FC<ProjectTasksProps> = ({
                 key={task.id}
                 className={cn(
                   "border rounded-lg p-4 transition-colors",
-                  (task.status === 'completed' || task.status === 'done') ? "bg-muted/30" : ""
+                  isTaskCompleted(task.status) ? "bg-muted/30" : ""
                 )}
               >
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
                   <h3 className={cn(
                     "font-medium text-lg",
-                    (task.status === 'completed' || task.status === 'done') && "line-through text-muted-foreground"
+                    isTaskCompleted(task.status) && "line-through text-muted-foreground"
                   )}>
                     {task.title}
                   </h3>
                   <div className="flex flex-wrap gap-2">
                     {task.priority && getPriorityBadge(task.priority)}
-                    {getStatusBadge(task.status as TaskStatus)}
+                    {getStatusBadge(task.status)}
                   </div>
                 </div>
                 
@@ -236,23 +241,23 @@ const ProjectTasks: React.FC<ProjectTasksProps> = ({
                     )}
                   </div>
                   
-                  {isEditing && (task.status !== 'completed' && task.status !== 'done') && (
+                  {canEdit && !isTaskCompleted(task.status) && (
                     <Button
                       variant="outline"
                       size="sm"
                       className="h-7 text-xs"
-                      onClick={() => onUpdateTaskStatus(task.id, 'done')}
+                      onClick={() => updateTaskStatus(task.id, 'completed')}
                     >
                       <Check className="h-3.5 w-3.5 mr-1" /> Նշել որպես ավարտված
                     </Button>
                   )}
                   
-                  {isEditing && (task.status === 'completed' || task.status === 'done') && (
+                  {canEdit && isTaskCompleted(task.status) && (
                     <Button
                       variant="outline"
                       size="sm"
                       className="h-7 text-xs"
-                      onClick={() => onUpdateTaskStatus(task.id, 'todo')}
+                      onClick={() => updateTaskStatus(task.id, 'not_started')}
                     >
                       Նշել որպես անավարտ
                     </Button>

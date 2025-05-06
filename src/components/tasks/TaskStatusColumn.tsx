@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { Task } from '@/data/projectThemes';
 import { User } from '@/data/userRoles';
@@ -9,7 +10,7 @@ import {
   User as UserIcon
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { TaskStatus } from '@/utils/taskUtils';
+import { TaskStatus, normalizeStatus } from '@/utils/taskUtils';
 
 interface TaskStatusColumnProps {
   status: 'todo' | 'in-progress' | 'review' | 'done';
@@ -40,19 +41,19 @@ const TaskStatusColumn: React.FC<TaskStatusColumnProps> = ({
   
   const getPreviousStatus = (): TaskStatus => {
     switch(status) {
-      case 'in-progress': return 'todo';
-      case 'review': return 'in-progress';
-      case 'done': return 'review';
-      default: return 'todo';
+      case 'in-progress': return 'not_started';
+      case 'review': return 'in_progress';
+      case 'done': return 'in_progress';
+      default: return 'not_started';
     }
   };
   
   const getNextStatus = (): TaskStatus => {
     switch(status) {
-      case 'todo': return 'in-progress';
-      case 'in-progress': return 'review';
-      case 'review': return 'done';
-      default: return 'done';
+      case 'todo': return 'in_progress';
+      case 'in-progress': return 'in_progress';
+      case 'review': return 'completed';
+      default: return 'completed';
     }
   };
   

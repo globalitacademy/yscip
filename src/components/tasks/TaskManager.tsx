@@ -7,7 +7,13 @@ import { Dialog, DialogTrigger } from "@/components/ui/dialog";
 import { toast } from "@/components/ui/use-toast";
 import TaskStatusColumn from './TaskStatusColumn';
 import TaskForm from './TaskForm';
-import { getTaskStatusColor, getTaskStatusText, groupTasksByStatus, normalizeStatus, TaskStatus } from '@/utils/taskUtils';
+import { 
+  TaskStatus, 
+  getTaskStatusColor, 
+  getTaskStatusText, 
+  groupTasksByStatus, 
+  normalizeStatus 
+} from '@/utils/taskUtils';
 
 interface TaskManagerProps {
   tasks: Task[];
