@@ -7,7 +7,7 @@ import { Separator } from "@/components/ui/separator";
 import { ProjectTheme } from '@/data/projectThemes';
 import { getProjectImage } from '@/lib/getProjectImage';
 import { Bookmark, Calendar, Check, Clock, Download, Globe, HardDrive, Clock3, PenTool, Cloud } from 'lucide-react';
-import { ProjectMembers } from '@/components/projects/ProjectMembers';
+import ProjectMembers from '@/components/projects/ProjectMembers';
 import { useProject } from '@/contexts/ProjectContext';
 import ProjectCard from '@/components/ProjectCard';
 import { motion } from 'framer-motion';

@@ -7,6 +7,19 @@ import ProjectTasks from './ProjectTasks';
 import ProjectOverview from './ProjectOverview';
 import ProjectParticipants from './ProjectParticipants';
 
+interface ProjectTasksProps {
+  tasks: Task[];
+  addTask: (task: Omit<Task, 'id'>) => void;
+  updateTaskStatus: (taskId: string, status: 'not_started' | 'in_progress' | 'completed' | 'blocked') => void;
+  canEdit: boolean;
+}
+
+interface ProjectTimelineProps {
+  timeline: TimelineEvent[];
+  completeTimelineEvent: (eventId: string) => void;
+  canEdit: boolean;
+}
+
 interface ProjectTabsProps {
   project: ProjectTheme;
   timeline: TimelineEvent[];
@@ -35,7 +48,7 @@ interface ProjectTabsProps {
   approveProject: (feedback: string) => void;
   rejectProject: (feedback: string) => void;
   isEditing: boolean;
-  onSaveChanges: (updates: Partial<ProjectTheme>) => void;
+  onSaveChanges: (updates: Partial<ProjectTheme>) => Promise<void>;
   activeTab: string;
   setActiveTab: (tab: string) => void;
 }
@@ -84,7 +97,6 @@ const ProjectTabs: React.FC<ProjectTabsProps> = ({
       
       <TabsContent value="tasks" className="space-y-6 animate-in fade-in-50 duration-500">
         <ProjectTasks 
-          project={project}
           tasks={tasks}
           addTask={addTask}
           updateTaskStatus={updateTaskStatus}
@@ -95,7 +107,6 @@ const ProjectTabs: React.FC<ProjectTabsProps> = ({
       <TabsContent value="timeline" className="space-y-6 animate-in fade-in-50 duration-500">
         <ProjectTimeline 
           timeline={timeline}
-          addTimelineEvent={addTimelineEvent}
           completeTimelineEvent={completeTimelineEvent}
           canEdit={isEditing}
         />

@@ -2,6 +2,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
 import { Pencil, Save, X } from 'lucide-react';
 
 interface EditableFieldProps {
@@ -11,6 +12,8 @@ interface EditableFieldProps {
   showEditButton?: boolean;
   className?: string;
   inputClassName?: string;
+  multiline?: boolean;
+  rows?: number;
 }
 
 const EditableField: React.FC<EditableFieldProps> = ({
@@ -20,10 +23,12 @@ const EditableField: React.FC<EditableFieldProps> = ({
   showEditButton = true,
   className = '',
   inputClassName = '',
+  multiline = false,
+  rows = 4
 }) => {
   const [isEditing, setIsEditing] = useState(false);
   const [tempValue, setTempValue] = useState(value);
-  const inputRef = useRef<HTMLInputElement>(null);
+  const inputRef = useRef<HTMLInputElement | HTMLTextAreaElement>(null);
 
   useEffect(() => {
     setTempValue(value);
@@ -50,7 +55,7 @@ const EditableField: React.FC<EditableFieldProps> = ({
   };
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
-    if (e.key === 'Enter') {
+    if (e.key === 'Enter' && !multiline) {
       handleSave();
     } else if (e.key === 'Escape') {
       handleCancel();
@@ -61,15 +66,28 @@ const EditableField: React.FC<EditableFieldProps> = ({
     <div className={`relative ${className}`}>
       {isEditing ? (
         <div className="flex items-center gap-2">
-          <Input
-            ref={inputRef}
-            value={tempValue}
-            onChange={(e) => setTempValue(e.target.value)}
-            onKeyDown={handleKeyDown}
-            placeholder={placeholder}
-            className={inputClassName}
-            autoFocus
-          />
+          {multiline ? (
+            <Textarea
+              ref={inputRef as React.RefObject<HTMLTextAreaElement>}
+              value={tempValue}
+              onChange={(e) => setTempValue(e.target.value)}
+              onKeyDown={handleKeyDown}
+              placeholder={placeholder}
+              className={inputClassName}
+              rows={rows}
+              autoFocus
+            />
+          ) : (
+            <Input
+              ref={inputRef as React.RefObject<HTMLInputElement>}
+              value={tempValue}
+              onChange={(e) => setTempValue(e.target.value)}
+              onKeyDown={handleKeyDown}
+              placeholder={placeholder}
+              className={inputClassName}
+              autoFocus
+            />
+          )}
           <div className="flex items-center gap-1">
             <Button
               type="button"

@@ -1,3 +1,4 @@
+
 import React, { createContext, useContext, useState } from 'react';
 import { ProjectContextType, ProjectProviderProps } from './types';
 import { useAuth } from '@/contexts/AuthContext';
@@ -5,6 +6,7 @@ import { useProjectState } from '@/hooks/useProjectState';
 import { useProjectActions } from '@/hooks/useProjectActions';
 import { calculateProjectProgress } from '@/utils/projectProgressUtils';
 import { useProjectContextState } from '@/hooks/project/useProjectContextState';
+import { TaskStatus } from '@/utils/taskUtils';
 
 // Create the context with undefined initial value
 const ProjectContext = createContext<ProjectContextType | undefined>(undefined);
@@ -60,7 +62,8 @@ export const ProjectProvider: React.FC<ProjectProviderProps> = ({
     approveReservation,
     rejectReservation,
     getReservationStatus,
-    updateOrganization
+    updateOrganization,
+    updateProjectMembers
   } = useProjectActions(
     project,
     user,
@@ -73,21 +76,14 @@ export const ProjectProvider: React.FC<ProjectProviderProps> = ({
     setProjectReservationsState,
     setShowSupervisorDialog,
     selectedSupervisor,
-    setOrganization
+    setOrganization,
+    setProjectMembers
   );
 
   const projectProgress = calculateProjectProgress(tasks, timeline);
 
   const selectSupervisor = (supervisorId: string) => {
     setSelectedSupervisor(supervisorId);
-  };
-  
-  // Add method to update project members
-  const updateProjectMembers = (members: any[]) => {
-    console.log('Updating project members:', members);
-    setProjectMembers(members);
-    // Persist changes if needed
-    return updateProjectWithState({ projectMembers: members });
   };
 
   return (

@@ -98,12 +98,15 @@ const ProjectDetailsContent: React.FC = () => {
       const success = await updateProject(updates);
       if (success) {
         toast.success('Փոփոխությունները հաջողությամբ պահպանվել են');
+        return Promise.resolve();
       } else {
         toast.error('Փոփոխությունների պահպանման ժամանակ սխալ է տեղի ունեցել');
+        return Promise.reject('Failed to update');
       }
     } catch (error) {
       console.error('Error saving changes:', error);
       toast.error('Փոփոխությունների պահպանման ժամանակ սխալ է տեղի ունեցել');
+      return Promise.reject(error);
     }
   };
 
