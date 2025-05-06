@@ -7,6 +7,7 @@ import ProjectTasks from './ProjectTasks';
 import ProjectOverview from './ProjectOverview';
 import ProjectParticipants from './ProjectParticipants';
 import { TaskStatus } from '@/utils/taskUtils';
+import { useIsMobile } from '@/hooks/use-mobile';
 
 interface ProjectTasksProps {
   tasks: Task[];
@@ -76,14 +77,16 @@ const ProjectTabs: React.FC<ProjectTabsProps> = ({
   activeTab,
   setActiveTab
 }) => {
+  const isMobile = useIsMobile();
+  
   return (
-    <Tabs defaultValue="overview" value={activeTab} onValueChange={setActiveTab}>
-      <TabsList className="grid grid-cols-4 md:grid-cols-5 lg:w-[600px] mb-8">
-        <TabsTrigger value="overview">Նկարագիր</TabsTrigger>
-        <TabsTrigger value="tasks">Առաջադրանքներ</TabsTrigger>
-        <TabsTrigger value="timeline">Ժամանակացույց</TabsTrigger>
-        <TabsTrigger value="participants">Մասնակիցներ</TabsTrigger>
-        <TabsTrigger value="files" className="hidden md:flex">Ֆայլեր</TabsTrigger>
+    <Tabs defaultValue="overview" value={activeTab} onValueChange={setActiveTab} className="w-full">
+      <TabsList className="w-full flex flex-wrap justify-start gap-2 mb-8 overflow-x-auto">
+        <TabsTrigger value="overview" className="flex-grow sm:flex-grow-0">Նկարագիր</TabsTrigger>
+        <TabsTrigger value="tasks" className="flex-grow sm:flex-grow-0">Առաջադրանքներ</TabsTrigger>
+        <TabsTrigger value="timeline" className="flex-grow sm:flex-grow-0">Ժամանակացույց</TabsTrigger>
+        <TabsTrigger value="participants" className="flex-grow sm:flex-grow-0">Մասնակիցներ</TabsTrigger>
+        <TabsTrigger value="files" className="flex-grow sm:flex-grow-0">Ֆայլեր</TabsTrigger>
       </TabsList>
       
       <TabsContent value="overview" className="space-y-6 animate-in fade-in-50 duration-500">
