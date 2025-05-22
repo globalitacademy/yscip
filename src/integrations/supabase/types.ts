@@ -356,6 +356,45 @@ export type Database = {
         }
         Relationships: []
       }
+      educational_modules: {
+        Row: {
+          content: string | null
+          created_at: string | null
+          description: string | null
+          display_order: number | null
+          id: number
+          progress: number | null
+          status: string | null
+          title: string
+          topics: string[] | null
+          updated_at: string | null
+        }
+        Insert: {
+          content?: string | null
+          created_at?: string | null
+          description?: string | null
+          display_order?: number | null
+          id?: number
+          progress?: number | null
+          status?: string | null
+          title: string
+          topics?: string[] | null
+          updated_at?: string | null
+        }
+        Update: {
+          content?: string | null
+          created_at?: string | null
+          description?: string | null
+          display_order?: number | null
+          id?: number
+          progress?: number | null
+          status?: string | null
+          title?: string
+          topics?: string[] | null
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
       employer_projects: {
         Row: {
           category: string

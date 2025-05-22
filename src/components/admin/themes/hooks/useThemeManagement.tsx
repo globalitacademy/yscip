@@ -29,8 +29,8 @@ export function useThemeManagement() {
   const fetchModules = async () => {
     try {
       // Get modules for dropdown selection
-      const { data, error } = await (supabase
-        .from('educational_modules') as any)
+      const { data, error } = await supabase
+        .from('educational_modules')
         .select('id, title')
         .order('display_order', { ascending: true });
 
@@ -44,10 +44,8 @@ export function useThemeManagement() {
   const fetchThemes = async () => {
     setIsLoading(true);
     try {
-      // Use type assertion to bypass TypeScript limitation
-      // This will be fixed once the types are updated
-      const { data, error } = await (supabase
-        .from('themes') as any)
+      const { data, error } = await supabase
+        .from('themes')
         .select('*')
         .order('created_at', { ascending: false });
 
@@ -82,8 +80,8 @@ export function useThemeManagement() {
     try {
       if (selectedTheme.id) {
         // Update existing theme
-        const { error } = await (supabase
-          .from('themes') as any)
+        const { error } = await supabase
+          .from('themes')
           .update({
             ...selectedTheme,
             updated_at: new Date().toISOString()
@@ -94,8 +92,8 @@ export function useThemeManagement() {
         toast.success("Թեման հաջողությամբ թարմացվել է");
       } else {
         // Add new theme
-        const { error } = await (supabase
-          .from('themes') as any)
+        const { error } = await supabase
+          .from('themes')
           .insert({
             ...selectedTheme,
             created_by: (await supabase.auth.getUser()).data.user?.id
@@ -117,8 +115,8 @@ export function useThemeManagement() {
     if (!selectedTheme?.id) return;
 
     try {
-      const { error } = await (supabase
-        .from('themes') as any)
+      const { error } = await supabase
+        .from('themes')
         .delete()
         .eq('id', selectedTheme.id);
 

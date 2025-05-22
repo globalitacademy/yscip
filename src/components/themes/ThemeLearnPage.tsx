@@ -35,8 +35,8 @@ const ThemeLearnPage = () => {
         setIsLoading(true);
         
         // First get the theme
-        const { data: themeData, error } = await (supabase
-          .from('themes') as any)
+        const { data: themeData, error } = await supabase
+          .from('themes')
           .select('*')
           .eq('id', id)
           .single();
@@ -46,8 +46,8 @@ const ThemeLearnPage = () => {
         if (themeData) {
           // If theme has a module_id, get the module title
           if (themeData.module_id) {
-            const { data: moduleData } = await (supabase
-              .from('educational_modules') as any)
+            const { data: moduleData } = await supabase
+              .from('educational_modules')
               .select('title')
               .eq('id', themeData.module_id)
               .single();
@@ -57,8 +57,8 @@ const ThemeLearnPage = () => {
             }
             
             // Get related themes from the same module
-            const { data: relatedData } = await (supabase
-              .from('themes') as any)
+            const { data: relatedData } = await supabase
+              .from('themes')
               .select('id, title, summary, category, image_url')
               .eq('module_id', themeData.module_id)
               .neq('id', id)
@@ -173,7 +173,7 @@ const ThemeLearnPage = () => {
                 )}
                 <CardContent className="p-4">
                   <h3 className="text-lg font-medium mb-2">
-                    <Link to={`/theme/${relatedTheme.id}`} className="hover:text-primary">
+                    <Link to={`/themes/${relatedTheme.id}`} className="hover:text-primary">
                       {relatedTheme.title}
                     </Link>
                   </h3>

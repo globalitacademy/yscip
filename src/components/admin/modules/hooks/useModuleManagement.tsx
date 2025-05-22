@@ -24,8 +24,8 @@ export function useModuleManagement() {
   const fetchModules = async () => {
     setIsLoading(true);
     try {
-      const { data, error } = await (supabase
-        .from('educational_modules') as any)
+      const { data, error } = await supabase
+        .from('educational_modules')
         .select('*')
         .order('display_order', { ascending: true });
 
@@ -88,8 +88,8 @@ export function useModuleManagement() {
           updated_at: new Date().toISOString()
         };
         
-        const { error } = await (supabase
-          .from('educational_modules') as any)
+        const { error } = await supabase
+          .from('educational_modules')
           .update(moduleData)
           .eq('id', selectedModule.id);
         
@@ -109,8 +109,8 @@ export function useModuleManagement() {
           updated_at: new Date().toISOString()
         };
         
-        const { error } = await (supabase
-          .from('educational_modules') as any)
+        const { error } = await supabase
+          .from('educational_modules')
           .insert(moduleData);
         
         if (error) throw error;
@@ -130,8 +130,8 @@ export function useModuleManagement() {
     if (!selectedModule) return;
     
     try {
-      const { error } = await (supabase
-        .from('educational_modules') as any)
+      const { error } = await supabase
+        .from('educational_modules')
         .delete()
         .eq('id', selectedModule.id);
         
