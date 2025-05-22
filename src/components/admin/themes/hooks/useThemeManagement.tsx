@@ -16,6 +16,7 @@ export interface Theme {
   module_id?: number;
   is_published?: boolean;
   created_at?: string;
+  video_url?: string;
 }
 
 export function useThemeManagement() {
@@ -25,6 +26,7 @@ export function useThemeManagement() {
   const [selectedTheme, setSelectedTheme] = useState<Theme | null>(null);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [modules, setModules] = useState<{id: number; title: string}[]>([]);
+  const [contentType, setContentType] = useState<'text' | 'video' | 'both'>('text');
 
   const fetchModules = async () => {
     try {
@@ -66,6 +68,14 @@ export function useThemeManagement() {
 
   const handleEditClick = (theme: Theme) => {
     setSelectedTheme({...theme});
+    // Determine content type based on theme data
+    if (theme.content && theme.video_url) {
+      setContentType('both');
+    } else if (theme.video_url) {
+      setContentType('video');
+    } else {
+      setContentType('text');
+    }
     setIsDialogOpen(true);
   };
 
@@ -139,7 +149,24 @@ export function useThemeManagement() {
       content: '',
       is_published: false
     });
+    setContentType('text');
     setIsDialogOpen(true);
+  };
+
+  // Function to handle embedded YouTube videos
+  const embedYouTubeVideo = (url: string): string => {
+    // Extract video ID from YouTube URL
+    const match = url.match(/(?:youtu\.be\/|youtube\.com\/(?:embed\/|v\/|watch\?v=|watch\?.+&v=))([^&\s]+)/);
+    if (match && match[1]) {
+      const videoId = match[1];
+      // Return the video content as HTML
+      return `<div class="aspect-w-16 aspect-h-9 my-8">
+        <iframe width="100%" height="450" src="https://www.youtube.com/embed/${videoId}" 
+         frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
+         allowfullscreen></iframe>
+      </div>`;
+    }
+    return '';
   };
 
   return {
@@ -149,6 +176,8 @@ export function useThemeManagement() {
     selectedTheme,
     isDeleteDialogOpen,
     modules,
+    contentType,
+    setContentType,
     setIsDialogOpen,
     setSelectedTheme,
     setIsDeleteDialogOpen,
@@ -158,6 +187,7 @@ export function useThemeManagement() {
     handleDeleteClick,
     handleSaveTheme,
     handleDeleteTheme,
-    handleAddNewTheme
+    handleAddNewTheme,
+    embedYouTubeVideo
   };
 }

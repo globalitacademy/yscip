@@ -2,12 +2,13 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
-import { ArrowLeft, BookOpen, Clock, Calendar } from 'lucide-react';
+import { ArrowLeft, BookOpen, Clock, Calendar, Video, FileText, Image } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
 import { Badge } from '@/components/ui/badge';
 import { format } from 'date-fns';
 import { Card, CardContent } from '@/components/ui/card';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 
 interface Theme {
   id: string;
@@ -20,7 +21,6 @@ interface Theme {
   module_id?: number;
   created_at?: string;
   updated_at?: string;
-  module_title?: string;
 }
 
 const ThemeLearnPage = () => {
@@ -28,6 +28,8 @@ const ThemeLearnPage = () => {
   const [theme, setTheme] = useState<Theme | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [relatedThemes, setRelatedThemes] = useState<Theme[]>([]);
+  const [moduleTitle, setModuleTitle] = useState<string | null>(null);
+  const [activeTab, setActiveTab] = useState('content');
   
   useEffect(() => {
     const fetchTheme = async () => {
@@ -53,7 +55,7 @@ const ThemeLearnPage = () => {
               .single();
               
             if (moduleData) {
-              themeData.module_title = moduleData.title;
+              setModuleTitle(moduleData.title);
             }
             
             // Get related themes from the same module
@@ -82,6 +84,23 @@ const ThemeLearnPage = () => {
       fetchTheme();
     }
   }, [id]);
+  
+  // Extract YouTube video ID from content if exists
+  const extractYouTubeVideoId = (content?: string): string | null => {
+    if (!content) return null;
+    
+    // Match YouTube embed iframe
+    const iframeMatch = content.match(/src=["']https:\/\/www\.youtube\.com\/embed\/([^"'&?\/]+)/);
+    if (iframeMatch && iframeMatch[1]) return iframeMatch[1];
+    
+    // Match YouTube URLs
+    const urlMatch = content.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/)([^"'&?\/\s]+)/);
+    if (urlMatch && urlMatch[1]) return urlMatch[1];
+    
+    return null;
+  };
+  
+  const videoId = theme?.content ? extractYouTubeVideoId(theme.content) : null;
   
   if (isLoading) {
     return (
@@ -113,11 +132,11 @@ const ThemeLearnPage = () => {
           </Link>
         </Button>
         
-        {theme.module_id && theme.module_title && (
+        {theme.module_id && moduleTitle && (
           <div className="mb-2">
             <Badge variant="outline" className="flex items-center gap-1 max-w-fit">
               <BookOpen className="h-3.5 w-3.5 mr-1" />
-              <Link to={`/module/${theme.module_id}`}>{theme.module_title}</Link>
+              <Link to={`/module/${theme.module_id}`}>{moduleTitle}</Link>
             </Badge>
           </div>
         )}
@@ -146,13 +165,68 @@ const ThemeLearnPage = () => {
         </div>
       )}
       
-      <div className="prose prose-lg max-w-none mb-12">
-        <div className="mb-8 font-medium text-lg text-muted-foreground">{theme.summary}</div>
+      <div className="mb-8 font-medium text-lg text-muted-foreground">{theme.summary}</div>
+      
+      <Tabs value={activeTab} onValueChange={setActiveTab} className="mb-12">
+        <TabsList className="mb-6">
+          <TabsTrigger value="content" className="flex items-center gap-2">
+            <FileText className="h-4 w-4" />
+            <span>Տեքստային Նյութ</span>
+          </TabsTrigger>
+          {videoId && (
+            <TabsTrigger value="video" className="flex items-center gap-2">
+              <Video className="h-4 w-4" />
+              <span>Տեսադաս</span>
+            </TabsTrigger>
+          )}
+          {theme.image_url && (
+            <TabsTrigger value="images" className="flex items-center gap-2">
+              <Image className="h-4 w-4" />
+              <span>Նկարներ</span>
+            </TabsTrigger>
+          )}
+        </TabsList>
         
-        {theme.content && (
-          <div dangerouslySetInnerHTML={{ __html: theme.content }} />
+        <TabsContent value="content" className="prose prose-lg max-w-none">
+          {theme.content && (
+            <div dangerouslySetInnerHTML={{ __html: theme.content }} />
+          )}
+        </TabsContent>
+        
+        {videoId && (
+          <TabsContent value="video">
+            <div className="aspect-w-16 aspect-h-9 rounded-lg overflow-hidden shadow-lg">
+              <iframe 
+                className="w-full h-[450px]"
+                src={`https://www.youtube.com/embed/${videoId}`}
+                title={theme.title}
+                frameBorder="0"
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                allowFullScreen
+              ></iframe>
+            </div>
+          </TabsContent>
         )}
-      </div>
+        
+        {theme.image_url && (
+          <TabsContent value="images">
+            <div className="grid grid-cols-1 gap-6">
+              <div className="rounded-lg overflow-hidden shadow-lg">
+                <img 
+                  src={theme.image_url} 
+                  alt={theme.title} 
+                  className="w-full h-auto"
+                />
+                <div className="p-4 bg-muted/50">
+                  <p className="text-sm text-muted-foreground">
+                    {theme.title} - Ուսումնական գրաֆիկական նյութ
+                  </p>
+                </div>
+              </div>
+            </div>
+          </TabsContent>
+        )}
+      </Tabs>
       
       {relatedThemes.length > 0 && (
         <div className="mt-12">

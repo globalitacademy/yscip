@@ -1,19 +1,62 @@
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
+import { Link, useParams } from 'react-router-dom';
 import { EducationalModule } from './types';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
-import { CheckCircle, Clock } from 'lucide-react';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from '@/components/ui/card';
+import { CheckCircle, Clock, ChevronRight, Book, Video, Image as ImageIcon } from 'lucide-react';
 import { Progress } from '@/components/ui/progress';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
+import { supabase } from '@/integrations/supabase/client';
+import { Badge } from '@/components/ui/badge';
 
 interface ModuleLearningProps {
   module: EducationalModule;
 }
 
+interface Theme {
+  id: string;
+  title: string;
+  summary: string;
+  image_url?: string;
+  banner_image_url?: string;
+  category?: string;
+  module_id?: number;
+  is_published?: boolean;
+  content?: string;
+}
+
 const ModuleLearning: React.FC<ModuleLearningProps> = ({ module }) => {
   const { title, description, topics, status, progress = 0 } = module;
   const Icon = module.icon;
+  const [themes, setThemes] = useState<Theme[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const { id } = useParams<{ id: string }>();
+
+  useEffect(() => {
+    const fetchThemes = async () => {
+      if (!id) return;
+      
+      setIsLoading(true);
+      try {
+        const { data, error } = await supabase
+          .from('themes')
+          .select('*')
+          .eq('module_id', id)
+          .eq('is_published', true)
+          .order('created_at', { ascending: false });
+          
+        if (error) throw error;
+        setThemes(data || []);
+      } catch (error) {
+        console.error('Error fetching themes:', error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    
+    fetchThemes();
+  }, [id]);
 
   // Status based styling
   const getStatusStyles = () => {
@@ -43,6 +86,12 @@ const ModuleLearning: React.FC<ModuleLearningProps> = ({ module }) => {
   
   // Calculate estimated time to complete (very rough estimate)
   const estimatedTime = topics ? Math.ceil(topics.length * 1.5) : 10; // 1.5 hours per topic as a rough estimate
+  
+  // Determine if a theme has video content
+  const hasVideo = (content?: string): boolean => {
+    if (!content) return false;
+    return content.includes('youtube.com/embed') || content.includes('youtube.com/watch') || content.includes('youtu.be/');
+  };
   
   return (
     <div className="space-y-8">
@@ -111,6 +160,78 @@ const ModuleLearning: React.FC<ModuleLearningProps> = ({ module }) => {
           </div>
         </CardContent>
       </Card>
+      
+      {/* Theme Learning Resources */}
+      {themes.length > 0 && (
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-xl">Թեմաների գրադարան</CardTitle>
+            <CardDescription>
+              Ուսումնասիրեք այս մոդուլին առնչվող մանրամասն նյութերը
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              {themes.map((theme) => (
+                <Card key={theme.id} className="overflow-hidden group">
+                  {theme.image_url && (
+                    <div className="h-40 overflow-hidden">
+                      <img 
+                        src={theme.image_url} 
+                        alt={theme.title} 
+                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                      />
+                    </div>
+                  )}
+                  <CardContent className="p-5">
+                    <div className="flex items-center gap-2 mb-2">
+                      <div className="flex gap-1">
+                        {theme.content && (
+                          <Badge variant="secondary" className="flex items-center gap-1">
+                            <Book className="h-3 w-3" />
+                            <span>Տեքստ</span>
+                          </Badge>
+                        )}
+                        {hasVideo(theme.content) && (
+                          <Badge variant="secondary" className="flex items-center gap-1">
+                            <Video className="h-3 w-3" />
+                            <span>Վիդեո</span>
+                          </Badge>
+                        )}
+                        {theme.image_url && (
+                          <Badge variant="secondary" className="flex items-center gap-1">
+                            <ImageIcon className="h-3 w-3" />
+                            <span>Նկար</span>
+                          </Badge>
+                        )}
+                      </div>
+                    </div>
+                    <h3 className="text-lg font-medium mb-2">
+                      <Link to={`/themes/${theme.id}`} className="hover:text-primary">
+                        {theme.title}
+                      </Link>
+                    </h3>
+                    <p className="text-muted-foreground line-clamp-2 mb-4">
+                      {theme.summary}
+                    </p>
+                    <Button asChild variant="outline" size="sm" className="mt-2">
+                      <Link to={`/themes/${theme.id}`} className="flex items-center gap-1">
+                        Ուսումնասիրել
+                        <ChevronRight className="h-4 w-4" />
+                      </Link>
+                    </Button>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          </CardContent>
+          <CardFooter className="flex justify-center pt-2 pb-6">
+            <Button variant="outline" asChild>
+              <Link to="/themes">Բոլոր թեմաները</Link>
+            </Button>
+          </CardFooter>
+        </Card>
+      )}
     </div>
   );
 };
