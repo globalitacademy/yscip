@@ -8,13 +8,15 @@ interface ThemeContentTypeProps {
   setContentType: (type: 'text' | 'video' | 'both') => void;
   theme: Theme;
   setTheme: (theme: Theme | null) => void;
+  embedYouTubeVideo: (url: string) => string;
 }
 
 const ThemeContentType: React.FC<ThemeContentTypeProps> = ({ 
   contentType, 
   setContentType,
   theme,
-  setTheme
+  setTheme,
+  embedYouTubeVideo
 }) => {
   const handleContentTypeChange = (value: string) => {
     setContentType(value as 'text' | 'video' | 'both');
@@ -34,22 +36,6 @@ const ThemeContentType: React.FC<ThemeContentTypeProps> = ({
       const combinedContent = `${theme.content}\n\n${videoEmbed}`;
       setTheme({ ...theme, content: combinedContent });
     }
-  };
-
-  // Helper function to embed YouTube video
-  const embedYouTubeVideo = (url: string): string => {
-    // Extract video ID from YouTube URL
-    const match = url.match(/(?:youtu\.be\/|youtube\.com\/(?:embed\/|v\/|watch\?v=|watch\?.+&v=))([^&\s]+)/);
-    if (match && match[1]) {
-      const videoId = match[1];
-      // Return the video content as HTML
-      return `<div class="aspect-w-16 aspect-h-9 my-8">
-        <iframe width="100%" height="450" src="https://www.youtube.com/embed/${videoId}" 
-         frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
-         allowfullscreen></iframe>
-      </div>`;
-    }
-    return '';
   };
 
   return (
