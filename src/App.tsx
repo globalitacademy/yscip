@@ -12,6 +12,7 @@ import ModulesPage from './pages/ModulesPage'
 import ModuleDetailPage from './pages/ModuleDetailPage'
 import ThemesPage from './pages/ThemesPage'
 import ThemeDetailPage from './pages/ThemeDetailPage'
+import AdminThemesPage from './pages/AdminThemesPage'
 import AuthProvider from './contexts/AuthContext'
 import StudentDashboard from './pages/StudentDashboard'
 import EmployerDashboard from './pages/EmployerDashboard' 
@@ -82,6 +83,8 @@ function App() {
             {/* Admin Routes */}
             <Route path="/admin/admin-projects" element={<AdminProjectsPage />} />
             <Route path="/admin/project-management" element={<ProjectManagementPage />} />
+            <Route path="/admin/modules" element={<ModulesPage />} />
+            <Route path="/admin/themes" element={<AdminThemesPage />} />
             
             <Route path="*" element={<NotFound />} />
           </Routes>

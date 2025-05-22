@@ -12,7 +12,9 @@ import {
   ClipboardList,
   Settings,
   Bell,
-  Database
+  Database,
+  BookText,
+  Library
 } from 'lucide-react';
 import { SidebarMenuGroup } from '../types';
 
@@ -84,6 +86,18 @@ export const adminMenuItems: SidebarMenuGroup[] = [
         title: 'Ուսումնական մոդուլներ',
         icon: <BookOpen className="h-4 w-4" />,
         href: '/admin/modules',
+        roles: ['admin']
+      },
+      {
+        title: 'Ուսումնական թեմաներ',
+        icon: <BookText className="h-4 w-4" />,
+        href: '/admin/themes',
+        roles: ['admin']
+      },
+      {
+        title: 'Թեմաների գրադարան',
+        icon: <Library className="h-4 w-4" />,
+        href: '/themes',
         roles: ['admin']
       },
       {

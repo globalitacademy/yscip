@@ -13,6 +13,7 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
 import RichTextEditor from '../../common/RichTextEditor';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 
 const themeFormSchema = z.object({
   title: z.string().min(2, { message: "Վերնագիրը պետք է ունենա առնվազն 2 նիշ" }),
@@ -20,6 +21,7 @@ const themeFormSchema = z.object({
   content: z.string(),
   category: z.string().min(2, { message: "Կատեգորիան պետք է ունենա առնվազն 2 նիշ" }),
   image_url: z.string().url({ message: "Խնդրում ենք նշել վավեր URL" }).or(z.string().length(0)),
+  module_id: z.number().nullable().optional(),
   is_published: z.boolean().default(false),
 });
 
@@ -29,6 +31,7 @@ interface ThemeDialogProps {
   onOpenChange: (open: boolean) => void;
   onSave: () => void;
   onThemeChange: (theme: Theme) => void;
+  modules?: {id: number; title: string}[];
 }
 
 const ThemeDialog: React.FC<ThemeDialogProps> = ({
@@ -36,7 +39,8 @@ const ThemeDialog: React.FC<ThemeDialogProps> = ({
   selectedTheme,
   onOpenChange,
   onSave,
-  onThemeChange
+  onThemeChange,
+  modules = []
 }) => {
   const isNewTheme = !selectedTheme?.id;
   
@@ -48,6 +52,7 @@ const ThemeDialog: React.FC<ThemeDialogProps> = ({
       content: selectedTheme?.content || '',
       category: selectedTheme?.category || '',
       image_url: selectedTheme?.image_url || '',
+      module_id: selectedTheme?.module_id || null,
       is_published: selectedTheme?.is_published || false,
     },
   });
@@ -60,6 +65,7 @@ const ThemeDialog: React.FC<ThemeDialogProps> = ({
         content: selectedTheme.content || '',
         category: selectedTheme.category || '',
         image_url: selectedTheme.image_url || '',
+        module_id: selectedTheme.module_id || null,
         is_published: selectedTheme.is_published || false,
       });
     }
@@ -130,6 +136,37 @@ const ThemeDialog: React.FC<ThemeDialogProps> = ({
                       <FormControl>
                         <Input {...field} />
                       </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                
+                <FormField
+                  control={form.control}
+                  name="module_id"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Ուսումնական մոդուլ</FormLabel>
+                      <Select
+                        value={field.value?.toString() || ''}
+                        onValueChange={(value) => {
+                          const numericValue = value ? parseInt(value, 10) : null;
+                          field.onChange(numericValue);
+                        }}
+                      >
+                        <SelectTrigger>
+                          <SelectValue placeholder="Ընտրեք մոդուլը" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="">Չկապել մոդուլի հետ</SelectItem>
+                          {modules.map(module => (
+                            <SelectItem key={module.id} value={module.id.toString()}>
+                              {module.title}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                      <FormDescription>Ընտրեք, թե որ մոդուլին է պատկանում այս թեման</FormDescription>
                       <FormMessage />
                     </FormItem>
                   )}

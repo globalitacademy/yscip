@@ -11,10 +11,13 @@ import DeleteThemeDialog from './components/DeleteThemeDialog';
 const ThemeManagement: React.FC = () => {
   const { 
     themes,
+    isLoading,
     isDialogOpen,
     selectedTheme,
     isDeleteDialogOpen,
+    modules,
     fetchThemes,
+    fetchModules,
     setIsDialogOpen,
     setSelectedTheme,
     setIsDeleteDialogOpen,
@@ -27,6 +30,7 @@ const ThemeManagement: React.FC = () => {
 
   useEffect(() => {
     fetchThemes();
+    fetchModules();
   }, []);
 
   return (
@@ -43,11 +47,17 @@ const ThemeManagement: React.FC = () => {
           <CardTitle>Թեմաներ</CardTitle>
         </CardHeader>
         <CardContent>
-          <ThemeTable 
-            themes={themes}
-            onEditClick={handleEditClick}
-            onDeleteClick={handleDeleteClick}
-          />
+          {isLoading ? (
+            <div className="flex justify-center p-8">
+              <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-primary"></div>
+            </div>
+          ) : (
+            <ThemeTable 
+              themes={themes}
+              onEditClick={handleEditClick}
+              onDeleteClick={handleDeleteClick}
+            />
+          )}
         </CardContent>
       </Card>
       
@@ -57,6 +67,7 @@ const ThemeManagement: React.FC = () => {
         onOpenChange={setIsDialogOpen}
         onSave={handleSaveTheme}
         onThemeChange={setSelectedTheme}
+        modules={modules}
       />
       
       <DeleteThemeDialog 

@@ -1,221 +1,179 @@
 
-import React, { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import Header from '@/components/Header';
-import Footer from '@/components/Footer';
-import { Theme } from '@/components/admin/themes/hooks/useThemeManagement';
-import { Card, CardContent } from '@/components/ui/card';
+import React, { useState, useEffect } from 'react';
+import { Link } from 'react-router-dom';
+import { supabase } from '@/integrations/supabase/client';
+import { Card, CardContent, CardFooter } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
+import { BookOpen, Search, Tag } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
-import { Search, Filter } from 'lucide-react';
-import { SlideUp, FadeIn } from '@/components/LocalTransitions';
+import { useDebounce } from '@/hooks/use-debounce';
+
+interface Theme {
+  id: string;
+  title: string;
+  summary: string;
+  image_url?: string;
+  category?: string;
+  module_id?: number;
+  module_title?: string;
+}
 
 const ThemesPage: React.FC = () => {
-  const navigate = useNavigate();
   const [themes, setThemes] = useState<Theme[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [isLoading, setIsLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
-  const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const [categories, setCategories] = useState<string[]>([]);
-
+  const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
+  
+  const debouncedSearchQuery = useDebounce(searchQuery, 300);
+  
   useEffect(() => {
     const fetchThemes = async () => {
+      setIsLoading(true);
       try {
-        setLoading(true);
-        // Mock data fetching - in a real app, this would be an API call
-        const mockThemes: Theme[] = [
-          {
-            id: '1',
-            title: 'Ալգորիթմների հիմունքներ',
-            summary: 'Տվյալների կառուցվածքներ և ալգորիթմներ։ Հիմնական հասկացությունները։',
-            content: '<p>Ալգորիթմները համակարգչային գիտության հիմքն են կազմում...</p>',
-            category: 'Ալգորիթմներ',
-            image_url: 'https://images.unsplash.com/photo-1555949963-aa79dcee981c?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=2070&q=80',
-            is_published: true,
-            created_at: new Date().toISOString(),
-          },
-          {
-            id: '2',
-            title: 'Տվյալների կառուցվածքներ',
-            summary: 'Տվյալների կառուցվածքների ներածություն և տեսակներ',
-            content: '<p>Տվյալների կառուցվածքները կարևոր են ծրագրավորման մեջ...</p>',
-            category: 'Ալգորիթմներ',
-            image_url: 'https://images.unsplash.com/photo-1516116216624-53e697fedbea?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=2128&q=80',
-            is_published: true,
-            created_at: new Date().toISOString(),
-          },
-          {
-            id: '3',
-            title: 'Օբյեկտ կողմնորոշված ծրագրավորում',
-            summary: 'ՕԿԾ հիմնական սկզբունքներն ու կիրառությունները',
-            content: '<p>Օբյեկտ կողմնորոշված ծրագրավորումը ծրագրավորման մոտեցում է...</p>',
-            category: 'Ծրագրավորում',
-            image_url: 'https://images.unsplash.com/photo-1517694712202-14dd9538aa97?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=2070&q=80',
-            is_published: true,
-            created_at: new Date().toISOString(),
-          },
-          {
-            id: '4',
-            title: 'Ցանցային տեխնոլոգիաներ',
-            summary: 'Համակարգչային ցանցերի կառուցվածքն ու հիմնական արձանագրությունները',
-            content: '<p>Համակարգչային ցանցերի բազային գիտելիքներ...</p>',
-            category: 'Ցանցային տեխնոլոգիաներ',
-            image_url: 'https://images.unsplash.com/photo-1544197150-b99a580bb7a8?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=2070&q=80',
-            is_published: true,
-            created_at: new Date().toISOString(),
-          },
-          {
-            id: '5',
-            title: 'Վեբ կայքերի նախագծում',
-            summary: 'HTML, CSS և JavaScript-ի հիմունքներ',
-            content: '<p>Վեբ կայքերի պատրաստման տեխնոլոգիաներ...</p>',
-            category: 'Վեբ',
-            image_url: 'https://images.unsplash.com/photo-1498050108023-c5249f4df085?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=2072&q=80',
-            is_published: true,
-            created_at: new Date().toISOString(),
-          },
-        ];
-
-        setThemes(mockThemes);
+        let query = (supabase
+          .from('themes') as any)
+          .select('*')
+          .eq('is_published', true);
+          
+        if (debouncedSearchQuery) {
+          query = query.ilike('title', `%${debouncedSearchQuery}%`);
+        }
         
-        // Extract unique categories
-        const uniqueCategories = Array.from(new Set(mockThemes.map(theme => theme.category))).filter(Boolean) as string[];
-        setCategories(uniqueCategories);
+        if (selectedCategory) {
+          query = query.eq('category', selectedCategory);
+        }
+          
+        const { data, error } = await query.order('created_at', { ascending: false });
+          
+        if (error) throw error;
         
-        setLoading(false);
+        // Fetch module titles for themes with module_id
+        const themesWithModules = await Promise.all(data.map(async (theme: Theme) => {
+          if (theme.module_id) {
+            const { data: moduleData } = await (supabase
+              .from('educational_modules') as any)
+              .select('title')
+              .eq('id', theme.module_id)
+              .single();
+              
+            if (moduleData) {
+              return { ...theme, module_title: moduleData.title };
+            }
+          }
+          return theme;
+        }));
+        
+        setThemes(themesWithModules);
+        
+        // Get unique categories
+        const uniqueCategories = [...new Set(data.map((t: Theme) => t.category).filter(Boolean))];
+        setCategories(uniqueCategories as string[]);
       } catch (error) {
         console.error('Error fetching themes:', error);
-        setLoading(false);
+      } finally {
+        setIsLoading(false);
       }
     };
-
+    
     fetchThemes();
-  }, []);
-
-  const filteredThemes = themes.filter(theme => {
-    const matchesSearch = theme.title?.toLowerCase().includes(searchQuery.toLowerCase()) || 
-                         theme.summary?.toLowerCase().includes(searchQuery.toLowerCase());
-    const matchesCategory = selectedCategory ? theme.category === selectedCategory : true;
-    return matchesSearch && matchesCategory;
-  });
-
+  }, [debouncedSearchQuery, selectedCategory]);
+  
   return (
-    <div className="flex flex-col min-h-screen pt-16">
-      <Header />
-      
-      <main className="flex-grow">
-        {/* Hero section */}
-        <div className="bg-primary/10 py-12">
-          <div className="container mx-auto px-4 text-center">
-            <FadeIn>
-              <h1 className="text-3xl md:text-4xl font-bold mb-4">Ուսումնական թեմաներ</h1>
-              <p className="text-xl text-muted-foreground mb-8 max-w-2xl mx-auto">
-                Հետաքրքիր և մանրամասն բացատրություններ ծրագրավորման, ալգորիթմների, 
-                և տեղեկատվական տեխնոլոգիաների տարբեր թեմաների վերաբերյալ
-              </p>
-            </FadeIn>
-            
-            <div className="max-w-2xl mx-auto">
-              <div className="relative">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
-                <Input 
-                  type="search"
-                  placeholder="Որոնել թեմաներ..."
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  className="pl-10"
-                />
-              </div>
-            </div>
+    <div className="container mx-auto py-12 px-4">
+      <div className="max-w-5xl mx-auto">
+        <div className="mb-10 text-center">
+          <h1 className="text-3xl md:text-4xl font-bold mb-4">Ուսումնական թեմաների գրադարան</h1>
+          <p className="text-muted-foreground max-w-2xl mx-auto">
+            Ուսումնասիրեք բազմազան թեմաներն ըստ ձեր հետաքրքրությունների և ծրագրավորման ոլորտի
+          </p>
+        </div>
+        
+        <div className="mb-8">
+          <div className="relative">
+            <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+            <Input 
+              placeholder="Որոնել թեմաներ..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="pl-10"
+            />
           </div>
         </div>
         
-        {/* Themes list */}
-        <div className="py-12 px-4">
-          <div className="container mx-auto">
-            {/* Categories filter */}
-            <div className="mb-8 flex flex-wrap gap-2">
-              <Button 
-                variant={selectedCategory === null ? "default" : "outline"} 
-                size="sm"
-                onClick={() => setSelectedCategory(null)}
-                className="flex items-center gap-1"
+        {categories.length > 0 && (
+          <div className="mb-8 flex flex-wrap gap-2">
+            <Badge
+              variant={selectedCategory === null ? 'default' : 'outline'}
+              className="cursor-pointer"
+              onClick={() => setSelectedCategory(null)}
+            >
+              Բոլորը
+            </Badge>
+            {categories.map((category) => (
+              <Badge
+                key={category}
+                variant={selectedCategory === category ? 'default' : 'outline'}
+                className="cursor-pointer"
+                onClick={() => setSelectedCategory(category)}
               >
-                <Filter className="h-4 w-4" />
-                Բոլորը
-              </Button>
-              
-              {categories.map(category => (
-                <Button
-                  key={category}
-                  variant={selectedCategory === category ? "default" : "outline"}
-                  size="sm"
-                  onClick={() => setSelectedCategory(category)}
-                >
-                  {category}
-                </Button>
-              ))}
-            </div>
-            
-            {loading ? (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {[1, 2, 3, 4, 5, 6].map(i => (
-                  <Card key={i} className="h-96">
-                    <CardContent className="p-0">
-                      <div className="w-full h-48 bg-muted animate-pulse" />
-                      <div className="p-4">
-                        <div className="h-6 w-3/4 bg-muted animate-pulse mb-4" />
-                        <div className="h-4 bg-muted animate-pulse mb-2" />
-                        <div className="h-4 w-2/3 bg-muted animate-pulse mb-4" />
-                        <div className="h-8 w-1/4 bg-muted animate-pulse" />
-                      </div>
-                    </CardContent>
-                  </Card>
-                ))}
-              </div>
-            ) : filteredThemes.length > 0 ? (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {filteredThemes.map((theme, index) => (
-                  <SlideUp key={theme.id} delay={`delay-${index % 10 * 50}`}>
-                    <Card className="overflow-hidden h-full flex flex-col hover:shadow-md transition-shadow cursor-pointer" onClick={() => navigate(`/theme/${theme.id}`)}>
-                      <div className="relative">
-                        {theme.image_url && (
-                          <div 
-                            className="h-48 bg-cover bg-center"
-                            style={{ backgroundImage: `url(${theme.image_url})` }}
-                          />
-                        )}
-                        {theme.category && (
-                          <Badge className="absolute top-4 right-4">
-                            {theme.category}
-                          </Badge>
-                        )}
-                      </div>
-                      <CardContent className="p-6 flex-grow flex flex-col">
-                        <h3 className="text-xl font-bold mb-2">{theme.title}</h3>
-                        {theme.summary && <p className="text-muted-foreground mb-4">{theme.summary}</p>}
-                        <div className="mt-auto">
-                          <Button variant="outline" className="mt-4">
-                            Կարդալ ավելին
-                          </Button>
-                        </div>
-                      </CardContent>
-                    </Card>
-                  </SlideUp>
-                ))}
-              </div>
-            ) : (
-              <div className="text-center py-12">
-                <h3 className="text-xl font-bold mb-2">Թեմաներ չեն գտնվել</h3>
-                <p className="text-muted-foreground">Փորձեք փոխել որոնման պարամետրերը</p>
-              </div>
-            )}
+                {category}
+              </Badge>
+            ))}
           </div>
-        </div>
-      </main>
-      
-      <Footer />
+        )}
+        
+        {isLoading ? (
+          <div className="flex justify-center py-12">
+            <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary"></div>
+          </div>
+        ) : themes.length === 0 ? (
+          <div className="text-center py-12">
+            <h3 className="text-xl font-semibold mb-2">Թեմաներ չեն գտնվել</h3>
+            <p className="text-muted-foreground">Փորձեք փոխել որոնման տերմինները կամ զտիչները</p>
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {themes.map((theme) => (
+              <Card key={theme.id} className="overflow-hidden flex flex-col">
+                {theme.image_url && (
+                  <div className="h-48">
+                    <img 
+                      src={theme.image_url} 
+                      alt={theme.title} 
+                      className="w-full h-full object-cover"
+                    />
+                  </div>
+                )}
+                <CardContent className="p-5 flex-grow">
+                  {theme.category && (
+                    <div className="mb-2 flex items-center">
+                      <Tag className="h-3.5 w-3.5 mr-1 text-muted-foreground" />
+                      <span className="text-xs text-muted-foreground">{theme.category}</span>
+                    </div>
+                  )}
+                  <h3 className="text-xl font-bold mb-2 line-clamp-2">{theme.title}</h3>
+                  <p className="text-muted-foreground line-clamp-3 mb-3">{theme.summary}</p>
+                  {theme.module_title && (
+                    <div className="flex items-center mt-auto">
+                      <BookOpen className="h-4 w-4 mr-1.5 text-muted-foreground" />
+                      <span className="text-sm text-muted-foreground">{theme.module_title}</span>
+                    </div>
+                  )}
+                </CardContent>
+                <CardFooter className="bg-muted/30 px-5 py-3">
+                  <Link 
+                    to={`/theme/${theme.id}`}
+                    className="text-primary hover:underline font-medium"
+                  >
+                    Կարդալ թեման
+                  </Link>
+                </CardFooter>
+              </Card>
+            ))}
+          </div>
+        )}
+      </div>
     </div>
   );
 };

@@ -1,5 +1,5 @@
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { Plus } from 'lucide-react';
@@ -20,11 +20,29 @@ export interface Theme {
 
 export function useThemeManagement() {
   const [themes, setThemes] = useState<Theme[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [selectedTheme, setSelectedTheme] = useState<Theme | null>(null);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+  const [modules, setModules] = useState<{id: number; title: string}[]>([]);
+
+  const fetchModules = async () => {
+    try {
+      // Get modules for dropdown selection
+      const { data, error } = await (supabase
+        .from('educational_modules') as any)
+        .select('id, title')
+        .order('display_order', { ascending: true });
+
+      if (error) throw error;
+      setModules(data || []);
+    } catch (error) {
+      console.error('Error fetching modules:', error);
+    }
+  };
 
   const fetchThemes = async () => {
+    setIsLoading(true);
     try {
       // Use type assertion to bypass TypeScript limitation
       // This will be fixed once the types are updated
@@ -37,8 +55,16 @@ export function useThemeManagement() {
       setThemes(data || []);
     } catch (error) {
       toast.error('Error fetching themes', { description: String(error) });
+    } finally {
+      setIsLoading(false);
     }
   };
+
+  // Fetch both themes and modules on component mount
+  useEffect(() => {
+    fetchThemes();
+    fetchModules();
+  }, []);
 
   const handleEditClick = (theme: Theme) => {
     setSelectedTheme({...theme});
@@ -120,13 +146,16 @@ export function useThemeManagement() {
 
   return {
     themes,
+    isLoading,
     isDialogOpen,
     selectedTheme,
     isDeleteDialogOpen,
+    modules,
     setIsDialogOpen,
     setSelectedTheme,
     setIsDeleteDialogOpen,
     fetchThemes,
+    fetchModules,
     handleEditClick,
     handleDeleteClick,
     handleSaveTheme,

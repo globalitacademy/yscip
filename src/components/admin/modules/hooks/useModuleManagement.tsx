@@ -1,8 +1,9 @@
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Layers } from 'lucide-react';
 import { toast } from 'sonner';
 import type { EducationalModule } from '@/components/educationalCycle';
+import { supabase } from '@/integrations/supabase/client';
 
 // Update the EducationalModule type to include content
 declare module '@/components/educationalCycle' {
@@ -12,26 +13,49 @@ declare module '@/components/educationalCycle' {
 }
 
 export function useModuleManagement() {
-  const [modules, setModules] = useState<EducationalModule[]>([
-    { id: 1, title: "Ալգորիթմների տարրերի կիրառում", icon: Layers, status: 'completed', progress: 100, description: "Ծանոթացում ալգորիթմների հետ, որոնք տեղեկատվական տեխնոլոգիաների հիմնաքարն են։", topics: [] },
-    { id: 2, title: "Ծրագրավորման հիմունքներ", icon: Layers, status: 'completed', progress: 100, description: "Ծրագրավորման հիմնական սկզբունքների ուսումնասիրություն և կիրառում։", topics: [] },
-    { id: 3, title: "Օբյեկտ կողմնորոշված ծրագրավորում", icon: Layers, status: 'in-progress', progress: 75, description: "Օբյեկտային մոտեցման կիրառմամբ ծրագրային ապահովման նախագծում։", topics: [] },
-    { id: 4, title: "Համակարգչային ցանցեր", icon: Layers, status: 'in-progress', progress: 40, description: "Ցանցային տեխնոլոգիաների և արձանագրությունների ուսումնասիրություն։", topics: [] },
-    { id: 5, title: "Ստատրիկ վեբ կայքերի նախագծում", icon: Layers, status: 'not-started', progress: 0, description: "HTML, CSS և JavaScript-ի կիրառմամբ ստատիկ կայքերի ստեղծում։", topics: [] },
-    { id: 6, title: "Ջավասկրիպտի կիրառումը", icon: Layers, status: 'not-started', progress: 0, description: "JavaScript լեզվի խորացված ուսումնասիրություն վեբ կայքերում։", topics: [] },
-    { id: 7, title: "Ռելյացիոն տվյալների բազաների նախագծում", icon: Layers, status: 'not-started', progress: 0, description: "SQL հարցումների և տվյալների բազաների նախագծման հիմունքներ։", topics: [] },
-    { id: 8, title: "Ոչ Ռելյացիոն տվյալների բազաների նախագծում", icon: Layers, status: 'not-started', progress: 0, description: "NoSQL տվյալների բազաների ուսումնասիրություն և կիրառում։", topics: [] },
-    { id: 9, title: "Դինաﬕկ վեբ կայքերի նախագծում", icon: Layers, status: 'not-started', progress: 0, description: "Վեբ հավելվածների ստեղծում ժամանակակից ֆրեյմվորկներով։", topics: [] },
-    { id: 10, title: "Վեկտորային գրաֆիկա", icon: Layers, status: 'not-started', progress: 0, description: "Վեկտորային պատկերների ստեղծում և խմբագրում։", topics: [] },
-    { id: 11, title: "Կետային գրաֆիկա", icon: Layers, status: 'not-started', progress: 0, description: "Կետային պատկերների մշակում և խմբագրում։", topics: [] },
-    { id: 12, title: "Գրաֆիկական ինտերֆեյսի ծրագրավորում", icon: Layers, status: 'not-started', progress: 0, description: "Աշխատանք գրաֆիկական ինտերֆեյսների հետ և դրանց ստեղծում։", topics: [] },
-    { id: 13, title: "Տեղեկատվության անվտանգություն", icon: Layers, status: 'not-started', progress: 0, description: "Տեղեկատվական համակարգերի պաշտպանության մեթոդների ուսումնասիրություն։", topics: [] },
-  ]);
-
+  const [modules, setModules] = useState<EducationalModule[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [selectedModule, setSelectedModule] = useState<EducationalModule | null>(null);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [isRichTextMode, setIsRichTextMode] = useState(false);
+  
+  // Fetch modules from Supabase
+  const fetchModules = async () => {
+    setIsLoading(true);
+    try {
+      const { data, error } = await (supabase
+        .from('educational_modules') as any)
+        .select('*')
+        .order('display_order', { ascending: true });
+
+      if (error) throw error;
+      
+      // Convert the data to match EducationalModule type
+      const formattedModules: EducationalModule[] = data?.map((module: any) => ({
+        id: module.id,
+        title: module.title,
+        icon: Layers, // We'll use a default icon since we can't store React components
+        status: module.status || 'not-started',
+        progress: module.progress || 0,
+        description: module.description || '',
+        topics: module.topics || [],
+        content: module.content || '',
+        display_order: module.display_order || 0
+      })) || [];
+      
+      setModules(formattedModules);
+    } catch (error) {
+      toast.error('Սխալ մոդուլների բեռնման ժամանակ', { description: String(error) });
+    } finally {
+      setIsLoading(false);
+    }
+  };
+  
+  // Load modules on component mount
+  useEffect(() => {
+    fetchModules();
+  }, []);
   
   const handleEditClick = (module: EducationalModule) => {
     setSelectedModule({...module});
@@ -43,7 +67,7 @@ export function useModuleManagement() {
     setIsDeleteDialogOpen(true);
   };
   
-  const handleSaveModule = () => {
+  const handleSaveModule = async () => {
     if (!selectedModule) return;
 
     if (!selectedModule.title) {
@@ -51,32 +75,75 @@ export function useModuleManagement() {
       return;
     }
     
-    if (selectedModule.id) {
-      // Update existing module
-      setModules(prevModules => 
-        prevModules.map(mod => 
-          mod.id === selectedModule.id ? selectedModule : mod
-        )
-      );
-      toast.success("Մոդուլը հաջողությամբ թարմացվել է");
-    } else {
-      // Add new module
-      const newId = modules.length > 0 ? Math.max(...modules.map(m => m.id)) + 1 : 1;
-      setModules(prevModules => [...prevModules, {...selectedModule, id: newId}]);
-      toast.success("Նոր մոդուլն ավելացվել է");
+    try {
+      // If it's an existing module (has numeric id)
+      if (typeof selectedModule.id === 'number') {
+        const moduleData = {
+          title: selectedModule.title,
+          description: selectedModule.description,
+          status: selectedModule.status,
+          progress: selectedModule.progress,
+          topics: selectedModule.topics,
+          content: selectedModule.content,
+          updated_at: new Date().toISOString()
+        };
+        
+        const { error } = await (supabase
+          .from('educational_modules') as any)
+          .update(moduleData)
+          .eq('id', selectedModule.id);
+        
+        if (error) throw error;
+        toast.success("Մոդուլը հաջողությամբ թարմացվել է");
+      } else {
+        // Add new module
+        const moduleData = {
+          title: selectedModule.title,
+          description: selectedModule.description,
+          status: selectedModule.status || 'not-started',
+          progress: selectedModule.progress || 0,
+          topics: selectedModule.topics || [],
+          content: selectedModule.content || '',
+          display_order: modules.length + 1,
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString()
+        };
+        
+        const { error } = await (supabase
+          .from('educational_modules') as any)
+          .insert(moduleData);
+        
+        if (error) throw error;
+        toast.success("Նոր մոդուլն ավելացվել է");
+      }
+      
+      // Refresh modules list
+      await fetchModules();
+      setIsDialogOpen(false);
+      setSelectedModule(null);
+    } catch (error) {
+      toast.error('Սխալ մոդուլը պահպանելիս', { description: String(error) });
     }
-    
-    setIsDialogOpen(false);
-    setSelectedModule(null);
   };
   
-  const handleDeleteModule = () => {
+  const handleDeleteModule = async () => {
     if (!selectedModule) return;
     
-    setModules(prevModules => prevModules.filter(mod => mod.id !== selectedModule.id));
-    toast.success("Մոդուլը հաջողությամբ հեռացվել է");
-    setIsDeleteDialogOpen(false);
-    setSelectedModule(null);
+    try {
+      const { error } = await (supabase
+        .from('educational_modules') as any)
+        .delete()
+        .eq('id', selectedModule.id);
+        
+      if (error) throw error;
+      
+      toast.success("Մոդուլը հաջողությամբ հեռացվել է");
+      await fetchModules();
+      setIsDeleteDialogOpen(false);
+      setSelectedModule(null);
+    } catch (error) {
+      toast.error('Սխալ մոդուլը հեռացնելիս', { description: String(error) });
+    }
   };
   
   const handleAddNewModule = () => {
@@ -99,6 +166,7 @@ export function useModuleManagement() {
 
   return {
     modules,
+    isLoading,
     isDialogOpen,
     selectedModule,
     isDeleteDialogOpen,
@@ -111,6 +179,7 @@ export function useModuleManagement() {
     handleSaveModule,
     handleDeleteModule,
     handleAddNewModule,
-    toggleRichTextMode
+    toggleRichTextMode,
+    fetchModules
   };
 }
