@@ -10,9 +10,10 @@ interface RichTextEditorProps {
   value: string;
   onChange: (value: string) => void;
   className?: string;
+  placeholder?: string;
 }
 
-const RichTextEditor: React.FC<RichTextEditorProps> = ({ value, onChange, className }) => {
+const RichTextEditor: React.FC<RichTextEditorProps> = ({ value, onChange, className, placeholder }) => {
   const [mode, setMode] = useState<'write' | 'preview'>('write');
   const editorRef = React.useRef<HTMLDivElement>(null);
 
@@ -111,6 +112,7 @@ const RichTextEditor: React.FC<RichTextEditorProps> = ({ value, onChange, classN
           dangerouslySetInnerHTML={{ __html: value }}
           onInput={handleEditorChange}
           className="p-4 min-h-[250px] focus:outline-none prose max-w-full"
+          data-placeholder={placeholder}
         />
       ) : (
         <div 

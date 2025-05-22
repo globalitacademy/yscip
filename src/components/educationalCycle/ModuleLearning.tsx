@@ -24,6 +24,7 @@ interface Theme {
   module_id?: number;
   is_published?: boolean;
   content?: string;
+  video_url?: string;
 }
 
 const ModuleLearning: React.FC<ModuleLearningProps> = ({ module }) => {
@@ -39,10 +40,16 @@ const ModuleLearning: React.FC<ModuleLearningProps> = ({ module }) => {
       
       setIsLoading(true);
       try {
+        const moduleId = parseInt(id);
+        if (isNaN(moduleId)) {
+          console.error('Invalid module id:', id);
+          return;
+        }
+        
         const { data, error } = await supabase
           .from('themes')
           .select('*')
-          .eq('module_id', id)
+          .eq('module_id', moduleId)
           .eq('is_published', true)
           .order('created_at', { ascending: false });
           
@@ -88,7 +95,8 @@ const ModuleLearning: React.FC<ModuleLearningProps> = ({ module }) => {
   const estimatedTime = topics ? Math.ceil(topics.length * 1.5) : 10; // 1.5 hours per topic as a rough estimate
   
   // Determine if a theme has video content
-  const hasVideo = (content?: string): boolean => {
+  const hasVideo = (content?: string, videoUrl?: string): boolean => {
+    if (videoUrl) return true;
     if (!content) return false;
     return content.includes('youtube.com/embed') || content.includes('youtube.com/watch') || content.includes('youtu.be/');
   };
@@ -192,7 +200,7 @@ const ModuleLearning: React.FC<ModuleLearningProps> = ({ module }) => {
                             <span>Տեքստ</span>
                           </Badge>
                         )}
-                        {hasVideo(theme.content) && (
+                        {hasVideo(theme.content, theme.video_url) && (
                           <Badge variant="secondary" className="flex items-center gap-1">
                             <Video className="h-3 w-3" />
                             <span>Վիդեո</span>

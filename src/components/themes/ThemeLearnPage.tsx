@@ -21,6 +21,7 @@ interface Theme {
   module_id?: number;
   created_at?: string;
   updated_at?: string;
+  video_url?: string;
 }
 
 const ThemeLearnPage = () => {
@@ -72,6 +73,15 @@ const ThemeLearnPage = () => {
           }
           
           setTheme(themeData);
+          
+          // Determine initial active tab
+          if (themeData.video_url) {
+            setActiveTab('video');
+          } else if (themeData.content) {
+            setActiveTab('content');
+          } else if (themeData.image_url) {
+            setActiveTab('images');
+          }
         }
       } catch (error) {
         console.error('Error fetching theme:', error);
@@ -85,22 +95,33 @@ const ThemeLearnPage = () => {
     }
   }, [id]);
   
-  // Extract YouTube video ID from content if exists
-  const extractYouTubeVideoId = (content?: string): string | null => {
-    if (!content) return null;
-    
-    // Match YouTube embed iframe
-    const iframeMatch = content.match(/src=["']https:\/\/www\.youtube\.com\/embed\/([^"'&?\/]+)/);
-    if (iframeMatch && iframeMatch[1]) return iframeMatch[1];
+  // Extract YouTube video ID from video URL if exists
+  const extractYouTubeVideoId = (videoUrl?: string): string | null => {
+    if (!videoUrl) return null;
     
     // Match YouTube URLs
-    const urlMatch = content.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/)([^"'&?\/\s]+)/);
+    const urlMatch = videoUrl.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/)([^"'&?\/\s]+)/);
     if (urlMatch && urlMatch[1]) return urlMatch[1];
+    
+    // Match YouTube embed URLs
+    const embedMatch = videoUrl.match(/youtube\.com\/embed\/([^"'&?\/\s]+)/);
+    if (embedMatch && embedMatch[1]) return embedMatch[1];
     
     return null;
   };
   
-  const videoId = theme?.content ? extractYouTubeVideoId(theme.content) : null;
+  // Check if content has embedded video
+  const contentHasEmbeddedVideo = (content?: string): boolean => {
+    if (!content) return false;
+    return content.includes('youtube.com/embed');
+  };
+  
+  // Get video ID either from direct video_url or from embedded in content
+  const videoId = theme?.video_url 
+    ? extractYouTubeVideoId(theme.video_url) 
+    : contentHasEmbeddedVideo(theme?.content) 
+      ? extractYouTubeVideoId(theme?.content)
+      : null;
   
   if (isLoading) {
     return (
@@ -169,11 +190,13 @@ const ThemeLearnPage = () => {
       
       <Tabs value={activeTab} onValueChange={setActiveTab} className="mb-12">
         <TabsList className="mb-6">
-          <TabsTrigger value="content" className="flex items-center gap-2">
-            <FileText className="h-4 w-4" />
-            <span>Տեքստային Նյութ</span>
-          </TabsTrigger>
-          {videoId && (
+          {theme.content && !contentHasEmbeddedVideo(theme.content) && (
+            <TabsTrigger value="content" className="flex items-center gap-2">
+              <FileText className="h-4 w-4" />
+              <span>Տեքստային Նյութ</span>
+            </TabsTrigger>
+          )}
+          {(videoId || theme.video_url) && (
             <TabsTrigger value="video" className="flex items-center gap-2">
               <Video className="h-4 w-4" />
               <span>Տեսադաս</span>
@@ -187,13 +210,13 @@ const ThemeLearnPage = () => {
           )}
         </TabsList>
         
-        <TabsContent value="content" className="prose prose-lg max-w-none">
-          {theme.content && (
+        {theme.content && !contentHasEmbeddedVideo(theme.content) && (
+          <TabsContent value="content" className="prose prose-lg max-w-none">
             <div dangerouslySetInnerHTML={{ __html: theme.content }} />
-          )}
-        </TabsContent>
+          </TabsContent>
+        )}
         
-        {videoId && (
+        {(videoId || theme.video_url) && (
           <TabsContent value="video">
             <div className="aspect-w-16 aspect-h-9 rounded-lg overflow-hidden shadow-lg">
               <iframe 
@@ -205,6 +228,12 @@ const ThemeLearnPage = () => {
                 allowFullScreen
               ></iframe>
             </div>
+            {contentHasEmbeddedVideo(theme.content) && theme.content && (
+              <div className="mt-8 prose prose-lg max-w-none">
+                <h3 className="text-xl font-semibold mb-4">Տեսանյութի նկարագրություն</h3>
+                <div dangerouslySetInnerHTML={{ __html: theme.content.replace(/<iframe.*?<\/iframe>/g, '') }} />
+              </div>
+            )}
           </TabsContent>
         )}
         

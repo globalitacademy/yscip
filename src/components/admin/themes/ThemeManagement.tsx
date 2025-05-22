@@ -16,6 +16,8 @@ const ThemeManagement: React.FC = () => {
     selectedTheme,
     isDeleteDialogOpen,
     modules,
+    contentType,
+    setContentType,
     fetchThemes,
     fetchModules,
     setIsDialogOpen,
@@ -25,7 +27,8 @@ const ThemeManagement: React.FC = () => {
     handleDeleteClick,
     handleSaveTheme,
     handleDeleteTheme,
-    handleAddNewTheme
+    handleAddNewTheme,
+    embedYouTubeVideo
   } = useThemeManagement();
 
   useEffect(() => {
@@ -62,12 +65,15 @@ const ThemeManagement: React.FC = () => {
       </Card>
       
       <ThemeDialog 
-        open={isDialogOpen}
-        selectedTheme={selectedTheme}
-        onOpenChange={setIsDialogOpen}
+        isOpen={isDialogOpen}
+        onClose={() => setIsDialogOpen(false)}
+        theme={selectedTheme}
         onSave={handleSaveTheme}
-        onThemeChange={setSelectedTheme}
+        setTheme={setSelectedTheme}
         modules={modules}
+        contentType={contentType}
+        setContentType={setContentType}
+        embedYouTubeVideo={embedYouTubeVideo}
       />
       
       <DeleteThemeDialog 
