@@ -5,7 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Plus } from 'lucide-react';
 import { useThemeManagement } from './hooks/useThemeManagement';
 import ThemeTable from './components/ThemeTable';
-import ThemeDialog from './components/ThemeDialog';
+import ThemeDialog from './components/themeDialog'; // Updated import
 import DeleteThemeDialog from './components/DeleteThemeDialog';
 
 const ThemeManagement: React.FC = () => {
