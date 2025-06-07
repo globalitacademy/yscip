@@ -4,7 +4,6 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { AuthProvider } from "./contexts/AuthContext";
-import { ProjectProvider } from "./contexts/ProjectContext";
 import { ThemeProvider } from "./components/ui/theme-provider";
 import Index from "./pages/Index";
 import Login from "./pages/Login";
@@ -39,45 +38,43 @@ const App = () => (
         <Toaster />
         <BrowserRouter>
           <AuthProvider>
-            <ProjectProvider>
-              <Routes>
-                <Route path="/" element={<Index />} />
-                <Route path="/login" element={<Login />} />
-                <Route path="/register" element={<Registration />} />
-                <Route path="/profile" element={<ProfilePage />} />
-                
-                {/* Admin Routes */}
-                <Route path="/admin" element={<AdminDashboard />} />
-                <Route path="/admin/users" element={<UserManagementPage />} />
-                <Route path="/admin/organizations" element={<OrganizationManagementPage />} />
-                <Route path="/admin/specializations" element={<SpecializationManagementPage />} />
-                <Route path="/admin/courses" element={<AdminCoursesPage />} />
-                <Route path="/admin/courses/:id" element={<AdminCourseDetail />} />
-                
-                {/* Supervisor Routes */}
-                <Route path="/supervisor" element={<SupervisorDashboard />} />
-                
-                {/* Course Routes */}
-                <Route path="/courses" element={<CoursesPage />} />
-                <Route path="/courses/:slug" element={<CourseDetails />} />
-                <Route path="/courses/:id" element={<CourseDetails />} />
-                
-                {/* Project Routes */}
-                <Route path="/projects" element={<StudentProjectsPage />} />
-                <Route path="/project/:id" element={<ProjectDetailPage />} />
-                <Route path="/project/:id/submit" element={<ProjectSubmissionPage />} />
-                <Route path="/project-proposals" element={<ProjectProposalsPage />} />
-                <Route path="/reservations" element={<ReservationsPage />} />
-                
-                {/* Module Routes */}
-                <Route path="/module/:id" element={<ModuleDetailPage />} />
-                
-                {/* Theme Routes */}
-                <Route path="/themes" element={<ThemesPage />} />
-                <Route path="/themes/:id" element={<ThemeDetailPage />} />
-                <Route path="/themes/:id/learn" element={<ThemeLearningPage />} />
-              </Routes>
-            </ProjectProvider>
+            <Routes>
+              <Route path="/" element={<Index />} />
+              <Route path="/login" element={<Login />} />
+              <Route path="/register" element={<Registration />} />
+              <Route path="/profile" element={<ProfilePage />} />
+              
+              {/* Admin Routes */}
+              <Route path="/admin" element={<AdminDashboard />} />
+              <Route path="/admin/users" element={<UserManagementPage />} />
+              <Route path="/admin/organizations" element={<OrganizationManagementPage />} />
+              <Route path="/admin/specializations" element={<SpecializationManagementPage />} />
+              <Route path="/admin/courses" element={<AdminCoursesPage />} />
+              <Route path="/admin/courses/:id" element={<AdminCourseDetail />} />
+              
+              {/* Supervisor Routes */}
+              <Route path="/supervisor" element={<SupervisorDashboard />} />
+              
+              {/* Course Routes */}
+              <Route path="/courses" element={<CoursesPage />} />
+              <Route path="/courses/:slug" element={<CourseDetails />} />
+              <Route path="/courses/:id" element={<CourseDetails />} />
+              
+              {/* Project Routes */}
+              <Route path="/projects" element={<StudentProjectsPage />} />
+              <Route path="/project/:id" element={<ProjectDetailPage />} />
+              <Route path="/project/:id/submit" element={<ProjectSubmissionPage />} />
+              <Route path="/project-proposals" element={<ProjectProposalsPage />} />
+              <Route path="/reservations" element={<ReservationsPage />} />
+              
+              {/* Module Routes */}
+              <Route path="/module/:id" element={<ModuleDetailPage />} />
+              
+              {/* Theme Routes */}
+              <Route path="/themes" element={<ThemesPage />} />
+              <Route path="/themes/:id" element={<ThemeDetailPage />} />
+              <Route path="/themes/:id/learn" element={<ThemeLearningPage />} />
+            </Routes>
           </AuthProvider>
         </BrowserRouter>
       </TooltipProvider>
