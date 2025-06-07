@@ -4,14 +4,26 @@ import { Label } from '@/components/ui/label';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
-import { Theme } from '../../../hooks/useThemeManagement';
+
+interface Theme {
+  id?: string;
+  title: string;
+  summary: string;
+  content?: string;
+  image_url?: string;
+  banner_image_url?: string;
+  category?: string;
+  module_id?: number;
+  video_url?: string;
+  is_published?: boolean;
+}
 
 export interface ThemeContentTypeProps {
   contentType: "text" | "video" | "both";
   setContentType: (type: "text" | "video" | "both") => void;
   theme: Theme;
   setTheme: (theme: Theme) => void;
-  embedYouTubeVideo: (videoUrl: string) => void;
+  embedYouTubeVideo: (videoUrl: string) => string;
 }
 
 const ThemeContentType: React.FC<ThemeContentTypeProps> = ({ 
@@ -60,7 +72,15 @@ const ThemeContentType: React.FC<ThemeContentTypeProps> = ({
             <Button 
               type="button" 
               variant="outline"
-              onClick={() => embedYouTubeVideo(theme.video_url || '')}
+              onClick={() => {
+                if (theme.video_url) {
+                  const embedCode = embedYouTubeVideo(theme.video_url);
+                  setTheme({ 
+                    ...theme, 
+                    content: theme.content ? `${theme.content}\n\n${embedCode}` : embedCode 
+                  });
+                }
+              }}
             >
               Ներդնել տեքստում
             </Button>

@@ -3,20 +3,34 @@ import React, { useState, useEffect } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Theme } from '../../../hooks/useThemeManagement';
 import ThemeBasicInfo from './ThemeBasicInfo';
 import ThemeImages from './ThemeImages';
 import ThemeContentType from './ThemeContentType';
 import ThemeContent from './ThemeContent';
 import ThemePublishToggle from './ThemePublishToggle';
 
+interface Theme {
+  id?: string;
+  title: string;
+  summary: string;
+  content?: string;
+  image_url?: string;
+  banner_image_url?: string;
+  category?: string;
+  module_id?: number;
+  video_url?: string;
+  is_published?: boolean;
+}
+
 interface ThemeDialogProps {
   isOpen: boolean;
   onClose: () => void;
   onSave: (theme: Theme) => void;
   theme: Theme;
-  title: string;
-  isEditing: boolean;
+  modules: { id: number; title: string }[];
+  contentType: "text" | "video" | "both";
+  setContentType: (type: "text" | "video" | "both") => void;
+  embedYouTubeVideo: (url: string) => string;
 }
 
 const ThemeDialog: React.FC<ThemeDialogProps> = ({ 
@@ -24,12 +38,13 @@ const ThemeDialog: React.FC<ThemeDialogProps> = ({
   onClose, 
   onSave, 
   theme: initialTheme, 
-  title,
-  isEditing
+  modules,
+  contentType,
+  setContentType,
+  embedYouTubeVideo
 }) => {
   const [theme, setTheme] = useState<Theme>(initialTheme);
   const [activeTab, setActiveTab] = useState("basic-info");
-  const [contentType, setContentType] = useState<"text" | "video" | "both">("text");
   
   // Reset form when dialog opens with new data
   useEffect(() => {
@@ -45,29 +60,13 @@ const ThemeDialog: React.FC<ThemeDialogProps> = ({
         setContentType("text");
       }
     }
-  }, [isOpen, initialTheme]);
+  }, [isOpen, initialTheme, setContentType]);
   
   const handleSave = () => {
     onSave(theme);
   };
-  
-  // Embed YouTube video in content
-  const embedYouTubeVideo = (videoUrl: string) => {
-    if (!videoUrl) return;
-    
-    // Extract video ID
-    const match = videoUrl.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/)([^"&?\/\s]+)/);
-    if (!match || !match[1]) return;
-    
-    const videoId = match[1];
-    const embedCode = `<iframe width="560" height="315" src="https://www.youtube.com/embed/${videoId}" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>`;
-    
-    // Add embed code to content
-    setTheme({
-      ...theme,
-      content: theme.content ? `${theme.content}\n\n${embedCode}` : embedCode
-    });
-  };
+
+  const title = theme.id ? 'Խմբագրել թեման' : 'Ավելացնել նոր թեմա';
 
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
@@ -84,7 +83,7 @@ const ThemeDialog: React.FC<ThemeDialogProps> = ({
           </TabsList>
           
           <TabsContent value="basic-info">
-            <ThemeBasicInfo theme={theme} setTheme={setTheme} />
+            <ThemeBasicInfo theme={theme} setTheme={setTheme} modules={modules} />
           </TabsContent>
           
           <TabsContent value="images">
@@ -103,6 +102,7 @@ const ThemeDialog: React.FC<ThemeDialogProps> = ({
               contentType={contentType} 
               theme={theme} 
               setTheme={setTheme} 
+              embedYouTubeVideo={embedYouTubeVideo}
             />
           </TabsContent>
         </Tabs>

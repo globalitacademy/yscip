@@ -4,11 +4,23 @@ import { Label } from '@/components/ui/label';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Input } from '@/components/ui/input';
 import RichTextEditor from '@/components/admin/common/RichTextEditor';
-import { Theme } from '../../hooks/useThemeManagement';
+
+interface Theme {
+  id?: string;
+  title: string;
+  summary: string;
+  content?: string;
+  image_url?: string;
+  banner_image_url?: string;
+  category?: string;
+  module_id?: number;
+  video_url?: string;
+  is_published?: boolean;
+}
 
 interface ThemeContentProps {
   theme: Theme;
-  setTheme: (theme: Theme | null) => void;
+  setTheme: (theme: Theme) => void;
   contentType: 'text' | 'video' | 'both';
   embedYouTubeVideo: (url: string) => string;
 }
@@ -33,7 +45,6 @@ const ThemeContent: React.FC<ThemeContentProps> = ({
 
   const handleContentChange = (content: string) => {
     setLocalContent(content);
-    if (!theme) return;
     
     // Combine rich text content with video embed if both are selected
     if (contentType === 'both' && videoUrl) {
@@ -48,8 +59,6 @@ const ThemeContent: React.FC<ThemeContentProps> = ({
   const handleVideoUrlChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const url = e.target.value;
     setVideoUrl(url);
-    
-    if (!theme) return;
     
     // Update theme with video URL
     setTheme({ ...theme, video_url: url });

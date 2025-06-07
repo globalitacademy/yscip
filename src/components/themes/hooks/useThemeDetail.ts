@@ -66,7 +66,7 @@ export const useThemeDetail = (id?: string) => {
           setTheme(themeData);
           
           // Determine initial active tab
-          if (themeData.video_url) {
+          if (themeData.content && themeData.content.includes('youtube.com/embed')) {
             setActiveTab('video');
           } else if (themeData.content) {
             setActiveTab('content');
@@ -107,12 +107,10 @@ export const useThemeDetail = (id?: string) => {
     return content.includes('youtube.com/embed');
   };
   
-  // Get video ID either from direct video_url or from embedded in content
-  const videoId = theme?.video_url 
-    ? extractYouTubeVideoId(theme.video_url) 
-    : contentHasEmbeddedVideo(theme?.content) 
-      ? extractYouTubeVideoId(theme?.content)
-      : null;
+  // Get video ID from content if available
+  const videoId = theme?.content && contentHasEmbeddedVideo(theme.content)
+    ? extractYouTubeVideoId(theme.content)
+    : null;
 
   return {
     theme,
