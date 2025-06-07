@@ -2,7 +2,6 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
-import { Plus } from 'lucide-react';
 
 // Define Theme type based on the database schema
 export interface Theme {
