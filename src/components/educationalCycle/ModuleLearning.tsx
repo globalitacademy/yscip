@@ -1,9 +1,8 @@
-
 import React, { useState, useEffect } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import { EducationalModule } from './types';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from '@/components/ui/card';
-import { CheckCircle, Clock, ChevronRight, Book, Video, Image as ImageIcon } from 'lucide-react';
+import { CheckCircle, Clock, ChevronRight, Book, Video, Image as ImageIcon, GraduationCap } from 'lucide-react';
 import { Progress } from '@/components/ui/progress';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
@@ -222,12 +221,20 @@ const ModuleLearning: React.FC<ModuleLearningProps> = ({ module }) => {
                     <p className="text-muted-foreground line-clamp-2 mb-4">
                       {theme.summary}
                     </p>
-                    <Button asChild variant="outline" size="sm" className="mt-2">
-                      <Link to={`/themes/${theme.id}`} className="flex items-center gap-1">
-                        Ուսումնասիրել
-                        <ChevronRight className="h-4 w-4" />
-                      </Link>
-                    </Button>
+                    <div className="flex gap-2">
+                      <Button asChild variant="outline" size="sm">
+                        <Link to={`/themes/${theme.id}`} className="flex items-center gap-1">
+                          Ուսումնասիրել
+                          <ChevronRight className="h-4 w-4" />
+                        </Link>
+                      </Button>
+                      <Button asChild size="sm">
+                        <Link to={`/themes/${theme.id}/learn`} className="flex items-center gap-1">
+                          <GraduationCap className="h-4 w-4" />
+                          Դասեր
+                        </Link>
+                      </Button>
+                    </div>
                   </CardContent>
                 </Card>
               ))}
