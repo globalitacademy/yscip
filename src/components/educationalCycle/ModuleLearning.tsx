@@ -46,6 +46,8 @@ const ModuleLearning: React.FC<ModuleLearningProps> = ({ module }) => {
           return;
         }
         
+        console.log('Fetching themes for module:', moduleId);
+        
         const { data, error } = await supabase
           .from('themes')
           .select('*')
@@ -53,7 +55,12 @@ const ModuleLearning: React.FC<ModuleLearningProps> = ({ module }) => {
           .eq('is_published', true)
           .order('created_at', { ascending: false });
           
-        if (error) throw error;
+        if (error) {
+          console.error('Error fetching themes:', error);
+          throw error;
+        }
+        
+        console.log('Fetched themes:', data);
         setThemes(data || []);
       } catch (error) {
         console.error('Error fetching themes:', error);
@@ -215,7 +222,11 @@ const ModuleLearning: React.FC<ModuleLearningProps> = ({ module }) => {
                       </div>
                     </div>
                     <h3 className="text-lg font-medium mb-2">
-                      <Link to={`/themes/${theme.id}`} className="hover:text-primary">
+                      <Link 
+                        to={`/themes/${theme.id}`} 
+                        className="hover:text-primary hover:underline"
+                        onClick={() => console.log('Navigating to theme:', theme.id)}
+                      >
                         {theme.title}
                       </Link>
                     </h3>
@@ -224,13 +235,21 @@ const ModuleLearning: React.FC<ModuleLearningProps> = ({ module }) => {
                     </p>
                     <div className="flex gap-2">
                       <Button asChild variant="outline" size="sm">
-                        <Link to={`/themes/${theme.id}`} className="flex items-center gap-1">
+                        <Link 
+                          to={`/themes/${theme.id}`} 
+                          className="flex items-center gap-1"
+                          onClick={() => console.log('Navigating to theme detail:', theme.id)}
+                        >
                           Ուսումնասիրել
                           <ChevronRight className="h-4 w-4" />
                         </Link>
                       </Button>
                       <Button asChild size="sm">
-                        <Link to={`/themes/${theme.id}/learn`} className="flex items-center gap-1">
+                        <Link 
+                          to={`/themes/${theme.id}/learn`} 
+                          className="flex items-center gap-1"
+                          onClick={() => console.log('Navigating to theme learning:', theme.id)}
+                        >
                           <GraduationCap className="h-4 w-4" />
                           Դասեր
                         </Link>
