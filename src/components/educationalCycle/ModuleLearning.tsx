@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import { EducationalModule } from './types';
@@ -219,7 +220,7 @@ const ModuleLearning: React.FC<ModuleLearningProps> = ({ module }) => {
                       </Link>
                     </h3>
                     <p className="text-muted-foreground line-clamp-2 mb-4">
-                      {theme.summary}
+                      {theme.summary || 'Այս թեմայի մանրամասն նկարագրությունը հասանելի կլինի շուտով:'}
                     </p>
                     <div className="flex gap-2">
                       <Button asChild variant="outline" size="sm">
@@ -245,6 +246,40 @@ const ModuleLearning: React.FC<ModuleLearningProps> = ({ module }) => {
               <Link to="/themes">Բոլոր թեմաները</Link>
             </Button>
           </CardFooter>
+        </Card>
+      )}
+      
+      {/* Loading state for themes */}
+      {isLoading && (
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-xl">Բեռնվում է...</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="flex items-center justify-center py-8">
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+            </div>
+          </CardContent>
+        </Card>
+      )}
+      
+      {/* Empty state for themes */}
+      {!isLoading && themes.length === 0 && (
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-xl">Թեմաների գրադարան</CardTitle>
+            <CardDescription>
+              Այս մոդուլի համար թեմաներ դեռ չեն ավելացվել
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="text-center py-8">
+              <Book className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+              <p className="text-muted-foreground">
+                Շուտով այս մոդուլի համար կհասանելի լինեն մանրամասն ուսումնական նյութեր:
+              </p>
+            </div>
+          </CardContent>
         </Card>
       )}
     </div>

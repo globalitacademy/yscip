@@ -7,15 +7,24 @@ interface ThemeBannerProps {
 }
 
 const ThemeBanner: React.FC<ThemeBannerProps> = ({ theme }) => {
-  if (!theme.banner_image_url) return null;
-  
+  if (!theme.banner_image_url && !theme.image_url) {
+    return null;
+  }
+
+  const bannerImage = theme.banner_image_url || theme.image_url;
+
   return (
-    <div className="mb-8 rounded-lg overflow-hidden">
+    <div className="relative w-full h-64 md:h-80 rounded-lg overflow-hidden mb-8">
       <img 
-        src={theme.banner_image_url} 
+        src={bannerImage} 
         alt={theme.title} 
-        className="w-full h-auto object-cover max-h-80"
+        className="w-full h-full object-cover"
       />
+      <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent" />
+      <div className="absolute bottom-6 left-6 text-white">
+        <h2 className="text-xl font-semibold">{theme.title}</h2>
+        <p className="text-sm opacity-90">{theme.category}</p>
+      </div>
     </div>
   );
 };
