@@ -4,19 +4,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-
-interface Theme {
-  id?: string;
-  title: string;
-  summary: string;
-  content?: string;
-  image_url?: string;
-  banner_image_url?: string;
-  category?: string;
-  module_id?: number;
-  video_url?: string;
-  is_published?: boolean;
-}
+import { Theme } from '../../hooks/useThemeManagement';
 
 interface ThemeBasicInfoProps {
   theme: Theme;

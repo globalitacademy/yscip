@@ -4,19 +4,7 @@ import { Label } from '@/components/ui/label';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
-
-interface Theme {
-  id?: string;
-  title: string;
-  summary: string;
-  content?: string;
-  image_url?: string;
-  banner_image_url?: string;
-  category?: string;
-  module_id?: number;
-  video_url?: string;
-  is_published?: boolean;
-}
+import { Theme } from '../../hooks/useThemeManagement';
 
 export interface ThemeContentTypeProps {
   contentType: "text" | "video" | "both";

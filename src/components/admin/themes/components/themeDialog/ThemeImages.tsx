@@ -6,7 +6,7 @@ import { Theme } from '../../hooks/useThemeManagement';
 
 interface ThemeImagesProps {
   theme: Theme;
-  setTheme: (theme: Theme | null) => void;
+  setTheme: (theme: Theme) => void;
 }
 
 const ThemeImages: React.FC<ThemeImagesProps> = ({ theme, setTheme }) => {

@@ -4,19 +4,7 @@ import { Label } from '@/components/ui/label';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Input } from '@/components/ui/input';
 import RichTextEditor from '@/components/admin/common/RichTextEditor';
-
-interface Theme {
-  id?: string;
-  title: string;
-  summary: string;
-  content?: string;
-  image_url?: string;
-  banner_image_url?: string;
-  category?: string;
-  module_id?: number;
-  video_url?: string;
-  is_published?: boolean;
-}
+import { Theme } from '../../hooks/useThemeManagement';
 
 interface ThemeContentProps {
   theme: Theme;

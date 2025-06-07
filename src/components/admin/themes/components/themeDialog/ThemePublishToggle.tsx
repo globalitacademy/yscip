@@ -6,7 +6,7 @@ import { Theme } from '../../hooks/useThemeManagement';
 
 interface ThemePublishToggleProps {
   theme: Theme;
-  setTheme: (theme: Theme | null) => void;
+  setTheme: (theme: Theme) => void;
 }
 
 const ThemePublishToggle: React.FC<ThemePublishToggleProps> = ({ theme, setTheme }) => {

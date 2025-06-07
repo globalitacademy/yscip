@@ -8,25 +8,13 @@ import ThemeImages from './ThemeImages';
 import ThemeContentType from './ThemeContentType';
 import ThemeContent from './ThemeContent';
 import ThemePublishToggle from './ThemePublishToggle';
-
-interface Theme {
-  id?: string;
-  title: string;
-  summary: string;
-  content?: string;
-  image_url?: string;
-  banner_image_url?: string;
-  category?: string;
-  module_id?: number;
-  video_url?: string;
-  is_published?: boolean;
-}
+import { Theme } from '../../hooks/useThemeManagement';
 
 interface ThemeDialogProps {
   isOpen: boolean;
   onClose: () => void;
   onSave: (theme: Theme) => void;
-  theme: Theme;
+  theme: Theme | null;
   modules: { id: number; title: string }[];
   contentType: "text" | "video" | "both";
   setContentType: (type: "text" | "video" | "both") => void;
@@ -43,12 +31,18 @@ const ThemeDialog: React.FC<ThemeDialogProps> = ({
   setContentType,
   embedYouTubeVideo
 }) => {
-  const [theme, setTheme] = useState<Theme>(initialTheme);
+  const [theme, setTheme] = useState<Theme>({
+    id: '',
+    title: '',
+    summary: '',
+    content: '',
+    is_published: false
+  });
   const [activeTab, setActiveTab] = useState("basic-info");
   
   // Reset form when dialog opens with new data
   useEffect(() => {
-    if (isOpen) {
+    if (isOpen && initialTheme) {
       setTheme(initialTheme);
       
       // Set initial content type based on theme data
@@ -59,6 +53,16 @@ const ThemeDialog: React.FC<ThemeDialogProps> = ({
       } else {
         setContentType("text");
       }
+    } else if (isOpen && !initialTheme) {
+      // Reset to empty theme for new theme creation
+      setTheme({
+        id: '',
+        title: '',
+        summary: '',
+        content: '',
+        is_published: false
+      });
+      setContentType('text');
     }
   }, [isOpen, initialTheme, setContentType]);
   
